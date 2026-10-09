@@ -125,6 +125,18 @@ def main() -> int:
                  {"p_group": gid, "p_name": "E2E Painters", "p_rules": "be kind", "p_max_members": 5},
                  "the owner can edit the group")
 
+        h.section("Family friendly")
+        h.rpc_refused(o["token"], "create_group", {"p_name": "Fuck Team", "p_rules": "", "p_max_members": 4},
+                      "blocked_word", "a rude group name is refused")
+        h.rpc_refused(o["token"], "create_group", {"p_name": "Nice", "p_rules": "dit me tat ca", "p_max_members": 4},
+                      "blocked_word", "so are rude rules (even without accents)")
+        h.rpc_refused(o["token"], "update_group",
+                      {"p_group": gid, "p_name": "Big bitch club", "p_rules": "", "p_max_members": 5},
+                      "blocked_word", "renaming a group to something rude is refused")
+        h.rpc_ok(o["token"], "update_group",
+                 {"p_group": gid, "p_name": "E2E Painters", "p_rules": "Class pass, du lich ok", "p_max_members": 5},
+                 "ordinary words that contain a rude word's letters pass ('class', 'du lich')")
+
         h.section("Chat")
         h.rpc_ok(f["token"], "send_group_message", {"p_group": gid, "p_body": "hello team"},
                  "F writes to the group")
@@ -136,6 +148,12 @@ def main() -> int:
                       "too_long", "messages are at most 500 characters")
         h.rpc_refused(f["token"], "send_group_message", {"p_group": gid, "p_body": "   "},
                       "empty", "an empty message is refused")
+        h.rpc_refused(f["token"], "send_group_message", {"p_group": gid, "p_body": "you are a bitch"},
+                      "blocked_word", "a rude message is refused")
+        h.rpc_refused(f["token"], "send_group_message", {"p_group": gid, "p_body": "Địt mẹ"},
+                      "blocked_word", "also in Vietnamese")
+        h.rpc_ok(f["token"], "send_group_message", {"p_group": gid, "p_body": "Buổi sáng, đi du lịch nhé!"},
+                 "a friendly message with ordinary Vietnamese passes")
 
         h.section("Same group is not friends")
         post_id = h._uuid()
@@ -289,7 +307,7 @@ def main() -> int:
         status, rows = h.select(s["token"], "group_messages", "select=body&kind=eq.text")
         h.check("S no longer sees F's messages", status == 200 and rows == [], f"{rows}")
         status, rows = h.select(o["token"], "group_messages", "select=body&kind=eq.text")
-        h.check("O still does", len(rows) == 1, f"{rows}")
+        h.check("O still does", len(rows) == 2, f"{rows}")
         h.rpc_ok(s["token"], "unblock_user", {"p_user": f["id"]}, "S unblocks F")
 
         h.section("Leaving, handing over and closing")

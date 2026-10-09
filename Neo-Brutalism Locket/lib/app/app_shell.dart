@@ -7,6 +7,10 @@ import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
@@ -79,7 +83,11 @@ class AppShell extends StatefulWidget {
     this.widgetUpdater,
     this.groupsRepository,
     this.canvasRepository,
+    this.contestRepository,
   });
+
+  /// The weekly contest and the Gallery (same rule as [groupsRepository]).
+  final ContestRepository? contestRepository;
 
   /// Groups on the server (built from [session] when not given and a backend
   /// is configured).
@@ -170,6 +178,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   FriendsStore? _friendsStore;
   GroupsStore? _groupsStore;
   CanvasRepository? _canvasRepository;
+  ContestStore? _contestStore;
 
   /// Which list the FRIENDS tab shows: friends (false) or groups (true).
   bool _showGroups = false;
@@ -217,6 +226,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _canvasRepository =
           widget.canvasRepository ??
           (Backend.isReady ? SupabaseCanvasRepository() : null);
+      final contestRepository =
+          widget.contestRepository ??
+          (Backend.isReady ? SupabaseContestRepository() : null);
+      if (contestRepository != null) {
+        // No listener here: the banner and the contest screen listen themselves,
+        // and the countdown must not rebuild the whole shell every second.
+        _contestStore = ContestStore(contestRepository)..refresh();
+      }
       final posts = PostsStore(
         widget.postsRepository ??
             SupabasePostsRepository(myId: session.user.id),
@@ -301,6 +318,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     _groupsStore
       ?..removeListener(_onGroupsChanged)
       ..dispose();
+    _contestStore?.dispose();
     _dayTimer?.cancel();
     _player.removeListener(_onPlayerChanged);
     if (widget.playerStore == null) _player.dispose();
@@ -434,11 +452,24 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _chat?.refresh();
       _friendsStore?.refresh();
       _groupsStore?.refresh();
+      _contestStore?.refresh();
     }
   }
 
   void _onGroupsChanged() {
     if (mounted) setState(() {});
+  }
+
+  void _openContest() {
+    final contest = _contestStore;
+    final canvas = _canvasRepository;
+    if (contest == null || canvas == null) return;
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) =>
+            ContestScreen(store: contest, canvases: canvas, safety: _safety),
+      ),
+    );
   }
 
   void _openGroup(GroupSummary summary) {
@@ -1405,6 +1436,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         key: const ValueKey('groups'),
         store: groups,
         segment: segment,
+        header: _contestStore == null
+            ? null
+            : ContestBanner(store: _contestStore!, onTap: _openContest),
         onOpenGroup: _openGroup,
       );
     }

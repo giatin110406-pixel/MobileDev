@@ -16,6 +16,8 @@ String groupFailureText(GroupFailure failure) => switch (failure.kind) {
   GroupFailureKind.self => 'Không thể làm việc này với chính mình.',
   GroupFailureKind.empty => 'Hãy nhập nội dung.',
   GroupFailureKind.tooLong => 'Nội dung quá dài.',
+  GroupFailureKind.blockedWord =>
+    'Có từ không phù hợp. Hãy dùng ngôn từ lịch sự để mọi người cùng vui nhé.',
   GroupFailureKind.badName => 'Tên nhóm cần từ 1 đến 40 ký tự.',
   GroupFailureKind.badSize =>
     'Số thành viên tối đa phải từ 2 đến 12 và không nhỏ hơn số người hiện có.',
@@ -53,6 +55,7 @@ String systemMessageText(GroupMessage message, String name) =>
       'left' => '$name đã rời nhóm',
       'kicked' => '$name đã bị mời ra khỏi nhóm',
       'owner_changed' => '$name là trưởng nhóm mới',
+      'entry_submitted' => 'Nhóm đã nộp bài dự thi tuần này',
       _ => name,
     };
 

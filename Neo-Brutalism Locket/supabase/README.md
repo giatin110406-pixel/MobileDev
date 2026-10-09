@@ -51,6 +51,10 @@ Desktop. With it, `npx supabase test db` runs the pgTAP tests in `supabase/tests
 | `20261008000001_groups.sql` | `groups`, `group_members`, `group_invites`, `group_messages`, `group_reads` (readable by members only; same group does not mean friends); RPCs `create_group`, `update_group`, `invite_to_group`, `respond_group_invite`, `revoke_group_invite`, `kick_member`, `transfer_ownership`, `leave_group`, `dissolve_group`, `send_group_message`, `mark_group_read` |
 | `20261008000002_ink.sql` | `ink_wallets`, `ink_ledger` (the canvas currency, separate from Sunbit); `complete_quest` now also pays +10 Ink; `player_json` returns `ink_balance`; `get_ink_balance` |
 | `20261008000003_canvas.sql` | `palettes` (seeded), `canvases`, `canvas_events`; an empty 32x32 canvas for every new group; RPCs `get_canvas`, `get_group_canvas`, `get_canvas_events`, `paint_pixels` (atomic, 1 Ink per pixel), `new_canvas`, `rollback_user_events`; realtime on `canvas_events` |
+| `20261008000004_group_invitee_reads_group.sql` | A person who has been invited can read the name of the group they were invited to |
+| `20261009000001_contest.sql` | The weekly contest and the Gallery (Vietnam time, UTC+7): `contest_themes` (16 seeded), `contests`, `contest_entries` (a server-made snapshot of a canvas, first 100 only), `contest_participants`, `entry_votes`, `entry_reactions`, `entry_comments`, `contest_results`, `contest_config`; the lazy `contest_tick()` (also run every minute by pg_cron when available) that creates the weeks and finalizes; the Bayesian result and prizes in `finalize_contest()`; RPCs `get_current_contest`, `submit_entry` (owner only), `get_gallery`, `get_entry`, `get_entry_comments`, `vote_entry`, `react_entry`, `comment_entry`, `report_gallery`, `get_contest_results`, `get_hall_of_fame` |
+| `20261009000002_report_entry_cascade.sql` | Reports about an entry go away with the entry (so a reported entry can be deleted) |
+| `20261010000001_family_friendly.sql` | A list of refused words (Vietnamese with and without accents, English), matched as whole words only, in `contest_banned_words`; `contains_banned_word()`. Applied to contest comments, group chat messages, and group names and rules. Edit the table in the dashboard to add or remove words |
 
 ## Password-reset link
 
@@ -63,6 +67,8 @@ link in the email will not open the app.
 `python supabase/e2e/e2e_check.py` signs up three throw-away accounts, drives every feature through the same calls the app makes, checks what must be refused too, and deletes the accounts. It uses only the publishable key. Needs "Confirm email" off.
 
 `python supabase/e2e/e2e_groups.py` does the same for groups, Ink and the shared canvas (four throw-away accounts: owner, two members who are not friends with each other, and an outsider). It leaves behind one dissolved group named "E2E Painters" per run, because nobody can delete a group from the app; remove those in the dashboard.
+
+`python supabase/e2e/e2e_contest.py` checks the contest end to end: seven throw-away accounts in three groups, two private test contests whose clock is moved with `supabase db query --linked` (so the CLI must be logged in and linked), the 100-entry cut, rating rules, comments, reports, the Bayesian result (3.7222 / 3.5 / 3.2778 for the votes it casts) and the prizes. It removes its contests, groups and accounts afterwards. With `E2E_DUMP=test/fixtures/contest` it also saves the server's real answers, which `test/contest_fixtures_test.dart` reads to make sure the app still understands them.
 
 ## Push notifications
 
