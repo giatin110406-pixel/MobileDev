@@ -1,6 +1,6 @@
 """Reference answers for the Dart tests of the on-device quest check.
 
-Picks a few photos from the eval set, saves them as small JPEGs and records what the float16 ONNX
+Picks a few photos from the eval set, saves them as small JPEGs and records what the shipped ONNX
 model (the one the app ships) says about them with the server's own rules. The Dart tests then
 check their preprocessing and scoring against these numbers.
 

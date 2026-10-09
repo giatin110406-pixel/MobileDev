@@ -5,7 +5,7 @@ compares: float32 vs smaller variants (float16, int8), and the resize the app mi
 PIL's antialiased bilinear. Prints accuracy and how many decisions differ from the float32 + PIL
 reference.
 
-Usage (from server/), with pyarrow + onnx + onnxruntime + onnxconverter-common on PYTHONPATH:
+Usage (from server/), with pyarrow + onnx + onnxruntime on PYTHONPATH (run eval.export_quest_model --keep-float32 first):
     .venv/Scripts/python.exe -m eval.onnx_check --data D:/clip_eval_tmp --model D:/clip_eval_tmp/model
 """
 from __future__ import annotations
@@ -44,15 +44,9 @@ def preprocess(data: bytes, size: int, resample) -> np.ndarray:
 def make_variants(model_dir: Path, images, cases, size: int, int8: bool = True) -> dict[str, Path]:
     fp32 = model_dir / "quest_image_encoder.onnx"
     variants = {"fp32": fp32}
-    try:
-        import onnx
-        from onnxconverter_common import float16
-
-        fp16 = model_dir / "quest_image_encoder_fp16.onnx"
-        onnx.save(float16.convert_float_to_float16(onnx.load(fp32), keep_io_types=True), fp16)
-        variants["fp16"] = fp16
-    except Exception as error:  # noqa: BLE001
-        print("fp16 skipped:", error)
+    shipped = model_dir / "quest_image_encoder_fp16.onnx"  # float16 weights, float32 maths
+    if shipped.exists():
+        variants["fp16"] = shipped
     if not int8:
         return variants
     try:
