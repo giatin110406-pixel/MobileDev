@@ -285,7 +285,13 @@ class CameraTabState extends State<CameraTab> {
           if (mounted) setState(() => _questModeQuest = null);
           await _showOutOfTries();
         } else {
-          _notify('KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ');
+          final seen = kDebugMode && widget.questVerifier is QuestDiagnostics
+              ? (widget.questVerifier as QuestDiagnostics).lastDiagnosis
+              : null;
+          _notify(
+            'KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ'
+            '${seen == null ? '' : ' · DEBUG: $seen'}',
+          );
         }
         return;
       }

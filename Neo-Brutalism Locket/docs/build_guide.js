@@ -156,6 +156,7 @@ const content = [
       ['Không thấy thiết bị trong flutter devices', 'Bật Gỡ lỗi USB, cắm lại cáp, chọn "Luôn cho phép" trên điện thoại.'],
       ['Build Android lỗi Kotlin incremental', 'Đặt ORG_GRADLE_PROJECT_kotlin_incremental=false (Bước 7).'],
       ['Quest báo "Không kiểm tra được ảnh trên máy"', 'Model chưa nạp được (thiếu file trong assets/quest_model hoặc thiết bị quá yếu). Lượt thử không bị trừ. Chạy lại flutter pub get rồi build lại.'],
+      ['Quest báo "KHÔNG ĐÚNG" dù chụp đúng', 'Chạy bản debug (flutter run, không phải APK release): thông báo sẽ có thêm "DEBUG: nhãn xx%" cho biết model thấy gì và điểm của đáp án đúng. Ghi lại quest, nhãn và điểm rồi gửi cho chủ dự án để chỉnh bộ nhận diện. Bản release không hiện dòng này.'],
       ['Quest báo "chưa có trong bộ kiểm ảnh"', 'Catalog quest mới hơn bộ mô tả đã xuất. Xuất lại theo Bước 8.3.'],
       ['Bản release chạy nhưng quest luôn lỗi, bản debug thì bình thường', 'Thiếu quy tắc giữ lớp ONNX Runtime. File android/app/proguard-rules.pro phải có dòng -keep class ai.onnxruntime.** { *; } (đã có sẵn trong repo).'],
       ['Quest Van Gogh không tạo được ảnh tranh', 'Server laptop chưa chạy hoặc chưa nhập đúng địa chỉ/token (Bước 8.2). Việc kiểm ảnh quest vẫn chạy được mà không cần server.'],

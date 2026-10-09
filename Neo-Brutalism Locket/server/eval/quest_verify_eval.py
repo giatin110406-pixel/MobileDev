@@ -42,8 +42,8 @@ PER_QUEST_POSITIVES = 40
 PER_QUEST_NEGATIVES = 60
 
 
-def load_coco(path: Path, seed: int):
-    """-> {image_bytes_index: (bytes, set(categories covering >= MIN_AREA))}"""
+def load_coco(path: Path, seed: int, min_area: float = MIN_AREA):
+    """-> [(bytes, categories covering >= min_area, all categories)], shuffled"""
     rng = random.Random(seed)
     rows = []
     pf = pq.ParquetFile(path)
@@ -51,7 +51,7 @@ def load_coco(path: Path, seed: int):
         t = pf.read_row_group(g, columns=["image", "width", "height", "objects"]).to_pylist()
         for r in t:
             big = {c for c, a in zip(r["objects"]["category"], r["objects"]["area"])
-                   if a / (r["width"] * r["height"]) >= MIN_AREA}
+                   if a / (r["width"] * r["height"]) >= min_area}
             present = set(r["objects"]["category"])
             rows.append((r["image"]["bytes"], big, present))
     rng.shuffle(rows)

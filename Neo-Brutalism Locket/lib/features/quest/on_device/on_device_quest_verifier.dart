@@ -12,7 +12,7 @@ Float32List _preprocess((Uint8List, int) job) =>
 /// Decides whether a photo shows the quest subject, on the phone: no laptop
 /// and no network. The image goes through MobileCLIP2-S0 and is compared with
 /// the quest's pre-computed descriptions.
-class OnDeviceQuestVerifier implements QuestVerifier {
+class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
   OnDeviceQuestVerifier({
     QuestImageEncoder? encoder,
     Future<QuestLabels> Function()? loadLabels,
@@ -24,7 +24,11 @@ class OnDeviceQuestVerifier implements QuestVerifier {
   Future<QuestLabels>? _labels;
 
   @override
+  String? lastDiagnosis;
+
+  @override
   Future<bool> check(Uint8List jpeg, Quest quest) async {
+    lastDiagnosis = null;
     try {
       final labels = await (_labels ??= _loadLabels());
       if (!labels.quests.containsKey(quest.id)) {
@@ -34,7 +38,10 @@ class OnDeviceQuestVerifier implements QuestVerifier {
       }
       final planes = await compute(_preprocess, (jpeg, labels.inputSize));
       final embedding = await _encoder.encode(planes, labels.inputSize);
-      return scoreQuestPhoto(embedding, labels, quest.id).match;
+      final score = scoreQuestPhoto(embedding, labels, quest.id);
+      lastDiagnosis = '${score.top} ${(score.score * 100).round()}%';
+      if (kDebugMode) debugPrint('quest ${quest.id}: $lastDiagnosis');
+      return score.match;
     } on QuestCheckUnavailable {
       rethrow;
     } on FormatException {
