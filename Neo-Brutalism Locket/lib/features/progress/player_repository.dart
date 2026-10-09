@@ -36,6 +36,7 @@ class QuestReward {
     required this.streak,
     required this.base,
     required this.bonus,
+    this.ink = 0,
   });
 
   final PlayerState state;
@@ -43,6 +44,9 @@ class QuestReward {
   final int streak;
   final int base;
   final int bonus;
+
+  /// Ink earned too (10 with an account, 0 on this device only).
+  final int ink;
 
   int get total => base + bonus;
 }

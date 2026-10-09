@@ -4,7 +4,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
+import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
+import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
+import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
+import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
+import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
+import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
+import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
@@ -69,7 +76,16 @@ class AppShell extends StatefulWidget {
     this.push,
     this.notificationPrefs,
     this.widgetUpdater,
+    this.groupsRepository,
+    this.canvasRepository,
   });
+
+  /// Groups on the server (built from [session] when not given and a backend
+  /// is configured).
+  final GroupsRepository? groupsRepository;
+
+  /// The shared canvas on the server (same rule as [groupsRepository]).
+  final CanvasRepository? canvasRepository;
 
   /// The home-screen widget (the phone's by default).
   final WidgetUpdater? widgetUpdater;
@@ -147,6 +163,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _tabIndex = 0;
   bool _showFeed = false;
   FriendsStore? _friendsStore;
+  GroupsStore? _groupsStore;
+  CanvasRepository? _canvasRepository;
+
+  /// Which list the FRIENDS tab shows: friends (false) or groups (true).
+  bool _showGroups = false;
   PostsStore? _postsStore;
   ChatStore? _chat;
   InteractionsStore? _interactions;
@@ -178,6 +199,19 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       );
       _friendsStore = store..addListener(_onFriendsChanged);
       store.refresh();
+      final groupsRepository =
+          widget.groupsRepository ??
+          (Backend.isReady
+              ? SupabaseGroupsRepository(myId: session.user.id)
+              : null);
+      if (groupsRepository != null) {
+        _groupsStore = GroupsStore(groupsRepository)
+          ..addListener(_onGroupsChanged)
+          ..refresh();
+      }
+      _canvasRepository =
+          widget.canvasRepository ??
+          (Backend.isReady ? SupabaseCanvasRepository() : null);
       final posts = PostsStore(
         widget.postsRepository ??
             SupabasePostsRepository(myId: session.user.id),
@@ -258,6 +292,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     _linkSubscription?.cancel();
     _friendsStore
       ?..removeListener(_onFriendsChanged)
+      ..dispose();
+    _groupsStore
+      ?..removeListener(_onGroupsChanged)
       ..dispose();
     _dayTimer?.cancel();
     _player.removeListener(_onPlayerChanged);
@@ -391,7 +428,31 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _syncPosts();
       _chat?.refresh();
       _friendsStore?.refresh();
+      _groupsStore?.refresh();
     }
+  }
+
+  void _onGroupsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _openGroup(GroupSummary summary) {
+    final groups = _groupsStore;
+    final friends = _friendsStore;
+    final canvas = _canvasRepository;
+    if (groups == null || friends == null || canvas == null) return;
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => GroupHomeScreen(
+          groupId: summary.group.id,
+          groups: groups,
+          friends: friends,
+          canvasRepository: canvas,
+          myId: widget.session!.user.id,
+          safety: _safety,
+        ),
+      ),
+    );
   }
 
   void _onPostsChanged() {
@@ -1326,8 +1387,25 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       );
     }
     final l10n = AppLocalizations.of(context);
+    final groups = _groupsStore;
+    final segment = groups == null
+        ? null
+        : FriendsGroupsSwitch(
+            showGroups: _showGroups,
+            groupUnread: groups.totalUnread,
+            onChanged: (value) => setState(() => _showGroups = value),
+          );
+    if (groups != null && _showGroups) {
+      return GroupsScreen(
+        key: const ValueKey('groups'),
+        store: groups,
+        segment: segment,
+        onOpenGroup: _openGroup,
+      );
+    }
     return FriendsScreen(
       key: const ValueKey('friends'),
+      segment: segment,
       friends: _friends,
       messages: _allMessages,
       onAddFriend: _addFriend,
