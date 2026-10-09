@@ -48,6 +48,9 @@ Desktop. With it, `npx supabase test db` runs the pgTAP tests in `supabase/tests
 | `20261007000006_safety.sql` | `reports`; RPCs `block_user`, `unblock_user`, `report_content`, `delete_my_account` |
 | `20261007000007_push.sql` | `device_tokens`, `notification_prefs`, `register_device` / `unregister_device`, and the triggers that call the `notify` Edge Function (inert until the Vault secrets exist) |
 | `20261007000008_service_role_grants.sql` | read access for the `notify` function's service role (this project does not auto-expose new tables) |
+| `20261008000001_groups.sql` | `groups`, `group_members`, `group_invites`, `group_messages`, `group_reads` (readable by members only; same group does not mean friends); RPCs `create_group`, `update_group`, `invite_to_group`, `respond_group_invite`, `revoke_group_invite`, `kick_member`, `transfer_ownership`, `leave_group`, `dissolve_group`, `send_group_message`, `mark_group_read` |
+| `20261008000002_ink.sql` | `ink_wallets`, `ink_ledger` (the canvas currency, separate from Sunbit); `complete_quest` now also pays +10 Ink; `player_json` returns `ink_balance`; `get_ink_balance` |
+| `20261008000003_canvas.sql` | `palettes` (seeded), `canvases`, `canvas_events`; an empty 32x32 canvas for every new group; RPCs `get_canvas`, `get_group_canvas`, `get_canvas_events`, `paint_pixels` (atomic, 1 Ink per pixel), `new_canvas`, `rollback_user_events`; realtime on `canvas_events` |
 
 ## Password-reset link
 
