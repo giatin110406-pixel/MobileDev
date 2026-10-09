@@ -56,6 +56,7 @@ dependencies:
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
   home_widget: ^0.10.0
+  flutter_onnxruntime: ^1.9.0
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +85,7 @@ flutter:
     - assets/models/magenta_style_predict.tflite
     - assets/models/magenta_style_transform.tflite
     - assets/models/blaze_face_short_range.tflite
+    - assets/quest_model/
     - assets/styles/van_gogh_starry_night.jpg
     - assets/music/
 

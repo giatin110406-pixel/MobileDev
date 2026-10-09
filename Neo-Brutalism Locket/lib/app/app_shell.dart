@@ -37,6 +37,7 @@ import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/profile/profile_screen.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
+import 'package:neo_brutalism_locket/features/quest/on_device/on_device_quest_verifier.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_post_screen.dart';
@@ -53,7 +54,7 @@ class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
     this.playerStore,
-    this.questVerifier = const LaptopQuestVerifier(),
+    this.questVerifier,
     this.session,
     this.friendsRepository,
     this.inviteLinks,
@@ -118,7 +119,9 @@ class AppShell extends StatefulWidget {
 
   /// Quest, Sunbit and shop state (created here when not given).
   final PlayerStore? playerStore;
-  final QuestVerifier questVerifier;
+
+  /// Checks quest photos (on the phone by default).
+  final QuestVerifier? questVerifier;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -129,6 +132,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   final SocialRepository _socialRepository = SocialRepository();
   final StyleEngineFactory _styleEngineFactory = const StyleEngineFactory();
   final GlobalKey<CameraTabState> _cameraKey = GlobalKey<CameraTabState>();
+  late final QuestVerifier _questVerifier =
+      widget.questVerifier ?? OnDeviceQuestVerifier();
   late final PlayerStore _player =
       widget.playerStore ??
       PlayerStore(
@@ -1279,7 +1284,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                         photos: _photos,
                         repository: _repository,
                         styleEngineFactory: _styleEngineFactory,
-                        questVerifier: widget.questVerifier,
+                        questVerifier: _questVerifier,
                         onPhotoChanged: _onPhotoChanged,
                         onOpenFeed: _openFeed,
                         onOpenArchive: () => _selectTab(3),

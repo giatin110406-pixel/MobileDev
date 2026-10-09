@@ -70,7 +70,8 @@ const content = [
 
   h1('3. Cài thư viện'),
   code(['flutter pub get']),
-  p('Lệnh này cũng tự sinh file đa ngôn ngữ (l10n). Model AI và nhạc đã có sẵn trong thư mục assets, không cần tải thêm.'),
+  p('Lệnh này cũng tự sinh file đa ngôn ngữ (l10n) và tải plugin ONNX Runtime (flutter_onnxruntime) để chạy AI trên điện thoại. Model AI (kể cả model kiểm tra ảnh quest, khoảng 23 MB, nằm trong assets/quest_model) và nhạc đã có sẵn trong repo, không cần tải thêm.'),
+  rich([{ text: 'Lần build đầu sau khi cập nhật: ', bold: true }, 'Gradle sẽ tải thêm thư viện ONNX Runtime cho Android nên cần có mạng. File APK cũng nặng hơn trước (model khoảng 23 MB cộng thư viện ONNX Runtime).']),
 
   h1('4. Tạo file cấu hình env/dev.json'),
   p('File này bị git ignore nên không có sẵn khi clone. Hãy tạo mới: copy file mẫu env/dev.json.example thành env/dev.json:'),
@@ -109,11 +110,10 @@ const content = [
   h1('8. Tính năng tuỳ chọn'),
   h2('8.1 Thông báo đẩy (push notification)'),
   p('Cần file google-services.json của dự án Firebase do chủ quản lý, file này không nằm trong repo vì lý do bảo mật. Nếu không có file này, app vẫn build và chạy bình thường, chỉ không có thông báo đẩy.'),
-  h2('8.2 Server AI trên laptop (Van Gogh chất lượng cao + chấm quest)'),
-  p('Hai việc dưới đây cần chạy server Python trên laptop có card NVIDIA:'),
-  bullet('Chuyển ảnh sang phong cách Van Gogh bằng Stable Diffusion.'),
-  bullet('Kiểm tra ảnh quest hằng ngày bằng CLIP (POST /v1/verify). Không có server thì không hoàn thành được quest.'),
-  p('Phong cách 8-bit và bản Van Gogh nhẹ chạy trực tiếp trên điện thoại, không cần server. Các bước dựng server (cần Python 3.10+ và driver NVIDIA/CUDA):'),
+  h2('8.2 Server AI trên laptop (chỉ cho Van Gogh chất lượng cao)'),
+  p('Việc duy nhất cần server Python trên laptop có card NVIDIA là chuyển ảnh sang phong cách Van Gogh bằng Stable Diffusion.'),
+  rich([{ text: 'Kiểm tra ảnh quest hằng ngày không cần server nữa: ', bold: true }, 'app chạy model nhận diện ngay trên điện thoại (không cần mạng, không cần laptop). Phong cách 8-bit và bản Van Gogh nhẹ cũng chạy trực tiếp trên điện thoại.']),
+  p('Các bước dựng server (cần Python 3.10+ và driver NVIDIA/CUDA):'),
   step('Tạo môi trường và cài thư viện:', 'num2'),
   code(['cd server', 'python -m venv .venv', '.\\.venv\\Scripts\\pip install -r requirements.txt']),
   gap(),
@@ -130,6 +130,20 @@ const content = [
   p('Kết nối qua Wi-Fi cần mở firewall và đặt mạng ở chế độ Private, xem server/README.md.'),
   rich([{ text: 'Lưu ý: ', bold: true }, 'server chạy trên máy của từng người, nên token và địa chỉ là riêng của bạn. Chỉ database là dùng chung.']),
 
+  h2('8.3 Dành cho người phát triển: thêm hoặc sửa quest'),
+  p('Model kiểm tra ảnh quest dùng bộ mô tả đã được tính sẵn cho từng quest (assets/quest_model/quest_labels.json và quest_labels.bin). Khi bạn thêm quest mới, đổi positives hoặc negatives trong lib/features/quest/quest_catalog.dart, phải tạo lại hai file này, nếu không test quest_on_device_test sẽ báo lỗi và quest mới sẽ báo "chưa có trong bộ kiểm ảnh". Việc này cần chạy trong thư mục server (đã cài môi trường ở Bước 8.2):'),
+  step('Cài thêm 2 gói chỉ dùng cho bước xuất model (cài vào thư mục riêng, không đụng môi trường server):', 'num3'),
+  code(['.\\.venv\\Scripts\\pip install --target .eval_tools --no-deps onnx==1.17.0 onnxconverter-common==1.14.0']),
+  gap(),
+  step('Xuất lại model và bộ mô tả vào assets (lần đầu tự tải model MobileCLIP2-S0, vài trăm MB):', 'num3'),
+  code(['$env:PYTHONPATH = ".eval_tools"', '.\\.venv\\Scripts\\python -m eval.export_quest_model --out ..\\assets\\quest_model']),
+  gap(),
+  p('Chỉ có 3 file trong assets/quest_model được đưa vào app (model fp16 khoảng 23 MB, quest_labels.json và quest_labels.bin). Đừng để file .onnx nào khác trong thư mục này vì mọi file ở đó đều bị đóng gói vào APK.'),
+  step('Chạy lại test: flutter test test/quest_on_device_test.dart', 'num3'),
+  p('Không cần chạy bước này nếu bạn không đổi catalog quest.'),
+  h2('8.4 Dành cho người build iOS'),
+  p('Plugin ONNX Runtime yêu cầu iOS 16 trở lên và liên kết tĩnh (static linkage). Dự án hiện đặt iOS tối thiểu là 13 nên cần nâng lên 16 và dùng "use_frameworks! :linkage => :static" trong ios/Podfile trước khi build cho iPhone. Phần này chưa được thử vì nhóm đang build cho Android.'),
+
   h1('9. Lỗi thường gặp'),
   new Table({
     width: { size: 9026, type: WidthType.DXA },
@@ -141,7 +155,10 @@ const content = [
       ['flutter pub get lỗi version SDK', 'Cập nhật Flutter: flutter upgrade (cần Dart ≥ 3.11).'],
       ['Không thấy thiết bị trong flutter devices', 'Bật Gỡ lỗi USB, cắm lại cáp, chọn "Luôn cho phép" trên điện thoại.'],
       ['Build Android lỗi Kotlin incremental', 'Đặt ORG_GRADLE_PROJECT_kotlin_incremental=false (Bước 7).'],
-      ['Quest báo không kết nối được server', 'Server chưa chạy hoặc chưa nhập đúng địa chỉ/token (Bước 8.2).'],
+      ['Quest báo "Không kiểm tra được ảnh trên máy"', 'Model chưa nạp được (thiếu file trong assets/quest_model hoặc thiết bị quá yếu). Lượt thử không bị trừ. Chạy lại flutter pub get rồi build lại.'],
+      ['Quest báo "chưa có trong bộ kiểm ảnh"', 'Catalog quest mới hơn bộ mô tả đã xuất. Xuất lại theo Bước 8.3.'],
+      ['Bản release chạy nhưng quest luôn lỗi, bản debug thì bình thường', 'Thiếu quy tắc giữ lớp ONNX Runtime. File android/app/proguard-rules.pro phải có dòng -keep class ai.onnxruntime.** { *; } (đã có sẵn trong repo).'],
+      ['Quest Van Gogh không tạo được ảnh tranh', 'Server laptop chưa chạy hoặc chưa nhập đúng địa chỉ/token (Bước 8.2). Việc kiểm ảnh quest vẫn chạy được mà không cần server.'],
     ].map(([a, b, head]) => new TableRow({
       tableHeader: !!head,
       children: [a, b].map((t, i) => new TableCell({
@@ -167,6 +184,7 @@ const doc = new Document({
     config: [
       { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } } } }] },
       { reference: 'num2', levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 360 } } } }] },
+      { reference: 'num3', levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 360 } } } }] },
       { reference: 'num', levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 360 } } } }] },
     ],
   },
