@@ -215,7 +215,7 @@ void main() {
       expect(checker.lastDiagnosis, startsWith(dog['top'] as String));
     });
 
-    test('forgets what it saw when the next check gives no answer', () async {
+    test('says why when the check could not run', () async {
       final checker = verifier(
         FakeEncoder(vectorOf(dog['embedding'] as List<dynamic>)),
       );
@@ -224,7 +224,13 @@ void main() {
         checker.check(Uint8List.fromList([1, 2, 3]), quest('px_dog')),
         throwsA(isA<QuestCheckUnavailable>()),
       );
-      expect(checker.lastDiagnosis, isNull);
+      expect(checker.lastDiagnosis, contains('unreadable photo'));
+      final broken = verifier(FailingEncoder());
+      await expectLater(
+        broken.check(photo(dog), quest('px_dog')),
+        throwsA(isA<QuestCheckUnavailable>()),
+      );
+      expect(broken.lastDiagnosis, contains('model missing'));
     });
 
     test('refuses a photo that shows something else', () async {

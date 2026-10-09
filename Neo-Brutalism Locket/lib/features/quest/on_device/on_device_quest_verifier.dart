@@ -39,20 +39,27 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
       final planes = await compute(_preprocess, (jpeg, labels.inputSize));
       final embedding = await _encoder.encode(planes, labels.inputSize);
       final score = scoreQuestPhoto(embedding, labels, quest.id);
-      lastDiagnosis = '${score.top} ${(score.score * 100).round()}%';
-      if (kDebugMode) debugPrint('quest ${quest.id}: $lastDiagnosis');
+      _remember('${score.top} ${(score.score * 100).round()}%');
       return score.match;
     } on QuestCheckUnavailable {
       rethrow;
-    } on FormatException {
+    } on FormatException catch (error) {
+      _remember('unreadable photo: ${error.message}');
       throw const QuestCheckUnavailable(
         'Không đọc được ảnh. Lượt thử không bị trừ.',
       );
-    } catch (_) {
+    } catch (error, stack) {
       _labels = null;
+      _remember('$error');
+      if (kDebugMode) debugPrint('quest check failed: $error\n$stack');
       throw const QuestCheckUnavailable(
         'Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.',
       );
     }
+  }
+
+  void _remember(String text) {
+    lastDiagnosis = text;
+    if (kDebugMode) debugPrint('quest check: $text');
   }
 }
