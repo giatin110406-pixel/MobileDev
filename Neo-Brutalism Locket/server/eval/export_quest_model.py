@@ -2,7 +2,8 @@
 
 Writes, into --out:
   quest_image_encoder.onnx        float32 image -> L2-normalised embedding (MobileCLIP2-S0)
-  quest_image_encoder_fp16.onnx   the same with float16 weights (this is what the app ships)
+  quest_image_encoder_fp16.onnx   the same with the big weights *stored* as float16 and cast back to
+                                  float32 when loaded (this is what the app ships)
   quest_labels.json          every label the app can score, in order, plus per-quest label lists
   quest_labels.bin           float32 text embeddings, one row per label in quest_labels.json
 
@@ -11,8 +12,7 @@ same as locket_server.verify, ported to Dart. Re-run this after changing quest_c
 
 Usage (from server/):
     .venv/Scripts/python.exe -m eval.export_quest_model --out ../assets/quest_model
-(onnx and onnxconverter-common are not in requirements.txt: pip install onnx==1.17.0
-onnxconverter-common==1.14.0 --target <dir> and put it on PYTHONPATH.)
+(onnx is not in requirements.txt: pip install onnx==1.17.0 --target <dir> and put it on PYTHONPATH.)
 """
 from __future__ import annotations
 
@@ -49,6 +49,36 @@ def reparameterised(visual):
     return reparameterize_model(copy.deepcopy(visual))
 
 
+def fp16_weight_storage(model, min_elements: int = 1024):
+    """Store every large float32 weight as float16 plus a Cast back to float32.
+
+    The file is half the size but all arithmetic stays float32: ONNX Runtime folds the Casts when
+    the model loads. A model computing in float16 (onnxconverter_common) loads on a PC but not on
+    Android, whose CPU provider has no float16 kernel for Gelu ("ORT_NOT_IMPLEMENTED").
+    """
+    import numpy as np
+    from onnx import TensorProto, helper, numpy_helper
+
+    graph = model.graph
+    kept, casts = [], []
+    for init in list(graph.initializer):
+        array = numpy_helper.to_array(init)
+        if init.data_type != TensorProto.FLOAT or array.size < min_elements:
+            kept.append(init)
+            continue
+        assert np.abs(array).max() < 65000, f"{init.name} does not fit in float16"
+        stored = numpy_helper.from_array(array.astype(np.float16), init.name + "__fp16")
+        kept.append(stored)
+        casts.append(helper.make_node("Cast", [stored.name], [init.name], to=TensorProto.FLOAT,
+                                      name=init.name + "__to_fp32"))
+    del graph.initializer[:]
+    graph.initializer.extend(kept)
+    nodes = list(graph.node)
+    del graph.node[:]
+    graph.node.extend(casts + nodes)  # the Casts come first, so the graph stays sorted
+    return model
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
@@ -77,11 +107,12 @@ def main() -> None:
         fast, torch.rand(1, 3, SIZE, SIZE), str(onnx_path), opset_version=17,
         input_names=["image"], output_names=["embedding"], dynamo=False)
     import onnx
-    from onnxconverter_common import float16
 
-    # float16 weights: half the size, identical decisions (eval.onnx_check); int8 breaks the model.
+    # Half the size with the same decisions (eval.onnx_check); int8 breaks the model.
     half = onnx_path.with_name("quest_image_encoder_fp16.onnx")
-    onnx.save(float16.convert_float_to_float16(onnx.load(onnx_path), keep_io_types=True), half)
+    packed = fp16_weight_storage(onnx.load(onnx_path))
+    onnx.checker.check_model(packed)
+    onnx.save(packed, half)
     print(f"wrote {half} ({half.stat().st_size / 1e6:.1f} MB)")
     if not args.keep_float32:
         onnx_path.unlink()

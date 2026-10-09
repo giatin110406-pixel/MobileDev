@@ -132,8 +132,8 @@ const content = [
 
   h2('8.3 Dành cho người phát triển: thêm hoặc sửa quest'),
   p('Model kiểm tra ảnh quest dùng bộ mô tả đã được tính sẵn cho từng quest (assets/quest_model/quest_labels.json và quest_labels.bin). Khi bạn thêm quest mới, đổi positives hoặc negatives trong lib/features/quest/quest_catalog.dart, phải tạo lại hai file này, nếu không test quest_on_device_test sẽ báo lỗi và quest mới sẽ báo "chưa có trong bộ kiểm ảnh". Việc này cần chạy trong thư mục server (đã cài môi trường ở Bước 8.2):'),
-  step('Cài thêm 2 gói chỉ dùng cho bước xuất model (cài vào thư mục riêng, không đụng môi trường server):', 'num3'),
-  code(['.\\.venv\\Scripts\\pip install --target .eval_tools --no-deps onnx==1.17.0 onnxconverter-common==1.14.0']),
+  step('Cài thêm gói onnx chỉ dùng cho bước xuất model (cài vào thư mục riêng, không đụng môi trường server):', 'num3'),
+  code(['.\\.venv\\Scripts\\pip install --target .eval_tools --no-deps onnx==1.17.0']),
   gap(),
   step('Xuất lại model và bộ mô tả vào assets (lần đầu tự tải model MobileCLIP2-S0, vài trăm MB):', 'num3'),
   code(['$env:PYTHONPATH = ".eval_tools"', '.\\.venv\\Scripts\\python -m eval.export_quest_model --out ..\\assets\\quest_model']),
@@ -157,6 +157,7 @@ const content = [
       ['Build Android lỗi Kotlin incremental', 'Đặt ORG_GRADLE_PROJECT_kotlin_incremental=false (Bước 7).'],
       ['Quest báo "Không kiểm tra được ảnh trên máy"', 'Model chưa nạp được (thiếu file trong assets/quest_model hoặc thiết bị quá yếu). Lượt thử không bị trừ. Chạy lại flutter pub get rồi build lại.'],
       ['Quest báo "KHÔNG ĐÚNG" dù chụp đúng', 'Chạy bản debug (flutter run, không phải APK release): thông báo sẽ có thêm "DEBUG: nhãn xx%" cho biết model thấy gì và điểm của đáp án đúng. Ghi lại quest, nhãn và điểm rồi gửi cho chủ dự án để chỉnh bộ nhận diện. Bản release không hiện dòng này.'],
+      ['Bản debug báo "ORT_NOT_IMPLEMENTED ... Gelu ... float16"', 'Model trong assets/quest_model được xuất với phép tính fp16, điện thoại không chạy được. Xuất lại bằng script hiện tại (Bước 8.3): nó chỉ lưu trọng số dạng fp16, còn phép tính vẫn fp32.'],
       ['Quest báo "chưa có trong bộ kiểm ảnh"', 'Catalog quest mới hơn bộ mô tả đã xuất. Xuất lại theo Bước 8.3.'],
       ['Bản release chạy nhưng quest luôn lỗi, bản debug thì bình thường', 'Thiếu quy tắc giữ lớp ONNX Runtime. File android/app/proguard-rules.pro phải có dòng -keep class ai.onnxruntime.** { *; } (đã có sẵn trong repo).'],
       ['Quest Van Gogh không tạo được ảnh tranh', 'Server laptop chưa chạy hoặc chưa nhập đúng địa chỉ/token (Bước 8.2). Việc kiểm ảnh quest vẫn chạy được mà không cần server.'],

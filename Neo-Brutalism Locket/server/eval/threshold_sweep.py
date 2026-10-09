@@ -1,6 +1,6 @@
 """How the quest check's rules trade missed good photos against accepted wrong ones.
 
-Uses the phone model (float16 ONNX from eval.export_quest_model) on the eval photos of
+Uses the phone model (the shipped ONNX from eval.export_quest_model) on the eval photos of
 eval.quest_verify_eval and re-scores them under different rules: the MATCH_SCORE threshold and
 which of the quest's competing labels are kept. Embeddings are cached, so a sweep takes seconds.
 
