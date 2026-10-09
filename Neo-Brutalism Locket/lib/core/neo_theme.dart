@@ -146,7 +146,11 @@ class _NeoButtonState extends State<NeoButton> {
       duration: const Duration(milliseconds: 90),
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      transform: Matrix4.translationValues(_pressed ? 4 : 0, _pressed ? 4 : 0, 0),
+      transform: Matrix4.translationValues(
+        _pressed ? 4 : 0,
+        _pressed ? 4 : 0,
+        0,
+      ),
       decoration: BoxDecoration(
         color: _fill,
         border: Border.all(color: NeoColors.ink, width: 2),
@@ -169,13 +173,17 @@ class _NeoButtonState extends State<NeoButton> {
             Icon(widget.icon, size: 17, color: NeoColors.ink),
             const SizedBox(width: 8),
           ],
-          Text(
-            widget.label,
-            style: const TextStyle(
-              color: NeoColors.ink,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 1,
+          Flexible(
+            child: Text(
+              widget.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
             ),
           ),
         ],
@@ -192,7 +200,9 @@ class _NeoButtonState extends State<NeoButton> {
         child: InkWell(
           onTap: widget.onPressed,
           borderRadius: BorderRadius.circular(8),
-          child: widget.expand ? SizedBox(width: double.infinity, child: content) : content,
+          child: widget.expand
+              ? SizedBox(width: double.infinity, child: content)
+              : content,
         ),
       ),
     );
@@ -244,7 +254,9 @@ class NeoSwitch extends StatelessWidget {
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 120),
-                  alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: value
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     width: 20,
                     height: 20,
@@ -316,4 +328,25 @@ class NeoIconButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The app's ink-black floating snack bar.
+void showNeoSnack(BuildContext context, String message) {
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: NeoColors.surface,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: NeoColors.ink,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
 }

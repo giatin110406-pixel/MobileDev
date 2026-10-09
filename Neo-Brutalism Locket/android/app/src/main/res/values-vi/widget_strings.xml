@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Ảnh của bạn bè</string>
+    <string name="widget_description">Ảnh mới nhất mà bạn bè gửi cho bạn.</string>
+    <string name="widget_empty">Mở Pocket Portrait để xem ảnh của bạn bè</string>
+    <string name="widget_now">vừa xong</string>
+</resources>

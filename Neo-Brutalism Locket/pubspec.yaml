@@ -37,6 +37,25 @@ dependencies:
   image: ^4.5.4
   path_provider: ^2.1.5
   shared_preferences: ^2.5.3
+  tflite_flutter: ^0.12.1
+  http: ^1.2.2
+  image_picker: ^1.1.2
+  audioplayers: ^6.7.1
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  supabase_flutter: ^2.18.0
+  share_plus: ^13.3.1
+  app_links: ^7.0.0
+  cached_network_image: ^3.4.1
+  gal: ^2.3.3
+  video_player: ^2.11.1
+  video_thumbnail: ^0.5.6
+  geolocator: ^14.1.1
+  geocoding: ^5.0.0
+  firebase_core: ^4.15.0
+  firebase_messaging: ^16.7.0
+  home_widget: ^0.10.0
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +73,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -61,7 +81,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    - figma_inspiration/Star 6.png
+    - assets/models/magenta_style_predict.tflite
+    - assets/models/magenta_style_transform.tflite
+    - assets/models/blaze_face_short_range.tflite
+    - assets/styles/van_gogh_starry_night.jpg
+    - assets/music/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

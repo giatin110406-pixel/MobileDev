@@ -1,0 +1,290 @@
+{
+  "@@locale": "en",
+  "appTitle": "Pocket Portrait",
+  "backendNotConfigured": "No server configured. The app is running on this device only.",
+  "retry": "TRY AGAIN",
+  "cancel": "CANCEL",
+  "ok": "OK",
+  "signInTitle": "SIGN IN",
+  "signUpTitle": "CREATE ACCOUNT",
+  "authTagline": "Shoot, turn it into art and send it to friends.",
+  "emailLabel": "EMAIL",
+  "passwordLabel": "PASSWORD",
+  "signInButton": "SIGN IN",
+  "signUpButton": "SIGN UP",
+  "switchToSignUp": "No account yet? Sign up",
+  "switchToSignIn": "Have an account? Sign in",
+  "forgotPassword": "Forgot password?",
+  "resetSent": "Password reset email sent. Check your inbox.",
+  "resetNeedsEmail": "Enter your email above first.",
+  "confirmEmailSent": "Almost done! Tap the link in the email to confirm, then sign in.",
+  "errInvalidCredentials": "Wrong email or password.",
+  "errEmailTaken": "That email already has an account. Sign in instead.",
+  "errWeakPassword": "That password is too weak. Use at least 8 characters.",
+  "errInvalidEmail": "That email does not look right.",
+  "errNetwork": "Could not connect. Check your network and try again.",
+  "errUnknown": "Something went wrong. Please try again.",
+  "errPasswordShort": "Password needs at least 8 characters.",
+  "onboardingTitle": "WELCOME!",
+  "onboardingSubtitle": "Pick a name so friends can find you.",
+  "displayNameLabel": "DISPLAY NAME",
+  "usernameLabel": "USERNAME",
+  "usernameHelp": "3-20 characters: lower-case letters, digits, dot or underscore.",
+  "usernameTaken": "That username is taken.",
+  "usernameAvailable": "Available!",
+  "usernameChecking": "Checking...",
+  "usernameTooShort": "At least 3 characters.",
+  "usernameTooLong": "At most 20 characters.",
+  "usernameBadCharacters": "Use lower-case letters, digits, dot and underscore only.",
+  "displayNameRequired": "Enter a display name.",
+  "avatarOptional": "PROFILE PHOTO (OPTIONAL)",
+  "avatarPick": "CHOOSE PHOTO",
+  "continueButton": "CONTINUE",
+  "signOut": "SIGN OUT",
+  "signOutConfirmTitle": "SIGN OUT?",
+  "signOutConfirmBody": "You can sign back in any time.",
+  "loadingAccount": "LOADING ACCOUNT...",
+  "accountLoadFailed": "Could not load your account.",
+  "avatarUploadFailed": "Could not upload your profile photo to the server yet.",
+  "friendsOnline": "ONLINE",
+  "friendsAdd": "ADD FRIEND",
+  "friendsRequests": "REQUESTS",
+  "friendsIncoming": "WANT TO BE FRIENDS",
+  "friendsOutgoing": "SENT",
+  "friendsAccept": "ACCEPT",
+  "friendsDecline": "DECLINE",
+  "friendsCancelRequest": "CANCEL",
+  "friendsEmptyTitle": "NO FRIENDS\nYET",
+  "friendsEmptyBody": "FIND FRIENDS BY USERNAME OR SEND AN INVITE LINK.",
+  "friendsRefreshFailed": "Could not refresh your friends.",
+  "addFriendTitle": "ADD FRIEND",
+  "addFriendHint": "Type your friend's username",
+  "addFriendNoResults": "Nobody found.",
+  "addFriendSend": "ADD",
+  "addFriendShare": "SHARE MY INVITE",
+  "inviteMessage": "Add me on Pocket Portrait! @{username}\n{link}",
+  "@inviteMessage": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "requestSentTo": "Request sent to {name}.",
+  "@requestSentTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nowFriendsWith": "You and {name} are friends now!",
+  "@nowFriendsWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteLinkTitle": "Add @{username} as a friend?",
+  "@inviteLinkTitle": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "friendNotFound": "We could not find that person.",
+  "friendSelf": "That is you.",
+  "friendAlready": "You are already friends.",
+  "friendAlreadySent": "You already sent a request.",
+  "friendNotAccepting": "This person is not accepting new requests.",
+  "friendTooManyPending": "Too many requests waiting. Cancel a few first.",
+  "friendLimit": "You reached the limit of 20 friends.",
+  "friendTheirLimit": "This person reached their friend limit.",
+  "friendsGenericError": "Something went wrong. Please try again.",
+  "removeFriendTitle": "REMOVE FRIEND?",
+  "removeFriendBody": "Remove {name} from your friends? You can send a request again later.",
+  "@removeFriendBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeFriendConfirm": "REMOVE",
+  "composerTitle": "POST",
+  "composerCaptionHint": "Add a caption...",
+  "composerAllFriends": "ALL FRIENDS",
+  "composerSend": "SEND",
+  "composerNoFriends": "Add friends first to send them photos.",
+  "composerPickAtLeastOne": "Pick at least one friend.",
+  "composerSentTo": "{count, plural, =1{Sent to 1 friend.} other{Sent to {count} friends.}}",
+  "@composerSentTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "composerQueued": "You are offline. The photo will send when you reconnect.",
+  "composerSending": "Sending...",
+  "feedYou": "You",
+  "sendPrintButton": "SEND",
+  "printDiscard": "DISCARD",
+  "printPost": "POST",
+  "composerPostAll": "POST TO ALL FRIENDS",
+  "composerSendToSome": "{count, plural, =1{SEND TO 1 FRIEND} other{SEND TO {count} FRIENDS}}",
+  "@composerSendToSome": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "postSaved": "Saved to your photo library.",
+  "postSaveFailed": "Could not save the photo.",
+  "postShareFailed": "Could not share the photo.",
+  "postMenuSave": "SAVE TO DEVICE",
+  "postMenuShare": "SHARE",
+  "postMenuDelete": "DELETE POST",
+  "postDeleteTitle": "DELETE THIS POST?",
+  "postDeleteBody": "It disappears for all your friends. This cannot be undone.",
+  "postDeleted": "Post deleted.",
+  "reactionSent": "Sent {emoji}",
+  "@reactionSent": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "replySent": "Message sent.",
+  "chatSendFailed": "Could not send the message.",
+  "chatNotFriends": "You are not friends any more.",
+  "chatTooLong": "That message is too long (500 characters at most).",
+  "historyTab": "HISTORY",
+  "historyTitle": "History",
+  "historyAll": "ALL",
+  "historyMine": "MINE",
+  "historyPosts": "POSTS",
+  "historyOnDevice": "ON DEVICE",
+  "historyEmpty": "Nothing here yet. Send a photo to a friend, or wait for one!",
+  "historyLoadFailed": "Could not load your history. Pull down to try again.",
+  "overlayTime": "TIME",
+  "overlayPlace": "PLACE",
+  "overlayFindingPlace": "FINDING PLACE...",
+  "placeServicesOff": "Location is off. Turn it on in the phone settings.",
+  "placeDenied": "The app is not allowed to use your location.",
+  "placeFailed": "Could not tell where you are.",
+  "timerOff": "Timer off",
+  "timerSeconds": "{seconds}-second timer",
+  "@timerSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "holdForVideo": "Hold to record a video",
+  "videoTooShort": "Too short. Hold the button longer.",
+  "videoFailed": "Could not record the video.",
+  "errSamePassword": "Pick a password different from the current one.",
+  "resetPasswordTitle": "NEW PASSWORD",
+  "resetPasswordSubtitle": "Choose a new password for your account.",
+  "newPasswordLabel": "NEW PASSWORD",
+  "confirmPasswordLabel": "REPEAT PASSWORD",
+  "passwordsDiffer": "The two passwords do not match.",
+  "savePassword": "SAVE PASSWORD",
+  "passwordChanged": "Password changed.",
+  "settingsTitle": "Settings",
+  "settingsAccount": "ACCOUNT",
+  "settingsPrivacy": "PRIVACY",
+  "settingsLanguage": "LANGUAGE",
+  "settingsAbout": "ABOUT",
+  "settingsEditProfile": "Edit name and username",
+  "settingsChangePassword": "Change password",
+  "settingsEmail": "Email: {email}",
+  "@settingsEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAllowRequests": "Allow friend requests",
+  "settingsAllowRequestsHint": "Turn off and nobody can send you new requests.",
+  "settingsBlocked": "Blocked people",
+  "settingsLanguageSystem": "Same as the phone",
+  "settingsLanguageVi": "Tiếng Việt",
+  "settingsLanguageEn": "English",
+  "settingsLaptop": "Laptop connection (Van Gogh art)",
+  "settingsPrivacyPolicy": "Privacy policy",
+  "settingsTerms": "Terms of use",
+  "settingsDeleteAccount": "DELETE ACCOUNT",
+  "editProfileTitle": "EDIT PROFILE",
+  "saveButton": "SAVE",
+  "deleteAccountTitle": "DELETE ACCOUNT?",
+  "deleteAccountBody": "All your photos, messages, friends, Sunbit and purchases are deleted for good. This cannot be undone.",
+  "deleteAccountType": "Type \"{username}\" to confirm",
+  "@deleteAccountType": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountConfirm": "DELETE FOR GOOD",
+  "deleteAccountFailed": "Could not delete the account. Check your connection and try again.",
+  "blockedTitle": "BLOCKED",
+  "blockedEmpty": "You have not blocked anyone.",
+  "unblock": "UNBLOCK",
+  "blockPerson": "BLOCK",
+  "blockTitle": "BLOCK {name}?",
+  "@blockTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "blockBody": "You will stop being friends, not see each other's photos and not be able to message. They are not told.",
+  "blockedDone": "Blocked {name}.",
+  "@blockedDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unblockedDone": "Unblocked {name}.",
+  "@unblockedDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportPerson": "REPORT THIS PERSON",
+  "reportPost": "REPORT THIS POST",
+  "reportTitle": "REPORT",
+  "reportWhy": "Reason",
+  "reportSpam": "Spam or ads",
+  "reportInappropriate": "Inappropriate content",
+  "reportHarassment": "Harassment or bullying",
+  "reportOther": "Something else",
+  "reportDetailsHint": "Add details (optional)",
+  "reportSend": "SEND REPORT",
+  "reportSent": "Report sent. Thank you.",
+  "reportTooMany": "You reported a lot today. Try again tomorrow.",
+  "safetyFailed": "Could not do that. Check your connection and try again.",
+  "legalDraftNote": "Draft: needs legal review before release.",
+  "settingsNotifications": "NOTIFICATIONS",
+  "notifyNewPost": "New photos from friends",
+  "notifyMessages": "Messages",
+  "notifyReactions": "Reactions to my photos",
+  "notifyFriendRequests": "Friend requests"
+}

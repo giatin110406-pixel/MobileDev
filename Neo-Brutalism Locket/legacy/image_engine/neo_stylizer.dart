@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
-import 'package:neo_brutalism_locket/features/image_engine/segmentation_mask.dart';
+import 'segmentation_mask.dart';
 
 const imageProcessingPalette = <List<int>>[
   [236, 230, 194],

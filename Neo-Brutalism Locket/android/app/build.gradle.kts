@@ -5,6 +5,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase is only used to receive push notifications. Without
+// android/app/google-services.json the app still builds and runs; pushes are
+// simply off (see supabase/PUSH_SETUP.md).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.neobrutalism.neo_brutalism_locket"
     compileSdk = flutter.compileSdkVersion
@@ -37,10 +44,6 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-}
-
-dependencies {
-    implementation("com.google.mlkit:segmentation-selfie:16.0.0-beta6")
 }
 
 flutter {

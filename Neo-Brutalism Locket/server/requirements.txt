@@ -1,0 +1,22 @@
+# Install PyTorch first (CUDA build):
+#   pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
+diffusers==0.40.0
+transformers==5.18.0
+accelerate==1.15.0
+safetensors==0.8.0
+huggingface_hub==1.33.0
+controlnet_aux==0.0.10
+mediapipe==0.10.21   # controlnet_aux needs mp.solutions (removed in mediapipe 1.x)
+spandrel==0.4.2
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+pyyaml==6.0.3
+pillow==12.3.0
+numpy==1.26.4
+scikit-image==0.26.0
+pytest==9.1.1
+httpx==0.28.1
+open_clip_torch==3.3.0   # daily-quest photo check (/v1/verify); install with --no-deps if torch pins conflict
+# Eval extras (install with --no-deps if torch pins conflict): facenet-pytorch
+opencv-contrib-python==4.11.0.86   # do NOT install opencv-python-headless 5.x (needs numpy>=2)

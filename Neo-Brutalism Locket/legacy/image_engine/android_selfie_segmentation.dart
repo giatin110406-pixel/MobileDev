@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:neo_brutalism_locket/features/image_engine/segmentation_mask.dart';
+import 'segmentation_mask.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AndroidSelfieSegmentation {

@@ -1,4 +1,35 @@
-# Image Engine Implementation Plan
+# Image Engine Plan: 8-bit and Van Gogh
+
+The camera flow, `NeoPhoto` archive, original/processed toggle, and neo-brutalism UI remain. The active engine contract is `StyleEngine`: it accepts the original `File` and a `StyleType`, then returns a newly written PNG `File`. Implementations are selected through `StyleEngineFactory`.
+
+## Active Constraints
+
+- Processing stays on-device. No upload, network retry, segmentation, face contours, OpenCV, or ML Kit.
+- Never modify the original. Every processing attempt writes a new PNG; changing style starts from the original and retains older processed files.
+- Pure-Dart image work runs in `compute()`. Platform inference must use the plugin-supported path, never an assumed `compute()` call.
+- Failures persist `failed` plus a reason, show the original, and allow retry.
+- If 8-bit processing takes longer than five seconds, retry once at a lower pixel width. A failed retry still leaves the original intact.
+
+## 8-bit Filter
+
+`Pixel8BitStyleEngine` runs the deterministic pipeline in an isolate: EXIF orientation, centered square crop, 128px default resolution (96-192 configurable), mild contrast/saturation lift, nearest-color mapping in CIELAB, ordered Bayer 4x4 dithering, and nearest-neighbor enlargement to a 4x PNG. The selectable palettes are PICO-8 (16 colors) and Game Boy (4 colors); quantized pixels always belong to the selected palette.
+
+The default resolution and contrast remain provisional until selfie fixtures are reviewed on real devices. The current test suite covers deterministic output, dithering, palette membership, and original-file preservation; it does not establish the under-one-second device target.
+
+## Van Gogh Filter
+
+`VanGoghStyleEngine` delegates through `VanGoghBackend`. The active `MockVanGoghBackend` waits one second and writes a simple yellow/blue tint. This is a UI-flow mock only; it is not neural style transfer and must not be described as a completed Van Gogh filter.
+
+When the trained model is available, the intended asset path is `assets/models/van_gogh.tflite`. Required tensor values are RGB `float32` in `[0, 1]`, with output matching the input shape and range. The spatial tensor shape (fixed or dynamic) is deliberately unresolved until the real exported model is inspected; the runtime must read its dimensions from model metadata rather than hardcode them. Do not add TFLite inference until this contract is confirmed against the artifact.
+
+## Delivery Status
+
+- Phase A: `StyleEngine`, `StyleType`, metadata persistence, factory selection, and original-safe camera/retry flow are active.
+- Phase B: PICO-8/Game Boy 8-bit pipeline and focused unit tests are active. Device performance and selfie-quality review remain outstanding.
+- Phase C: filter and palette controls, isolate-generated thumbnail previews, and reprocessing from the original are active.
+- Phase D: not started. No model asset or real TFLite inference is present.
+
+Historical implementation and superseded plan: `legacy/`.# Image Engine Implementation Plan
 
 ## Goal
 

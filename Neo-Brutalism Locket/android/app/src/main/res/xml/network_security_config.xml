@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The laptop stylize server speaks plain HTTP on the home LAN. Personal use only;
+     a public release needs HTTPS and a real server. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

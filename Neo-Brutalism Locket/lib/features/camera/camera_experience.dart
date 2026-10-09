@@ -1,179 +1,316 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
-import 'package:neo_brutalism_locket/features/image_engine/image_processing_backend.dart';
-import 'package:neo_brutalism_locket/features/image_engine/android_selfie_segmentation.dart';
-import 'package:neo_brutalism_locket/features/image_engine/background_preset.dart';
+import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
+import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
+import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
+import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
+import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
-import 'package:neo_brutalism_locket/features/social/social_repository.dart';
-import 'package:neo_brutalism_locket/features/social/social_views.dart';
+import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
+import 'package:neo_brutalism_locket/features/progress/player_store.dart';
+import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
+import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
+import 'package:neo_brutalism_locket/features/quest/quest_verifier.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
-class CameraExperienceScreen extends StatefulWidget {
-  const CameraExperienceScreen({super.key});
+/// The SHOOT tab: live camera, the print being styled, and quest mode. The
+/// app shell keeps it alive across tabs so the camera does not restart.
+class CameraTab extends StatefulWidget {
+  const CameraTab({
+    super.key,
+    required this.player,
+    required this.photos,
+    required this.repository,
+    required this.styleEngineFactory,
+    required this.questVerifier,
+    required this.onPhotoChanged,
+    required this.onOpenFeed,
+    required this.onOpenArchive,
+    required this.onOpenQuestSheet,
+    required this.onQuestPassed,
+    this.onSendPrint,
+    this.onPhotoRemoved,
+    this.onVideoRecorded,
+  });
+
+  final PlayerStore player;
+
+  /// Prints on this device, newest first (owned by the shell).
+  final List<NeoPhoto> photos;
+  final PhotoRepository repository;
+  final StyleEngineFactory styleEngineFactory;
+  final QuestVerifier questVerifier;
+
+  /// A print was created or changed (saved already).
+  final ValueChanged<NeoPhoto> onPhotoChanged;
+  final VoidCallback onOpenFeed;
+  final VoidCallback onOpenArchive;
+  final VoidCallback onOpenQuestSheet;
+
+  /// Today's quest photo passed the check: style, caption and post it.
+  final Future<void> Function(Quest quest, NeoPhoto photo, int day)
+  onQuestPassed;
+
+  /// Post this shot (to all friends or some). True when it was sent or
+  /// queued; the shot is then removed from this phone. Null without an
+  /// account: shots are kept on the phone instead.
+  final Future<bool> Function(NeoPhoto photo)? onSendPrint;
+
+  /// A shot was thrown away or posted and is no longer on this phone.
+  final ValueChanged<NeoPhoto>? onPhotoRemoved;
+
+  /// A clip was recorded (hold the shutter). Null without an account: there
+  /// is nowhere to keep videos on the phone, so recording is off.
+  final Future<void> Function(File video)? onVideoRecorded;
 
   @override
-  State<CameraExperienceScreen> createState() => _CameraExperienceScreenState();
+  State<CameraTab> createState() => CameraTabState();
 }
 
-class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
-  final PhotoRepository _repository = PhotoRepository();
-  final SocialRepository _socialRepository = SocialRepository();
-  final AndroidSelfieSegmentation _segmentation = AndroidSelfieSegmentation();
+class CameraTabState extends State<CameraTab> {
+  final ImagePicker _imagePicker = ImagePicker();
   CameraController? _camera;
   List<CameraDescription> _cameras = [];
-  List<NeoPhoto> _photos = [];
-  List<PocketFriend> _friends = [];
-  List<PocketMessage> _messages = [];
   NeoPhoto? _activePhoto;
-  PocketFriend? _activeFriend;
   FlashMode _flashMode = FlashMode.off;
-  ImageBackgroundPreset _backgroundPreset = imageBackgroundPresets.first;
+  StyleType _selectedStyleType = StyleType.pixel8bit;
   String? _cameraMessage;
   int _cameraIndex = 0;
-  int _tabIndex = 0;
   bool _cameraLoading = true;
   bool _processing = false;
   bool _showOriginal = false;
   bool _showPrint = false;
+  String _progressStage = '';
+  double _progress = 0;
+
+  // Zoom: the lens limits, the current level, and the level a pinch began at.
+  double _minZoom = 1;
+  double _maxZoom = 1;
+  double _zoom = 1;
+  double _zoomAtPinchStart = 1;
+
+  // Self-timer: seconds left while counting down.
+  ShotTimer _shotTimer = ShotTimer.off;
+  int? _countdown;
+  Timer? _countdownTimer;
+
+  // Video: recording while the shutter is held (up to [maxVideoLength]).
+  bool _recording = false;
+  DateTime? _recordStart;
+  Timer? _recordTimer;
+
+  /// The quest being shot, while the camera is in quest mode (camera only,
+  /// style locked, every miss costs a try).
+  Quest? _questModeQuest;
+  bool _checkingQuest = false;
+
+  bool get _questMode => _questModeQuest != null;
+
+  /// Shots thrown away while their style was still being applied.
+  final Set<String> _discarded = {};
+
+  /// The shot just taken, with an account: a draft to post or throw away
+  /// (an older print opened from the history is not a draft).
+  String? _draftId;
+
+  bool get _draftMode =>
+      widget.onSendPrint != null &&
+      _draftId != null &&
+      _activePhoto?.id == _draftId;
+
+  /// Taking, checking or styling a photo right now.
+  bool get busy => _processing;
 
   @override
   void initState() {
     super.initState();
-    _loadArchive();
-    _loadSocial();
     _initializeCamera();
   }
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
+    _recordTimer?.cancel();
     _camera?.dispose();
     super.dispose();
   }
 
-  Future<void> _loadArchive() async {
-    try {
-      final photos = await _repository.loadPhotos();
-      if (mounted) setState(() => _photos = photos);
-    } catch (_) {
-      _notify('ARCHIVE COULD NOT BE READ');
-    }
-  }
-
-  Future<void> _loadSocial() async {
-    try {
-      final snapshot = await _socialRepository.load();
-      if (!mounted) return;
-      setState(() {
-        _friends = snapshot.friends;
-        _messages = snapshot.messages;
-      });
-    } catch (_) {
-      _notify('FRIENDS COULD NOT BE LOADED');
-    }
-  }
-
-  Future<void> _addFriend() async {
-    final draft = await showAddFriendSheet(context);
-    if (draft == null) return;
-    try {
-      final snapshot = await _socialRepository.addFriend(
-        name: draft.name,
-        handle: draft.handle,
-      );
-      if (!mounted) return;
-      setState(() {
-        _friends = snapshot.friends;
-        _messages = snapshot.messages;
-      });
-      _notify('${draft.name.toUpperCase()} ADDED LOCALLY');
-    } on FormatException catch (error) {
-      _notify(error.message.toUpperCase());
-    }
-  }
-
-  Future<void> _openFriend(PocketFriend friend) async {
-    final snapshot = await _socialRepository.markThreadRead(friend.id);
-    if (!mounted) return;
+  /// Enters quest mode for [quest] (back on the live camera).
+  void startQuest(Quest quest) {
     setState(() {
-      _activeFriend = friend;
-      _friends = snapshot.friends;
-      _messages = snapshot.messages;
-      _tabIndex = 2;
+      _questModeQuest = quest;
+      _showPrint = false;
     });
   }
 
-  Future<void> _sendSocialMessage(String text, String? photoPath) async {
-    final friend = _activeFriend;
-    if (friend == null) return;
-    try {
-      final snapshot = await _socialRepository.sendMessage(
-        friendId: friend.id,
-        text: text,
-        photoPath: photoPath,
-      );
-      if (!mounted) return;
-      setState(() {
-        _friends = snapshot.friends;
-        _messages = snapshot.messages;
-      });
-    } on FormatException catch (error) {
-      _notify(error.message.toUpperCase());
+  /// Leaves quest mode unless a quest photo is being checked.
+  void leaveQuestMode() {
+    if (_questMode && !_checkingQuest) setState(() => _questModeQuest = null);
+  }
+
+  /// 00:00 in Vietnam: yesterday's quest mode ends.
+  void onNewDay() {
+    if (_questMode && !_checkingQuest) {
+      setState(() => _questModeQuest = null);
+      _notify('ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!');
     }
   }
 
-  Future<void> _sendLatestPrint() async {
-    final friend = _activeFriend;
-    if (friend == null) return;
-    if (_photos.isEmpty) {
-      _notify('TAKE A PRINT BEFORE SHARING');
+  /// Shows [photo] as the active print.
+  void openPhoto(NeoPhoto photo) {
+    setState(() {
+      if (photo.id != _draftId) _draftId = null;
+      _activePhoto = photo;
+      _selectedStyleType = photo.styleType ?? StyleType.pixel8bit;
+      _showPrint = true;
+      _showOriginal = photo.status != ProcessingStatus.done;
+    });
+  }
+
+  /// Back to the live camera. A draft stays on screen until it is posted
+  /// or thrown away.
+  void closePrint() {
+    if (_showPrint && !_draftMode) setState(() => _showPrint = false);
+  }
+
+  /// HỦY: the shot is deleted and the camera is back.
+  void _discardPrint(NeoPhoto photo) => _removeShot(photo);
+
+  /// ĐĂNG: pick who gets it; once sent (or queued) the draft goes away.
+  Future<void> _postPrint(NeoPhoto photo) async {
+    final send = widget.onSendPrint;
+    if (send == null) return;
+    final posted = await send(photo);
+    if (posted && mounted) _removeShot(photo);
+  }
+
+  void _removeShot(NeoPhoto photo) {
+    _discarded.add(photo.id);
+    if (_draftId == photo.id) _draftId = null;
+    setState(() {
+      _showPrint = false;
+      if (_activePhoto?.id == photo.id) _activePhoto = null;
+      _processing = false;
+    });
+    widget.onPhotoRemoved?.call(photo);
+    widget.repository.delete(photo).catchError((Object _) {});
+  }
+
+  void _notify(String message) => showNeoSnack(context, message);
+
+  @override
+  Widget build(BuildContext context) {
+    final showPrint = _showPrint && _activePhoto != null;
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 140),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: showPrint
+          ? _buildPrint(_activePhoto!, key: const ValueKey('print'))
+          : _buildCamera(key: const ValueKey('camera')),
+    );
+  }
+
+  Future<void> _showOutOfTries() => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: NeoColors.surface,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: NeoColors.ink, width: 2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      title: const Text(
+        'HẾT LƯỢT HÔM NAY',
+        style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w800),
+      ),
+      content: const Text(
+        'Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.',
+        style: TextStyle(color: NeoColors.ink),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+
+  /// Takes the photo for today's quest: checks it shows the subject, and on a
+  /// match moves on to styling and posting. A miss costs one of today's tries.
+  Future<void> _captureQuest() async {
+    final camera = _camera;
+    final quest = _questModeQuest;
+    if (camera == null ||
+        !camera.value.isInitialized ||
+        _processing ||
+        quest == null) {
       return;
     }
-    final photo = _photos.first;
-    await _sendSocialMessage('', photo.processedPath ?? photo.originalPath);
-  }
-
-  Future<void> _removeActiveFriend() async {
-    final friend = _activeFriend;
-    if (friend == null) return;
-    final remove = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: NeoColors.surface,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(color: NeoColors.ink, width: 2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: const Text(
-          'REMOVE FRIEND?',
-          style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w800),
-        ),
-        content: Text(
-          'Remove ${friend.name} and this local thread from this device?',
-          style: const TextStyle(color: NeoColors.ink),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('REMOVE'),
-          ),
-        ],
-      ),
-    );
-    if (remove != true) return;
-    final snapshot = await _socialRepository.removeFriend(friend.id);
-    if (!mounted) return;
+    if (widget.player.todayQuest?.id != quest.id) {
+      setState(() => _questModeQuest = null);
+      _notify('ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!');
+      return;
+    }
     setState(() {
-      _friends = snapshot.friends;
-      _messages = snapshot.messages;
-      _activeFriend = null;
-      _tabIndex = 1;
+      _processing = true;
+      _checkingQuest = true;
     });
+    try {
+      final day = widget.player.today;
+      final shot = await camera.takePicture();
+      final bytes = await compute(cropToSquareJpeg, await shot.readAsBytes());
+      final bool match;
+      try {
+        match = await widget.questVerifier.check(bytes, quest);
+      } on QuestCheckUnavailable catch (error) {
+        _notify(error.message.toUpperCase());
+        return;
+      }
+      if (!match) {
+        await widget.player.recordFailedAttempt();
+        final left = widget.player.attemptsLeft;
+        if (left == 0) {
+          if (mounted) setState(() => _questModeQuest = null);
+          await _showOutOfTries();
+        } else {
+          _notify('KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ');
+        }
+        return;
+      }
+      final photo = await widget.repository.saveOriginal(
+        bytes,
+        styleType: quest.style,
+      );
+      await widget.player.recordPassed(photo.id);
+      if (!mounted) return;
+      widget.onPhotoChanged(photo);
+      setState(() => _questModeQuest = null);
+      await widget.onQuestPassed(quest, photo, day);
+    } on PlayerException catch (error) {
+      if (mounted) setState(() => _questModeQuest = null);
+      _notify(error.message.toUpperCase());
+    } catch (_) {
+      _notify('PHOTO DID NOT SAVE. TRY AGAIN.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _processing = false;
+          _checkingQuest = false;
+        });
+      }
+    }
   }
 
   Future<void> _initializeCamera({int? index}) async {
@@ -200,10 +337,21 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
       _camera = nextCamera;
       await nextCamera.initialize();
       await nextCamera.setFlashMode(_flashMode);
+      double minZoom = 1;
+      double maxZoom = 1;
+      try {
+        minZoom = await nextCamera.getMinZoomLevel();
+        maxZoom = await nextCamera.getMaxZoomLevel();
+      } catch (_) {
+        // No zoom on this camera: the buttons stay hidden.
+      }
       if (!mounted) return;
       setState(() {
         _cameraIndex = nextIndex;
         _cameraLoading = false;
+        _minZoom = minZoom;
+        _maxZoom = maxZoom;
+        _zoom = clampZoom(1, minZoom, maxZoom);
       });
     } on CameraException catch (error) {
       if (!mounted) return;
@@ -222,24 +370,115 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
     }
   }
 
+  /// Shutter tap: starts the self-timer if one is set (a second tap cancels
+  /// it), otherwise shoots now.
   Future<void> _capture() async {
+    if (_recording) return;
+    if (_countdown != null) {
+      _cancelCountdown();
+      return;
+    }
+    if (_shotTimer != ShotTimer.off) {
+      _startCountdown();
+      return;
+    }
+    await _shoot();
+  }
+
+  void _startCountdown() {
+    setState(() => _countdown = _shotTimer.seconds);
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final left = (_countdown ?? 1) - 1;
+      if (left <= 0) {
+        timer.cancel();
+        if (!mounted) return;
+        setState(() => _countdown = null);
+        _shoot();
+      } else if (mounted) {
+        setState(() => _countdown = left);
+      }
+    });
+  }
+
+  void _cancelCountdown() {
+    _countdownTimer?.cancel();
+    if (mounted) setState(() => _countdown = null);
+  }
+
+  Future<void> _setZoom(double level) async {
+    final camera = _camera;
+    if (camera == null || !camera.value.isInitialized) return;
+    final next = clampZoom(level, _minZoom, _maxZoom);
+    if ((next - _zoom).abs() < 0.01) return;
+    setState(() => _zoom = next);
+    try {
+      await camera.setZoomLevel(next);
+    } catch (_) {
+      // Some lenses refuse a level; the next pinch tries again.
+    }
+  }
+
+  bool get _canRecord =>
+      widget.onVideoRecorded != null &&
+      !_questMode &&
+      !_processing &&
+      _countdown == null;
+
+  Future<void> _startVideo() async {
+    final camera = _camera;
+    if (camera == null || !camera.value.isInitialized || !_canRecord) return;
+    if (_recording) return;
+    final failed = AppLocalizations.of(context).videoFailed;
+    try {
+      await camera.startVideoRecording();
+    } catch (_) {
+      _notify(failed);
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _recording = true;
+      _recordStart = DateTime.now();
+    });
+    _recordTimer = Timer(maxVideoLength, _stopVideo);
+  }
+
+  Future<void> _stopVideo() async {
+    if (!_recording) return;
+    _recordTimer?.cancel();
+    final camera = _camera;
+    final started = _recordStart ?? DateTime.now();
+    final l10n = AppLocalizations.of(context);
+    setState(() => _recording = false);
+    if (camera == null) return;
+    try {
+      final file = await camera.stopVideoRecording();
+      final length = DateTime.now().difference(started);
+      if (length < const Duration(milliseconds: 600)) {
+        _notify(l10n.videoTooShort);
+        try {
+          await File(file.path).delete();
+        } catch (_) {}
+        return;
+      }
+      await widget.onVideoRecorded?.call(File(file.path));
+    } catch (_) {
+      _notify(l10n.videoFailed);
+    }
+  }
+
+  Future<void> _shoot() async {
+    if (_questMode) return _captureQuest();
     final camera = _camera;
     if (camera == null || !camera.value.isInitialized || _processing) return;
 
     setState(() => _processing = true);
     try {
       final shot = await camera.takePicture();
-      final bytes = await shot.readAsBytes();
-      final photo = await _repository.saveOriginal(bytes);
-      if (!mounted) return;
-      setState(() {
-        _activePhoto = photo;
-        _showOriginal = true;
-        _showPrint = true;
-        _tabIndex = 0;
-        _processing = false;
-      });
-      _processPhoto(photo, bytes);
+      // Save exactly what the square viewfinder showed: a centred 1:1 crop.
+      final bytes = await compute(cropToSquareJpeg, await shot.readAsBytes());
+      await _startPrint(bytes);
     } catch (_) {
       if (!mounted) return;
       setState(() => _processing = false);
@@ -247,63 +486,144 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
     }
   }
 
-  Future<void> _processPhoto(NeoPhoto photo, Uint8List bytes) async {
+  /// Lets the user pick any photo from the device instead of taking one. The
+  /// photo is centre-cropped to the same 1:1 square as a camera shot.
+  Future<void> _uploadFromGallery() async {
+    if (_processing || _questMode) return;
     try {
-      final segmentationInput = await compute(
-        prepareSegmentationImageInBackground,
-        bytes,
+      final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (picked == null || !mounted) return;
+      setState(() => _processing = true);
+      final bytes = await compute(
+        cropToSquareJpegCapped,
+        await picked.readAsBytes(),
       );
-      final personMask = await _segmentation.segment(segmentationInput);
-      final processedBytes = await compute(processPhotoWithMaskInBackground, {
-        'imageBytes': segmentationInput,
-        'maskWidth': personMask?.width,
-        'maskHeight': personMask?.height,
-        'maskConfidences': personMask?.confidences,
-        'backgroundRgb': _backgroundPreset.rgb,
-      });
-      final path = await _repository.saveProcessed(photo.id, processedBytes);
+      await _startPrint(bytes);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      _notify('COULD NOT OPEN THAT PHOTO. TRY ANOTHER.');
+    }
+  }
+
+  /// Saves square JPEG [bytes] as a new print with the selected style and
+  /// starts processing it (shared by camera capture and gallery upload).
+  Future<void> _startPrint(Uint8List bytes) async {
+    final photo = await widget.repository.saveOriginal(
+      bytes,
+      styleType: _selectedStyleType,
+    );
+    if (!mounted) return;
+    setState(() {
+      _activePhoto = photo;
+      _draftId = photo.id;
+      _showOriginal = true;
+      _showPrint = true;
+    });
+    widget.onPhotoChanged(photo);
+    _processPhoto(photo);
+  }
+
+  Future<void> _processPhoto(NeoPhoto photo) async {
+    try {
+      final styleType = photo.styleType ?? StyleType.pixel8bit;
+      final engine = widget.styleEngineFactory.create(styleType);
+      if (mounted) {
+        setState(() {
+          _progressStage = 'starting';
+          _progress = 0;
+        });
+      }
+      final output = await engine.process(
+        File(photo.originalPath),
+        styleType,
+        onProgress: (stage, fraction) {
+          if (!mounted) return;
+          setState(() {
+            _progressStage = stage;
+            _progress = fraction;
+          });
+        },
+      );
+      if (_discarded.contains(photo.id)) {
+        try {
+          await output.file.delete();
+        } catch (_) {}
+        return;
+      }
       final complete = photo.copyWith(
-        processedPath: path,
+        processedPath: output.file.path,
+        styleSource: output.source,
         status: ProcessingStatus.done,
+        clearFailureReason: true,
       );
-      await _repository.upsert(complete);
+      if (output.note != null) {
+        _notify('FALLBACK USED: ${output.note}');
+      }
+      await widget.repository.upsert(complete);
+      widget.onPhotoChanged(complete);
       if (!mounted) return;
       setState(() {
         _activePhoto = complete;
-        _photos = [complete, ..._photos.where((item) => item.id != photo.id)];
         _showOriginal = false;
+        _processing = false;
       });
-    } catch (_) {
-      final failed = photo.copyWith(status: ProcessingStatus.failed);
-      await _repository.upsert(failed);
+    } catch (error) {
+      if (_discarded.contains(photo.id)) return;
+      final failed = photo.copyWith(
+        status: ProcessingStatus.failed,
+        failureReason: error.toString(),
+      );
+      await widget.repository.upsert(failed);
+      widget.onPhotoChanged(failed);
       if (!mounted) return;
       setState(() {
         _activePhoto = failed;
-        _photos = [failed, ..._photos.where((item) => item.id != photo.id)];
+        _showOriginal = true;
+        _processing = false;
       });
       _notify('STYLE PASS FAILED. ORIGINAL IS SAFE.');
     }
   }
 
+  Future<void> _applyStyleToPhoto(NeoPhoto photo, StyleType styleType) async {
+    if (_processing) return;
+    if (photo.status == ProcessingStatus.done && photo.styleType == styleType) {
+      return;
+    }
+    final pending = photo.copyWith(
+      status: ProcessingStatus.pending,
+      styleType: styleType,
+      clearFailureReason: true,
+    );
+    setState(() {
+      _selectedStyleType = styleType;
+      _activePhoto = pending;
+      _showOriginal = true;
+      _processing = true;
+    });
+    await widget.repository.upsert(pending);
+    await _processPhoto(pending);
+  }
+
   Future<void> _retryProcessing() async {
     final photo = _activePhoto;
     if (photo == null || _processing) return;
-    setState(() => _processing = true);
-    try {
-      final bytes = await File(photo.originalPath).readAsBytes();
-      final pending = photo.copyWith(status: ProcessingStatus.pending);
-      await _repository.upsert(pending);
-      if (!mounted) return;
-      setState(() {
-        _activePhoto = pending;
-        _processing = false;
-      });
-      _processPhoto(pending, bytes);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _processing = false);
-      _notify('ORIGINAL FILE COULD NOT BE READ');
-    }
+    final pending = photo.copyWith(
+      status: ProcessingStatus.pending,
+      clearFailureReason: true,
+    );
+    setState(() {
+      _activePhoto = pending;
+      _processing = true;
+    });
+    await widget.repository.upsert(pending);
+    await _processPhoto(pending);
+  }
+
+  void _setCameraStyle(StyleType styleType) {
+    if (_processing) return;
+    setState(() => _selectedStyleType = styleType);
   }
 
   Future<void> _toggleFlash() async {
@@ -327,328 +647,346 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
     await _initializeCamera(index: (_cameraIndex + 1) % _cameras.length);
   }
 
-  void _selectTab(int index) {
-    setState(() {
-      _tabIndex = index;
-      _activeFriend = null;
-      if (index == 0) _showPrint = false;
-    });
-    if (index == 1 || index == 2) _loadSocial();
-    if (index == 3) _loadArchive();
-  }
-
-  void _openPhoto(NeoPhoto photo) {
-    setState(() {
-      _activePhoto = photo;
-      _showPrint = true;
-      _showOriginal = photo.status != ProcessingStatus.done;
-      _tabIndex = 0;
-    });
-  }
-
-  void _notify(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            message,
-            style: const TextStyle(
-              color: NeoColors.surface,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          backgroundColor: NeoColors.ink,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final showPrint = _tabIndex == 0 && _showPrint && _activePhoto != null;
-    final page = switch (_tabIndex) {
-      0 =>
-        showPrint
-            ? _buildPrint(_activePhoto!, key: const ValueKey('print'))
-            : _buildCamera(key: const ValueKey('camera')),
-      1 => FriendsScreen(
-        key: const ValueKey('friends'),
-        friends: _friends,
-        messages: _messages,
-        onAddFriend: _addFriend,
-        onOpenFriend: _openFriend,
-      ),
-      2 =>
-        _activeFriend == null
-            ? InboxScreen(
-                key: const ValueKey('inbox'),
-                friends: _friends,
-                messages: _messages,
-                onOpenFriend: _openFriend,
-              )
-            : ConversationScreen(
-                key: ValueKey('thread-${_activeFriend!.id}'),
-                friend: _activeFriend!,
-                messages: _messages
-                    .where((message) => message.friendId == _activeFriend!.id)
-                    .toList(),
-                onBack: () => setState(() => _activeFriend = null),
-                onSend: _sendSocialMessage,
-                onSendLatestPhoto: _sendLatestPrint,
-                onRemoveFriend: _removeActiveFriend,
-              ),
-      _ => _buildArchive(key: const ValueKey('archive')),
-    };
-    return Scaffold(
-      backgroundColor: NeoColors.paper,
-      body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 140),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          child: page,
-        ),
-      ),
-      bottomNavigationBar: _buildTabs(),
+  Widget _buildCamera({required Key key}) {
+    return GestureDetector(
+      key: key,
+      behavior: HitTestBehavior.translucent,
+      // Swipe up anywhere on the camera page to see the feed (like Locket).
+      onVerticalDragEnd: (details) {
+        if ((details.primaryVelocity ?? 0) < -400) widget.onOpenFeed();
+      },
+      child: _buildCameraBody(),
     );
   }
 
-  Widget _buildCamera({required Key key}) {
+  Widget _buildCameraBody() {
     return Padding(
-      key: key,
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildTopBar(showFlash: true),
-          const SizedBox(height: 18),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'CAMERA / 01',
-                      style: TextStyle(
-                        color: NeoColors.muted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Make a print.',
-                      style: TextStyle(
-                        color: NeoColors.ink,
-                        fontSize: 25,
-                        height: 1,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
+          PocketTopBar(
+            actions: [
+              NeoIconButton(
+                icon: Icons.dns_outlined,
+                tooltip: 'Home laptop settings',
+                fill: NeoColors.teal,
+                onPressed: () => showServerSettingsSheet(context),
               ),
-              const NeoLabel(
-                'ON DEVICE',
-                color: NeoColors.yellow,
-                icon: Icons.lock_outline,
+              NeoIconButton(
+                icon: _flashMode == FlashMode.off
+                    ? Icons.flash_off
+                    : Icons.flash_on,
+                tooltip: 'Change flash mode',
+                fill: NeoColors.yellow,
+                onPressed: _toggleFlash,
+              ),
+              NeoIconButton(
+                icon: switch (_shotTimer) {
+                  ShotTimer.off => Icons.timer_off_outlined,
+                  ShotTimer.three => Icons.timer_3,
+                  ShotTimer.ten => Icons.timer_10,
+                },
+                tooltip: _shotTimer == ShotTimer.off
+                    ? AppLocalizations.of(context).timerOff
+                    : AppLocalizations.of(
+                        context,
+                      ).timerSeconds(_shotTimer.seconds),
+                fill: _shotTimer == ShotTimer.off
+                    ? NeoColors.surface
+                    : NeoColors.orange,
+                onPressed: _countdown != null || _recording
+                    ? null
+                    : () => setState(() => _shotTimer = _shotTimer.next),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          if (Platform.isAndroid)
-            _buildBackgroundPicker()
-          else
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: NeoLabel(
-                'BG CUTOUT / ANDROID ONLY',
-                color: NeoColors.surface,
-              ),
+          const SizedBox(height: 14),
+          _questMode
+              ? _buildQuestModeHeader(_questModeQuest!)
+              : QuestStrip(
+                  store: widget.player,
+                  onTap: widget.onOpenQuestSheet,
+                ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: Center(
+              child: AspectRatio(aspectRatio: 1, child: _buildViewfinder()),
             ),
-          const SizedBox(height: 12),
-          Expanded(child: _buildViewfinder()),
-          const SizedBox(height: 20),
-          _buildCaptureControls(),
+          ),
           const SizedBox(height: 10),
-          const Center(
-            child: Text(
-              'ORIGINAL STAYS ON THIS DEVICE',
-              style: TextStyle(
-                color: NeoColors.muted,
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopBar({bool showFlash = false}) {
-    return Row(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          alignment: Alignment.center,
-          decoration: NeoTheme.panel(
-            color: NeoColors.pink,
-            borderWidth: 2,
-            radius: 8,
-          ),
-          child: const Icon(
-            Icons.photo_camera_outlined,
-            color: NeoColors.ink,
-            size: 22,
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'POCKET PORTRAIT',
-                style: TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 3),
-              Text(
-                'NEO BRUTAL CAMERA CLUB',
-                style: TextStyle(
-                  color: NeoColors.muted,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (showFlash)
-          NeoIconButton(
-            icon: _flashMode == FlashMode.off
-                ? Icons.flash_off
-                : Icons.flash_on,
-            tooltip: 'Change flash mode',
-            fill: NeoColors.yellow,
-            onPressed: _toggleFlash,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildViewfinder() {
-    final camera = _camera;
-    return Container(
-      decoration: NeoTheme.panel(color: NeoColors.surface, borderWidth: 2),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (camera != null && camera.value.isInitialized)
-            CameraPreview(camera)
-          else
-            _buildCameraFallback(),
-          Positioned(
-            top: 12,
-            left: 12,
-            child: NeoLabel(
-              _cameraLoading
-                  ? 'STARTING'
-                  : _cameraMessage == null
-                  ? 'LIVE'
-                  : 'NO CAMERA',
-              color: _cameraMessage == null ? NeoColors.teal : NeoColors.yellow,
-              icon: _cameraMessage == null
-                  ? Icons.circle
-                  : Icons.warning_amber_rounded,
-            ),
-          ),
-          Positioned(
-            right: 12,
-            bottom: 12,
-            child: NeoLabel(
-              '$_archiveCount PRINTS',
-              color: NeoColors.pink,
-              icon: Icons.photo_library_outlined,
-            ),
-          ),
-          Positioned(
-            right: 10,
-            top: 52,
-            child: ExcludeSemantics(
-              child: Image.asset(
-                'figma_inspiration/Star 6.png',
-                width: 42,
-                height: 42,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBackgroundPicker() {
-    return Row(
-      children: [
-        const Text(
-          'BG',
-          style: TextStyle(
-            color: NeoColors.ink,
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(width: 10),
-        for (final preset in imageBackgroundPresets) ...[
-          Tooltip(
-            message: '${preset.label} background',
+          _questMode
+              ? Center(
+                  child: NeoLabel(
+                    'STYLE: ${_questModeQuest!.style.label}',
+                    color: questStyleColor(_questModeQuest!.style),
+                    icon: Icons.lock_outline,
+                  ),
+                )
+              : _buildStylePill(),
+          const SizedBox(height: 16),
+          _buildCaptureControls(),
+          const SizedBox(height: 6),
+          Center(
             child: Semantics(
               button: true,
-              selected: preset.rgbHex == _backgroundPreset.rgbHex,
-              label: '${preset.label} background',
-              child: GestureDetector(
-                onTap: () => setState(() => _backgroundPreset = preset),
-                child: Container(
-                  width: 27,
-                  height: 27,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: Color(preset.colorValue),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: NeoColors.ink,
-                      width: preset.rgbHex == _backgroundPreset.rgbHex ? 3 : 1.5,
-                    ),
-                    boxShadow: preset.rgbHex == _backgroundPreset.rgbHex
-                        ? const [
-                            BoxShadow(
-                              color: NeoColors.ink,
-                              offset: Offset(2, 2),
-                              blurRadius: 0,
-                            ),
-                          ]
-                        : null,
+              label: 'Open feed',
+              child: InkWell(
+                onTap: widget.onOpenFeed,
+                borderRadius: BorderRadius.circular(12),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.keyboard_arrow_up,
+                        size: 18,
+                        color: NeoColors.ink,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'FEED',
+                        style: TextStyle(
+                          color: NeoColors.ink,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
         ],
-        const Spacer(),
-        NeoLabel(_backgroundPreset.label, color: Color(_backgroundPreset.colorValue)),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildQuestModeHeader(Quest quest) {
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+      decoration: NeoTheme.panel(color: questStyleColor(quest.style)),
+      child: Row(
+        children: [
+          Text(quest.emoji, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Chụp ${quest.subject}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AttemptDots(left: widget.player.attemptsLeft),
+          const SizedBox(width: 8),
+          NeoIconButton(
+            icon: Icons.close,
+            tooltip: 'Thoát chế độ nhiệm vụ',
+            fill: NeoColors.surface,
+            onPressed: _processing
+                ? null
+                : () => setState(() => _questModeQuest = null),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Corner radius of the square (1:1) camera and print frames.
+  static const double _squareRadius = 40;
+
+  /// The camera feed scaled to cover the square frame, centre-cropped.
+  Widget _squarePreview(CameraController camera) {
+    final orientation = camera.value.deviceOrientation;
+    final landscape =
+        orientation == DeviceOrientation.landscapeLeft ||
+        orientation == DeviceOrientation.landscapeRight;
+    final aspect = landscape
+        ? camera.value.aspectRatio
+        : 1 / camera.value.aspectRatio;
+    return FittedBox(
+      fit: BoxFit.cover,
+      clipBehavior: Clip.hardEdge,
+      child: SizedBox(
+        width: 1000 * aspect,
+        height: 1000,
+        child: CameraPreview(camera),
+      ),
+    );
+  }
+
+  Widget _buildViewfinder() {
+    final camera = _camera;
+    return Container(
+      decoration: NeoTheme.panel(
+        color: NeoColors.surface,
+        borderWidth: 2,
+        radius: _squareRadius,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (camera != null && camera.value.isInitialized)
+            GestureDetector(
+              onScaleStart: (_) => _zoomAtPinchStart = _zoom,
+              onScaleUpdate: (details) {
+                if (details.pointerCount < 2) return;
+                _setZoom(_zoomAtPinchStart * details.scale);
+              },
+              child: _squarePreview(camera),
+            )
+          else
+            _buildCameraFallback(),
+          // Only while something is going on: recording, or checking a quest
+          // photo. The viewfinder is otherwise just the picture.
+          if (_recording || _checkingQuest)
+            Positioned(
+              top: 12,
+              left: 12,
+              child: _recording
+                  ? const NeoLabel(
+                      'REC',
+                      color: NeoColors.pink,
+                      icon: Icons.circle,
+                    )
+                  : const NeoLabel(
+                      'ĐANG KIỂM TRA...',
+                      color: NeoColors.yellow,
+                      icon: Icons.search,
+                    ),
+            ),
+          if (camera != null &&
+              camera.value.isInitialized &&
+              zoomPresets(_minZoom, _maxZoom).length > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 8,
+              child: Center(child: _zoomButtons()),
+            ),
+          if (_countdown != null)
+            Center(
+              child: Container(
+                width: 96,
+                height: 96,
+                alignment: Alignment.center,
+                decoration: NeoTheme.panel(
+                  color: NeoColors.yellow,
+                  radius: 999,
+                ),
+                child: Text(
+                  '$_countdown',
+                  style: const TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 44,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _zoomButtons() {
+    final presets = zoomPresets(_minZoom, _maxZoom);
+    // The button nearest the current level lights up (pinching in between
+    // shows the exact level on it).
+    var nearest = presets.first;
+    for (final level in presets) {
+      if ((level - _zoom).abs() < (nearest - _zoom).abs()) nearest = level;
+    }
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: NeoColors.ink.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final level in presets)
+            Semantics(
+              button: true,
+              selected: level == nearest,
+              label: 'Zoom ${zoomLabel(level)}',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _setZoom(level),
+                // A roomy touch area around a small pill.
+                child: SizedBox(
+                  width: 36,
+                  height: 32,
+                  child: Center(
+                    child: Container(
+                      width: 30,
+                      height: 20,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: level == nearest
+                            ? NeoColors.yellow
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        level == nearest ? zoomLabel(_zoom) : zoomLabel(level),
+                        style: TextStyle(
+                          color: level == nearest
+                              ? NeoColors.ink
+                              : NeoColors.surface,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// The style control right under the photo: one pill, swiped left/right
+  /// between NO STYLE, 8-BIT and VAN GOGH. On the camera it sets the style for
+  /// the next shot; on a print it re-styles that photo.
+  Widget _buildStylePill({NeoPhoto? photo}) {
+    return Center(
+      child: StylePill(
+        value: photo?.styleType ?? _selectedStyleType,
+        enabled: !_processing,
+        onChanged: (styleType) => photo == null
+            ? _setCameraStyle(styleType)
+            : _applyStyleToPhoto(photo, styleType),
+      ),
     );
   }
 
@@ -656,58 +994,62 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
     return ColoredBox(
       color: NeoColors.blue,
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 82,
-                height: 82,
-                alignment: Alignment.center,
-                decoration: NeoTheme.panel(
-                  color: NeoColors.yellow,
-                  borderWidth: 2,
-                  radius: 999,
+        // Scales down when the square is short (small phones, quest strip).
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 82,
+                  height: 82,
+                  alignment: Alignment.center,
+                  decoration: NeoTheme.panel(
+                    color: NeoColors.yellow,
+                    borderWidth: 2,
+                    radius: 999,
+                  ),
+                  child: const Icon(
+                    Icons.photo_camera_outlined,
+                    color: NeoColors.ink,
+                    size: 36,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.photo_camera_outlined,
-                  color: NeoColors.ink,
-                  size: 36,
+                const SizedBox(height: 22),
+                Text(
+                  _cameraLoading
+                      ? 'FINDING CAMERA'
+                      : _cameraMessage ?? 'CAMERA READY',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 22),
-              Text(
-                _cameraLoading
-                    ? 'FINDING CAMERA'
-                    : _cameraMessage ?? 'CAMERA READY',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                const SizedBox(height: 8),
+                const Text(
+                  'ENABLE CAMERA ACCESS TO START SHOOTING',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'ENABLE CAMERA ACCESS TO START SHOOTING',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (!_cameraLoading) ...[
-                const SizedBox(height: 18),
-                NeoButton(
-                  label: 'TRY AGAIN',
-                  icon: Icons.refresh,
-                  variant: NeoButtonVariant.outline,
-                  onPressed: _initializeCamera,
-                ),
+                if (!_cameraLoading) ...[
+                  const SizedBox(height: 18),
+                  NeoButton(
+                    label: 'TRY AGAIN',
+                    icon: Icons.refresh,
+                    variant: NeoButtonVariant.outline,
+                    onPressed: _initializeCamera,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -718,12 +1060,39 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _recentThumb(),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _recentThumb(),
+                // Quests must be shot live: no gallery in quest mode.
+                if (!_questMode) ...[
+                  const SizedBox(width: 10),
+                  NeoIconButton(
+                    icon: Icons.add_photo_alternate_outlined,
+                    tooltip: 'Upload a photo from this device',
+                    onPressed: _processing ? null : _uploadFromGallery,
+                    fill: NeoColors.pink,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
         Semantics(
           button: true,
           label: 'Take photo',
+          hint: widget.onVideoRecorded == null
+              ? null
+              : AppLocalizations.of(context).holdForVideo,
           child: GestureDetector(
             onTap: _processing ? null : _capture,
+            onLongPressStart: _canRecord ? (_) => _startVideo() : null,
+            onLongPressEnd: _canRecord || _recording
+                ? (_) => _stopVideo()
+                : null,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 100),
               width: 78,
@@ -745,7 +1114,7 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
               ),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: NeoColors.yellow,
+                  color: _recording ? NeoColors.pink : NeoColors.yellow,
                   shape: BoxShape.circle,
                   border: Border.all(color: NeoColors.surface, width: 2),
                 ),
@@ -757,28 +1126,46 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
                           strokeWidth: 2,
                         ),
                       )
+                    : _recording
+                    ? TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: 1),
+                        duration: maxVideoLength,
+                        builder: (context, value, _) => Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: CircularProgressIndicator(
+                            value: value,
+                            color: NeoColors.ink,
+                            strokeWidth: 4,
+                          ),
+                        ),
+                      )
                     : null,
               ),
             ),
           ),
         ),
-        NeoIconButton(
-          icon: Icons.flip_camera_ios_outlined,
-          tooltip: 'Switch camera',
-          onPressed: _flipCamera,
-          fill: NeoColors.purple,
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: NeoIconButton(
+              icon: Icons.flip_camera_ios_outlined,
+              tooltip: 'Switch camera',
+              onPressed: _flipCamera,
+              fill: NeoColors.purple,
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _recentThumb() {
-    final photo = _photos.isEmpty ? null : _photos.first;
+    final photo = widget.photos.isEmpty ? null : widget.photos.first;
     return Semantics(
       button: true,
       label: 'Open archive',
       child: GestureDetector(
-        onTap: () => _selectTab(3),
+        onTap: widget.onOpenArchive,
         child: Container(
           width: 46,
           height: 46,
@@ -801,9 +1188,15 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
 
   Widget _buildPrint(NeoPhoto photo, {required Key key}) {
     final ready = photo.status == ProcessingStatus.done;
-    final imagePath = _showOriginal || !ready
-        ? photo.originalPath
-        : photo.processedPath;
+    final processed = photo.processedPath;
+    // The styled side exists once the style is done (and is not "no style").
+    final styledPath =
+        ready &&
+            processed != null &&
+            processed != photo.originalPath &&
+            photo.styleType != StyleType.none
+        ? processed
+        : null;
     return Padding(
       key: key,
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
@@ -813,18 +1206,22 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
           Row(
             children: [
               NeoIconButton(
-                icon: Icons.arrow_back,
-                tooltip: 'Back to camera',
-                onPressed: () => setState(() => _showPrint = false),
+                icon: _draftMode ? Icons.close : Icons.arrow_back,
+                tooltip: _draftMode
+                    ? AppLocalizations.of(context).printDiscard
+                    : 'Back to camera',
+                onPressed: _draftMode
+                    ? () => _discardPrint(photo)
+                    : () => setState(() => _showPrint = false),
                 fill: NeoColors.yellow,
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PRINT NO. 01',
+                      'PRINT NO. ${photo.id.substring(photo.id.length - 2)}',
                       style: TextStyle(
                         color: NeoColors.ink,
                         fontSize: 14,
@@ -833,7 +1230,8 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
                     ),
                     SizedBox(height: 3),
                     Text(
-                      'ORIGINAL + NEO EDIT',
+                      'ORIGINAL + ${photo.styleType?.label ?? 'LEGACY EDIT'}'
+                      '${photo.status == ProcessingStatus.done && photo.styleSource != null ? ' · ${photo.styleSource!.label}' : ''}',
                       style: TextStyle(
                         color: NeoColors.muted,
                         fontSize: 9,
@@ -848,54 +1246,69 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: Container(
-              decoration: NeoTheme.panel(
-                color: NeoColors.surface,
-                borderWidth: 2,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Container(
+                  decoration: NeoTheme.panel(
+                    color: NeoColors.surface,
+                    borderWidth: 2,
+                    radius: _squareRadius,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: BeforeAfterView(
+                    key: ValueKey('before-after-${photo.id}'),
+                    originalPath: photo.originalPath,
+                    styledPath: styledPath,
+                    styleLabel: photo.styleType?.label ?? 'EDIT',
+                    showStyled: !_showOriginal,
+                    onChanged: (styled) =>
+                        setState(() => _showOriginal = !styled),
+                  ),
+                ),
               ),
-              clipBehavior: Clip.antiAlias,
-              child: imagePath == null
-                  ? const Center(
-                      child: CircularProgressIndicator(color: NeoColors.teal),
-                    )
-                  : Image.file(
-                      File(imagePath),
-                      key: ValueKey(imagePath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(
-                            child: Text(
-                              'IMAGE NOT FOUND',
-                              style: TextStyle(
-                                color: NeoColors.ink,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                    ),
             ),
           ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: NeoTheme.panel(
-              color: NeoColors.surface,
-              borderWidth: 2,
+          const SizedBox(height: 10),
+          _buildStylePill(photo: photo),
+          if (_processing && photo.status == ProcessingStatus.pending) ...[
+            const SizedBox(height: 10),
+            Text(
+              'WORKING · ${_progressStage.toUpperCase()}',
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-            child: NeoSwitch(
-              value: !_showOriginal,
-              onChanged: ready
-                  ? (showNeo) => setState(() => _showOriginal = !showNeo)
-                  : null,
-              label: _showOriginal ? 'ORIGINAL' : 'NEO PRINT',
+            const SizedBox(height: 6),
+            LinearProgressIndicator(
+              value: _progress <= 0 ? null : _progress,
+              color: NeoColors.teal,
+              backgroundColor: NeoColors.surface,
+              minHeight: 6,
             ),
-          ),
+          ],
           const SizedBox(height: 16),
+          if (photo.status == ProcessingStatus.failed &&
+              photo.failureReason != null) ...[
+            Text(
+              photo.failureReason!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           Row(
             children: [
               Expanded(
                 child: Text(
-                  _formatDate(photo.createdAt),
+                  formatPrintDate(photo.createdAt),
                   style: const TextStyle(
                     color: NeoColors.muted,
                     fontSize: 11,
@@ -903,19 +1316,60 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
                   ),
                 ),
               ),
-              if (photo.status == ProcessingStatus.failed)
-                NeoButton(
-                  label: 'RETRY',
-                  icon: Icons.refresh,
-                  variant: NeoButtonVariant.primary,
-                  onPressed: _processing ? null : _retryProcessing,
-                ),
               const SizedBox(width: 10),
-              NeoButton(
-                label: 'NEW SHOT',
-                icon: Icons.photo_camera_outlined,
-                variant: NeoButtonVariant.accent,
-                onPressed: () => setState(() => _showPrint = false),
+              // Wraps onto a second line on narrow phones instead of overflowing.
+              Flexible(
+                flex: 3,
+                child: Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    if (photo.status == ProcessingStatus.failed)
+                      NeoButton(
+                        label: 'RETRY',
+                        icon: Icons.refresh,
+                        variant: NeoButtonVariant.primary,
+                        onPressed: _processing ? null : _retryProcessing,
+                      ),
+                    if (_draftMode) ...[
+                      NeoButton(
+                        label: AppLocalizations.of(context).printDiscard,
+                        icon: Icons.delete_outline,
+                        variant: NeoButtonVariant.accent,
+                        onPressed: () => _discardPrint(photo),
+                      ),
+                      NeoButton(
+                        label: AppLocalizations.of(context).printPost,
+                        icon: Icons.send_rounded,
+                        variant: NeoButtonVariant.primary,
+                        // While the style is applied there is nothing to send.
+                        onPressed:
+                            _processing ||
+                                photo.status == ProcessingStatus.pending
+                            ? null
+                            : () => _postPrint(photo),
+                      ),
+                    ] else ...[
+                      if (widget.onSendPrint != null &&
+                          photo.status != ProcessingStatus.pending)
+                        NeoButton(
+                          label: AppLocalizations.of(context).sendPrintButton,
+                          icon: Icons.send_rounded,
+                          variant: NeoButtonVariant.primary,
+                          onPressed: _processing
+                              ? null
+                              : () => widget.onSendPrint!(photo),
+                        ),
+                      NeoButton(
+                        label: 'NEW SHOT',
+                        icon: Icons.photo_camera_outlined,
+                        variant: NeoButtonVariant.accent,
+                        onPressed: () => setState(() => _showPrint = false),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -941,288 +1395,4 @@ class _CameraExperienceScreenState extends State<CameraExperienceScreen> {
       icon: Icons.warning_amber_rounded,
     ),
   };
-
-  Widget _buildArchive({required Key key}) {
-    return Padding(
-      key: key,
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildTopBar(),
-          const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'LOCAL COLLECTION',
-                      style: TextStyle(
-                        color: NeoColors.muted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Print archive',
-                      style: TextStyle(
-                        color: NeoColors.ink,
-                        fontSize: 25,
-                        height: 1,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              NeoLabel('${_photos.length} ITEMS', color: NeoColors.purple),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: _photos.isEmpty
-                ? _buildEmptyArchive()
-                : ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 8, right: 4),
-                    itemCount: _photos.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) =>
-                        _buildArchiveRow(_photos[index], index),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildArchiveRow(NeoPhoto photo, int index) {
-    final thumbnail = photo.processedPath ?? photo.originalPath;
-    return InkWell(
-      onTap: () => _openPhoto(photo),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: NeoTheme.panel(
-          color: index.isEven ? NeoColors.surface : NeoColors.yellow,
-          borderWidth: 2,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: NeoColors.teal,
-                border: Border.all(color: NeoColors.ink, width: 2),
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: const [
-                  BoxShadow(
-                    color: NeoColors.ink,
-                    offset: Offset(2, 2),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Image.file(
-                File(thumbnail),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.photo_outlined, color: NeoColors.ink),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'PRINT ${(_photos.length - index).toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      color: NeoColors.ink,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${_formatDate(photo.createdAt)}  /  ${_statusText(photo.status)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: NeoColors.muted,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Icon(Icons.photo_camera_outlined, color: NeoColors.ink, size: 23),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyArchive() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: NeoTheme.panel(color: NeoColors.blue, borderWidth: 2),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 68,
-            height: 68,
-            alignment: Alignment.center,
-            decoration: NeoTheme.panel(
-              color: NeoColors.pink,
-              borderWidth: 2,
-              radius: 999,
-            ),
-            child: const Icon(
-              Icons.collections_outlined,
-              color: NeoColors.ink,
-              size: 30,
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'NOTHING\nPRINTED YET',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: NeoColors.ink,
-              fontSize: 24,
-              height: 0.98,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'YOUR PHOTOS STAY IN THIS DEVICE-ONLY ARCHIVE.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: NeoColors.ink,
-              fontSize: 10,
-              height: 1.35,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 22),
-          NeoButton(
-            label: 'OPEN CAMERA',
-            icon: Icons.photo_camera_outlined,
-            variant: NeoButtonVariant.primary,
-            onPressed: () => _selectTab(0),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabs() {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 8, 22, 12),
-        child: Container(
-          height: 52,
-          decoration: BoxDecoration(
-            color: NeoColors.surface,
-            border: Border.all(color: NeoColors.ink, width: 2),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: const [
-              BoxShadow(
-                color: NeoColors.ink,
-                offset: Offset(4, 4),
-                blurRadius: 0,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              _tab(index: 0, icon: Icons.photo_camera_outlined, label: 'SHOOT'),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 1, icon: Icons.people_alt_outlined, label: 'FRIENDS'),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 2, icon: Icons.chat_bubble_outline, label: 'INBOX'),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 3, icon: Icons.grid_view_rounded, label: 'PRINTS'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tab({
-    required int index,
-    required IconData icon,
-    required String label,
-  }) {
-    final selected = _tabIndex == index;
-    return Expanded(
-      child: Semantics(
-        button: true,
-        selected: selected,
-        child: InkWell(
-          onTap: () => _selectTab(index),
-          borderRadius: BorderRadius.circular(6),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            height: double.infinity,
-            decoration: BoxDecoration(
-              color: selected ? NeoColors.teal : NeoColors.surface,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: NeoColors.ink, size: 18),
-                const SizedBox(width: 5),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: NeoColors.ink,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _statusText(ProcessingStatus status) => switch (status) {
-    ProcessingStatus.pending => 'INKING',
-    ProcessingStatus.done => 'NEO PRINT READY',
-    ProcessingStatus.failed => 'ORIGINAL SAVED',
-  };
-
-  int get _archiveCount {
-    final activePhoto = _activePhoto;
-    if (activePhoto == null ||
-        _photos.any((photo) => photo.id == activePhoto.id)) {
-      return _photos.length;
-    }
-    return _photos.length + 1;
-  }
-
-  String _formatDate(DateTime date) {
-    final local = date.toLocal();
-    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-    final minute = local.minute.toString().padLeft(2, '0');
-    final period = local.hour >= 12 ? 'PM' : 'AM';
-    return '${local.month.toString().padLeft(2, '0')}.${local.day.toString().padLeft(2, '0')}  $hour:$minute $period';
-  }
 }

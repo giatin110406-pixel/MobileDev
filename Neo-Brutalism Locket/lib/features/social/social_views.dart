@@ -2,7 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
+import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
+
+/// The frame and banner a friend shows. Friends are local-only for now, so
+/// only the sample friends wear anything.
+Loadout loadoutFor(PocketFriend friend) => friend.isSample
+    ? sampleFriendLoadouts[friend.id] ?? Loadout.empty
+    : Loadout(frameId: friend.frameId, bannerId: friend.bannerId);
 
 class FriendDraft {
   const FriendDraft({required this.name, required this.handle});
@@ -25,6 +33,13 @@ class FriendsScreen extends StatelessWidget {
     required this.messages,
     required this.onAddFriend,
     required this.onOpenFriend,
+    this.requests,
+    this.onRefresh,
+    this.online = false,
+    this.emptyTitle,
+    this.emptyBody,
+    this.addLabel,
+    this.onlineLabel,
     super.key,
   });
 
@@ -32,6 +47,19 @@ class FriendsScreen extends StatelessWidget {
   final List<PocketMessage> messages;
   final VoidCallback onAddFriend;
   final ValueChanged<PocketFriend> onOpenFriend;
+
+  /// Pending requests shown above the friends (online mode only).
+  final Widget? requests;
+
+  /// Pull-to-refresh (online mode only).
+  final Future<void> Function()? onRefresh;
+
+  /// Real accounts instead of local sample profiles (changes labels).
+  final bool online;
+  final String? emptyTitle;
+  final String? emptyBody;
+  final String? addLabel;
+  final String? onlineLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +106,7 @@ class FriendsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: NeoButton(
-                  label: 'ADD FRIEND',
+                  label: addLabel ?? 'ADD FRIEND',
                   icon: Icons.person_add_alt_1,
                   variant: NeoButtonVariant.primary,
                   expand: true,
@@ -86,36 +114,45 @@ class FriendsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const NeoLabel(
-                'LOCAL MODE',
+              NeoLabel(
+                online ? (onlineLabel ?? 'ONLINE') : 'LOCAL MODE',
                 color: NeoColors.teal,
-                icon: Icons.lock_outline,
+                icon: online ? Icons.cloud_done_outlined : Icons.lock_outline,
               ),
             ],
           ),
           const SizedBox(height: 18),
-          Expanded(
-            child: friends.isEmpty
-                ? _emptyFriends()
-                : ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 8, right: 4),
-                    itemCount: friends.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final friend = friends[index];
-                      return _FriendTile(
-                        friend: friend,
-                        latestMessage: _latestMessage(friend.id),
-                        unreadCount: _unreadCount(friend.id),
-                        onTap: () => onOpenFriend(friend),
-                      );
-                    },
-                  ),
-          ),
+          Expanded(child: _list()),
         ],
       ),
     );
+  }
+
+  Widget _list() {
+    final list = ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 8, right: 4),
+      children: [
+        ?requests,
+        if (friends.isEmpty)
+          _emptyFriends()
+        else
+          for (final friend in friends)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _FriendTile(
+                friend: friend,
+                latestMessage: _latestMessage(friend.id),
+                unreadCount: _unreadCount(friend.id),
+                onTap: () => onOpenFriend(friend),
+              ),
+            ),
+      ],
+    );
+    final refresh = onRefresh;
+    return refresh == null
+        ? list
+        : RefreshIndicator(onRefresh: refresh, child: list);
   }
 
   PocketMessage? _latestMessage(String friendId) {
@@ -140,10 +177,10 @@ class FriendsScreen extends StatelessWidget {
       children: [
         const Icon(Icons.group_add_outlined, size: 42, color: NeoColors.ink),
         const SizedBox(height: 16),
-        const Text(
-          'NO FRIENDS\nON THIS DEVICE',
+        Text(
+          emptyTitle ?? 'NO FRIENDS\nON THIS DEVICE',
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: NeoColors.ink,
             fontSize: 22,
             height: 1,
@@ -151,10 +188,10 @@ class FriendsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
-          'ADD A LOCAL PROFILE TO START A SAMPLE THREAD.',
+        Text(
+          emptyBody ?? 'ADD A LOCAL PROFILE TO START A SAMPLE THREAD.',
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: NeoColors.ink,
             fontSize: 10,
             height: 1.35,
@@ -163,7 +200,7 @@ class FriendsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         NeoButton(
-          label: 'ADD FRIEND',
+          label: addLabel ?? 'ADD FRIEND',
           icon: Icons.person_add_alt_1,
           variant: NeoButtonVariant.primary,
           onPressed: onAddFriend,
@@ -289,11 +326,23 @@ class ConversationScreen extends StatefulWidget {
     required this.onSend,
     required this.onSendLatestPhoto,
     required this.onRemoveFriend,
+    this.posts = const [],
+    this.onOpenProfile,
+    this.allowPhoto = true,
     super.key,
   });
 
+  /// Show the "send latest print" button (local threads only).
+  final bool allowPhoto;
+
   final PocketFriend friend;
+
+  /// Tapping the name or avatar opens the friend's profile.
+  final VoidCallback? onOpenProfile;
   final List<PocketMessage> messages;
+
+  /// Feed posts, so a reply can show the post it answers.
+  final List<FriendPost> posts;
   final VoidCallback onBack;
   final Future<void> Function(String text, String? photoPath) onSend;
   final VoidCallback onSendLatestPhoto;
@@ -358,32 +407,50 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 onPressed: widget.onBack,
               ),
               const SizedBox(width: 12),
-              _Avatar(friend: widget.friend, size: 42),
-              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.friend.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: NeoColors.ink,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
+                child: Semantics(
+                  button: widget.onOpenProfile != null,
+                  label: 'Open profile',
+                  child: InkWell(
+                    onTap: widget.onOpenProfile,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Row(
+                      children: [
+                        FriendAvatar(
+                          friend: widget.friend,
+                          size: 46,
+                          showFrame: true,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.friend.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: NeoColors.ink,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                widget.friend.handle,
+                                style: const TextStyle(
+                                  color: NeoColors.muted,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      widget.friend.handle,
-                      style: const TextStyle(
-                        color: NeoColors.muted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
               NeoIconButton(
@@ -424,10 +491,18 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
                   itemCount: widget.messages.length,
-                  itemBuilder: (context, index) => _MessageBubble(
-                    message: widget.messages[index],
-                    friend: widget.friend,
-                  ),
+                  itemBuilder: (context, index) {
+                    final message = widget.messages[index];
+                    return _MessageBubble(
+                      message: message,
+                      friend: widget.friend,
+                      post: message.isPostReply
+                          ? widget.posts
+                                .where((p) => p.id == message.replyToPostId)
+                                .firstOrNull
+                          : null,
+                    );
+                  },
                 ),
         ),
         _buildComposer(),
@@ -442,13 +517,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
         padding: const EdgeInsets.fromLTRB(16, 10, 20, 12),
         child: Row(
           children: [
-            NeoIconButton(
-              icon: Icons.add_photo_alternate_outlined,
-              tooltip: 'Send latest print',
-              fill: NeoColors.purple,
-              onPressed: widget.onSendLatestPhoto,
-            ),
-            const SizedBox(width: 10),
+            if (widget.allowPhoto) ...[
+              NeoIconButton(
+                icon: Icons.add_photo_alternate_outlined,
+                tooltip: 'Send latest print',
+                fill: NeoColors.purple,
+                onPressed: widget.onSendLatestPhoto,
+              ),
+              const SizedBox(width: 10),
+            ],
             Expanded(
               child: Container(
                 height: 46,
@@ -501,10 +578,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message, required this.friend});
+  const _MessageBubble({
+    required this.message,
+    required this.friend,
+    this.post,
+  });
 
   final PocketMessage message;
   final PocketFriend friend;
+  final FriendPost? post;
 
   @override
   Widget build(BuildContext context) {
@@ -535,7 +617,14 @@ class _MessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (message.photoPath != null &&
+                if (message.isPostReply) ...[
+                  _PostQuote(message: message, friend: friend, post: post),
+                  const SizedBox(height: 8),
+                ],
+                if (message.reaction != null)
+                  Text(message.reaction!, style: const TextStyle(fontSize: 34)),
+                if (!message.isPostReply &&
+                    message.photoPath != null &&
                     File(message.photoPath!).existsSync()) ...[
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
@@ -582,6 +671,124 @@ class _MessageBubble extends StatelessWidget {
   }
 }
 
+/// The post a reply answers: its picture (or card), whose post it was, and the
+/// caption. Falls back to the saved caption if the post is gone.
+class _PostQuote extends StatelessWidget {
+  const _PostQuote({required this.message, required this.friend, this.post});
+
+  final PocketMessage message;
+  final PocketFriend friend;
+  final FriendPost? post;
+
+  @override
+  Widget build(BuildContext context) {
+    final whose = message.isMine
+        ? "${friend.name.split(' ').first.toUpperCase()}'S POST"
+        : 'YOUR POST';
+    final caption = post?.caption ?? message.replyPreview ?? '';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          message.reaction != null ? 'REACTED TO $whose' : 'REPLIED TO $whose',
+          style: const TextStyle(
+            color: NeoColors.ink,
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 6),
+        PostThumbnail(
+          post: post,
+          imagePath: message.photoPath,
+          fallbackText: caption,
+          size: 150,
+        ),
+        if (caption.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          SizedBox(
+            width: 150,
+            child: Text(
+              caption,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Small square of a feed post: its photo, or the coloured emoji card that
+/// sample posts use. With neither available, a plain card with [fallbackText].
+class PostThumbnail extends StatelessWidget {
+  const PostThumbnail({
+    super.key,
+    this.post,
+    this.imagePath,
+    this.fallbackText = '',
+    this.size = 120,
+  });
+
+  final FriendPost? post;
+  final String? imagePath;
+  final String fallbackText;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final path = post?.imagePath ?? imagePath;
+    final Widget content;
+    if (path != null && File(path).existsSync()) {
+      content = Image.file(File(path), fit: BoxFit.cover);
+    } else if (post != null) {
+      content = ColoredBox(
+        color: Color(post!.color),
+        child: Center(
+          child: Text(post!.emoji, style: TextStyle(fontSize: size * 0.4)),
+        ),
+      );
+    } else {
+      content = ColoredBox(
+        color: NeoColors.paper,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              fallbackText.isEmpty ? 'POST' : fallbackText,
+              maxLines: 3,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Container(
+      width: size,
+      height: size,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        border: Border.all(color: NeoColors.ink, width: 2),
+        borderRadius: BorderRadius.circular(size * 0.18),
+      ),
+      child: content,
+    );
+  }
+}
+
 class _FriendTile extends StatelessWidget {
   const _FriendTile({
     required this.friend,
@@ -599,6 +806,10 @@ class _FriendTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final preview = latestMessage == null
         ? 'START A LOCAL THREAD'
+        : latestMessage!.reaction != null
+        ? '${latestMessage!.isMine ? 'YOU' : friend.name.split(' ').first} REACTED ${latestMessage!.reaction}'
+        : latestMessage!.isPostReply
+        ? '${latestMessage!.isMine ? 'YOU REPLIED: ' : 'REPLIED: '}${latestMessage!.text}'
         : latestMessage!.photoPath != null
         ? 'SENT A PRINT'
         : '${latestMessage!.isMine ? 'YOU: ' : ''}${latestMessage!.text}';
@@ -615,7 +826,7 @@ class _FriendTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              _Avatar(friend: friend, size: 42),
+              FriendAvatar(friend: friend, size: 42),
               const SizedBox(width: 13),
               Expanded(
                 child: Column(
@@ -675,14 +886,34 @@ class _FriendTile extends StatelessWidget {
   }
 }
 
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.friend, required this.size});
+class FriendAvatar extends StatelessWidget {
+  const FriendAvatar({
+    super.key,
+    required this.friend,
+    required this.size,
+    this.showFrame = false,
+  });
 
   final PocketFriend friend;
   final double size;
 
+  /// Draw the avatar frame the friend has equipped (profile, feed, thread).
+  final bool showFrame;
+
   @override
   Widget build(BuildContext context) {
+    final frameId = showFrame ? loadoutFor(friend).frameId : null;
+    if (frameId != null || friend.avatarPath != null) {
+      return FramedAvatar(
+        size: size,
+        frameId: frameId,
+        child: AvatarFace(
+          initials: friend.initials,
+          color: Color(friend.avatarColor),
+          remotePath: friend.avatarPath,
+        ),
+      );
+    }
     return Container(
       width: size,
       height: size,

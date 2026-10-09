@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Friends photo</string>
+    <string name="widget_description">The newest photo a friend sent you.</string>
+    <string name="widget_empty">Open Pocket Portrait to see your friends photos</string>
+    <string name="widget_now">now</string>
+</resources>

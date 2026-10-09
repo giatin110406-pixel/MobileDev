@@ -39,7 +39,25 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Local stylize server (laptop GPU)
+server/.venv/
+server/weights/
+server/.env
+server/eval/photos/
+server/eval/out/
+server/eval/captured/
+server/*.log
+__pycache__/
+.pytest_cache/
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Backend config passed with --dart-define-from-file (copy env/dev.json.example)
+env/*.json
+!env/*.example
+
+# Firebase config for push notifications (see supabase/PUSH_SETUP.md)
+android/app/google-services.json

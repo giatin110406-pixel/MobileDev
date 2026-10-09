@@ -1,0 +1,296 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Pocket Portrait",
+  "@appTitle": {
+    "description": "App name in the task switcher."
+  },
+  "backendNotConfigured": "Chưa cấu hình máy chủ. Ứng dụng đang chạy ở chế độ chỉ trên máy.",
+  "@backendNotConfigured": {
+    "description": "Shown when SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY were not passed at build time."
+  },
+  "retry": "THỬ LẠI",
+  "cancel": "HỦY",
+  "ok": "OK",
+  "signInTitle": "ĐĂNG NHẬP",
+  "signUpTitle": "TẠO TÀI KHOẢN",
+  "authTagline": "Chụp, biến thành tranh và gửi cho bạn bè.",
+  "emailLabel": "EMAIL",
+  "passwordLabel": "MẬT KHẨU",
+  "signInButton": "ĐĂNG NHẬP",
+  "signUpButton": "ĐĂNG KÝ",
+  "switchToSignUp": "Chưa có tài khoản? Đăng ký",
+  "switchToSignIn": "Đã có tài khoản? Đăng nhập",
+  "forgotPassword": "Quên mật khẩu?",
+  "resetSent": "Đã gửi email đặt lại mật khẩu. Hãy kiểm tra hộp thư.",
+  "resetNeedsEmail": "Nhập email của bạn ở trên trước.",
+  "confirmEmailSent": "Gần xong! Hãy bấm vào liên kết trong email để xác nhận, rồi đăng nhập.",
+  "errInvalidCredentials": "Sai email hoặc mật khẩu.",
+  "errEmailTaken": "Email này đã có tài khoản. Hãy đăng nhập.",
+  "errWeakPassword": "Mật khẩu quá yếu. Hãy dùng ít nhất 8 ký tự.",
+  "errInvalidEmail": "Email không hợp lệ.",
+  "errNetwork": "Không kết nối được. Kiểm tra mạng và thử lại.",
+  "errUnknown": "Có lỗi xảy ra. Thử lại nhé.",
+  "errPasswordShort": "Mật khẩu cần ít nhất 8 ký tự.",
+  "onboardingTitle": "CHÀO MỪNG!",
+  "onboardingSubtitle": "Chọn tên để bạn bè tìm thấy bạn.",
+  "displayNameLabel": "TÊN HIỂN THỊ",
+  "usernameLabel": "TÊN NGƯỜI DÙNG",
+  "usernameHelp": "3–20 ký tự: chữ thường, số, dấu chấm hoặc gạch dưới.",
+  "usernameTaken": "Tên này đã có người dùng.",
+  "usernameAvailable": "Dùng được!",
+  "usernameChecking": "Đang kiểm tra...",
+  "usernameTooShort": "Cần ít nhất 3 ký tự.",
+  "usernameTooLong": "Tối đa 20 ký tự.",
+  "usernameBadCharacters": "Chỉ dùng chữ thường, số, dấu chấm và gạch dưới.",
+  "displayNameRequired": "Hãy nhập tên hiển thị.",
+  "avatarOptional": "ẢNH ĐẠI DIỆN (TÙY CHỌN)",
+  "avatarPick": "CHỌN ẢNH",
+  "continueButton": "TIẾP TỤC",
+  "signOut": "ĐĂNG XUẤT",
+  "signOutConfirmTitle": "ĐĂNG XUẤT?",
+  "signOutConfirmBody": "Bạn có thể đăng nhập lại bất cứ lúc nào.",
+  "loadingAccount": "ĐANG TẢI TÀI KHOẢN...",
+  "accountLoadFailed": "Không tải được tài khoản.",
+  "avatarUploadFailed": "Chưa tải được ảnh đại diện lên máy chủ.",
+  "friendsOnline": "ONLINE",
+  "friendsAdd": "THÊM BẠN",
+  "friendsRequests": "LỜI MỜI",
+  "friendsIncoming": "ĐÃ MỜI BẠN",
+  "friendsOutgoing": "ĐÃ GỬI",
+  "friendsAccept": "CHẤP NHẬN",
+  "friendsDecline": "TỪ CHỐI",
+  "friendsCancelRequest": "HỦY",
+  "friendsEmptyTitle": "CHƯA CÓ\nBẠN BÈ",
+  "friendsEmptyBody": "TÌM BẠN THEO TÊN NGƯỜI DÙNG HOẶC GỬI LIÊN KẾT MỜI.",
+  "friendsRefreshFailed": "Không cập nhật được danh sách bạn bè.",
+  "addFriendTitle": "THÊM BẠN",
+  "addFriendHint": "Nhập tên người dùng của bạn bè",
+  "addFriendNoResults": "Không tìm thấy ai.",
+  "addFriendSend": "KẾT BẠN",
+  "addFriendShare": "CHIA SẺ LỜI MỜI CỦA TÔI",
+  "inviteMessage": "Kết bạn với mình trên Pocket Portrait nhé! @{username}\n{link}",
+  "@inviteMessage": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "requestSentTo": "Đã gửi lời mời cho {name}.",
+  "@requestSentTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nowFriendsWith": "Bạn và {name} đã là bạn bè!",
+  "@nowFriendsWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteLinkTitle": "Kết bạn với @{username}?",
+  "@inviteLinkTitle": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "friendNotFound": "Không tìm thấy người dùng này.",
+  "friendSelf": "Đó chính là bạn mà.",
+  "friendAlready": "Hai bạn đã là bạn bè.",
+  "friendAlreadySent": "Bạn đã gửi lời mời rồi.",
+  "friendNotAccepting": "Người này không nhận lời mời mới.",
+  "friendTooManyPending": "Bạn đang có quá nhiều lời mời chờ. Hãy hủy bớt.",
+  "friendLimit": "Bạn đã đạt giới hạn 20 bạn bè.",
+  "friendTheirLimit": "Người này đã đạt giới hạn bạn bè.",
+  "friendsGenericError": "Có lỗi xảy ra. Thử lại nhé.",
+  "removeFriendTitle": "XÓA BẠN?",
+  "removeFriendBody": "Xóa {name} khỏi danh sách bạn bè? Bạn có thể gửi lời mời lại sau.",
+  "@removeFriendBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeFriendConfirm": "XÓA",
+  "composerTitle": "ĐĂNG ẢNH",
+  "composerCaptionHint": "Thêm chú thích...",
+  "composerAllFriends": "TẤT CẢ BẠN BÈ",
+  "composerSend": "GỬI",
+  "composerNoFriends": "Hãy kết bạn trước để gửi ảnh cho họ.",
+  "composerPickAtLeastOne": "Chọn ít nhất một người nhận.",
+  "composerSentTo": "{count, plural, =1{Đã gửi cho 1 người bạn.} other{Đã gửi cho {count} người bạn.}}",
+  "@composerSentTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "composerQueued": "Chưa có mạng. Ảnh sẽ tự gửi khi kết nối lại.",
+  "composerSending": "Đang gửi...",
+  "feedYou": "Bạn",
+  "sendPrintButton": "GỬI",
+  "printDiscard": "HỦY",
+  "printPost": "ĐĂNG",
+  "composerPostAll": "ĐĂNG CHO TẤT CẢ",
+  "composerSendToSome": "{count, plural, =1{GỬI CHO 1 NGƯỜI} other{GỬI CHO {count} NGƯỜI}}",
+  "@composerSendToSome": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "postSaved": "Đã lưu vào thư viện ảnh.",
+  "postSaveFailed": "Không lưu được ảnh.",
+  "postShareFailed": "Không chia sẻ được ảnh.",
+  "postMenuSave": "LƯU VỀ MÁY",
+  "postMenuShare": "CHIA SẺ",
+  "postMenuDelete": "XÓA BÀI",
+  "postDeleteTitle": "XÓA BÀI NÀY?",
+  "postDeleteBody": "Bài sẽ biến mất với tất cả bạn bè. Không thể hoàn tác.",
+  "postDeleted": "Đã xóa bài.",
+  "reactionSent": "Đã gửi {emoji}",
+  "@reactionSent": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "replySent": "Đã gửi tin nhắn.",
+  "chatSendFailed": "Không gửi được tin nhắn.",
+  "chatNotFriends": "Hai bạn không còn là bạn bè.",
+  "chatTooLong": "Tin nhắn quá dài (tối đa 500 ký tự).",
+  "historyTab": "LỊCH SỬ",
+  "historyTitle": "Lịch sử",
+  "historyAll": "TẤT CẢ",
+  "historyMine": "CỦA TÔI",
+  "historyPosts": "BÀI ĐĂNG",
+  "historyOnDevice": "TRÊN MÁY",
+  "historyEmpty": "Chưa có bài nào. Gửi ảnh cho bạn bè hoặc chờ họ gửi cho bạn nhé!",
+  "historyLoadFailed": "Không tải được lịch sử. Kéo xuống để thử lại.",
+  "overlayTime": "GIỜ",
+  "overlayPlace": "ĐỊA ĐIỂM",
+  "overlayFindingPlace": "ĐANG TÌM VỊ TRÍ...",
+  "placeServicesOff": "Định vị đang tắt. Bật định vị trong cài đặt máy.",
+  "placeDenied": "Ứng dụng chưa được phép dùng vị trí.",
+  "placeFailed": "Không xác định được địa điểm.",
+  "timerOff": "Tắt hẹn giờ",
+  "timerSeconds": "Hẹn giờ {seconds} giây",
+  "@timerSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "holdForVideo": "Giữ để quay video",
+  "videoTooShort": "Video quá ngắn. Giữ nút lâu hơn.",
+  "videoFailed": "Không quay được video.",
+  "errSamePassword": "Hãy chọn mật khẩu khác mật khẩu hiện tại.",
+  "resetPasswordTitle": "MẬT KHẨU MỚI",
+  "resetPasswordSubtitle": "Chọn mật khẩu mới cho tài khoản của bạn.",
+  "newPasswordLabel": "MẬT KHẨU MỚI",
+  "confirmPasswordLabel": "NHẬP LẠI MẬT KHẨU",
+  "passwordsDiffer": "Hai mật khẩu chưa giống nhau.",
+  "savePassword": "LƯU MẬT KHẨU",
+  "passwordChanged": "Đã đổi mật khẩu.",
+  "settingsTitle": "Cài đặt",
+  "settingsAccount": "TÀI KHOẢN",
+  "settingsPrivacy": "QUYỀN RIÊNG TƯ",
+  "settingsLanguage": "NGÔN NGỮ",
+  "settingsAbout": "VỀ ỨNG DỤNG",
+  "settingsEditProfile": "Sửa tên và tên người dùng",
+  "settingsChangePassword": "Đổi mật khẩu",
+  "settingsEmail": "Email: {email}",
+  "@settingsEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAllowRequests": "Cho phép nhận lời mời kết bạn",
+  "settingsAllowRequestsHint": "Tắt đi thì không ai gửi được lời mời mới cho bạn.",
+  "settingsBlocked": "Danh sách đã chặn",
+  "settingsLanguageSystem": "Theo máy",
+  "settingsLanguageVi": "Tiếng Việt",
+  "settingsLanguageEn": "English",
+  "settingsLaptop": "Kết nối laptop (tranh Van Gogh)",
+  "settingsPrivacyPolicy": "Chính sách quyền riêng tư",
+  "settingsTerms": "Điều khoản sử dụng",
+  "settingsDeleteAccount": "XÓA TÀI KHOẢN",
+  "editProfileTitle": "SỬA HỒ SƠ",
+  "saveButton": "LƯU",
+  "deleteAccountTitle": "XÓA TÀI KHOẢN?",
+  "deleteAccountBody": "Toàn bộ ảnh, tin nhắn, bạn bè, Sunbit và đồ đã mua của bạn sẽ bị xóa vĩnh viễn. Không thể hoàn tác.",
+  "deleteAccountType": "Nhập \"{username}\" để xác nhận",
+  "@deleteAccountType": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountConfirm": "XÓA VĨNH VIỄN",
+  "deleteAccountFailed": "Không xóa được tài khoản. Kiểm tra mạng rồi thử lại.",
+  "blockedTitle": "ĐÃ CHẶN",
+  "blockedEmpty": "Bạn chưa chặn ai.",
+  "unblock": "BỎ CHẶN",
+  "blockPerson": "CHẶN",
+  "blockTitle": "CHẶN {name}?",
+  "@blockTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "blockBody": "Hai bạn sẽ không còn là bạn bè, không thấy ảnh của nhau và không nhắn được cho nhau. Họ không được báo.",
+  "blockedDone": "Đã chặn {name}.",
+  "@blockedDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unblockedDone": "Đã bỏ chặn {name}.",
+  "@unblockedDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportPerson": "BÁO CÁO NGƯỜI NÀY",
+  "reportPost": "BÁO CÁO BÀI NÀY",
+  "reportTitle": "BÁO CÁO",
+  "reportWhy": "Lý do",
+  "reportSpam": "Spam hoặc quảng cáo",
+  "reportInappropriate": "Nội dung không phù hợp",
+  "reportHarassment": "Quấy rối hoặc bắt nạt",
+  "reportOther": "Lý do khác",
+  "reportDetailsHint": "Thêm chi tiết (không bắt buộc)",
+  "reportSend": "GỬI BÁO CÁO",
+  "reportSent": "Đã gửi báo cáo. Cảm ơn bạn.",
+  "reportTooMany": "Bạn đã báo cáo quá nhiều hôm nay. Thử lại vào ngày mai.",
+  "safetyFailed": "Không thực hiện được. Kiểm tra mạng rồi thử lại.",
+  "legalDraftNote": "Bản nháp: cần được xem xét pháp lý trước khi phát hành.",
+  "settingsNotifications": "THÔNG BÁO",
+  "notifyNewPost": "Có ảnh mới từ bạn bè",
+  "notifyMessages": "Tin nhắn",
+  "notifyReactions": "Reaction vào ảnh của tôi",
+  "notifyFriendRequests": "Lời mời kết bạn"
+}

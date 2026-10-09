@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
-import 'package:neo_brutalism_locket/features/image_engine/background_preset.dart';
-import 'package:neo_brutalism_locket/features/image_engine/neo_stylizer.dart';
-import 'package:neo_brutalism_locket/features/image_engine/segmentation_mask.dart';
+import 'background_preset.dart';
+import 'neo_stylizer.dart';
+import 'segmentation_mask.dart';
 
 abstract interface class ImageProcessingBackend {
   Uint8List process(

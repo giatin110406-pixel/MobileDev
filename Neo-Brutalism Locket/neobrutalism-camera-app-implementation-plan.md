@@ -1,5 +1,7 @@
 # Neo-Brutalism Camera App — Implementation Plan (Flutter)
 
+> Engine notice: the image-processing sections in this historical plan are superseded by [Image Engine Plan: 8-bit and Van Gogh](image-engine-implementation-plan.md). Segmentation, face contours, OpenCV, and diffusion-server processing are not part of the active app direction.
+
 > Tài liệu này mô tả đầy đủ kiến trúc, tech stack, thuật toán xử lý ảnh, và roadmap để build một app kiểu Locket, nhưng toàn bộ UI/UX theo aesthetic neo-brutalism, kèm engine chuyển ảnh chụp thành neo-brutalism ngay trên máy (on-device, không gọi AI gen ảnh bên ngoài để đảm bảo privacy).
 
 ---
