@@ -23,6 +23,15 @@ abstract interface class QuestVerifier {
   Future<bool> check(Uint8List jpeg, Quest quest);
 }
 
+/// A verifier that can say what it saw in the last photo. Only debug builds
+/// show this (the player must never be told what was detected).
+abstract interface class QuestDiagnostics {
+  /// E.g. "a dog 31%": the most likely label and the share of the probability
+  /// the quest's accepted descriptions got. Null when the last check gave no
+  /// answer.
+  String? get lastDiagnosis;
+}
+
 /// Asks the laptop server's CLIP check (POST /v1/verify).
 class LaptopQuestVerifier implements QuestVerifier {
   const LaptopQuestVerifier({

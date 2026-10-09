@@ -206,6 +206,27 @@ void main() {
       expect(encoder.lastLength, 3 * bank.inputSize * bank.inputSize);
     });
 
+    test('tells what it saw, for debug builds', () async {
+      final encoder = FakeEncoder(vectorOf(dog['embedding'] as List<dynamic>));
+      final checker = verifier(encoder);
+      expect(checker.lastDiagnosis, isNull);
+      await checker.check(photo(dog), quest('px_dog'));
+      expect(checker.lastDiagnosis, matches(r'^.+ \d+%$'));
+      expect(checker.lastDiagnosis, startsWith(dog['top'] as String));
+    });
+
+    test('forgets what it saw when the next check gives no answer', () async {
+      final checker = verifier(
+        FakeEncoder(vectorOf(dog['embedding'] as List<dynamic>)),
+      );
+      await checker.check(photo(dog), quest('px_dog'));
+      await expectLater(
+        checker.check(Uint8List.fromList([1, 2, 3]), quest('px_dog')),
+        throwsA(isA<QuestCheckUnavailable>()),
+      );
+      expect(checker.lastDiagnosis, isNull);
+    });
+
     test('refuses a photo that shows something else', () async {
       final wrong = goldens.firstWhere((g) => g['match'] == false);
       final encoder = FakeEncoder(vectorOf(wrong['embedding'] as List<dynamic>));
