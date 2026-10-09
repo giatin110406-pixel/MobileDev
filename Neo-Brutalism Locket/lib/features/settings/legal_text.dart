@@ -27,7 +27,7 @@ const _privacyVi = [
   ),
   LegalSection(
     'Tranh Van Gogh và kiểm tra nhiệm vụ',
-    'Khi bạn chọn phong cách Van Gogh hoặc làm nhiệm vụ hằng ngày, ảnh được gửi tới máy tính của chính bạn (laptop đã kết nối) để xử lý trong bộ nhớ và không được lưu lại.',
+    'Khi bạn chọn phong cách Van Gogh, ảnh được gửi tới máy tính của chính bạn (laptop đã kết nối) để xử lý trong bộ nhớ và không được lưu lại. Việc kiểm tra nhiệm vụ hằng ngày chạy ngay trên điện thoại, ảnh không được gửi đi đâu cho việc này.',
   ),
   LegalSection(
     'Xóa dữ liệu',
@@ -52,7 +52,7 @@ const _privacyEn = [
   ),
   LegalSection(
     'Van Gogh art and quest checks',
-    'When you pick the Van Gogh style or do the daily quest, the photo is sent to your own computer (the laptop you connected) and processed in memory; it is not kept.',
+    'When you pick the Van Gogh style, the photo is sent to your own computer (the laptop you connected) and processed in memory; it is not kept. The daily quest check runs on your phone: the photo is not sent anywhere for it.',
   ),
   LegalSection(
     'Deleting your data',

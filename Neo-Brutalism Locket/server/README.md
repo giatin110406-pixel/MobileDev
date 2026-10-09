@@ -26,7 +26,9 @@ In the app: camera screen -> teal server icon -> enter address + token -> TEST -
 `GET /v1/jobs/{id}/result` -> PNG (repeatable) · `DELETE /v1/jobs/{id}` frees it. Max 15 MB, 4 queued jobs, jobs expire after 10 min.
 
 `POST /v1/verify` (multipart `image`, `positives` = JSON list such as `["a bunch of grapes","grapes"]`,
-optional `negatives`; header `X-Locket-Token`) -> `{match, score, top}`. Daily-quest photo check: zero-shot
+optional `negatives`; header `X-Locket-Token`) -> `{match, score, top}`. Daily-quest photo check (the app no longer
+calls it: the check runs on the phone, `lib/features/quest/on_device/`; this endpoint and its rules in `verify.py` stay
+as the reference the phone copy is tested against): zero-shot
 CLIP (open_clip ViT-B-32 LAION-2B, on the CPU, loaded in the background at start, ~0.2 s per photo).
 The photo matches when one of the positives beats a fixed list of everyday things (see `verify.py`).
 
@@ -38,3 +40,7 @@ DreamShaper 8 (CreativeML OpenRAIL-M), ControlNet v1.1 lineart/depth (CreativeML
 IP-Adapter SD1.5 (Apache-2.0), Depth-Anything-V2-Small (Apache-2.0), Real-ESRGAN x2plus (BSD-3),
 MediaPipe BlazeFace and Face Mesh (Apache-2.0), CrucibleAI/ControlNetMediaPipeFace (OpenRAIL, face pass; downloaded on first use, ~0.7 GB). Style references in `styles/van_gogh/` are public-domain paintings
 from Wikimedia Commons. Cleartext HTTP is for personal LAN use only.
+
+The phone's quest check ships MobileCLIP2-S0 (`timm/MobileCLIP2-S0-OpenCLIP`, Apple ML Research licence "apple-amlr":
+read https://github.com/apple/ml-mobileclip/blob/main/LICENSE_weights_data and confirm it allows your use before any
+public release; the earlier server check used OpenCLIP ViT-B-32 LAION-2B, which is MIT).

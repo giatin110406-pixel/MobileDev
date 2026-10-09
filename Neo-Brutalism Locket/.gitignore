@@ -41,6 +41,7 @@ app.*.map.json
 
 # Local stylize server (laptop GPU)
 server/.venv/
+server/.eval_tools/
 server/weights/
 server/.env
 server/eval/photos/
