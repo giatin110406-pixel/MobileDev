@@ -209,6 +209,16 @@ class CameraTabState extends State<CameraTab> {
 
   void _notify(String message) => showNeoSnack(context, message);
 
+  /// What the quest check saw or why it failed. Debug builds only: the player
+  /// is never told what was detected.
+  String _debugSuffix() {
+    if (!kDebugMode) return '';
+    final verifier = widget.questVerifier;
+    if (verifier is! QuestDiagnostics) return '';
+    final seen = (verifier as QuestDiagnostics).lastDiagnosis;
+    return seen == null ? '' : ' · DEBUG: $seen';
+  }
+
   @override
   Widget build(BuildContext context) {
     final showPrint = _showPrint && _activePhoto != null;
@@ -275,7 +285,7 @@ class CameraTabState extends State<CameraTab> {
       try {
         match = await widget.questVerifier.check(bytes, quest);
       } on QuestCheckUnavailable catch (error) {
-        _notify(error.message.toUpperCase());
+        _notify('${error.message.toUpperCase()}${_debugSuffix()}');
         return;
       }
       if (!match) {
@@ -285,13 +295,7 @@ class CameraTabState extends State<CameraTab> {
           if (mounted) setState(() => _questModeQuest = null);
           await _showOutOfTries();
         } else {
-          final seen = kDebugMode && widget.questVerifier is QuestDiagnostics
-              ? (widget.questVerifier as QuestDiagnostics).lastDiagnosis
-              : null;
-          _notify(
-            'KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ'
-            '${seen == null ? '' : ' · DEBUG: $seen'}',
-          );
+          _notify('KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ${_debugSuffix()}');
         }
         return;
       }

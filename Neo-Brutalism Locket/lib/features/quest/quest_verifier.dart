@@ -27,8 +27,8 @@ abstract interface class QuestVerifier {
 /// show this (the player must never be told what was detected).
 abstract interface class QuestDiagnostics {
   /// E.g. "a dog 31%": the most likely label and the share of the probability
-  /// the quest's accepted descriptions got. Null when the last check gave no
-  /// answer.
+  /// the quest's accepted descriptions got. When the check could not run, the
+  /// reason instead (so a broken model is visible). Null before any check.
   String? get lastDiagnosis;
 }
 
