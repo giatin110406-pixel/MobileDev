@@ -41,7 +41,10 @@ class CanvasData {
     palette: [
       for (final hex in json['palette'] as List<dynamic>) parseHexColor('$hex'),
     ],
-    pixels: base64Decode(json['pixels'] as String),
+    // Postgres wraps base64 every 76 characters; Dart refuses the line breaks.
+    pixels: base64Decode(
+      (json['pixels'] as String).replaceAll(RegExp(r'\s'), ''),
+    ),
     version: (json['version'] as num).toInt(),
     inkBalance: json['ink_balance'] as int? ?? 0,
     active: json['status'] == null || json['status'] == 'active',

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -126,6 +127,7 @@ Future<CanvasStore> ready(
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
 void main() {
+  parsingTests();
   group('loading', () {
     test('shows the canvas, the palette and my Ink', () async {
       final repo = FakeCanvas(ink: 7);
@@ -310,6 +312,37 @@ void main() {
       repo.paintedByOther(1, 1, 3);
       await settle();
       expect(store.colorIndexAt(1, 1), 3);
+    });
+  });
+}
+
+/// Postgres encode(..., 'base64') wraps lines every 76 characters, and Dart's
+/// base64Decode refuses line breaks. This broke loading the canvas on a phone.
+void parsingTests() {
+  group('CanvasData.fromJson', () {
+    test('reads base64 that Postgres wrapped over several lines', () {
+      final bytes = Uint8List.fromList([for (var i = 0; i < 1024; i++) i % 16]);
+      final plain = base64Encode(bytes);
+      final wrapped = [
+        for (var i = 0; i < plain.length; i += 76)
+          plain.substring(i, i + 76 > plain.length ? plain.length : i + 76),
+      ].join('\n');
+      expect(wrapped.contains('\n'), isTrue);
+      final data = CanvasData.fromJson({
+        'id': 'c1',
+        'group_id': 'g1',
+        'width': 32,
+        'height': 32,
+        'palette': ['#000000', '#FF0000'],
+        'pixels': wrapped,
+        'version': 3,
+        'ink_balance': 4,
+        'status': 'active',
+      });
+      expect(data.pixels, bytes);
+      expect(data.version, 3);
+      expect(data.inkBalance, 4);
+      expect(data.palette.first, 0xFF000000);
     });
   });
 }
