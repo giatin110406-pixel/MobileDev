@@ -163,6 +163,8 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
           _rewardRow('Hoàn thành nhiệm vụ', reward.base),
           if (reward.bonus > 0)
             _rewardRow('Thưởng streak ${reward.streak} ngày', reward.bonus),
+          if (reward.ink > 0)
+            _rewardRow('Mực để vẽ canvas nhóm', reward.ink, ink: true),
           const SizedBox(height: 14),
           StreakChip(streak: reward.streak),
           const SizedBox(height: 8),
@@ -178,12 +180,15 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
     ),
   );
 
-  Widget _rewardRow(String label, int amount) => Padding(
+  Widget _rewardRow(String label, int amount, {bool ink = false}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
       children: [
         Expanded(child: Text(label, style: _bodyStyle)),
-        const SunbitCoin(size: 18),
+        if (ink)
+          const Icon(Icons.water_drop, size: 18, color: NeoColors.blue)
+        else
+          const SunbitCoin(size: 18),
         const SizedBox(width: 6),
         Text(
           '+$amount',

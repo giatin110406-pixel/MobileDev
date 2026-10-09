@@ -17,6 +17,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 /// A player document like the server's `player_json`.
 Map<String, dynamic> doc({
   int balance = 0,
+  int ink = 0,
   int streak = 0,
   int? lastDay,
   int questDay = 20000,
@@ -29,6 +30,7 @@ Map<String, dynamic> doc({
 }) => {
   'seed': 12345,
   'balance': balance,
+  'ink_balance': ink,
   'streak': streak,
   'last_completed_day': lastDay,
   'quest_day': questDay,
@@ -63,6 +65,14 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('server document', () {
+    test('carries the Ink balance, separate from Sunbit', () {
+      final state = playerStateFromServer(doc(balance: 120, ink: 30));
+      expect(state.balance, 120);
+      expect(state.inkBalance, 30);
+      expect(PlayerState.fromJson(state.toJson()).inkBalance, 30);
+      expect(playerStateFromServer(doc()).inkBalance, 0);
+    });
+
     test('becomes the state the app shows', () {
       final state = playerStateFromServer(
         doc(
@@ -176,10 +186,11 @@ void main() {
 
     test('completing a quest returns what the server paid', () async {
       server.complete = {
-        'state': doc(balance: 75, streak: 7, lastDay: 20000),
+        'state': doc(balance: 75, ink: 10, streak: 7, lastDay: 20000),
         'streak': 7,
         'base': 25,
         'bonus': 50,
+        'ink': 10,
       };
       final reward = await repository.completeQuest(
         quest: quest,
@@ -193,6 +204,8 @@ void main() {
       expect(reward.total, 75);
       expect(reward.streak, 7);
       expect(reward.state.balance, 75);
+      expect(reward.ink, 10, reason: 'Ink is paid on top of Sunbit');
+      expect(reward.state.inkBalance, 10);
       expect(reward.post.caption, 'Hi');
       expect(reward.post.style, quest.style);
       expect(reward.post.questId, quest.id);

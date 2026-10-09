@@ -23,6 +23,7 @@ PlayerState playerStateFromServer(
 }) => PlayerState(
   seed: json['seed'] as int,
   balance: (json['balance'] as int? ?? 0).clamp(0, 1 << 31),
+  inkBalance: (json['ink_balance'] as int? ?? 0).clamp(0, 1 << 31),
   streak: json['streak'] as int? ?? 0,
   lastCompletedDay: json['last_completed_day'] as int?,
   questDay: json['quest_day'] as int?,
@@ -135,6 +136,7 @@ class ServerPlayerRepository implements PlayerGateway {
       streak: json['streak'] as int,
       base: json['base'] as int,
       bonus: json['bonus'] as int,
+      ink: json['ink'] as int? ?? 0,
     );
   }
 

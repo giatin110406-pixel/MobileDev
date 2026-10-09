@@ -62,6 +62,8 @@ link in the email will not open the app.
 
 `python supabase/e2e/e2e_check.py` signs up three throw-away accounts, drives every feature through the same calls the app makes, checks what must be refused too, and deletes the accounts. It uses only the publishable key. Needs "Confirm email" off.
 
+`python supabase/e2e/e2e_groups.py` does the same for groups, Ink and the shared canvas (four throw-away accounts: owner, two members who are not friends with each other, and an outsider). It leaves behind one dissolved group named "E2E Painters" per run, because nobody can delete a group from the app; remove those in the dashboard.
+
 ## Push notifications
 
 See [PUSH_SETUP.md](PUSH_SETUP.md).

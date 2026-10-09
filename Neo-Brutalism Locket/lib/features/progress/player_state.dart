@@ -124,6 +124,7 @@ class PlayerState {
   const PlayerState({
     required this.seed,
     this.balance = 0,
+    this.inkBalance = 0,
     this.ledger = const [],
     this.streak = 0,
     this.lastCompletedDay,
@@ -143,6 +144,10 @@ class PlayerState {
 
   /// Sunbit. Never negative.
   final int balance;
+
+  /// Ink: paints the group canvas (1 per pixel), earned 10 per daily quest.
+  /// Kept on the server only; always 0 when the app runs without an account.
+  final int inkBalance;
 
   /// Newest last; trimmed to the latest [maxLedger] entries.
   final List<LedgerEntry> ledger;
@@ -193,6 +198,7 @@ class PlayerState {
 
   PlayerState copyWith({
     int? balance,
+    int? inkBalance,
     List<LedgerEntry>? ledger,
     int? streak,
     int? lastCompletedDay,
@@ -211,6 +217,7 @@ class PlayerState {
   }) => PlayerState(
     seed: seed,
     balance: balance ?? this.balance,
+    inkBalance: inkBalance ?? this.inkBalance,
     ledger: ledger ?? this.ledger,
     streak: streak ?? this.streak,
     lastCompletedDay: lastCompletedDay ?? this.lastCompletedDay,
@@ -233,6 +240,7 @@ class PlayerState {
       : PlayerState(
           seed: seed,
           balance: balance,
+          inkBalance: inkBalance,
           ledger: ledger,
           streak: streak,
           lastCompletedDay: lastCompletedDay,
@@ -248,6 +256,7 @@ class PlayerState {
   Map<String, Object?> toJson() => {
     'seed': seed,
     'balance': balance,
+    'inkBalance': inkBalance,
     'ledger': ledger.map((entry) => entry.toJson()).toList(),
     'streak': streak,
     'lastCompletedDay': lastCompletedDay,
@@ -265,6 +274,7 @@ class PlayerState {
   factory PlayerState.fromJson(Map<String, dynamic> json) => PlayerState(
     seed: json['seed'] as int,
     balance: (json['balance'] as int? ?? 0).clamp(0, 1 << 31),
+    inkBalance: (json['inkBalance'] as int? ?? 0).clamp(0, 1 << 31),
     ledger: (json['ledger'] as List<dynamic>? ?? const [])
         .map((item) => LedgerEntry.fromJson(item as Map<String, dynamic>))
         .toList(),

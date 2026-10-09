@@ -7,7 +7,9 @@ import 'package:neo_brutalism_locket/app/app_shell.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/chat/chat_repository.dart';
+import 'canvas_store_test.dart' show FakeCanvas;
 import 'fakes_backend.dart';
+import 'groups_test.dart' show FakeGroups, summary;
 import 'safety_test.dart' show FakeSafety;
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
@@ -316,6 +318,8 @@ void main() {
       FakeChat? chat,
       FakeInteractions? interactions,
       FakeSafety? safety,
+      FakeGroups? groups,
+      FakeCanvas? canvas,
     }) async {
       tester.view.physicalSize = const Size(400, 900);
       tester.view.devicePixelRatio = 1;
@@ -332,6 +336,8 @@ void main() {
             friendsRepository: fake,
             postsRepository: FakePostsRepository(feed),
             chatRepository: chat ?? FakeChat(),
+            groupsRepository: groups,
+            canvasRepository: canvas,
             safetyRepository: safety ?? FakeSafety(),
             settings: AppSettings(),
             interactionsRepository: interactions ?? FakeInteractions(),
@@ -396,6 +402,50 @@ void main() {
       expect(fake.calls, ['accept in-ava']);
       expect(find.text('ACCEPT'), findsNothing);
       expect(find.text('Ava Chen'), findsOneWidget); // now in the friend list
+    });
+
+    testWidgets('without a groups backend there is no Groups switch', (
+      tester,
+    ) async {
+      await pumpShell(tester, FakeFriends());
+      await openFriendsTab(tester);
+      expect(find.text('NHÓM'), findsNothing);
+    });
+
+    testWidgets('the Groups switch shows my groups and opens one', (
+      tester,
+    ) async {
+      final groups = FakeGroups(groups: [summary('a', unread: 2)]);
+      await pumpShell(
+        tester,
+        FakeFriends(),
+        groups: groups,
+        canvas: FakeCanvas(),
+      );
+      await openFriendsTab(tester);
+      expect(find.text('NHÓM'), findsOneWidget);
+      expect(find.text('2'), findsWidgets); // unread badge on the switch
+
+      await tester.tap(find.text('NHÓM'));
+      await tester.pumpAndSettle();
+      expect(find.text('Group a'), findsOneWidget);
+
+      await tester.tap(find.text('Group a'));
+      await tester.pumpAndSettle();
+      expect(find.text('CHAT'), findsOneWidget);
+      expect(find.text('CANVAS'), findsOneWidget);
+
+      await tester.tap(find.text('CANVAS'));
+      await tester.pumpAndSettle();
+      expect(find.text('10 MỰC'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text('Group a'), findsOneWidget);
+
+      await tester.tap(find.text('BẠN BÈ'));
+      await tester.pumpAndSettle();
+      expect(find.text('Friends'), findsOneWidget);
     });
 
     testWidgets('an empty list invites you to add friends', (tester) async {

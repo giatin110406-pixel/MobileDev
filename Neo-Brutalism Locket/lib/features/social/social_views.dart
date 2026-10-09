@@ -40,8 +40,12 @@ class FriendsScreen extends StatelessWidget {
     this.emptyBody,
     this.addLabel,
     this.onlineLabel,
+    this.segment,
     super.key,
   });
+
+  /// The Friends | Groups switch (online accounts only).
+  final Widget? segment;
 
   final List<PocketFriend> friends;
   final List<PocketMessage> messages;
@@ -69,7 +73,8 @@ class FriendsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _SocialMasthead(),
-          const SizedBox(height: 24),
+          SizedBox(height: segment == null ? 24 : 14),
+          if (segment != null) ...[segment!, const SizedBox(height: 14)],
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
