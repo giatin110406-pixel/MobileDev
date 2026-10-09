@@ -10,6 +10,7 @@ class GroupsScreen extends StatelessWidget {
     required this.store,
     required this.onOpenGroup,
     this.segment,
+    this.header,
     super.key,
   });
 
@@ -18,6 +19,9 @@ class GroupsScreen extends StatelessWidget {
 
   /// The Friends | Groups switch, shown above the title.
   final Widget? segment;
+
+  /// A card under the switch (this week's contest).
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +34,7 @@ class GroupsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ?segment,
+              if (header != null) ...[const SizedBox(height: 14), header!],
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,

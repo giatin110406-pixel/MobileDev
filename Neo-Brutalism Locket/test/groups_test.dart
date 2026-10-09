@@ -267,6 +267,17 @@ void main() {
       expect(store.groups.single.group.id, 'new');
     });
 
+    test('a refused word is told apart from other refusals', () {
+      expect(
+        SupabaseGroupsRepository.kindOfMessage('blocked_word'),
+        GroupFailureKind.blockedWord,
+      );
+      expect(
+        SupabaseGroupsRepository.kindOfMessage('too_long'),
+        GroupFailureKind.tooLong,
+      );
+    });
+
     test('the owner is first and a member is not the owner', () {
       final mine = summary('a', owner: 'me', others: ['zed']);
       expect(mine.iAmOwner, isTrue);

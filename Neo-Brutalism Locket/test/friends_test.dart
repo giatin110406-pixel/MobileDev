@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/chat/chat_repository.dart';
 import 'canvas_store_test.dart' show FakeCanvas;
+import 'contest_test.dart' show FakeContest, contestInfo, overviewOf;
 import 'fakes_backend.dart';
 import 'groups_test.dart' show FakeGroups, summary;
 import 'safety_test.dart' show FakeSafety;
@@ -320,6 +321,7 @@ void main() {
       FakeSafety? safety,
       FakeGroups? groups,
       FakeCanvas? canvas,
+      FakeContest? contest,
     }) async {
       tester.view.physicalSize = const Size(400, 900);
       tester.view.devicePixelRatio = 1;
@@ -338,6 +340,7 @@ void main() {
             chatRepository: chat ?? FakeChat(),
             groupsRepository: groups,
             canvasRepository: canvas,
+            contestRepository: contest,
             safetyRepository: safety ?? FakeSafety(),
             settings: AppSettings(),
             interactionsRepository: interactions ?? FakeInteractions(),
@@ -446,6 +449,51 @@ void main() {
       await tester.tap(find.text('BẠN BÈ'));
       await tester.pumpAndSettle();
       expect(find.text('Friends'), findsOneWidget);
+    });
+
+    testWidgets('the contest banner on the Groups tab opens the contest', (
+      tester,
+    ) async {
+      final contest = FakeContest(
+        current: overviewOf(contest: contestInfo(accepted: 12)),
+      );
+      await pumpShell(
+        tester,
+        FakeFriends(),
+        groups: FakeGroups(groups: [summary('a')]),
+        canvas: FakeCanvas(),
+        contest: contest,
+      );
+      await openFriendsTab(tester);
+      await tester.tap(find.text('NHÓM'));
+      await tester.pumpAndSettle();
+      expect(find.text('The Starry Night'), findsOneWidget);
+      expect(find.text('12/100'), findsOneWidget);
+
+      await tester.tap(find.text('The Starry Night'));
+      await tester.pumpAndSettle();
+      expect(find.text('Cuộc thi tuần'), findsOneWidget);
+      expect(find.text('LUẬT CHƠI'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text('Group a'), findsOneWidget);
+    });
+
+    testWidgets('without a contest backend the Groups tab has no banner', (
+      tester,
+    ) async {
+      await pumpShell(
+        tester,
+        FakeFriends(),
+        groups: FakeGroups(groups: [summary('a')]),
+        canvas: FakeCanvas(),
+      );
+      await openFriendsTab(tester);
+      await tester.tap(find.text('NHÓM'));
+      await tester.pumpAndSettle();
+      expect(find.text('Group a'), findsOneWidget);
+      expect(find.textContaining('CUỘC THI TUẦN'), findsNothing);
     });
 
     testWidgets('an empty list invites you to add friends', (tester) async {
