@@ -8,12 +8,27 @@ import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 /// The photo could not be checked at all (no laptop, offline, ...). This never
 /// costs the user one of their tries.
 class QuestCheckUnavailable implements Exception {
-  const QuestCheckUnavailable(this.message);
+  const QuestCheckUnavailable(this.kind, [this.detail = '']);
 
-  final String message;
+  final QuestCheckError kind;
+
+  /// For [QuestCheckError.laptopFailed]: the laptop error code.
+  final String detail;
+
+  /// For logs only.
+  String get message => kind.name;
 
   @override
-  String toString() => message;
+  String toString() => 'QuestCheckUnavailable(${kind.name})';
+}
+
+/// Why a quest photo could not be checked.
+enum QuestCheckError {
+  needsLaptop,
+  laptopFailed,
+  questUnknown,
+  unreadablePhoto,
+  deviceFailed,
 }
 
 /// Decides whether a photo shows the quest subject.
@@ -46,9 +61,7 @@ class LaptopQuestVerifier implements QuestVerifier {
   Future<bool> check(Uint8List jpeg, Quest quest) async {
     final config = await store.load();
     if (!config.isConfigured) {
-      throw const QuestCheckUnavailable(
-        'Cần kết nối laptop để kiểm tra ảnh. Bấm nút server (màu xanh) để cài đặt.',
-      );
+      throw const QuestCheckUnavailable(QuestCheckError.needsLaptop);
     }
     final client = StylizeClient(config, client: httpClient);
     try {
@@ -59,9 +72,7 @@ class LaptopQuestVerifier implements QuestVerifier {
       );
       return result.match;
     } on StylizeException catch (error) {
-      throw QuestCheckUnavailable(
-        'Không kiểm tra được ảnh (${error.message}). Lượt thử không bị trừ.',
-      );
+      throw QuestCheckUnavailable(QuestCheckError.laptopFailed, error.message);
     } finally {
       if (httpClient == null) client.close();
     }

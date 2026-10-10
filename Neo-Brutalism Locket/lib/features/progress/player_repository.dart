@@ -11,19 +11,43 @@ import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 
-/// A quest or shop action that the rules do not allow. [message] is shown to
-/// the user as is.
-class PlayerException implements Exception {
-  const PlayerException(this.message);
+/// Why a quest or shop action was refused.
+enum PlayerError {
+  questExpired,
+  alreadyDone,
+  noAttempts,
+  notPassed,
+  captionTooLong,
+  alreadyOwned,
+  notOwned,
+  itemNotFound,
+  needsNetwork,
+  notEnoughSunbit,
+  unknown,
+}
 
-  final String message;
+/// A quest or shop action that the rules do not allow. The screens turn
+/// [kind] into a sentence in the app's language (playerErrorText), so nothing
+/// here is written in one language.
+class PlayerException implements Exception {
+  const PlayerException(this.kind, {this.value = 0});
+
+  final PlayerError kind;
+
+  /// The number the sentence needs, if any (the caption limit, the Sunbit
+  /// still missing).
+  final int value;
+
+  /// For logs only.
+  String get message => kind.name;
 
   @override
-  String toString() => message;
+  String toString() => 'PlayerException(${kind.name})';
 }
 
 class NotEnoughSunbit extends PlayerException {
-  const NotEnoughSunbit(this.missing) : super('Còn thiếu $missing Sunbit');
+  const NotEnoughSunbit(this.missing)
+    : super(PlayerError.notEnoughSunbit, value: missing);
 
   final int missing;
 }
@@ -133,17 +157,16 @@ class PlayerRepository implements PlayerGateway {
     await _update((state) {
       final day = today;
       if (questDay != day) {
-        throw const PlayerException(
-          'Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!',
-        );
+        throw const PlayerException(PlayerError.questExpired);
       }
       if (state.completedOn(day)) {
-        throw const PlayerException('Hôm nay bạn đã hoàn thành nhiệm vụ rồi.');
+        throw const PlayerException(PlayerError.alreadyDone);
       }
       final text = caption.trim();
       if (text.characters.length > QuestRules.maxCaptionLength) {
         throw const PlayerException(
-          'Chú thích tối đa ${QuestRules.maxCaptionLength} ký tự.',
+          PlayerError.captionTooLong,
+          value: QuestRules.maxCaptionLength,
         );
       }
       final at = _clock();
@@ -203,7 +226,7 @@ class PlayerRepository implements PlayerGateway {
   Future<PlayerState> buy(String itemId) => _update((state) {
     final item = _item(itemId);
     if (state.owns(item.id)) {
-      throw const PlayerException('Bạn đã sở hữu món này.');
+      throw const PlayerException(PlayerError.alreadyOwned);
     }
     if (state.balance < item.price) {
       throw NotEnoughSunbit(item.price - state.balance);
@@ -227,7 +250,7 @@ class PlayerRepository implements PlayerGateway {
   Future<PlayerState> equip(String itemId) => _update((state) {
     final item = _item(itemId);
     if (!state.owns(item.id)) {
-      throw const PlayerException('Hãy mua món này trước.');
+      throw const PlayerException(PlayerError.notOwned);
     }
     return switch (item.kind) {
       CosmeticKind.frame => state.copyWith(equippedFrame: item.id),
@@ -271,18 +294,16 @@ class PlayerRepository implements PlayerGateway {
 
   void _checkCanTry(PlayerState state, int day) {
     if (state.completedOn(day)) {
-      throw const PlayerException('Hôm nay bạn đã hoàn thành nhiệm vụ rồi.');
+      throw const PlayerException(PlayerError.alreadyDone);
     }
     if (state.attemptsLeft(day) == 0) {
-      throw const PlayerException(
-        'Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!',
-      );
+      throw const PlayerException(PlayerError.noAttempts);
     }
   }
 
   ShopItem _item(String id) {
     final item = shopItemById(id);
-    if (item == null) throw const PlayerException('Không tìm thấy món này.');
+    if (item == null) throw const PlayerException(PlayerError.itemNotFound);
     return item;
   }
 

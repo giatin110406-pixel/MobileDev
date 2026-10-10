@@ -56,6 +56,7 @@ import 'package:neo_brutalism_locket/features/quest/quest_post_screen.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_verifier.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_screen.dart';
 import 'package:neo_brutalism_locket/features/social/feed_view.dart';
+import 'package:neo_brutalism_locket/features/social/local_friend_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
@@ -802,7 +803,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         ).friendAddedLocally(draft.name.toUpperCase()),
       );
     } on FormatException catch (error) {
-      _notify(error.message.toUpperCase());
+      if (!mounted) return;
+      _notify(
+        (error is LocalFriendException
+                ? localFriendText(AppLocalizations.of(context), error)
+                : AppLocalizations.of(context).peUnknown)
+            .toUpperCase(),
+      );
     }
   }
 
@@ -848,7 +855,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _messages = snapshot.messages;
       });
     } on FormatException catch (error) {
-      _notify(error.message.toUpperCase());
+      if (!mounted) return;
+      _notify(
+        (error is LocalFriendException
+                ? localFriendText(AppLocalizations.of(context), error)
+                : AppLocalizations.of(context).peUnknown)
+            .toUpperCase(),
+      );
     }
   }
 
@@ -1143,7 +1156,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             : l10n.sentNoticeTo(what, name.toUpperCase()),
       );
     } on FormatException catch (error) {
-      _notify(error.message.toUpperCase());
+      if (!mounted) return;
+      _notify(
+        (error is LocalFriendException
+                ? localFriendText(AppLocalizations.of(context), error)
+                : AppLocalizations.of(context).peUnknown)
+            .toUpperCase(),
+      );
     }
   }
 

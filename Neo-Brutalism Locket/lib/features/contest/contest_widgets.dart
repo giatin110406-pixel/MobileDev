@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
-
-bool isVietnamese(BuildContext context) =>
-    Localizations.localeOf(context).languageCode != 'en';
 
 /// What went wrong with a contest action, in words.
 String contestFailureText(AppLocalizations l10n, ContestFailure failure) =>

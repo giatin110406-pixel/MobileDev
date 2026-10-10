@@ -1427,5 +1427,173 @@
         "type": "int"
       }
     }
+  },
+  "peQuestExpired": "Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!",
+  "peAlreadyDone": "Hôm nay bạn đã hoàn thành nhiệm vụ rồi.",
+  "peNoAttempts": "Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!",
+  "peNotPassed": "Ảnh nhiệm vụ chưa vượt qua bước kiểm tra.",
+  "peCaptionTooLong": "Chú thích tối đa {max} ký tự.",
+  "@peCaptionTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "peAlreadyOwned": "Bạn đã sở hữu món này.",
+  "peNotOwned": "Hãy mua món này trước.",
+  "peItemNotFound": "Không tìm thấy món này.",
+  "peNeedsNetwork": "Cần kết nối mạng để thực hiện việc này.",
+  "peNotEnoughSunbit": "Còn thiếu {missing} Sunbit",
+  "@peNotEnoughSunbit": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "peUnknown": "Có lỗi xảy ra. Thử lại nhé.",
+  "qcNeedsLaptop": "Cần kết nối laptop để kiểm tra ảnh. Bấm nút server (màu xanh) để cài đặt.",
+  "qcLaptopFailed": "Không kiểm tra được ảnh ({detail}). Lượt thử không bị trừ.",
+  "@qcLaptopFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "qcQuestUnknown": "Nhiệm vụ này chưa có trong bộ kiểm ảnh. Hãy cập nhật ứng dụng.",
+  "qcUnreadable": "Không đọc được ảnh. Lượt thử không bị trừ.",
+  "qcDeviceFailed": "Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.",
+  "seNotSetUp": "Chưa cài đặt máy chủ laptop",
+  "seTooLong": "Laptop xử lý quá lâu",
+  "seWrongToken": "Sai mã token của máy chủ",
+  "sePhotoTooLarge": "Ảnh quá lớn so với máy chủ",
+  "seBusy": "Laptop đang bận",
+  "seNoAnswer": "Laptop không trả lời",
+  "seUnreachable": "Không kết nối được tới laptop",
+  "seFailed": "Laptop không tạo được tranh",
+  "appTagline": "CLB MÁY ẢNH NEO BRUTAL",
+  "archiveEmptyTitle": "CHƯA IN\nẢNH NÀO",
+  "galleryRoomTitle": "PHÒNG TRIỂN LÃM",
+  "styleNone": "KHÔNG HIỆU ỨNG",
+  "sourceLaptop": "LAPTOP · KHUẾCH TÁN",
+  "sourceOnDevice": "TRÊN MÁY",
+  "sourceMagenta": "DỰ PHÒNG · MAGENTA",
+  "sourceMock": "DỰ PHÒNG · THỬ",
+  "sourceOriginal": "ẢNH GỐC",
+  "timeNow": "vừa xong",
+  "timeMinutes": "{n}p",
+  "@timeMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{n}g",
+  "@timeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDays": "{n}n",
+  "@timeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "periodAm": "SA",
+  "periodPm": "CH",
+  "sendMessageHint": "Gửi tin nhắn...",
+  "youUpper": "BẠN",
+  "@fallbackNoteLaptop": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lfNeedNameHandle": "Hãy nhập tên và tên người dùng.",
+  "lfHandleTaken": "Tên người dùng này đã có trong danh sách bạn bè.",
+  "lfWriteSomething": "Hãy viết tin nhắn hoặc đính kèm một ảnh.",
+  "lfFriendMissing": "Không tìm thấy bạn bè.",
+  "lfWriteReply": "Hãy viết trả lời hoặc chọn một emoji.",
+  "lfPostGone": "Bài đăng này không còn nữa.",
+  "seStatus": "Máy chủ trả lời mã {code}",
+  "@seStatus": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "seFailedDetail": "Laptop gặp lỗi: {detail}",
+  "@seFailedDetail": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "seError": "Lỗi laptop",
+  "seMagentaFailed": "Mô hình Van Gogh trên máy bị lỗi",
+  "styleBadge": "PHONG CÁCH: {style}",
+  "@styleBadge": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "sampleCaptionAva": "Ánh nắng sớm đẹp không thật",
+  "sampleCaptionJules": "Đi dạo uống cà phê sau giờ học",
+  "sampleCaptionRemy": "Ảnh mới rửa trong phòng tối",
+  "sampleMessageAva": "Hôm nay ánh nắng sớm đẹp không thật.",
+  "sampleMessageJules": "Đi dạo uống cà phê sau giờ học không?",
+  "sampleMessageRemy": "Tấm ảnh đó lên đẹp quá.",
+  "quoteReactedTo": "ĐÃ THẢ CẢM XÚC VÀO {whose}",
+  "@quoteReactedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteRepliedTo": "ĐÃ TRẢ LỜI {whose}",
+  "@quoteRepliedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "sayHelloTo": "CHÀO {name} ĐI",
+  "@sayHelloTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "printNumber": "ẢNH SỐ {n}",
+  "@printNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "printListTitle": "ẢNH {n}",
+  "@printListTitle": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
   }
 }

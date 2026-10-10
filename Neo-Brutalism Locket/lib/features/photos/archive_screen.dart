@@ -6,12 +6,12 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
-/// "MM.DD  h:mm AM" for print timestamps.
-String formatPrintDate(DateTime date) {
+/// "MM.DD  h:mm AM" for print timestamps (SA/CH in Vietnamese).
+String formatPrintDate(AppLocalizations l10n, DateTime date) {
   final local = date.toLocal();
   final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
   final minute = local.minute.toString().padLeft(2, '0');
-  final period = local.hour >= 12 ? 'PM' : 'AM';
+  final period = local.hour >= 12 ? l10n.periodPm : l10n.periodAm;
   return '${local.month.toString().padLeft(2, '0')}.${local.day.toString().padLeft(2, '0')}  $hour:$minute $period';
 }
 
@@ -134,7 +134,9 @@ class ArchiveScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'PRINT ${(photos.length - index).toString().padLeft(2, '0')}',
+                    AppLocalizations.of(context).printListTitle(
+                      (photos.length - index).toString().padLeft(2, '0'),
+                    ),
                     style: const TextStyle(
                       color: NeoColors.ink,
                       fontSize: 13,
@@ -143,7 +145,7 @@ class ArchiveScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${formatPrintDate(photo.createdAt)}  /  ${_statusText(AppLocalizations.of(context), photo.status)}',
+                    '${formatPrintDate(AppLocalizations.of(context), photo.createdAt)}  /  ${_statusText(AppLocalizations.of(context), photo.status)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -186,10 +188,10 @@ class ArchiveScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'NOTHING\nPRINTED YET',
+          Text(
+            AppLocalizations.of(context).archiveEmptyTitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 24,

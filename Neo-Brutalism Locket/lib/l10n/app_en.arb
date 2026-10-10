@@ -1421,5 +1421,173 @@
         "type": "int"
       }
     }
+  },
+  "peQuestExpired": "The quest expired at 00:00. Today has a new one!",
+  "peAlreadyDone": "You already finished the quest today.",
+  "peNoAttempts": "No tries left today. Come back tomorrow!",
+  "peNotPassed": "The quest photo has not passed the check.",
+  "peCaptionTooLong": "Captions can be {max} characters at most.",
+  "@peCaptionTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "peAlreadyOwned": "You already own this item.",
+  "peNotOwned": "Buy this item first.",
+  "peItemNotFound": "Could not find that item.",
+  "peNeedsNetwork": "You need a connection to do this.",
+  "peNotEnoughSunbit": "{missing} Sunbit short",
+  "@peNotEnoughSunbit": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "peUnknown": "Something went wrong. Please try again.",
+  "qcNeedsLaptop": "Connect to your laptop to check the photo. Tap the server button (the blue one) to set it up.",
+  "qcLaptopFailed": "Could not check the photo ({detail}). The try is not used up.",
+  "@qcLaptopFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "qcQuestUnknown": "This quest is not in the photo checker yet. Please update the app.",
+  "qcUnreadable": "Could not read the photo. The try is not used up.",
+  "qcDeviceFailed": "Could not check the photo on this phone. The try is not used up.",
+  "seNotSetUp": "The laptop server is not set up",
+  "seTooLong": "The laptop took too long",
+  "seWrongToken": "Wrong server token",
+  "sePhotoTooLarge": "The photo is too large for the server",
+  "seBusy": "The laptop is busy",
+  "seNoAnswer": "The laptop did not answer",
+  "seUnreachable": "The laptop is not reachable",
+  "seFailed": "The laptop could not make the picture",
+  "appTagline": "NEO BRUTAL CAMERA CLUB",
+  "archiveEmptyTitle": "NOTHING\nPRINTED YET",
+  "galleryRoomTitle": "GALLERY ROOM",
+  "styleNone": "NO STYLE",
+  "sourceLaptop": "LAPTOP · DIFFUSION",
+  "sourceOnDevice": "ON DEVICE",
+  "sourceMagenta": "FALLBACK · MAGENTA",
+  "sourceMock": "FALLBACK · MOCK",
+  "sourceOriginal": "ORIGINAL",
+  "timeNow": "now",
+  "timeMinutes": "{n}m",
+  "@timeMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{n}h",
+  "@timeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDays": "{n}d",
+  "@timeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "periodAm": "AM",
+  "periodPm": "PM",
+  "sendMessageHint": "Send a message...",
+  "youUpper": "YOU",
+  "@fallbackNoteLaptop": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lfNeedNameHandle": "Enter a name and handle.",
+  "lfHandleTaken": "That handle is already in your friends.",
+  "lfWriteSomething": "Write a message or attach a print.",
+  "lfFriendMissing": "Friend not found.",
+  "lfWriteReply": "Write a reply or pick an emoji.",
+  "lfPostGone": "That post is gone.",
+  "seStatus": "The server answered {code}",
+  "@seStatus": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "seFailedDetail": "The laptop failed: {detail}",
+  "@seFailedDetail": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "seError": "Laptop error",
+  "seMagentaFailed": "The on-device Van Gogh model failed",
+  "styleBadge": "STYLE: {style}",
+  "@styleBadge": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "sampleCaptionAva": "Morning light looked unreal",
+  "sampleCaptionJules": "Coffee walk after class",
+  "sampleCaptionRemy": "Fresh print from the darkroom",
+  "sampleMessageAva": "Morning light looked unreal today.",
+  "sampleMessageJules": "Coffee walk after class?",
+  "sampleMessageRemy": "That print turned out so good.",
+  "quoteReactedTo": "REACTED TO {whose}",
+  "@quoteReactedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteRepliedTo": "REPLIED TO {whose}",
+  "@quoteRepliedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "sayHelloTo": "SAY HELLO TO {name}",
+  "@sayHelloTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "printNumber": "PRINT NO. {n}",
+  "@printNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "printListTitle": "PRINT {n}",
+  "@printListTitle": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
   }
 }

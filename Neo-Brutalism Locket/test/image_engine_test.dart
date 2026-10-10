@@ -241,7 +241,7 @@ void main() {
       ).process(photoBytes);
 
       expect(result.source, StyleSource.mock);
-      expect(result.note, contains('token'));
+      expect(result.note, 'laptop:wrongToken');
       expect(img.decodePng(result.png)!.width, 10);
     });
 
@@ -253,7 +253,7 @@ void main() {
       final result = await backendWith(offline).process(photoBytes);
 
       expect(result.source, StyleSource.mock);
-      expect(result.note, contains('not reachable'));
+      expect(result.note, 'laptop:unreachable');
     });
 
     test('falls back when the laptop job fails', () async {
@@ -271,7 +271,7 @@ void main() {
       final result = await backendWith(laptop()).process(photoBytes);
 
       expect(result.source, StyleSource.mock);
-      expect(result.note, contains('not set up'));
+      expect(result.note, 'laptop:notSetUp');
     });
   });
 

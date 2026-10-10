@@ -89,9 +89,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'GALLERY ROOM',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).galleryRoomTitle,
+                          style: const TextStyle(
                             color: NeoColors.muted,
                             fontSize: 10,
                             fontWeight: FontWeight.w800,

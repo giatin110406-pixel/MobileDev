@@ -8,21 +8,24 @@ import 'package:image_picker/image_picker.dart';
 import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_progress.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
+import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
-import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
+import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
+import 'package:neo_brutalism_locket/features/quest/quest_check_text.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_verifier.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -256,7 +259,7 @@ class CameraTabState extends State<CameraTab> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('OK'),
+          child: Text(AppLocalizations.of(context).ok),
         ),
       ],
     ),
@@ -290,7 +293,11 @@ class CameraTabState extends State<CameraTab> {
       try {
         match = await widget.questVerifier.check(bytes, quest);
       } on QuestCheckUnavailable catch (error) {
-        _notify('${error.message.toUpperCase()}${_debugSuffix()}');
+        if (mounted) {
+          _notify(
+            '${questCheckText(AppLocalizations.of(context), error).toUpperCase()}${_debugSuffix()}',
+          );
+        }
         return;
       }
       if (!match) {
@@ -317,7 +324,11 @@ class CameraTabState extends State<CameraTab> {
       await widget.onQuestPassed(quest, photo, day);
     } on PlayerException catch (error) {
       if (mounted) setState(() => _questModeQuest = null);
-      _notify(error.message.toUpperCase());
+      if (mounted) {
+        _notify(
+          playerErrorText(AppLocalizations.of(context), error).toUpperCase(),
+        );
+      }
     } catch (_) {
       if (mounted) _notify(AppLocalizations.of(context).photoNotSaved);
     } finally {
@@ -573,7 +584,11 @@ class CameraTabState extends State<CameraTab> {
         clearFailureReason: true,
       );
       if (output.note != null && mounted) {
-        _notify(AppLocalizations.of(context).fallbackUsed(output.note!));
+        _notify(
+          AppLocalizations.of(context).fallbackUsed(
+            fallbackNoteText(AppLocalizations.of(context), output.note!),
+          ),
+        );
       }
       await widget.repository.upsert(complete);
       widget.onPhotoChanged(complete);
@@ -733,7 +748,12 @@ class CameraTabState extends State<CameraTab> {
           _questMode
               ? Center(
                   child: NeoLabel(
-                    'STYLE: ${_questModeQuest!.style.label}',
+                    AppLocalizations.of(context).styleBadge(
+                      styleName(
+                        AppLocalizations.of(context),
+                        _questModeQuest!.style,
+                      ),
+                    ),
                     color: questStyleColor(_questModeQuest!.style),
                     icon: Icons.lock_outline,
                   ),
@@ -811,7 +831,9 @@ class CameraTabState extends State<CameraTab> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).shootSubject(quest.subject),
+                  AppLocalizations.of(context).shootSubject(
+                    quest.subjectFor(vietnamese: isVietnamese(context)),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -1250,7 +1272,7 @@ class CameraTabState extends State<CameraTab> {
                 icon: _draftMode ? Icons.close : Icons.arrow_back,
                 tooltip: _draftMode
                     ? AppLocalizations.of(context).printDiscard
-                    : 'Back to camera',
+                    : AppLocalizations.of(context).backToCameraTooltip,
                 onPressed: _draftMode
                     ? () => _discardPrint(photo)
                     : () => setState(() => _showPrint = false),
@@ -1262,7 +1284,9 @@ class CameraTabState extends State<CameraTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PRINT NO. ${photo.id.substring(photo.id.length - 2)}',
+                      AppLocalizations.of(
+                        context,
+                      ).printNumber(photo.id.substring(photo.id.length - 2)),
                       style: TextStyle(
                         color: NeoColors.ink,
                         fontSize: 14,
@@ -1272,12 +1296,17 @@ class CameraTabState extends State<CameraTab> {
                     SizedBox(height: 3),
                     Text(
                       AppLocalizations.of(context).originalPlusStyle(
-                            photo.styleType?.label ??
+                            (photo.styleType == null
+                                    ? null
+                                    : styleName(
+                                        AppLocalizations.of(context),
+                                        photo.styleType!,
+                                      )) ??
                                 AppLocalizations.of(context).legacyEdit,
                           ) +
                           (photo.status == ProcessingStatus.done &&
                                   photo.styleSource != null
-                              ? ' · ${photo.styleSource!.label}'
+                              ? ' · ${styleSourceLabel(AppLocalizations.of(context), photo.styleSource!)}'
                               : ''),
                       style: TextStyle(
                         color: NeoColors.muted,
@@ -1308,7 +1337,12 @@ class CameraTabState extends State<CameraTab> {
                     originalPath: photo.originalPath,
                     styledPath: styledPath,
                     styleLabel:
-                        photo.styleType?.label ??
+                        (photo.styleType == null
+                            ? null
+                            : styleName(
+                                AppLocalizations.of(context),
+                                photo.styleType!,
+                              )) ??
                         AppLocalizations.of(context).editLabel,
                     showStyled: !_showOriginal,
                     onChanged: (styled) =>
@@ -1349,7 +1383,10 @@ class CameraTabState extends State<CameraTab> {
             children: [
               Expanded(
                 child: Text(
-                  formatPrintDate(photo.createdAt),
+                  formatPrintDate(
+                    AppLocalizations.of(context),
+                    photo.createdAt,
+                  ),
                   style: const TextStyle(
                     color: NeoColors.muted,
                     fontSize: 11,

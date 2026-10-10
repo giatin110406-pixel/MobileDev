@@ -2163,4 +2163,226 @@ class AppLocalizationsEn extends AppLocalizations {
   String colorSemantics(int n) {
     return 'Colour $n';
   }
+
+  @override
+  String get peQuestExpired =>
+      'The quest expired at 00:00. Today has a new one!';
+
+  @override
+  String get peAlreadyDone => 'You already finished the quest today.';
+
+  @override
+  String get peNoAttempts => 'No tries left today. Come back tomorrow!';
+
+  @override
+  String get peNotPassed => 'The quest photo has not passed the check.';
+
+  @override
+  String peCaptionTooLong(int max) {
+    return 'Captions can be $max characters at most.';
+  }
+
+  @override
+  String get peAlreadyOwned => 'You already own this item.';
+
+  @override
+  String get peNotOwned => 'Buy this item first.';
+
+  @override
+  String get peItemNotFound => 'Could not find that item.';
+
+  @override
+  String get peNeedsNetwork => 'You need a connection to do this.';
+
+  @override
+  String peNotEnoughSunbit(int missing) {
+    return '$missing Sunbit short';
+  }
+
+  @override
+  String get peUnknown => 'Something went wrong. Please try again.';
+
+  @override
+  String get qcNeedsLaptop =>
+      'Connect to your laptop to check the photo. Tap the server button (the blue one) to set it up.';
+
+  @override
+  String qcLaptopFailed(String detail) {
+    return 'Could not check the photo ($detail). The try is not used up.';
+  }
+
+  @override
+  String get qcQuestUnknown =>
+      'This quest is not in the photo checker yet. Please update the app.';
+
+  @override
+  String get qcUnreadable =>
+      'Could not read the photo. The try is not used up.';
+
+  @override
+  String get qcDeviceFailed =>
+      'Could not check the photo on this phone. The try is not used up.';
+
+  @override
+  String get seNotSetUp => 'The laptop server is not set up';
+
+  @override
+  String get seTooLong => 'The laptop took too long';
+
+  @override
+  String get seWrongToken => 'Wrong server token';
+
+  @override
+  String get sePhotoTooLarge => 'The photo is too large for the server';
+
+  @override
+  String get seBusy => 'The laptop is busy';
+
+  @override
+  String get seNoAnswer => 'The laptop did not answer';
+
+  @override
+  String get seUnreachable => 'The laptop is not reachable';
+
+  @override
+  String get seFailed => 'The laptop could not make the picture';
+
+  @override
+  String get appTagline => 'NEO BRUTAL CAMERA CLUB';
+
+  @override
+  String get archiveEmptyTitle => 'NOTHING\nPRINTED YET';
+
+  @override
+  String get galleryRoomTitle => 'GALLERY ROOM';
+
+  @override
+  String get styleNone => 'NO STYLE';
+
+  @override
+  String get sourceLaptop => 'LAPTOP · DIFFUSION';
+
+  @override
+  String get sourceOnDevice => 'ON DEVICE';
+
+  @override
+  String get sourceMagenta => 'FALLBACK · MAGENTA';
+
+  @override
+  String get sourceMock => 'FALLBACK · MOCK';
+
+  @override
+  String get sourceOriginal => 'ORIGINAL';
+
+  @override
+  String get timeNow => 'now';
+
+  @override
+  String timeMinutes(int n) {
+    return '${n}m';
+  }
+
+  @override
+  String timeHours(int n) {
+    return '${n}h';
+  }
+
+  @override
+  String timeDays(int n) {
+    return '${n}d';
+  }
+
+  @override
+  String get periodAm => 'AM';
+
+  @override
+  String get periodPm => 'PM';
+
+  @override
+  String get sendMessageHint => 'Send a message...';
+
+  @override
+  String get youUpper => 'YOU';
+
+  @override
+  String get lfNeedNameHandle => 'Enter a name and handle.';
+
+  @override
+  String get lfHandleTaken => 'That handle is already in your friends.';
+
+  @override
+  String get lfWriteSomething => 'Write a message or attach a print.';
+
+  @override
+  String get lfFriendMissing => 'Friend not found.';
+
+  @override
+  String get lfWriteReply => 'Write a reply or pick an emoji.';
+
+  @override
+  String get lfPostGone => 'That post is gone.';
+
+  @override
+  String seStatus(String code) {
+    return 'The server answered $code';
+  }
+
+  @override
+  String seFailedDetail(String detail) {
+    return 'The laptop failed: $detail';
+  }
+
+  @override
+  String get seError => 'Laptop error';
+
+  @override
+  String get seMagentaFailed => 'The on-device Van Gogh model failed';
+
+  @override
+  String styleBadge(String style) {
+    return 'STYLE: $style';
+  }
+
+  @override
+  String get sampleCaptionAva => 'Morning light looked unreal';
+
+  @override
+  String get sampleCaptionJules => 'Coffee walk after class';
+
+  @override
+  String get sampleCaptionRemy => 'Fresh print from the darkroom';
+
+  @override
+  String get sampleMessageAva => 'Morning light looked unreal today.';
+
+  @override
+  String get sampleMessageJules => 'Coffee walk after class?';
+
+  @override
+  String get sampleMessageRemy => 'That print turned out so good.';
+
+  @override
+  String quoteReactedTo(String whose) {
+    return 'REACTED TO $whose';
+  }
+
+  @override
+  String quoteRepliedTo(String whose) {
+    return 'REPLIED TO $whose';
+  }
+
+  @override
+  String sayHelloTo(String name) {
+    return 'SAY HELLO TO $name';
+  }
+
+  @override
+  String printNumber(String n) {
+    return 'PRINT NO. $n';
+  }
+
+  @override
+  String printListTitle(String n) {
+    return 'PRINT $n';
+  }
 }

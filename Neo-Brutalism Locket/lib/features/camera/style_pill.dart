@@ -3,6 +3,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
 
 /// Background colour of the pill for each mode.
 Color stylePillColor(StyleType style) => switch (style) {
@@ -70,14 +71,19 @@ class _StylePillState extends State<StylePill> {
   Widget build(BuildContext context) {
     final style = widget.value;
     final values = StyleType.values;
+    final l10n = AppLocalizations.of(context);
     return Semantics(
       slider: true,
-      label: AppLocalizations.of(context).styleSliderSemantics,
-      value: style.label,
-      increasedValue: _hasNext ? values[style.index + 1].label : style.label,
-      decreasedValue: _hasPrevious
-          ? values[style.index - 1].label
-          : style.label,
+      label: l10n.styleSliderSemantics,
+      value: styleName(l10n, style),
+      increasedValue: styleName(
+        l10n,
+        _hasNext ? values[style.index + 1] : style,
+      ),
+      decreasedValue: styleName(
+        l10n,
+        _hasPrevious ? values[style.index - 1] : style,
+      ),
       onIncrease: widget.enabled && _hasNext ? () => _step(1) : null,
       onDecrease: widget.enabled && _hasPrevious ? () => _step(-1) : null,
       child: Opacity(
@@ -137,7 +143,7 @@ class _StylePillState extends State<StylePill> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              style.label,
+                              styleName(l10n, style),
                               maxLines: 1,
                               style: const TextStyle(
                                 color: NeoColors.ink,
