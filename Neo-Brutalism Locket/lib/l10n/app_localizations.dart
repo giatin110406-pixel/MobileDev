@@ -1892,12 +1892,6 @@ abstract class AppLocalizations {
   /// **'GIỮ ĐỂ SO SÁNH'**
   String get holdToCompare;
 
-  /// No description provided for @holdToFilm.
-  ///
-  /// In vi, this message translates to:
-  /// **'GIỮ ĐỂ QUAY'**
-  String get holdToFilm;
-
   /// No description provided for @styleWorking8bit.
   ///
   /// In vi, this message translates to:

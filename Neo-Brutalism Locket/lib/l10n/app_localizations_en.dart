@@ -1006,9 +1006,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get holdToCompare => 'HOLD TO COMPARE';
 
   @override
-  String get holdToFilm => 'HOLD TO FILM';
-
-  @override
   String get styleWorking8bit => 'GRINDING PIXELS…';
 
   @override
