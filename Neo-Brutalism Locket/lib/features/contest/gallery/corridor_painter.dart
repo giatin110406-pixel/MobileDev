@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/widgets.dart';
@@ -25,11 +24,8 @@ abstract final class CorridorColors {
   static const frame = Color(0xFF1A1A1A);
   static const mat = Color(0xFFFDF2E9);
   static const light = Color(0xFFFFE66D);
+  static const doorLeaf = Color(0xFFF7A072); // orange
 }
-
-/// How big one "pixel" of the corridor is, in logical pixels. The room is drawn
-/// this much smaller and blown up without smoothing.
-const corridorPixel = 4.0;
 
 /// The colours of one hall: the Gallery and the Hall of Fame look different.
 class CorridorStyle {
@@ -68,7 +64,7 @@ class CorridorStyle {
   /// Circles on the runner instead of diamonds.
   final bool roundMotif;
 
-  /// A bright doorway at the far end of the corridor.
+  /// A door in the wall at the far end of the corridor.
   final bool doorway;
 
   /// The exhibition corridor: teal walls, a paper floor, a pink runner.
@@ -83,20 +79,6 @@ class CorridorStyle {
     runnerMotif: CorridorColors.runnerMotif,
     roundMotif: true,
     doorway: true,
-  );
-
-  /// The Hall of Fame: purple walls, a black and grey floor, a yellow runner.
-  static const hall = CorridorStyle(
-    wall: Color(0xFFA388EE),
-    wallFar: Color(0xFF8268D0),
-    ceiling: Color(0xFF1A1A1A),
-    floor: Color(0xFF2B2B2B),
-    floorFar: Color(0xFF1A1A1A),
-    runner: Color(0xFFFFE66D),
-    runnerBorder: Color(0xFF1A1A1A),
-    runnerMotif: Color(0xFFF7A072),
-    trim: Color(0xFFFF6B6B),
-    ceilingLights: false,
   );
 }
 
@@ -133,10 +115,8 @@ FrameDecor galleryFrameLook(int style) =>
 /// pictures on the frames in real perspective. It repaints when the camera
 /// moves or a picture finishes decoding; nothing is rebuilt per frame.
 ///
-/// The room is drawn [corridorPixel] times smaller than the screen, in flat
-/// colours with black outlines, then blown up without smoothing, so it looks
-/// like pixel art. The paintings and the name plates are drawn afterwards at the
-/// full resolution (they are pixel art already).
+/// The room is drawn in flat colours with black outlines. The paintings and the
+/// name plates are drawn last, on top.
 ///
 /// [lite] drops the chequered floor, shadows and distance shading for slow phones.
 class CorridorPainter extends CustomPainter {
@@ -172,59 +152,34 @@ class CorridorPainter extends CustomPainter {
 
   static Paint _fill(Color color) => Paint()
     ..color = color
-    ..isAntiAlias = false;
+    ..isAntiAlias = true;
 
   static Paint _outline(Color color) => Paint()
     ..color = color
     ..style = PaintingStyle.stroke
-    ..strokeWidth = 1
-    ..isAntiAlias = false;
+    ..strokeWidth = 2
+    ..isAntiAlias = true;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
     final cameraZ = camera.value;
-    final width = math.max(1, (size.width / corridorPixel).ceil());
-    final height = math.max(1, (size.height / corridorPixel).ceil());
-    final small = Size(width.toDouble(), height.toDouble());
-    final view = Projection(small, cameraZ);
-
-    // The room, small.
-    final recorder = ui.PictureRecorder();
-    final low = Canvas(recorder);
-    low.clipRect(Offset.zero & small);
-    final overlay = <void Function(Canvas)>[];
-    _hall(low, small, view);
-    _end(low, view);
-    _runner(low, view);
-    _lights(low, view);
-    for (final slot in visibleSlots(slots, cameraZ)) {
-      _frame(low, view, slot, overlay);
-    }
-    final picture = recorder.endRecording();
-    final image = picture.toImageSync(width, height);
-    picture.dispose();
-
-    // ...blown up without smoothing.
+    final view = Projection(size, cameraZ);
     canvas.clipRect(Offset.zero & size);
-    canvas.drawImageRect(
-      image,
-      Rect.fromLTWH(0, 0, small.width, small.height),
-      Offset.zero & size,
-      Paint()
-        ..filterQuality = FilterQuality.none
-        ..isAntiAlias = false,
-    );
-    image.dispose();
 
-    // The paintings and plates, sharp, in the room's own coordinates.
-    if (overlay.isEmpty) return;
-    canvas.save();
-    canvas.scale(size.width / small.width, size.height / small.height);
+    final overlay = <void Function(Canvas)>[];
+    _hall(canvas, size, view);
+    _runner(canvas, view);
+    _lights(canvas, view);
+    // The end wall hides the floor, runner and lamps that would lie beyond it.
+    _end(canvas, view);
+    for (final slot in visibleSlots(slots, cameraZ)) {
+      _frame(canvas, view, slot, overlay);
+    }
+    // The paintings and plates go on top.
     for (final draw in overlay) {
       draw(canvas);
     }
-    canvas.restore();
   }
 
   // The hall -----------------------------------------------------------------
@@ -256,7 +211,12 @@ class CorridorPainter extends CustomPainter {
 
     // The four surfaces between depths [a] and [b].
     Path surface(int kind, double a, double b) => switch (kind) {
-      0 => _poly([p(-wx, top, a), p(wx, top, a), p(wx, top, b), p(-wx, top, b)]),
+      0 => _poly([
+        p(-wx, top, a),
+        p(wx, top, a),
+        p(wx, top, b),
+        p(-wx, top, b),
+      ]),
       1 => _poly([
         p(-wx, bottom, a),
         p(wx, bottom, a),
@@ -435,8 +395,8 @@ class CorridorPainter extends CustomPainter {
     }
   }
 
-  /// The far end: a wall with a bright doorway (like the opening at the end of a
-  /// real gallery hall). Far away it is only a dot at the vanishing point.
+  /// The far end: a wall with a shut door in it. Far away it is only a dot at
+  /// the vanishing point.
   void _end(Canvas canvas, Projection view) {
     final end = endZ;
     if (end == null) return;
@@ -459,21 +419,33 @@ class CorridorPainter extends CustomPainter {
     if (!style.doorway) return;
     // Seen from afar the door sits just inside the fog.
     final z = math.min(end, view.cameraZ + Corridor.far - 1);
-    final casing = [
-      at(-0.95, -1.12, z),
-      at(0.95, -1.12, z),
-      at(0.95, Corridor.floorY, z),
-      at(-0.95, Corridor.floorY, z),
+    List<Offset?> rect(double x0, double x1, double y0, double y1) => [
+      at(x0, y0, z),
+      at(x1, y0, z),
+      at(x1, y1, z),
+      at(x0, y1, z),
     ];
-    final door = [
-      at(-0.8, -1.0, z),
-      at(0.8, -1.0, z),
-      at(0.8, Corridor.floorY, z),
-      at(-0.8, Corridor.floorY, z),
-    ];
-    if (casing.any((c) => c == null) || door.any((c) => c == null)) return;
+    final casing = rect(-0.95, 0.95, -1.12, Corridor.floorY);
+    final leaf = rect(-0.8, 0.8, -1.0, Corridor.floorY);
+    if (casing.any((c) => c == null) || leaf.any((c) => c == null)) return;
+    // A shut door: black frame, a coloured leaf with two panels and a knob.
     canvas.drawPath(_poly(casing), _fill(CorridorColors.ink));
-    canvas.drawPath(_poly(door), _fill(CorridorColors.light));
+    canvas.drawPath(_poly(leaf), _fill(CorridorColors.doorLeaf));
+    final line = _outline(CorridorColors.ink);
+    for (final panel in [
+      rect(-0.55, 0.55, -0.8, 0.0),
+      rect(-0.55, 0.55, 0.25, 1.25),
+    ]) {
+      if (panel.any((c) => c == null)) continue;
+      canvas.drawPath(_poly(panel), line);
+    }
+    final knob = at(0.55, 0.55, z);
+    final knobSide = at(0.67, 0.55, z);
+    if (knob != null && knobSide != null) {
+      final radius = math.max(1.5, (knobSide - knob).distance);
+      canvas.drawCircle(knob, radius, _fill(CorridorColors.light));
+      canvas.drawCircle(knob, radius, line);
+    }
   }
 
   // Frames --------------------------------------------------------------------
@@ -552,10 +524,7 @@ class CorridorPainter extends CustomPainter {
     }
     if (image == null) {
       // Too far to see the detail, or not decoded yet: its average colour.
-      canvas.drawPath(
-        _poly(picture),
-        _fill(_average(entry).withAlpha(alpha)),
-      );
+      canvas.drawPath(_poly(picture), _fill(_average(entry).withAlpha(alpha)));
       canvas.drawPath(_poly(picture), _outline(ink.withAlpha(alpha)));
       return;
     }
@@ -568,7 +537,6 @@ class CorridorPainter extends CustomPainter {
         const Rect.fromLTWH(0, 0, 1, 1),
         Paint()
           ..filterQuality = FilterQuality.none
-          ..isAntiAlias = false
           ..color = Color.fromARGB(alpha, 255, 255, 255),
       );
       c.restore();

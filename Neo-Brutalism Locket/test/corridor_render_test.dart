@@ -9,7 +9,6 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_painter.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.dart';
-import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 
 const _palette = [
   0xFFF3E9D2, 0xFF1D2B53, 0xFF2F4B8F, 0xFF4D7FC4, //
@@ -69,71 +68,6 @@ GalleryEntry winnerSample(int n) {
 }
 
 void main() {
-  Future<void> shootHall(
-    WidgetTester tester, {
-    required double cameraZ,
-    String? writeTo,
-  }) async {
-    tester.view.physicalSize = const Size(400, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final entries = [for (var i = 1; i <= 12; i++) winnerSample(i)];
-    final slots = layoutHall(entries.length);
-    final cache = EntryImageCache();
-    await tester.runAsync(() async {
-      for (final slot in visibleSlots(slots, cameraZ)) {
-        await cache.load(entries[slot.index]);
-      }
-    });
-    final camera = ValueNotifier<double>(cameraZ);
-    await tester.pumpWidget(
-      Directionality(
-        textDirection: TextDirection.ltr,
-        child: RepaintBoundary(
-          child: SizedBox.expand(
-            child: CustomPaint(
-              painter: CorridorPainter(
-                camera: camera,
-                entries: entries,
-                slots: slots,
-                cache: cache,
-                style: CorridorStyle.hall,
-                decorOf: (e) => hallDecor(e, vietnamese: true),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    expect(tester.takeException(), isNull);
-    if (writeTo != null) {
-      final boundary = tester.renderObject<RenderRepaintBoundary>(
-        find.byType(RepaintBoundary).first,
-      );
-      final image = await tester.runAsync(() => boundary.toImage());
-      final bytes = await tester.runAsync(
-        () => image!.toByteData(format: ui.ImageByteFormat.png),
-      );
-      File(writeTo).writeAsBytesSync(bytes!.buffer.asUint8List());
-    }
-    await tester.pumpWidget(const SizedBox());
-    camera.dispose();
-    cache.dispose();
-  }
-
-  testWidgets('the Hall of Fame room at the entrance', (tester) async {
-    const path = String.fromEnvironment('HALL_PNG');
-    await shootHall(
-      tester,
-      cameraZ: const int.fromEnvironment('HALL_Z_TENTHS') / 10,
-      writeTo: path.isEmpty ? null : path,
-    );
-  });
-
-  testWidgets('the Hall of Fame room further in', (tester) async {
-    await shootHall(tester, cameraZ: 9);
-  });
-
   Future<void> shoot(
     WidgetTester tester, {
     required double cameraZ,
@@ -231,6 +165,18 @@ void main() {
 
   testWidgets('the light version for slow phones', (tester) async {
     await shoot(tester, cameraZ: 22.4, lite: true);
+  });
+
+  testWidgets('the door where the visitor stops', (tester) async {
+    final end = corridorLength(layoutGallery(100)) + 1;
+    await shoot(
+      tester,
+      cameraZ: end - 5,
+      lite: false,
+      writeTo: const String.fromEnvironment('GALLERY_END_PNG').isEmpty
+          ? null
+          : const String.fromEnvironment('GALLERY_END_PNG'),
+    );
   });
 
   testWidgets('the very end of the corridor', (tester) async {
