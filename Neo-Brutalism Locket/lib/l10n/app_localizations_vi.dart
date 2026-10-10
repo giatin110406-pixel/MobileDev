@@ -998,4 +998,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsHaptics => 'Rung khi chạm';
+
+  @override
+  String get holdToCompare => 'GIỮ ĐỂ SO SÁNH';
+
+  @override
+  String get holdToFilm => 'GIỮ ĐỂ QUAY';
 }

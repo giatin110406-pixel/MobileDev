@@ -11,6 +11,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
+import 'package:neo_brutalism_locket/features/camera/video_hint.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
@@ -137,6 +138,9 @@ class CameraTabState extends State<CameraTab> {
   void initState() {
     super.initState();
     _initializeCamera();
+    VideoHint.shouldShow().then((show) {
+      if (mounted && show) setState(() => _showVideoHint = true);
+    });
   }
 
   @override
@@ -385,6 +389,11 @@ class CameraTabState extends State<CameraTab> {
   /// it), otherwise shoots now.
   Future<void> _capture() async {
     if (_recording) return;
+    if (_showVideoHint) {
+      VideoHint.countTap().then((show) {
+        if (mounted && !show) setState(() => _showVideoHint = false);
+      });
+    }
     if (_countdown != null) {
       _cancelCountdown();
       return;
@@ -430,6 +439,9 @@ class CameraTabState extends State<CameraTab> {
     }
   }
 
+  /// Until the person has found "hold to film" on their own.
+  bool _showVideoHint = false;
+
   bool get _canRecord =>
       widget.onVideoRecorded != null &&
       !_questMode &&
@@ -474,6 +486,8 @@ class CameraTabState extends State<CameraTab> {
         return;
       }
       await widget.onVideoRecorded?.call(File(file.path));
+      VideoHint.markFilmed();
+      if (mounted && _showVideoHint) setState(() => _showVideoHint = false);
     } catch (_) {
       _notify(l10n.videoFailed);
     }
@@ -1103,81 +1117,10 @@ class CameraTabState extends State<CameraTab> {
             ),
           ),
         ),
-        Semantics(
-          button: true,
-          label: AppLocalizations.of(context).takePhotoLabel,
-          hint: widget.onVideoRecorded == null
-              ? null
-              : AppLocalizations.of(context).holdForVideo,
-          child: GestureDetector(
-            onTap: _processing
-                ? null
-                : () {
-                    Haptics.press();
-                    _capture();
-                  },
-            onLongPressStart: _canRecord
-                ? (_) {
-                    Haptics.heavy();
-                    _startVideo();
-                  }
-                : null,
-            onLongPressEnd: _canRecord || _recording
-                ? (_) {
-                    Haptics.light();
-                    _stopVideo();
-                  }
-                : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              width: 78,
-              height: 78,
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: _processing ? NeoColors.switchOff : NeoColors.ink,
-                shape: BoxShape.circle,
-                border: Border.all(color: NeoColors.ink, width: 2),
-                boxShadow: _processing
-                    ? const []
-                    : const [
-                        BoxShadow(
-                          color: NeoColors.ink,
-                          offset: Offset(4, 4),
-                          blurRadius: 0,
-                        ),
-                      ],
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: _recording ? NeoColors.pink : NeoColors.yellow,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: NeoColors.surface, width: 2),
-                ),
-                child: _processing
-                    ? const Padding(
-                        padding: EdgeInsets.all(17),
-                        child: CircularProgressIndicator(
-                          color: NeoColors.ink,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : _recording
-                    ? TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0, end: 1),
-                        duration: maxVideoLength,
-                        builder: (context, value, _) => Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: CircularProgressIndicator(
-                            value: value,
-                            color: NeoColors.ink,
-                            strokeWidth: 4,
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
-            ),
-          ),
+        Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [_shutterButton(), if (_hintVisible) _videoHintChip()],
         ),
         Expanded(
           child: Align(
@@ -1193,6 +1136,101 @@ class CameraTabState extends State<CameraTab> {
       ],
     );
   }
+
+  bool get _hintVisible => _showVideoHint && _canRecord && !_recording;
+
+  Widget _videoHintChip() => Positioned(
+    bottom: 98,
+    child: IgnorePointer(
+      child: NeoLabel(
+        AppLocalizations.of(context).holdToFilm,
+        color: NeoColors.yellow,
+        icon: Icons.videocam_outlined,
+      ),
+    ),
+  );
+
+  Widget _shutterButton() => Semantics(
+    button: true,
+    label: AppLocalizations.of(context).takePhotoLabel,
+    hint: widget.onVideoRecorded == null
+        ? null
+        : AppLocalizations.of(context).holdForVideo,
+    child: GestureDetector(
+      onTap: _processing
+          ? null
+          : () {
+              Haptics.press();
+              _capture();
+            },
+      onLongPressStart: _canRecord
+          ? (_) {
+              Haptics.heavy();
+              _startVideo();
+            }
+          : null,
+      onLongPressEnd: _canRecord || _recording
+          ? (_) {
+              Haptics.light();
+              _stopVideo();
+            }
+          : null,
+      child: CustomPaint(
+        foregroundPainter: _canRecord && !_recording
+            ? const DashedRingPainter()
+            : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: 78,
+          height: 78,
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: _processing ? NeoColors.switchOff : NeoColors.ink,
+            shape: BoxShape.circle,
+            border: Border.all(color: NeoColors.ink, width: 2),
+            boxShadow: _processing
+                ? const []
+                : const [
+                    BoxShadow(
+                      color: NeoColors.ink,
+                      offset: Offset(4, 4),
+                      blurRadius: 0,
+                    ),
+                  ],
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: _recording ? NeoColors.pink : NeoColors.yellow,
+              shape: BoxShape.circle,
+              border: Border.all(color: NeoColors.surface, width: 2),
+            ),
+            child: _processing
+                ? const Padding(
+                    padding: EdgeInsets.all(17),
+                    child: CircularProgressIndicator(
+                      color: NeoColors.ink,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : _recording
+                ? TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: maxVideoLength,
+                    builder: (context, value, _) => Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: CircularProgressIndicator(
+                        value: value,
+                        color: NeoColors.ink,
+                        strokeWidth: 4,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+        ),
+      ),
+    ),
+  );
 
   Widget _recentThumb() {
     final photo = widget.photos.isEmpty ? null : widget.photos.first;

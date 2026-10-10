@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -107,5 +108,70 @@ void main() {
     expect(find.text('8-BIT'), findsOneWidget);
     final pages = tester.widget<PageView>(find.byType(PageView)).controller!;
     expect(pages.page, 1);
+  });
+
+  testWidgets('holding shows the other side, letting go brings it back', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const Host());
+    final host = tester.state<HostState>(find.byType(Host));
+    expect(find.text('8-BIT'), findsOneWidget);
+
+    final hold = await tester.startGesture(
+      tester.getCenter(find.byType(PageView)),
+    );
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+    expect(find.text('ORIGINAL'), findsOneWidget);
+    expect(find.text('8-BIT'), findsNothing);
+    expect(host.showStyled, isTrue, reason: 'peeking does not switch sides');
+
+    await hold.up();
+    await tester.pumpAndSettle();
+    expect(find.text('8-BIT'), findsOneWidget);
+    expect(find.text('ORIGINAL'), findsNothing);
+    expect(host.showStyled, isTrue);
+  });
+
+  testWidgets('holding on the original peeks at the styled print', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const Host());
+    await tester.tap(find.byType(PageView));
+    await tester.pumpAndSettle();
+    expect(find.text('ORIGINAL'), findsOneWidget);
+
+    final hold = await tester.startGesture(
+      tester.getCenter(find.byType(PageView)),
+    );
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+    expect(find.text('8-BIT'), findsOneWidget);
+    await hold.up();
+    await tester.pumpAndSettle();
+    expect(find.text('ORIGINAL'), findsOneWidget);
+  });
+
+  testWidgets('the hold hint shows until the first hold', (tester) async {
+    await tester.pumpWidget(const Host());
+    expect(find.text('HOLD TO COMPARE'), findsOneWidget);
+    final hold = await tester.startGesture(
+      tester.getCenter(find.byType(PageView)),
+    );
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+    await hold.up();
+    await tester.pumpAndSettle();
+    expect(find.text('HOLD TO COMPARE'), findsNothing);
+  });
+
+  testWidgets('no hint and no peek while only the original exists', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const Host(styledPath: null));
+    expect(find.text('HOLD TO COMPARE'), findsNothing);
+    final hold = await tester.startGesture(
+      tester.getCenter(find.byType(PageView)),
+    );
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+    expect(find.text('ORIGINAL'), findsNothing);
+    await hold.up();
   });
 }
