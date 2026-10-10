@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
@@ -62,7 +63,9 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
   }
 
   void _toggle() {
-    if (_hasStyled) widget.onChanged(!widget.showStyled);
+    if (!_hasStyled) return;
+    Haptics.select();
+    widget.onChanged(!widget.showStyled);
   }
 
   Widget _picture(String path) => Image.file(
@@ -94,7 +97,10 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
             physics: _hasStyled
                 ? const PageScrollPhysics()
                 : const NeverScrollableScrollPhysics(),
-            onPageChanged: (page) => widget.onChanged(page == 1),
+            onPageChanged: (page) {
+              Haptics.select();
+              widget.onChanged(page == 1);
+            },
             children: [
               _picture(widget.originalPath),
               if (styled != null) _picture(styled),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 abstract final class NeoColors {
   static const paper = Color(0xFFECE6C2);
@@ -145,6 +146,7 @@ class _NeoButtonState extends State<NeoButton> {
 
   void _setPressed(bool value) {
     if (widget.onPressed == null || _pressed == value) return;
+    if (value) Haptics.press();
     setState(() => _pressed = value);
   }
 
@@ -237,7 +239,12 @@ class NeoSwitch extends StatelessWidget {
       toggled: value,
       enabled: onChanged != null,
       child: InkWell(
-        onTap: onChanged == null ? null : () => onChanged!(!value),
+        onTap: onChanged == null
+            ? null
+            : () {
+                Haptics.select();
+                onChanged!(!value);
+              },
         borderRadius: BorderRadius.circular(999),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -315,7 +322,12 @@ class NeoIconButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onPressed,
+          onTap: onPressed == null
+              ? null
+              : () {
+                  Haptics.light();
+                  onPressed!();
+                },
           child: Ink(
             width: 40,
             height: 40,

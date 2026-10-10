@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
@@ -1109,10 +1110,23 @@ class CameraTabState extends State<CameraTab> {
               ? null
               : AppLocalizations.of(context).holdForVideo,
           child: GestureDetector(
-            onTap: _processing ? null : _capture,
-            onLongPressStart: _canRecord ? (_) => _startVideo() : null,
+            onTap: _processing
+                ? null
+                : () {
+                    Haptics.press();
+                    _capture();
+                  },
+            onLongPressStart: _canRecord
+                ? (_) {
+                    Haptics.heavy();
+                    _startVideo();
+                  }
+                : null,
             onLongPressEnd: _canRecord || _recording
-                ? (_) => _stopVideo()
+                ? (_) {
+                    Haptics.light();
+                    _stopVideo();
+                  }
                 : null,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 100),

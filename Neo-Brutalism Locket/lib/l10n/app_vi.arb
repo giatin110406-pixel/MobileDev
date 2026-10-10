@@ -534,5 +534,7 @@
   "localProfileOnly": "CHỈ LƯU TRÊN MÁY",
   "handleLabel": "TÊN NGƯỜI DÙNG",
   "friendNameHint": "Tên của bạn bè",
-  "addToFriends": "THÊM VÀO BẠN BÈ"
+  "addToFriends": "THÊM VÀO BẠN BÈ",
+  "settingsFeedback": "CẢM GIÁC",
+  "settingsHaptics": "Rung khi chạm"
 }

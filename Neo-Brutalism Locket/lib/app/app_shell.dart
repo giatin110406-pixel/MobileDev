@@ -41,6 +41,7 @@ import 'package:neo_brutalism_locket/features/auth/account_session.dart';
 import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/friends/friends_store.dart';
 import 'package:neo_brutalism_locket/features/friends/friends_widgets.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:neo_brutalism_locket/features/camera/camera_experience.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
@@ -1259,6 +1260,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   }
 
   void _selectTab(int index) {
+    Haptics.select();
     setState(() {
       _tabIndex = index;
       _activeFriend = null;

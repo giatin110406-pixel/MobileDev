@@ -1873,6 +1873,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'THÊM VÀO BẠN BÈ'**
   String get addToFriends;
+
+  /// No description provided for @settingsFeedback.
+  ///
+  /// In vi, this message translates to:
+  /// **'CẢM GIÁC'**
+  String get settingsFeedback;
+
+  /// No description provided for @settingsHaptics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rung khi chạm'**
+  String get settingsHaptics;
 }
 
 class _AppLocalizationsDelegate
