@@ -9,15 +9,16 @@ import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.
 
 /// The colours of the exhibition hall.
 abstract final class CorridorColors {
-  static const wall = Color(0xFF3E5460); // dark grey-blue
-  static const wallFar = Color(0xFF5E7581);
+  static const wall = Color(0xFF53656F); // grey-blue
+  static const wallFar = Color(0xFF7B8D97);
   static const trim = Color(0xFFEDEAE0); // skirting and crown moulding
-  static const ceiling = Color(0xFFD5D2C9);
-  static const floor = Color(0xFF2B1C15); // dark polished wood
+  static const ceiling = Color(0xFFE6E3DA);
+  static const floor = Color(0xFF1D1410); // dark polished wood
   static const plank = Color(0x33000000);
-  static const runner = Color(0xFF6E1F2E);
-  static const runnerBorder = Color(0xFFC9A24B);
-  static const runnerMotif = Color(0xFF93384A);
+  static const runner = Color(0xFFDCCBA3); // a pale runner with a dark border
+  static const runnerBorder = Color(0xFF5B4630);
+  static const runnerMotif = Color(0xFFC2A56E);
+  static const blankCanvas = Color(0xFFF1EEE6);
   static const frame = Color(0xFF17110E);
   static const mat = Color(0xFFF5F2E9);
   static const light = Color(0xFFFFF6D6);
@@ -35,6 +36,8 @@ class CorridorStyle {
     required this.runnerBorder,
     required this.runnerMotif,
     this.ceilingLights = true,
+    this.roundMotif = false,
+    this.doorway = false,
   });
 
   final Color wall;
@@ -46,10 +49,16 @@ class CorridorStyle {
   final Color runnerBorder;
   final Color runnerMotif;
 
-  /// The round ceiling lights (the Hall of Fame has spot lights instead).
+  /// The recessed ceiling lights (the Hall of Fame has spot lights instead).
   final bool ceilingLights;
 
-  /// The exhibition corridor: grey-blue walls, dark wood, a burgundy runner.
+  /// Circles on the runner instead of diamonds.
+  final bool roundMotif;
+
+  /// A bright doorway at the far end of the corridor.
+  final bool doorway;
+
+  /// The exhibition corridor: grey-blue walls, dark wood, a pale runner.
   static const gallery = CorridorStyle(
     wall: CorridorColors.wall,
     wallFar: CorridorColors.wallFar,
@@ -59,6 +68,8 @@ class CorridorStyle {
     runner: CorridorColors.runner,
     runnerBorder: CorridorColors.runnerBorder,
     runnerMotif: CorridorColors.runnerMotif,
+    roundMotif: true,
+    doorway: true,
   );
 
   /// The Hall of Fame: deep night-blue walls, black floor, a royal runner.
@@ -92,6 +103,18 @@ class FrameDecor {
   final bool spot;
 }
 
+const _frameLooks = [
+  FrameDecor(frame: Color(0xFF2B1D14), mat: Color(0xFFF3EFE4)), // walnut
+  FrameDecor(frame: Color(0xFF131313), mat: Color(0xFFF8F6F0)), // black
+  FrameDecor(frame: Color(0xFFEFECE4), mat: Color(0xFFFAF8F3)), // white
+  FrameDecor(frame: Color(0xFF45301F), mat: Color(0xFFEDE6D4)), // espresso
+  FrameDecor(frame: Color(0xFF9B7A3C), mat: Color(0xFFF1EBDA)), // antique gold
+];
+
+/// The wood and mat of a Gallery frame, from the number the layout gave it.
+FrameDecor galleryFrameLook(int style) =>
+    _frameLooks[style % _frameLooks.length];
+
 /// Draws the corridor with one vanishing point, frames on both walls, and the
 /// pictures on the frames in real perspective. It repaints when the camera
 /// moves or a picture finishes decoding; nothing is rebuilt per frame.
@@ -106,6 +129,7 @@ class CorridorPainter extends CustomPainter {
     this.lite = false,
     this.style = CorridorStyle.gallery,
     this.decorOf,
+    this.endZ,
   }) : super(repaint: Listenable.merge([camera, cache]));
 
   final ValueListenable<double> camera;
@@ -117,6 +141,9 @@ class CorridorPainter extends CustomPainter {
 
   /// How to dress each frame (null: plain frames, as in the Gallery).
   final FrameDecor Function(GalleryEntry entry)? decorOf;
+
+  /// Where the corridor ends (null: it does not, as far as the eye can see).
+  final double? endZ;
 
   final Map<String, Color> _averages = {};
   final Map<String, TextPainter> _plaques = {};
@@ -131,6 +158,7 @@ class CorridorPainter extends CustomPainter {
     canvas.clipRect(Offset.zero & size);
 
     _hall(canvas, size, view);
+    _end(canvas, view);
     _runner(canvas, view);
     _lights(canvas, view);
     for (final slot in visibleSlots(slots, cameraZ)) {
@@ -201,7 +229,12 @@ class CorridorPainter extends CustomPainter {
 
     canvas.drawPath(
       ceiling,
-      shaded(style.ceiling, style.wallFar, Offset(size.width / 2, 0)),
+      // The ceiling stays pale and warm; it only dims a little toward the far end.
+      shaded(
+        style.ceiling,
+        Color.lerp(style.ceiling, style.wallFar, 0.3)!,
+        Offset(size.width / 2, 0),
+      ),
     );
     canvas.drawPath(
       floor,
@@ -222,21 +255,40 @@ class CorridorPainter extends CustomPainter {
       final x = side * wx;
       canvas.drawPath(
         _poly([
-          p(x, bottom - 0.2, z0),
+          p(x, bottom - 0.3, z0),
           p(x, bottom, z0),
           p(x, bottom, z1),
-          p(x, bottom - 0.2, z1),
+          p(x, bottom - 0.3, z1),
         ]),
         trim,
       );
       canvas.drawPath(
         _poly([
           p(x, top, z0),
-          p(x, top + 0.18, z0),
-          p(x, top + 0.18, z1),
+          p(x, top + 0.25, z0),
+          p(x, top + 0.25, z1),
           p(x, top, z1),
         ]),
         trim,
+      );
+      // The shadow under the moulding and a step in the skirting.
+      canvas.drawPath(
+        _poly([
+          p(x, top + 0.25, z0),
+          p(x, top + 0.31, z0),
+          p(x, top + 0.31, z1),
+          p(x, top + 0.25, z1),
+        ]),
+        Paint()..color = const Color(0x26000000),
+      );
+      canvas.drawPath(
+        _poly([
+          p(x, bottom - 0.3, z0),
+          p(x, bottom - 0.27, z0),
+          p(x, bottom - 0.27, z1),
+          p(x, bottom - 0.3, z1),
+        ]),
+        Paint()..color = const Color(0x22000000),
       );
     }
 
@@ -279,54 +331,92 @@ class CorridorPainter extends CustomPainter {
       _poly([p(-half, z0), p(half, z0), p(half, z1), p(-half, z1)]),
       Paint()..color = style.runner,
     );
-    // Gold borders along both edges.
+    // A border along both edges: a wide band and a thin line inside it.
     final border = Paint()..color = style.runnerBorder;
     for (final side in const [-1.0, 1.0]) {
-      final inner = side * (half - 0.07);
       final outer = side * half;
+      final inner = side * (half - 0.09);
       canvas.drawPath(
         _poly([p(inner, z0), p(outer, z0), p(outer, z1), p(inner, z1)]),
         border,
       );
+      final lineOuter = side * (half - 0.14);
+      final lineInner = side * (half - 0.16);
+      canvas.drawPath(
+        _poly([
+          p(lineInner, z0),
+          p(lineOuter, z0),
+          p(lineOuter, z1),
+          p(lineInner, z1),
+        ]),
+        border,
+      );
     }
     if (lite) return;
-    // A diamond in the middle of every metre.
+    // A motif in the middle of every metre, and a row of small ones in the border.
     final motif = Paint()..color = style.runnerMotif;
     final first = view.cameraZ.floorToDouble() + 1;
     for (var z = first; z < view.cameraZ + 22; z += 1) {
       final centre = z + 0.5;
       if (centre - view.cameraZ < Corridor.near) continue;
-      canvas.drawPath(
-        _poly([
-          view.point(0, bottom, centre - 0.32),
-          view.point(0.32, bottom, centre),
-          view.point(0, bottom, centre + 0.32),
-          view.point(-0.32, bottom, centre),
-        ]),
-        motif,
-      );
+      if (style.roundMotif) {
+        canvas.drawPath(_circleOnFloor(view, 0, centre, 0.3), motif);
+        for (final side in const [-1.0, 1.0]) {
+          canvas.drawPath(
+            _circleOnFloor(view, side * (half - 0.045), centre, 0.03),
+            Paint()..color = style.runner,
+          );
+        }
+      } else {
+        canvas.drawPath(
+          _poly([
+            view.point(0, bottom, centre - 0.32),
+            view.point(0.32, bottom, centre),
+            view.point(0, bottom, centre + 0.32),
+            view.point(-0.32, bottom, centre),
+          ]),
+          motif,
+        );
+      }
     }
+  }
+
+  /// A circle lying on the floor, as the visitor sees it (an ellipse).
+  Path _circleOnFloor(Projection view, double x, double z, double radius) {
+    final points = <Offset?>[
+      for (var i = 0; i < 32; i++)
+        view.point(
+          x + radius * math.cos(i * math.pi * 2 / 32),
+          Corridor.floorY,
+          z + radius * math.sin(i * math.pi * 2 / 32),
+        ),
+    ];
+    return _poly(points);
   }
 
   void _lights(Canvas canvas, Projection view) {
     if (!style.ceilingLights) return;
     const top = Corridor.ceilingY;
-    final first = (view.cameraZ / 4).floor() * 4 + 4;
-    for (var z = first.toDouble(); z < view.cameraZ + 28; z += 4) {
-      if (z - view.cameraZ < 1) continue;
-      final corners = [
-        view.point(-0.3, top, z - 0.2),
-        view.point(0.3, top, z - 0.2),
-        view.point(0.3, top, z + 0.2),
-        view.point(-0.3, top, z + 0.2),
+    const spacing = 2.6;
+    final first = (view.cameraZ / spacing).floor() * spacing + spacing;
+    for (var z = first; z < view.cameraZ + Corridor.far; z += spacing) {
+      if (z - view.cameraZ < 0.8) continue;
+      // The lamp: a small round hole in the ceiling with a bright disc in it.
+      final lamp = <Offset?>[
+        for (var i = 0; i < 12; i++)
+          view.point(
+            0.11 * math.cos(i * math.pi * 2 / 12),
+            top,
+            z + 0.11 * math.sin(i * math.pi * 2 / 12),
+          ),
       ];
-      if (corners.any((c) => c == null)) continue;
-      canvas.drawPath(_poly(corners), Paint()..color = CorridorColors.light);
+      if (lamp.any((c) => c == null)) continue;
+      canvas.drawPath(_poly(lamp), Paint()..color = CorridorColors.light);
       if (lite) continue;
-      // A pool of light on the carpet below.
+      // A pool of light on the floor below.
       final pool = view.point(0, Corridor.floorY, z);
       if (pool == null) continue;
-      final radius = view.focal * 1.1 / (z - view.cameraZ);
+      final radius = view.focal * 0.9 / (z - view.cameraZ);
       canvas.save();
       canvas.translate(pool.dx, pool.dy);
       canvas.scale(1, 0.28);
@@ -335,12 +425,78 @@ class CorridorPainter extends CustomPainter {
         radius,
         Paint()
           ..shader = ui.Gradient.radial(Offset.zero, radius, const [
-            Color(0x40FFF6D6),
+            Color(0x38FFF6D6),
             Color(0x00FFF6D6),
           ]),
       );
       canvas.restore();
     }
+  }
+
+  /// The far end: a wall with a bright doorway (like the opening at the end of a
+  /// real gallery hall). Far away it is only a glow at the vanishing point.
+  void _end(Canvas canvas, Projection view) {
+    final end = endZ;
+    if (end == null) return;
+    const wx = Corridor.wallX;
+    final distance = end - view.cameraZ;
+    if (distance < Corridor.near + 0.3) return;
+    Offset? at(double x, double y, double z) => view.point(x, y, z);
+
+    if (distance <= Corridor.far) {
+      final corners = [
+        at(-wx, Corridor.ceilingY, end),
+        at(wx, Corridor.ceilingY, end),
+        at(wx, Corridor.floorY, end),
+        at(-wx, Corridor.floorY, end),
+      ];
+      if (corners.any((c) => c == null)) return;
+      canvas.drawPath(_poly(corners), Paint()..color = style.wall);
+    }
+    if (!style.doorway) return;
+    // Seen from afar the door sits just inside the fog.
+    final z = math.min(end, view.cameraZ + Corridor.far - 1);
+    final casing = [
+      at(-0.95, -1.12, z),
+      at(0.95, -1.12, z),
+      at(0.95, Corridor.floorY, z),
+      at(-0.95, Corridor.floorY, z),
+    ];
+    final door = [
+      at(-0.82, -1.0, z),
+      at(0.82, -1.0, z),
+      at(0.82, Corridor.floorY, z),
+      at(-0.82, Corridor.floorY, z),
+    ];
+    if (casing.any((c) => c == null) || door.any((c) => c == null)) return;
+    canvas.drawPath(_poly(casing), Paint()..color = CorridorColors.trim);
+    canvas.drawPath(
+      _poly(door),
+      Paint()
+        ..shader = lite
+            ? null
+            : ui.Gradient.linear(door[0]!, door[3]!, const [
+                Color(0xFFFFF6DE),
+                Color(0xFFEBD8AE),
+              ])
+        ..color = const Color(0xFFFFF0CC),
+    );
+    if (lite) return;
+    // A glow around it.
+    final centre = Offset(
+      (door[0]!.dx + door[1]!.dx) / 2,
+      (door[0]!.dy + door[3]!.dy) / 2,
+    );
+    final radius = (door[1]!.dx - door[0]!.dx) * 1.6;
+    canvas.drawCircle(
+      centre,
+      radius,
+      Paint()
+        ..shader = ui.Gradient.radial(centre, radius, const [
+          Color(0x40FFF3D0),
+          Color(0x00FFF3D0),
+        ]),
+    );
   }
 
   void _haze(Canvas canvas, Size size, Projection view) {
@@ -367,18 +523,63 @@ class CorridorPainter extends CustomPainter {
         : (1 - (depth - 18) / (Corridor.far - 18)).clamp(0.0, 1.0);
     final alpha = (fade * 255).round();
 
-    final entry = entries[slot.index];
-    final decor = decorOf?.call(entry) ?? const FrameDecor();
-    if (decor.spot && !lite) _spot(canvas, view, slot, alpha);
+    final entry = !slot.isBlank && slot.index < entries.length
+        ? entries[slot.index]
+        : null;
+    final decor = entry != null && decorOf != null
+        ? decorOf!(entry)
+        : galleryFrameLook(slot.style);
+    if (entry != null && decor.spot && !lite) _spot(canvas, view, slot, alpha);
 
+    // A soft shadow on the wall, down and a little behind the frame.
+    if (!lite) {
+      final shadow = view.wallQuad(
+        FrameSlot(
+          index: -1,
+          side: slot.side,
+          z0: slot.z0 + 0.03,
+          z1: slot.z1 + 0.03,
+          yTop: slot.yTop + 0.07,
+          yBottom: slot.yBottom + 0.07,
+        ),
+      );
+      if (shadow != null) {
+        canvas.drawPath(
+          _poly(shadow),
+          Paint()..color = Color.fromARGB((60 * fade).round(), 0, 0, 0),
+        );
+      }
+    }
     canvas.drawPath(
       _poly(outer),
       Paint()..color = decor.frame.withAlpha(alpha),
     );
     final mat = view.wallQuad(slot, inset: 0.06);
-    final picture = view.wallQuad(slot, inset: 0.13);
-    if (mat == null || picture == null) return;
+    if (mat == null) return;
     canvas.drawPath(_poly(mat), Paint()..color = decor.mat.withAlpha(alpha));
+
+    if (entry == null) {
+      // A blank canvas, waiting for a painting.
+      final canvasQuad = view.wallQuad(slot, inset: 0.13);
+      if (canvasQuad == null) return;
+      canvas.drawPath(
+        _poly(canvasQuad),
+        Paint()..color = CorridorColors.blankCanvas.withAlpha(alpha),
+      );
+      if (!lite) {
+        canvas.drawPath(
+          _poly(canvasQuad),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1
+            ..color = Color.fromARGB((46 * fade).round(), 0, 0, 0),
+        );
+      }
+      return;
+    }
+
+    final picture = view.artQuad(slot);
+    if (picture == null) return;
     if (decor.plaque.isNotEmpty && depth < 9) {
       _plate(canvas, view, slot, entry, decor.plaque);
     }

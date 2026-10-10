@@ -164,14 +164,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
               ),
       );
     }
-    if (_store.entries.isEmpty) {
-      return Center(
-        child: _Notice(text: AppLocalizations.of(context).galleryEmpty),
-      );
-    }
+    final empty = _store.entries.isEmpty;
     return Stack(
       children: [
-        if (_grid)
+        if (_grid && empty)
+          Center(
+            child: _Notice(text: AppLocalizations.of(context).galleryEmpty),
+          )
+        else if (_grid)
           GalleryGrid(entries: _store.entries, onOpen: _open)
         else
           CorridorView(
@@ -179,6 +179,30 @@ class _GalleryScreenState extends State<GalleryScreen> {
             cache: _cache,
             onOpen: _open,
             onNearEnd: _store.hasMore ? _store.loadMore : null,
+          ),
+        // With no entry yet the corridor is still there, with blank canvases on
+        // every wall; a note says what will happen.
+        if (empty && !_grid)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: IgnorePointer(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: NeoTheme.panel(color: NeoColors.surface),
+                child: Text(
+                  AppLocalizations.of(context).galleryEmpty,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 12,
+                    height: 1.3,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
           ),
         if (_store.error != null)
           Positioned(

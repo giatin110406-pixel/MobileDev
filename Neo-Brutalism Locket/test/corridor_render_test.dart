@@ -139,17 +139,18 @@ void main() {
     required double cameraZ,
     required bool lite,
     String? writeTo,
+    int count = 100,
   }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final entries = [for (var i = 1; i <= 100; i++) sample(i)];
-    final slots = layoutFrames([for (final e in entries) e.id]);
+    final entries = [for (var i = 1; i <= count; i++) sample(i)];
+    final slots = layoutGallery(entries.length);
     final cache = EntryImageCache();
     // Decode every picture that can be on screen, as the app does while painting.
     await tester.runAsync(() async {
       for (final slot in visibleSlots(slots, cameraZ)) {
-        await cache.load(entries[slot.index]);
+        if (!slot.isBlank) await cache.load(entries[slot.index]);
       }
     });
     final camera = ValueNotifier<double>(cameraZ);
@@ -165,6 +166,7 @@ void main() {
                 slots: slots,
                 cache: cache,
                 lite: lite,
+                endZ: corridorLength(slots) + 1,
               ),
             ),
           ),
@@ -188,6 +190,28 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     camera.dispose();
     cache.dispose();
+  }
+
+  // Pictures of the Gallery, written when the paths are given (see docs/).
+  for (final (name, define, count, z) in const [
+    ('with no entry', String.fromEnvironment('GALLERY_EMPTY_PNG'), 0, 0.0),
+    ('with a few entries', String.fromEnvironment('GALLERY_FEW_PNG'), 7, 0.0),
+    (
+      'with many entries, further in',
+      String.fromEnvironment('GALLERY_MANY_PNG'),
+      100,
+      30.0,
+    ),
+  ]) {
+    testWidgets('the Gallery $name', (tester) async {
+      await shoot(
+        tester,
+        cameraZ: z,
+        lite: false,
+        count: count,
+        writeTo: define.isEmpty ? null : define,
+      );
+    });
   }
 
   testWidgets('the corridor at the entrance', (tester) async {

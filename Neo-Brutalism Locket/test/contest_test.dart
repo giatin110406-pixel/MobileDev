@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' show Offset, Size;
 
@@ -195,8 +196,10 @@ class FakeContest implements ContestRepository {
   }
 
   @override
-  Future<List<EntryComment>> comments(String entryId, {DateTime? before}) async =>
-      List.of(commentList);
+  Future<List<EntryComment>> comments(
+    String entryId, {
+    DateTime? before,
+  }) async => List.of(commentList);
 
   @override
   Future<void> vote(String entryId, int score) async {
@@ -255,7 +258,10 @@ class FakeContest implements ContestRepository {
       );
 
   @override
-  Future<List<GalleryEntry>> hallOfFame({int offset = 0, int limit = 12}) async {
+  Future<List<GalleryEntry>> hallOfFame({
+    int offset = 0,
+    int limit = 12,
+  }) async {
     _maybeFail();
     return hall.skip(offset).take(limit).toList();
   }
@@ -417,53 +423,60 @@ void main() {
       store.dispose();
     });
 
-    test('only groups I own and that have not entered can submit, while open',
-        () async {
-      final repo = FakeContest(
-        current: overviewOf(
-          owned: const [
-            OwnedGroup(id: 'g1', name: 'A', submitted: true),
-            OwnedGroup(id: 'g2', name: 'B', submitted: false),
-          ],
-        ),
-      );
-      final store = ContestStore(repo, clock: () => t0);
-      await store.refresh();
-      expect(store.submittableGroups.map((g) => g.id), ['g2']);
-      repo.current = overviewOf(
-        contest: contestInfo(opensIn: const Duration(hours: 4)),
-        owned: const [OwnedGroup(id: 'g2', name: 'B', submitted: false)],
-      );
-      await store.refresh();
-      expect(store.submittableGroups, isEmpty);
-      store.dispose();
-    });
+    test(
+      'only groups I own and that have not entered can submit, while open',
+      () async {
+        final repo = FakeContest(
+          current: overviewOf(
+            owned: const [
+              OwnedGroup(id: 'g1', name: 'A', submitted: true),
+              OwnedGroup(id: 'g2', name: 'B', submitted: false),
+            ],
+          ),
+        );
+        final store = ContestStore(repo, clock: () => t0);
+        await store.refresh();
+        expect(store.submittableGroups.map((g) => g.id), ['g2']);
+        repo.current = overviewOf(
+          contest: contestInfo(opensIn: const Duration(hours: 4)),
+          owned: const [OwnedGroup(id: 'g2', name: 'B', submitted: false)],
+        );
+        await store.refresh();
+        expect(store.submittableGroups, isEmpty);
+        store.dispose();
+      },
+    );
 
-    test('submitting returns the place and reloads, also after a refusal',
-        () async {
-      final repo = FakeContest(
-        current: overviewOf(
-          owned: const [OwnedGroup(id: 'g1', name: 'A', submitted: false)],
-        ),
-      );
-      final store = ContestStore(repo, clock: () => t0);
-      await store.refresh();
-      final before = repo.calls.where((c) => c == 'overview').length;
-      expect(await store.submit(store.submittableGroups.single), 7);
-      expect(repo.calls, contains('submit:g1:c1'));
-      expect(
-        repo.calls.where((c) => c == 'overview').length,
-        greaterThan(before),
-      );
-      repo.failNext = const ContestFailure(ContestFailureKind.contestFull);
-      final mid = repo.calls.where((c) => c == 'overview').length;
-      await expectLater(
-        store.submit(const OwnedGroup(id: 'g1', name: 'A', submitted: false)),
-        throwsA(isA<ContestFailure>()),
-      );
-      expect(repo.calls.where((c) => c == 'overview').length, greaterThan(mid));
-      store.dispose();
-    });
+    test(
+      'submitting returns the place and reloads, also after a refusal',
+      () async {
+        final repo = FakeContest(
+          current: overviewOf(
+            owned: const [OwnedGroup(id: 'g1', name: 'A', submitted: false)],
+          ),
+        );
+        final store = ContestStore(repo, clock: () => t0);
+        await store.refresh();
+        final before = repo.calls.where((c) => c == 'overview').length;
+        expect(await store.submit(store.submittableGroups.single), 7);
+        expect(repo.calls, contains('submit:g1:c1'));
+        expect(
+          repo.calls.where((c) => c == 'overview').length,
+          greaterThan(before),
+        );
+        repo.failNext = const ContestFailure(ContestFailureKind.contestFull);
+        final mid = repo.calls.where((c) => c == 'overview').length;
+        await expectLater(
+          store.submit(const OwnedGroup(id: 'g1', name: 'A', submitted: false)),
+          throwsA(isA<ContestFailure>()),
+        );
+        expect(
+          repo.calls.where((c) => c == 'overview').length,
+          greaterThan(mid),
+        );
+        store.dispose();
+      },
+    );
 
     test('a failed refresh keeps what was shown', () async {
       final repo = FakeContest(current: overviewOf());
@@ -507,22 +520,26 @@ void main() {
       expect(store.hasMore, isTrue);
       await store.loadMore();
       await store.loadMore();
-      expect(store.entries.map((e) => e.seq), [for (var i = 1; i <= 45; i++) i]);
+      expect(store.entries.map((e) => e.seq), [
+        for (var i = 1; i <= 45; i++) i,
+      ]);
       expect(store.hasMore, isFalse);
       expect(repo.pageLoads, 3);
       await store.loadMore(); // nothing left: no request
       expect(repo.pageLoads, 3);
     });
 
-    test('asking twice at once loads one page, and never repeats an entry',
-        () async {
-      final repo = manyEntries(30);
-      final store = GalleryStore(repo, pageSize: 20);
-      await store.load();
-      await Future.wait([store.loadMore(), store.loadMore()]);
-      expect(repo.pageLoads, 2);
-      expect(store.entries.length, 30);
-    });
+    test(
+      'asking twice at once loads one page, and never repeats an entry',
+      () async {
+        final repo = manyEntries(30);
+        final store = GalleryStore(repo, pageSize: 20);
+        await store.load();
+        await Future.wait([store.loadMore(), store.loadMore()]);
+        expect(repo.pageLoads, 2);
+        expect(store.entries.length, 30);
+      },
+    );
 
     test('a failed page keeps the entries and can be retried', () async {
       final repo = manyEntries(30);
@@ -635,28 +652,74 @@ void main() {
   });
 
   group('corridor geometry', () {
-    final ids = [for (var i = 0; i < 100; i++) 'entry-$i'];
+    bool suits(FrameSlot s) =>
+        math.min(s.width, s.height) >= 0.89 &&
+        s.width / s.height >= 0.65 &&
+        s.width / s.height <= 1.55;
 
-    test('the layout is the same every time and uses every entry once', () {
-      final a = layoutFrames(ids);
-      final b = layoutFrames(ids);
-      expect(a.length, 100);
-      expect({for (final s in a) s.index}.length, 100);
+    test('the wall is the same every time and every entry has one frame', () {
+      final a = layoutGallery(100);
+      final b = layoutGallery(100);
+      expect(a.length, b.length);
       for (var i = 0; i < a.length; i++) {
         expect(a[i].z0, b[i].z0);
         expect(a[i].yTop, b[i].yTop);
+        expect(a[i].index, b[i].index);
+        expect(a[i].style, b[i].style);
+      }
+      final entries = [
+        for (final s in a)
+          if (!s.isBlank) s.index,
+      ];
+      expect(entries.toSet(), {for (var i = 0; i < 100; i++) i});
+      expect(entries.length, 100);
+    });
+
+    test(
+      'with no entry the corridor still has walls full of blank canvases',
+      () {
+        final slots = layoutGallery(0);
+        expect(slots.every((s) => s.isBlank), isTrue);
+        expect(slots.where(suits).length, greaterThanOrEqualTo(36));
+        expect(slots.any((s) => s.side < 0), isTrue);
+        expect(slots.any((s) => s.side > 0), isTrue);
+        expect(corridorLength(slots), greaterThan(20));
+      },
+    );
+
+    test('entries hang from the entrance outwards, in the order accepted', () {
+      final slots = layoutGallery(60).where((s) => !s.isBlank).toList()
+        ..sort((x, y) => x.index.compareTo(y.index));
+      for (var i = 1; i < slots.length; i++) {
+        final before = slots[i - 1], after = slots[i];
+        expect(
+          after.z0 > before.z0 ||
+              (after.z0 == before.z0 && after.side >= before.side),
+          isTrue,
+          reason: 'entry $i hangs before entry ${i - 1}',
+        );
+      }
+      // Both walls get paintings.
+      expect(slots.any((s) => s.side < 0), isTrue);
+      expect(slots.any((s) => s.side > 0), isTrue);
+    });
+
+    test('a painting only goes in a frame that suits it', () {
+      for (final slot in layoutGallery(100)) {
+        if (!slot.isBlank) expect(suits(slot), isTrue);
       }
     });
 
-    test('the first entry hangs on the left and they alternate', () {
-      final slots = layoutFrames(ids);
-      for (final slot in slots) {
-        expect(slot.side, slot.index.isEven ? -1 : 1);
+    test('there is always more wall after the last entry', () {
+      for (final n in [0, 1, 7, 40, 100]) {
+        final slots = layoutGallery(n);
+        final free = slots.where((s) => s.isBlank && suits(s)).length;
+        expect(free, greaterThanOrEqualTo(16), reason: '$n entries');
       }
     });
 
-    test('no two frames on the same wall overlap and none leaves the wall', () {
-      final slots = layoutFrames(ids);
+    test('no two frames on a wall overlap and none leaves the wall', () {
+      final slots = layoutGallery(100);
       for (final slot in slots) {
         expect(slot.z0, greaterThanOrEqualTo(Corridor.startZ));
         expect(slot.yTop, greaterThanOrEqualTo(Corridor.wallTop - 1e-9));
@@ -668,21 +731,75 @@ void main() {
           final a = slots[i], b = slots[j];
           if (a.side != b.side) continue;
           final zOverlap = a.z0 < b.z1 - 1e-9 && b.z0 < a.z1 - 1e-9;
-          final yOverlap = a.yTop < b.yBottom - 1e-9 && b.yTop < a.yBottom - 1e-9;
-          expect(zOverlap && yOverlap, isFalse, reason: 'frames $i and $j overlap');
+          final yOverlap =
+              a.yTop < b.yBottom - 1e-9 && b.yTop < a.yBottom - 1e-9;
+          expect(
+            zOverlap && yOverlap,
+            isFalse,
+            reason: 'frames $i and $j overlap',
+          );
         }
       }
     });
 
-    test('some small frames are stacked in pairs (a salon wall)', () {
-      final slots = layoutFrames(ids);
-      var pairs = 0;
+    test('the walls are covered like a salon wall, not dotted with frames', () {
+      final slots = layoutGallery(60);
+      const length = 20.0;
+      for (final side in const [-1, 1]) {
+        var framed = 0.0;
+        for (final s in slots.where((s) => s.side == side && s.z1 <= length)) {
+          framed += s.width * s.height;
+        }
+        const wall =
+            (length - Corridor.startZ) *
+            (Corridor.wallBottom - Corridor.wallTop);
+        expect(framed / wall, greaterThan(0.5), reason: 'side $side');
+      }
+    });
+
+    test('the frames come in many sizes, and some hang above one another', () {
+      final slots = layoutGallery(100);
+      final sizes = {
+        for (final s in slots)
+          '${s.width.toStringAsFixed(2)}x${s.height.toStringAsFixed(2)}',
+      };
+      expect(sizes.length, greaterThanOrEqualTo(6));
+      var stacked = 0;
       for (final a in slots) {
         for (final b in slots) {
-          if (a.index < b.index && a.side == b.side && a.z0 == b.z0) pairs++;
+          if (identical(a, b) || a.side != b.side) continue;
+          if (a.z0 == b.z0 && a.yBottom < b.yTop) stacked++;
         }
       }
-      expect(pairs, greaterThan(0));
+      expect(stacked, greaterThan(0));
+      expect({for (final s in slots) s.style}.length, greaterThanOrEqualTo(4));
+    });
+
+    test('more entries only add wall at the far end, the near wall stays', () {
+      String key(FrameSlot s) =>
+          '${s.side}:${s.z0.toStringAsFixed(3)}:${s.yTop.toStringAsFixed(3)}:${s.style}';
+      final few = {
+        for (final s in layoutGallery(5).where((s) => s.z1 < 18)) key(s),
+      };
+      final many = {
+        for (final s in layoutGallery(90).where((s) => s.z1 < 18)) key(s),
+      };
+      expect(few, many);
+    });
+
+    test('a painting is a square in the middle of its frame', () {
+      final view = Projection(const Size(400, 800), 0);
+      final slot = layoutGallery(10).firstWhere((s) => !s.isBlank);
+      final outer = view.wallQuad(slot)!;
+      final art = view.artQuad(slot)!;
+      final centre = Offset(
+        art.map((p) => p.dx).reduce((x, y) => x + y) / 4,
+        art.map((p) => p.dy).reduce((x, y) => x + y) / 4,
+      );
+      expect(pointInQuad(centre, outer), isTrue);
+      for (final corner in art) {
+        expect(pointInQuad(corner, outer), isTrue);
+      }
     });
 
     test('a point far down the corridor lands on the vanishing point', () {
@@ -709,11 +826,20 @@ void main() {
 
     test('a frame on the left wall: its left edge is the near one', () {
       const slot = FrameSlot(
-        index: 0, side: -1, z0: 3, z1: 4, yTop: -0.5, yBottom: 0.5);
+        index: 0,
+        side: -1,
+        z0: 3,
+        z1: 4,
+        yTop: -0.5,
+        yBottom: 0.5,
+      );
       final view = Projection(const Size(400, 800), 0);
       final quad = view.wallQuad(slot)!;
       // Top-left is nearer than top-right, so it is further from the centre.
-      expect((quad[0].dx - view.cx).abs(), greaterThan((quad[1].dx - view.cx).abs()));
+      expect(
+        (quad[0].dx - view.cx).abs(),
+        greaterThan((quad[1].dx - view.cx).abs()),
+      );
       // The wall is on the left of the centre.
       expect(quad[0].dx, lessThan(view.cx));
       // A frame is taller near the visitor than far away.
@@ -722,9 +848,21 @@ void main() {
 
     test('a frame on the right wall is the mirror image', () {
       const left = FrameSlot(
-        index: 0, side: -1, z0: 3, z1: 4, yTop: -0.5, yBottom: 0.5);
+        index: 0,
+        side: -1,
+        z0: 3,
+        z1: 4,
+        yTop: -0.5,
+        yBottom: 0.5,
+      );
       const right = FrameSlot(
-        index: 1, side: 1, z0: 3, z1: 4, yTop: -0.5, yBottom: 0.5);
+        index: 1,
+        side: 1,
+        z0: 3,
+        z1: 4,
+        yTop: -0.5,
+        yBottom: 0.5,
+      );
       final view = Projection(const Size(400, 800), 0);
       final a = view.wallQuad(left)!;
       final b = view.wallQuad(right)!;
@@ -739,7 +877,13 @@ void main() {
 
     test('the matrix maps the picture corners onto the frame corners', () {
       const slot = FrameSlot(
-        index: 0, side: 1, z0: 3, z1: 4.4, yTop: -0.7, yBottom: 0.7);
+        index: 0,
+        side: 1,
+        z0: 3,
+        z1: 4.4,
+        yTop: -0.7,
+        yBottom: 0.7,
+      );
       final view = Projection(const Size(400, 800), 0);
       final quad = view.wallQuad(slot)!;
       final matrix = unitSquareToQuad(quad);
@@ -755,7 +899,13 @@ void main() {
       // On a wall, the middle of the picture in 3D is nearer than the middle of
       // the shape on screen: it must be on the near side of the screen middle.
       const slot = FrameSlot(
-        index: 0, side: -1, z0: 3, z1: 6, yTop: -0.5, yBottom: 0.5);
+        index: 0,
+        side: -1,
+        z0: 3,
+        z1: 6,
+        yTop: -0.5,
+        yBottom: 0.5,
+      );
       final view = Projection(const Size(400, 800), 0);
       final quad = view.wallQuad(slot)!;
       final matrix = unitSquareToQuad(quad);
@@ -772,7 +922,10 @@ void main() {
 
     test('a flat (parallel) quad still maps correctly', () {
       final matrix = unitSquareToQuad(const [
-        Offset(10, 20), Offset(110, 20), Offset(110, 70), Offset(10, 70),
+        Offset(10, 20),
+        Offset(110, 20),
+        Offset(110, 70),
+        Offset(10, 70),
       ]);
       expect(applyToUnit(matrix, 0.5, 0.5), const Offset(60, 45));
     });
@@ -785,7 +938,7 @@ void main() {
     });
 
     test('frames to draw: only what is ahead and in range, far ones first', () {
-      final slots = layoutFrames(ids);
+      final slots = layoutGallery(100);
       final visible = visibleSlots(slots, 20);
       for (final slot in visible) {
         expect(slot.z0 - 20, greaterThanOrEqualTo(Corridor.near));
@@ -798,7 +951,7 @@ void main() {
     });
 
     test('a tap finds the frame under it, and nothing on the bare wall', () {
-      final slots = layoutFrames(ids);
+      final slots = layoutGallery(100);
       final view = Projection(const Size(400, 800), 0);
       final first = slots.firstWhere((s) => s.index == 0);
       final quad = view.wallQuad(first)!;
@@ -809,10 +962,20 @@ void main() {
       expect(hitTest(centre, slots, view)?.index, 0);
       // The middle of the floor has no frame.
       expect(hitTest(Offset(200, 790), slots, view), isNull);
+      // A blank canvas has nothing to open.
+      final blank = slots.firstWhere(
+        (s) => s.isBlank && s.z0 > Corridor.startZ + 1,
+      );
+      final blankQuad = view.wallQuad(blank)!;
+      final blankCentre = Offset(
+        blankQuad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
+        blankQuad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
+      );
+      expect(hitTest(blankCentre, slots, view)?.isBlank ?? true, isTrue);
     });
 
     test('the corridor is as long as its last frame', () {
-      final slots = layoutFrames(ids);
+      final slots = layoutGallery(100);
       expect(
         corridorLength(slots),
         slots.map((s) => s.z1).reduce((a, b) => a > b ? a : b),
