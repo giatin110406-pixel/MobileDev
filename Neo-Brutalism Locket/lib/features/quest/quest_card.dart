@@ -7,6 +7,7 @@ import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Where today's quest stands for the user.
 enum QuestStatus { open, passed, outOfTries, done }
@@ -40,7 +41,7 @@ class QuestStrip extends StatelessWidget {
         context,
       ).questSemantics(quest.subjectFor(vietnamese: isVietnamese(context))),
       child: InkWell(
-        onTap: onTap,
+        onTap: Haptics.tap(onTap),
         borderRadius: BorderRadius.circular(8),
         child: Container(
           height: 52,

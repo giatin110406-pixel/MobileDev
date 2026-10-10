@@ -9,6 +9,7 @@ import 'package:neo_brutalism_locket/features/auth/profile_repository.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// First sign-in: pick a display name, a unique username and (optionally) a
 /// profile photo. Calls [onDone] with the saved profile.
@@ -200,7 +201,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: _saving ? null : _pickPhoto,
+                        onTap: Haptics.tap(_saving ? null : _pickPhoto),
                         child: Container(
                           key: const ValueKey('avatar-picker'),
                           width: 84,

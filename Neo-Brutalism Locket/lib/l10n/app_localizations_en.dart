@@ -2456,4 +2456,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String shopLimitedNote(int left, int total) {
     return 'Limited edition: $left of $total left. 20% of every sale is shared by the group that painted it.';
   }
+
+  @override
+  String get settingsHapticsDirect =>
+      'Strong buzz (drive the vibration motor directly)';
+
+  @override
+  String get settingsHapticsDirectHint =>
+      'Turn this on if taps do not vibrate. It ignores the phone\'s \"touch vibration\" setting.';
+
+  @override
+  String get settingsHapticsTest => 'Vibration check';
+
+  @override
+  String get hcTitle => 'VIBRATION CHECK';
+
+  @override
+  String get hcMotor => 'Vibration motor';
+
+  @override
+  String get hcStrengths => 'Several strengths';
+
+  @override
+  String get hcPhoneSetting => 'Phone setting: touch vibration';
+
+  @override
+  String get hcAndroid => 'Android version (API)';
+
+  @override
+  String get hcYes => 'YES';
+
+  @override
+  String get hcNo => 'NO';
+
+  @override
+  String get hcOn => 'ON';
+
+  @override
+  String get hcOff => 'OFF';
+
+  @override
+  String get hcTrySystem => 'TRY SYSTEM BUZZ';
+
+  @override
+  String get hcTryDirect => 'TRY DIRECT BUZZ';
+
+  @override
+  String get hcAdviceOff =>
+      'The phone\'s touch vibration is OFF, so normal taps stay silent. Turn it on in Settings > Sound & vibration, or switch on \"Strong buzz\" here.';
+
+  @override
+  String get hcAdviceNoMotor =>
+      'This phone has no vibration motor, so nothing can buzz.';
+
+  @override
+  String get hcAdviceTry =>
+      'Tap both buttons. If you feel the direct buzz but not the system one, the phone mutes system haptics: use \"Strong buzz\".';
+
+  @override
+  String get hcUnknown =>
+      'No vibration information on this device (only Android reports it).';
 }

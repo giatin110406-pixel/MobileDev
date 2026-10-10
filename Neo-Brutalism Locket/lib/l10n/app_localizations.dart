@@ -4327,6 +4327,114 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.'**
   String shopLimitedNote(int left, int total);
+
+  /// No description provided for @settingsHapticsDirect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rung mạnh (dùng thẳng động cơ rung)'**
+  String get settingsHapticsDirect;
+
+  /// No description provided for @settingsHapticsDirectHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật nếu chạm không thấy rung. Cách này bỏ qua cài đặt \"rung khi chạm\" của điện thoại.'**
+  String get settingsHapticsDirectHint;
+
+  /// No description provided for @settingsHapticsTest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra rung'**
+  String get settingsHapticsTest;
+
+  /// No description provided for @hcTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'KIỂM TRA RUNG'**
+  String get hcTitle;
+
+  /// No description provided for @hcMotor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Động cơ rung'**
+  String get hcMotor;
+
+  /// No description provided for @hcStrengths.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiều mức rung'**
+  String get hcStrengths;
+
+  /// No description provided for @hcPhoneSetting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt máy: rung khi chạm'**
+  String get hcPhoneSetting;
+
+  /// No description provided for @hcAndroid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiên bản Android (API)'**
+  String get hcAndroid;
+
+  /// No description provided for @hcYes.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÓ'**
+  String get hcYes;
+
+  /// No description provided for @hcNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG'**
+  String get hcNo;
+
+  /// No description provided for @hcOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẬT'**
+  String get hcOn;
+
+  /// No description provided for @hcOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẮT'**
+  String get hcOff;
+
+  /// No description provided for @hcTrySystem.
+  ///
+  /// In vi, this message translates to:
+  /// **'THỬ RUNG HỆ THỐNG'**
+  String get hcTrySystem;
+
+  /// No description provided for @hcTryDirect.
+  ///
+  /// In vi, this message translates to:
+  /// **'THỬ RUNG TRỰC TIẾP'**
+  String get hcTryDirect;
+
+  /// No description provided for @hcAdviceOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt \"rung khi chạm\" của máy đang TẮT nên chạm thường sẽ không rung. Hãy bật trong Cài đặt > Âm thanh & rung, hoặc bật \"Rung mạnh\" ở đây.'**
+  String get hcAdviceOff;
+
+  /// No description provided for @hcAdviceNoMotor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy này không có động cơ rung nên không thể rung.'**
+  String get hcAdviceNoMotor;
+
+  /// No description provided for @hcAdviceTry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm cả hai nút. Nếu thấy rung trực tiếp mà rung hệ thống thì không, máy đang tắt rung hệ thống: hãy dùng \"Rung mạnh\".'**
+  String get hcAdviceTry;
+
+  /// No description provided for @hcUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có thông tin rung trên thiết bị này (chỉ Android cung cấp).'**
+  String get hcUnknown;
 }
 
 class _AppLocalizationsDelegate

@@ -10,6 +10,7 @@ import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Every post I sent or received, as a grid grouped by month. Filter by
 /// person on top; tap a picture to open it (the viewer pages through the
@@ -175,7 +176,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       button: true,
       selected: selected,
       child: InkWell(
-        onTap: onTap,
+        onTap: Haptics.tap(onTap),
         borderRadius: BorderRadius.circular(999),
         child: Container(
           padding: EdgeInsets.fromLTRB(leading == null ? 12 : 4, 4, 12, 4),
@@ -295,7 +296,7 @@ class _Tile extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = post.questId == null ? null : questById(post.questId!)?.style;
     return InkWell(
-      onTap: onTap,
+      onTap: Haptics.tap(onTap),
       borderRadius: BorderRadius.circular(10),
       child: Container(
         decoration: NeoTheme.panel(color: NeoColors.surface, radius: 10),

@@ -21,6 +21,7 @@ import 'package:neo_brutalism_locket/features/social/sample_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// One page of the feed: a friend's post, one of your own prints or one of
 /// your daily quest posts.
@@ -405,11 +406,13 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
   Widget _poster(PocketFriend? friend, DateTime time) => SizedBox(
     height: 32,
     child: InkWell(
-      onTap: friend == null
-          ? widget.onOpenSelf
-          : widget.onOpenFriend == null
-          ? null
-          : () => widget.onOpenFriend!(friend),
+      onTap: Haptics.tap(
+        friend == null
+            ? widget.onOpenSelf
+            : widget.onOpenFriend == null
+            ? null
+            : () => widget.onOpenFriend!(friend),
+      ),
       borderRadius: BorderRadius.circular(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

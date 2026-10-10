@@ -6,6 +6,7 @@ import 'package:neo_brutalism_locket/features/canvas/canvas_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/wallet/ink_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// The group's canvas: tap a cell to paint it with the chosen colour, pinch
 /// to zoom, drag to move, hold a cell to see who painted it.
@@ -201,7 +202,7 @@ class _CanvasViewState extends State<CanvasView> {
               selected: i == _selected,
               label: AppLocalizations.of(context).colorSemantics(i + 1),
               child: GestureDetector(
-                onTap: () => setState(() => _selected = i),
+                onTap: Haptics.tap(() => setState(() => _selected = i)),
                 child: Container(
                   width: 34,
                   height: 34,

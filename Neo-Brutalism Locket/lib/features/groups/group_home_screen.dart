@@ -13,6 +13,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// One group: its chat and its canvas, side by side as two tabs.
 class GroupHomeScreen extends StatefulWidget {
@@ -250,7 +251,7 @@ class _Tab extends StatelessWidget {
       selected: selected,
       label: label,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: Haptics.tap(onTap),
         child: Container(
           height: 40,
           decoration: BoxDecoration(

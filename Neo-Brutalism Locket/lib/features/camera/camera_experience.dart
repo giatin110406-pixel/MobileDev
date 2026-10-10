@@ -258,7 +258,7 @@ class CameraTabState extends State<CameraTab> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: Haptics.tap(() => Navigator.pop(context)),
           child: Text(AppLocalizations.of(context).ok),
         ),
       ],
@@ -767,7 +767,7 @@ class CameraTabState extends State<CameraTab> {
               button: true,
               label: AppLocalizations.of(context).openFeedLabel,
               child: InkWell(
-                onTap: widget.onOpenFeed,
+                onTap: Haptics.tap(widget.onOpenFeed),
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -985,7 +985,7 @@ class CameraTabState extends State<CameraTab> {
               ).zoomSemantics(zoomLabel(level)),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => _setZoom(level),
+                onTap: Haptics.tap(() => _setZoom(level)),
                 // A roomy touch area around a small pill.
                 child: SizedBox(
                   width: 36,
@@ -1228,7 +1228,7 @@ class CameraTabState extends State<CameraTab> {
       button: true,
       label: AppLocalizations.of(context).openArchiveLabel,
       child: GestureDetector(
-        onTap: widget.onOpenArchive,
+        onTap: Haptics.tap(widget.onOpenArchive),
         child: Container(
           width: 46,
           height: 46,

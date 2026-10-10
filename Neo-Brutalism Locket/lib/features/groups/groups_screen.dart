@@ -4,6 +4,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// My groups: invitations first, then the groups, then a button to start one.
 class GroupsScreen extends StatelessWidget {
@@ -248,7 +249,7 @@ class _GroupTile extends StatelessWidget {
               l10n.memberCount(summary.members.length),
             ),
       child: GestureDetector(
-        onTap: onTap,
+        onTap: Haptics.tap(onTap),
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: NeoTheme.panel(),
@@ -533,7 +534,9 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                   ),
                   IconButton(
                     tooltip: AppLocalizations.of(context).decrease,
-                    onPressed: _max > 2 ? () => setState(() => _max--) : null,
+                    onPressed: Haptics.tap(
+                      _max > 2 ? () => setState(() => _max--) : null,
+                    ),
                     icon: const Icon(Icons.remove_circle_outline),
                   ),
                   Text(
@@ -547,7 +550,9 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                   ),
                   IconButton(
                     tooltip: AppLocalizations.of(context).increase,
-                    onPressed: _max < 12 ? () => setState(() => _max++) : null,
+                    onPressed: Haptics.tap(
+                      _max < 12 ? () => setState(() => _max++) : null,
+                    ),
                     icon: const Icon(Icons.add_circle_outline),
                   ),
                 ],

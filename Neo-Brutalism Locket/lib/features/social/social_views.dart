@@ -7,6 +7,7 @@ import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/social/sample_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// The frame and banner a friend shows. Friends are local-only for now, so
 /// only the sample friends wear anything.
@@ -431,7 +432,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   button: widget.onOpenProfile != null,
                   label: AppLocalizations.of(context).openProfileLabel,
                   child: InkWell(
-                    onTap: widget.onOpenProfile,
+                    onTap: Haptics.tap(widget.onOpenProfile),
                     borderRadius: BorderRadius.circular(8),
                     child: Row(
                       children: [
@@ -869,7 +870,7 @@ class _FriendTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: Haptics.tap(onTap),
         borderRadius: BorderRadius.circular(8),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

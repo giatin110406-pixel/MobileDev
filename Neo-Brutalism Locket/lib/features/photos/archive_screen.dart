@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// "MM.DD  h:mm AM" for print timestamps (SA/CH in Vietnamese).
 String formatPrintDate(AppLocalizations l10n, DateTime date) {
@@ -95,7 +96,7 @@ class ArchiveScreen extends StatelessWidget {
   Widget _buildArchiveRow(BuildContext context, NeoPhoto photo, int index) {
     final thumbnail = photo.processedPath ?? photo.originalPath;
     return InkWell(
-      onTap: () => onOpenPhoto(photo),
+      onTap: Haptics.tap(() => onOpenPhoto(photo)),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

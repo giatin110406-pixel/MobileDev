@@ -7,6 +7,7 @@ import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
 import 'package:neo_brutalism_locket/features/posts/video_views.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// What the person chose in the composer.
 class ComposerResult {
@@ -285,7 +286,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
     button: true,
     selected: selected,
     child: InkWell(
-      onTap: onTap,
+      onTap: Haptics.tap(onTap),
       borderRadius: BorderRadius.circular(999),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -332,7 +333,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
       selected: selected,
       label: friend.person.displayName,
       child: InkWell(
-        onTap: () => _toggle(friend.person.id),
+        onTap: Haptics.tap(() => _toggle(friend.person.id)),
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
           width: 68,

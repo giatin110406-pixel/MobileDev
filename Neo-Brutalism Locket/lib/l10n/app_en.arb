@@ -1646,5 +1646,23 @@
         "type": "int"
       }
     }
-  }
+  },
+  "settingsHapticsDirect": "Strong buzz (drive the vibration motor directly)",
+  "settingsHapticsDirectHint": "Turn this on if taps do not vibrate. It ignores the phone's \"touch vibration\" setting.",
+  "settingsHapticsTest": "Vibration check",
+  "hcTitle": "VIBRATION CHECK",
+  "hcMotor": "Vibration motor",
+  "hcStrengths": "Several strengths",
+  "hcPhoneSetting": "Phone setting: touch vibration",
+  "hcAndroid": "Android version (API)",
+  "hcYes": "YES",
+  "hcNo": "NO",
+  "hcOn": "ON",
+  "hcOff": "OFF",
+  "hcTrySystem": "TRY SYSTEM BUZZ",
+  "hcTryDirect": "TRY DIRECT BUZZ",
+  "hcAdviceOff": "The phone's touch vibration is OFF, so normal taps stay silent. Turn it on in Settings > Sound & vibration, or switch on \"Strong buzz\" here.",
+  "hcAdviceNoMotor": "This phone has no vibration motor, so nothing can buzz.",
+  "hcAdviceTry": "Tap both buttons. If you feel the direct buzz but not the system one, the phone mutes system haptics: use \"Strong buzz\".",
+  "hcUnknown": "No vibration information on this device (only Android reports it)."
 }

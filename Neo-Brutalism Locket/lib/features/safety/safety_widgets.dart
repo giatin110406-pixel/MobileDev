@@ -4,6 +4,7 @@ import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 String reasonLabel(AppLocalizations l10n, ReportReason reason) =>
     switch (reason) {
@@ -135,7 +136,7 @@ class _ReportSheetState extends State<_ReportSheet> {
       button: true,
       selected: selected,
       child: InkWell(
-        onTap: () => setState(() => _reason = reason),
+        onTap: Haptics.tap(() => setState(() => _reason = reason)),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -188,11 +189,11 @@ Future<bool> confirmBlock(BuildContext context, String name) async {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: Haptics.tap(() => Navigator.pop(context, false)),
           child: Text(l10n.cancel),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context, true),
+          onPressed: Haptics.tap(() => Navigator.pop(context, true)),
           child: Text(l10n.blockPerson),
         ),
       ],

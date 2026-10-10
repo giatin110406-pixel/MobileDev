@@ -3,6 +3,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_widgets.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Sign in or create an account with email + password.
 class AuthScreen extends StatefulWidget {
@@ -195,7 +196,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         TextButton(
-                          onPressed: _busy ? null : _toggle,
+                          onPressed: Haptics.tap(_busy ? null : _toggle),
                           child: Text(
                             _signUp ? l10n.switchToSignIn : l10n.switchToSignUp,
                             style: const TextStyle(
@@ -206,7 +207,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                         if (!_signUp)
                           TextButton(
-                            onPressed: _busy ? null : _forgot,
+                            onPressed: Haptics.tap(_busy ? null : _forgot),
                             child: Text(
                               l10n.forgotPassword,
                               style: const TextStyle(

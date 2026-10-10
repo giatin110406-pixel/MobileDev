@@ -12,6 +12,7 @@ import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_labels.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// What the main button of an item does right now.
 enum ShopAction { buy, locked, equip, unequip }
@@ -179,10 +180,12 @@ class _ShopScreenState extends State<ShopScreen> {
       button: true,
       selected: selected,
       child: InkWell(
-        onTap: () => setState(() {
-          _kind = kind;
-          _paintings = false;
-        }),
+        onTap: Haptics.tap(
+          () => setState(() {
+            _kind = kind;
+            _paintings = false;
+          }),
+        ),
         borderRadius: BorderRadius.circular(8),
         child: Container(
           height: 40,
@@ -207,7 +210,7 @@ class _ShopScreenState extends State<ShopScreen> {
     button: true,
     selected: _paintings,
     child: InkWell(
-      onTap: _showPaintings,
+      onTap: Haptics.tap(_showPaintings),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         height: 40,
@@ -248,7 +251,10 @@ class _ShopScreenState extends State<ShopScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            NeoButton(label: AppLocalizations.of(context).retry, onPressed: _loadPaintings),
+            NeoButton(
+              label: AppLocalizations.of(context).retry,
+              onPressed: _loadPaintings,
+            ),
           ],
         ),
       );
@@ -284,7 +290,7 @@ class _ShopScreenState extends State<ShopScreen> {
     final l10n = AppLocalizations.of(context);
     final medals = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
     return InkWell(
-      onTap: () => _openPainting(item),
+      onTap: Haptics.tap(() => _openPainting(item)),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -351,7 +357,9 @@ class _ShopScreenState extends State<ShopScreen> {
       item.toShopItem(),
       note: item.left == null
           ? null
-          : AppLocalizations.of(context).shopLimitedNote(item.left!, item.stock!),
+          : AppLocalizations.of(
+              context,
+            ).shopLimitedNote(item.left!, item.stock!),
       soldOut: item.soldOut,
     );
     // The copies left may have changed (also because of this purchase).
@@ -361,7 +369,7 @@ class _ShopScreenState extends State<ShopScreen> {
   Widget _itemCard(PlayerState state, ShopItem item) {
     final action = shopActionFor(state, item);
     return InkWell(
-      onTap: () => showShopItemSheet(context, widget.store, item),
+      onTap: Haptics.tap(() => showShopItemSheet(context, widget.store, item)),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -636,8 +644,9 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               NeoButton(
                 expand: true,
                 label: switch (action) {
-                  ShopAction.buy when widget.soldOut =>
-                    AppLocalizations.of(context).shopSoldOut,
+                  ShopAction.buy when widget.soldOut => AppLocalizations.of(
+                    context,
+                  ).shopSoldOut,
                   ShopAction.buy => AppLocalizations.of(
                     context,
                   ).shopBuy(item.price),

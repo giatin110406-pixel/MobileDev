@@ -10,8 +10,10 @@ import 'package:neo_brutalism_locket/features/image_engine/remote/server_setting
 import 'package:neo_brutalism_locket/features/notifications/push_service.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
+import 'package:neo_brutalism_locket/features/settings/haptics_check.dart';
 import 'package:neo_brutalism_locket/features/settings/legal_text.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Account, privacy, language and about. Opened from the profile tab.
 class SettingsScreen extends StatelessWidget {
@@ -103,7 +105,9 @@ class SettingsScreen extends StatelessWidget {
                       style: _hintStyle,
                     ),
                     value: profile.allowRequests,
-                    onChanged: (value) => _setAllowRequests(context, value),
+                    onChanged: Haptics.tapWith(
+                      (value) => _setAllowRequests(context, value),
+                    ),
                   ),
                   _row(
                     icon: Icons.block,
@@ -134,6 +138,36 @@ class SettingsScreen extends StatelessWidget {
                       label: l10n.settingsHaptics,
                       onChanged: settings.setHaptics,
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        NeoSwitch(
+                          value: settings.hapticsDirect,
+                          label: AppLocalizations.of(
+                            context,
+                          ).settingsHapticsDirect,
+                          onChanged: settings.setHapticsDirect,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AppLocalizations.of(
+                            context,
+                          ).settingsHapticsDirectHint,
+                          style: _hintStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  _row(
+                    icon: Icons.vibration,
+                    label: AppLocalizations.of(context).settingsHapticsTest,
+                    onTap: () => showHapticsCheck(context),
                   ),
                 ]),
                 _heading(l10n.settingsLanguage),
@@ -248,7 +282,7 @@ class SettingsScreen extends StatelessWidget {
     required VoidCallback onTap,
     String? detail,
   }) => InkWell(
-    onTap: onTap,
+    onTap: Haptics.tap(onTap),
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       child: Row(
@@ -274,10 +308,10 @@ class SettingsScreen extends StatelessWidget {
   Widget _languageRow(BuildContext context, String label, Locale? locale) {
     final selected = settings.locale?.languageCode == locale?.languageCode;
     return InkWell(
-      onTap: () {
+      onTap: Haptics.tap(() {
         settings.setLocale(locale);
         if (locale != null) session.rememberLocale(locale.languageCode);
-      },
+      }),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
@@ -350,11 +384,11 @@ class SettingsScreen extends StatelessWidget {
         content: Text(l10n.signOutConfirmBody),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: Haptics.tap(() => Navigator.pop(context, false)),
             child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: Haptics.tap(() => Navigator.pop(context, true)),
             child: Text(l10n.signOut),
           ),
         ],
@@ -438,7 +472,9 @@ class _NotificationSwitchesState extends State<_NotificationSwitches> {
       activeTrackColor: NeoColors.teal,
       title: Text(label, style: SettingsScreen._labelStyle),
       value: value,
-      onChanged: prefs == null ? null : (v) => _change(next(v)),
+      onChanged: Haptics.tapWith(
+        prefs == null ? null : (v) => _change(next(v)),
+      ),
     );
     final current = prefs ?? const NotificationPrefs();
     return Column(
@@ -526,11 +562,13 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: Haptics.tap(() => Navigator.pop(context, false)),
           child: Text(l10n.cancel),
         ),
         TextButton(
-          onPressed: _matches ? () => Navigator.pop(context, true) : null,
+          onPressed: Haptics.tap(
+            _matches ? () => Navigator.pop(context, true) : null,
+          ),
           child: Text(l10n.deleteAccountConfirm),
         ),
       ],

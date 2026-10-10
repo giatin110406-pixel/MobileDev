@@ -2435,4 +2435,63 @@ class AppLocalizationsVi extends AppLocalizations {
   String shopLimitedNote(int left, int total) {
     return 'Bản giới hạn: còn $left / $total. 20% tiền bán chia đều cho nhóm đã vẽ.';
   }
+
+  @override
+  String get settingsHapticsDirect => 'Rung mạnh (dùng thẳng động cơ rung)';
+
+  @override
+  String get settingsHapticsDirectHint =>
+      'Bật nếu chạm không thấy rung. Cách này bỏ qua cài đặt \"rung khi chạm\" của điện thoại.';
+
+  @override
+  String get settingsHapticsTest => 'Kiểm tra rung';
+
+  @override
+  String get hcTitle => 'KIỂM TRA RUNG';
+
+  @override
+  String get hcMotor => 'Động cơ rung';
+
+  @override
+  String get hcStrengths => 'Nhiều mức rung';
+
+  @override
+  String get hcPhoneSetting => 'Cài đặt máy: rung khi chạm';
+
+  @override
+  String get hcAndroid => 'Phiên bản Android (API)';
+
+  @override
+  String get hcYes => 'CÓ';
+
+  @override
+  String get hcNo => 'KHÔNG';
+
+  @override
+  String get hcOn => 'BẬT';
+
+  @override
+  String get hcOff => 'TẮT';
+
+  @override
+  String get hcTrySystem => 'THỬ RUNG HỆ THỐNG';
+
+  @override
+  String get hcTryDirect => 'THỬ RUNG TRỰC TIẾP';
+
+  @override
+  String get hcAdviceOff =>
+      'Cài đặt \"rung khi chạm\" của máy đang TẮT nên chạm thường sẽ không rung. Hãy bật trong Cài đặt > Âm thanh & rung, hoặc bật \"Rung mạnh\" ở đây.';
+
+  @override
+  String get hcAdviceNoMotor =>
+      'Máy này không có động cơ rung nên không thể rung.';
+
+  @override
+  String get hcAdviceTry =>
+      'Bấm cả hai nút. Nếu thấy rung trực tiếp mà rung hệ thống thì không, máy đang tắt rung hệ thống: hãy dùng \"Rung mạnh\".';
+
+  @override
+  String get hcUnknown =>
+      'Không có thông tin rung trên thiết bị này (chỉ Android cung cấp).';
 }

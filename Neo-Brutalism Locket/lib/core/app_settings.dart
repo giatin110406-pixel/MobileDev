@@ -9,12 +9,14 @@ class AppSettings extends ChangeNotifier {
 
   static const _localeKey = 'app_locale';
   static const _hapticsKey = 'haptics_enabled';
+  static const _directKey = 'haptics_direct';
 
   /// The languages the app speaks.
   static const supported = [Locale('vi'), Locale('en')];
 
   Locale? _locale;
   bool _haptics = true;
+  bool _direct = false;
 
   /// The chosen language, or null to follow the phone.
   Locale? get locale => _locale;
@@ -22,17 +24,24 @@ class AppSettings extends ChangeNotifier {
   /// Whether buttons, tabs and the shutter give a little buzz.
   bool get hapticsEnabled => _haptics;
 
+  /// Drive the vibration motor directly, whatever the phone's own
+  /// "touch vibration" setting says.
+  bool get hapticsDirect => _direct;
+
   /// Reads what was saved last time.
   Future<void> load() async {
     try {
       final preferences = await SharedPreferences.getInstance();
       _locale = parseLocale(preferences.getString(_localeKey));
       _haptics = preferences.getBool(_hapticsKey) ?? true;
+      _direct = preferences.getBool(_directKey) ?? false;
     } catch (_) {
       _locale = null;
       _haptics = true;
+      _direct = false;
     }
     Haptics.enabled = _haptics;
+    Haptics.direct = _direct;
     notifyListeners();
   }
 
@@ -59,6 +68,18 @@ class AppSettings extends ChangeNotifier {
     try {
       final preferences = await SharedPreferences.getInstance();
       await preferences.setBool(_hapticsKey, enabled);
+    } catch (_) {
+      // The choice still applies until the app closes.
+    }
+  }
+
+  Future<void> setHapticsDirect(bool direct) async {
+    _direct = direct;
+    Haptics.direct = direct;
+    notifyListeners();
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setBool(_directKey, direct);
     } catch (_) {
       // The choice still applies until the app closes.
     }
