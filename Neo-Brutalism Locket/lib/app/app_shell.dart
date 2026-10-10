@@ -405,7 +405,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (photo == null) {
       _showCamera();
       _camera?.startQuest(quest);
-      _notify('KHÔNG TÌM THẤY ẢNH · HÃY CHỤP LẠI');
+      if (!mounted) return;
+      _notify(AppLocalizations.of(context).photoMissingRetake);
       return;
     }
     await _openQuestPost(quest, photo, _player.today);

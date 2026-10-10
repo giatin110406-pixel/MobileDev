@@ -41,7 +41,7 @@ void main() {
       await tester.pumpWidget(
         app(GroupsScreen(store: store, onOpenGroup: (_) {})),
       );
-      expect(find.text('Chưa có nhóm nào'), findsOneWidget);
+      expect(find.text('No groups yet'), findsOneWidget);
       expect(find.text('NEW GROUP'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
@@ -86,7 +86,7 @@ void main() {
         app(GroupsScreen(store: store, onOpenGroup: (_) {})),
       );
       expect(find.text('Painters'), findsOneWidget);
-      await tester.tap(find.text('THAM GIA'));
+      await tester.tap(find.text('JOIN'));
       await tester.pump();
       await tester.pump();
       expect(repo.calls, contains('respond:i1:true'));
@@ -103,8 +103,8 @@ void main() {
       await tester.pumpWidget(
         app(GroupsScreen(store: store, onOpenGroup: (_) {})),
       );
-      expect(find.text('Không tải được danh sách nhóm.'), findsOneWidget);
-      expect(find.text('THỬ LẠI'), findsOneWidget);
+      expect(find.text('Could not load your groups.'), findsOneWidget);
+      expect(find.text('TRY AGAIN'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });
@@ -133,11 +133,11 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, 'Team');
-      await tester.tap(find.text('TẠO NHÓM').last);
+      await tester.tap(find.text('NEW GROUP').last);
       await tester.pumpAndSettle();
       expect(repo.calls, ['create:Team']);
       expect(created, 'g0');
-      expect(find.text('TẠO NHÓM MỚI'), findsNothing);
+      expect(find.text('CREATE A NEW GROUP'), findsNothing);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });
@@ -162,9 +162,9 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, 'Team');
-      await tester.tap(find.text('TẠO NHÓM').last);
+      await tester.tap(find.text('NEW GROUP').last);
       await tester.pumpAndSettle();
-      expect(find.textContaining('tối đa 5 nhóm'), findsOneWidget);
+      expect(find.textContaining('5 groups at most'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });
@@ -200,7 +200,7 @@ void main() {
       );
       expect(find.text('hello all'), findsOneWidget);
       expect(find.text('zed'), findsOneWidget);
-      expect(find.text('zed đã tham gia nhóm'), findsOneWidget);
+      expect(find.text('zed joined the group'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'hi team');
       await tester.tap(find.byIcon(Icons.send));
       await tester.pumpAndSettle();
@@ -225,7 +225,12 @@ void main() {
       );
       await tester.runAsync(store.load);
       await tester.pumpWidget(
-        app(CanvasView(store: store, nameOf: (id) => id == 'other' ? 'Zed' : null)),
+        app(
+          CanvasView(
+            store: store,
+            nameOf: (id) => id == 'other' ? 'Zed' : null,
+          ),
+        ),
       );
       return (repo, store);
     }
@@ -236,14 +241,14 @@ void main() {
 
     testWidgets('tapping a cell paints it and spends Ink', (tester) async {
       final (_, store) = await open(tester);
-      expect(find.text('5 MỰC'), findsOneWidget);
+      expect(find.text('5 INK'), findsOneWidget);
       final topLeft = tester.getTopLeft(painterFinder);
       final cell = tester.getSize(painterFinder).width / 4;
       await tester.tapAt(topLeft + Offset(cell * 1.5, cell * 0.5));
       await tester.pump();
       expect(store.colorIndexAt(1, 0), 1);
       expect(store.isPending(1, 0), isTrue);
-      expect(find.text('4 MỰC'), findsOneWidget);
+      expect(find.text('4 INK'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });
@@ -252,13 +257,13 @@ void main() {
       tester,
     ) async {
       final (_, store) = await open(tester, ink: 0);
-      expect(find.textContaining('Hết mực'), findsOneWidget);
+      expect(find.textContaining('Out of ink'), findsOneWidget);
       final topLeft = tester.getTopLeft(painterFinder);
       final cell = tester.getSize(painterFinder).width / 4;
       await tester.tapAt(topLeft + Offset(cell * 0.5, cell * 0.5));
       await tester.pump();
       expect(store.colorIndexAt(0, 0), 0);
-      expect(find.textContaining('Hết mực'), findsWidgets);
+      expect(find.textContaining('Out of ink'), findsWidgets);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });
@@ -290,8 +295,10 @@ void main() {
       final repo = FakeCanvas(hasCanvas: false);
       final store = CanvasStore(repo, groupId: 'g1');
       await tester.runAsync(store.load);
-      await tester.pumpWidget(app(CanvasView(store: store, nameOf: (_) => null)));
-      expect(find.text('Nhóm này chưa có canvas.'), findsOneWidget);
+      await tester.pumpWidget(
+        app(CanvasView(store: store, nameOf: (_) => null)),
+      );
+      expect(find.text('This group has no canvas yet.'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });
@@ -327,8 +334,8 @@ void main() {
     ) async {
       await open(tester, person('zed'));
       expect(find.text('zed'), findsWidgets);
-      expect(find.textContaining('chưa phải là bạn bè'), findsOneWidget);
-      expect(find.text('KẾT BẠN'), findsOneWidget);
+      expect(find.textContaining('does not make you friends'), findsOneWidget);
+      expect(find.text('ADD FRIEND'), findsOneWidget);
     });
 
     testWidgets('a friend shows as already a friend', (tester) async {
@@ -338,8 +345,8 @@ void main() {
         zed,
         friends: [Friend(person: zed, since: DateTime(2026, 1, 1))],
       );
-      expect(find.text('ĐÃ LÀ BẠN BÈ'), findsOneWidget);
-      expect(find.textContaining('chưa phải là bạn bè'), findsNothing);
+      expect(find.text('ALREADY FRIENDS'), findsOneWidget);
+      expect(find.textContaining('does not make you friends'), findsNothing);
     });
   });
 }

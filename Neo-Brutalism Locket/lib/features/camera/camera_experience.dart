@@ -165,7 +165,7 @@ class CameraTabState extends State<CameraTab> {
   void onNewDay() {
     if (_questMode && !_checkingQuest) {
       setState(() => _questModeQuest = null);
-      _notify('ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!');
+      _notify(AppLocalizations.of(context).newDayQuest);
     }
   }
 
@@ -242,13 +242,16 @@ class CameraTabState extends State<CameraTab> {
         side: const BorderSide(color: NeoColors.ink, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      title: const Text(
-        'HẾT LƯỢT HÔM NAY',
-        style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w800),
+      title: Text(
+        AppLocalizations.of(context).outOfTriesTitle,
+        style: const TextStyle(
+          color: NeoColors.ink,
+          fontWeight: FontWeight.w800,
+        ),
       ),
-      content: const Text(
-        'Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.',
-        style: TextStyle(color: NeoColors.ink),
+      content: Text(
+        AppLocalizations.of(context).outOfTriesBody,
+        style: const TextStyle(color: NeoColors.ink),
       ),
       actions: [
         TextButton(
@@ -272,7 +275,7 @@ class CameraTabState extends State<CameraTab> {
     }
     if (widget.player.todayQuest?.id != quest.id) {
       setState(() => _questModeQuest = null);
-      _notify('ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!');
+      _notify(AppLocalizations.of(context).newDayQuest);
       return;
     }
     setState(() {
@@ -296,8 +299,10 @@ class CameraTabState extends State<CameraTab> {
         if (left == 0) {
           if (mounted) setState(() => _questModeQuest = null);
           await _showOutOfTries();
-        } else {
-          _notify('KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ${_debugSuffix()}');
+        } else if (mounted) {
+          _notify(
+            AppLocalizations.of(context).wrongTriesLeft(left, _debugSuffix()),
+          );
         }
         return;
       }
@@ -794,8 +799,8 @@ class CameraTabState extends State<CameraTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP',
+                Text(
+                  AppLocalizations.of(context).questModeBanner,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -806,7 +811,7 @@ class CameraTabState extends State<CameraTab> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Chụp ${quest.subject}',
+                  AppLocalizations.of(context).shootSubject(quest.subject),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -822,7 +827,7 @@ class CameraTabState extends State<CameraTab> {
           const SizedBox(width: 8),
           NeoIconButton(
             icon: Icons.close,
-            tooltip: 'Thoát chế độ nhiệm vụ',
+            tooltip: AppLocalizations.of(context).exitQuestMode,
             fill: NeoColors.surface,
             onPressed: _processing
                 ? null
@@ -891,8 +896,8 @@ class CameraTabState extends State<CameraTab> {
                       color: NeoColors.pink,
                       icon: Icons.circle,
                     )
-                  : const NeoLabel(
-                      'ĐANG KIỂM TRA...',
+                  : NeoLabel(
+                      AppLocalizations.of(context).checkingPhoto,
                       color: NeoColors.yellow,
                       icon: Icons.search,
                     ),

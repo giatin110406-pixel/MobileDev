@@ -412,7 +412,7 @@ void main() {
     ) async {
       await pumpShell(tester, FakeFriends());
       await openFriendsTab(tester);
-      expect(find.text('NHÓM'), findsNothing);
+      expect(find.text('GROUPS'), findsNothing);
     });
 
     testWidgets('the Groups switch shows my groups and opens one', (
@@ -426,10 +426,10 @@ void main() {
         canvas: FakeCanvas(),
       );
       await openFriendsTab(tester);
-      expect(find.text('NHÓM'), findsOneWidget);
+      expect(find.text('GROUPS'), findsOneWidget);
       expect(find.text('2'), findsWidgets); // unread badge on the switch
 
-      await tester.tap(find.text('NHÓM'));
+      await tester.tap(find.text('GROUPS'));
       await tester.pumpAndSettle();
       expect(find.text('Group a'), findsOneWidget);
 
@@ -440,13 +440,13 @@ void main() {
 
       await tester.tap(find.text('CANVAS'));
       await tester.pumpAndSettle();
-      expect(find.text('10 MỰC'), findsOneWidget);
+      expect(find.text('10 INK'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
       expect(find.text('Group a'), findsOneWidget);
 
-      await tester.tap(find.text('BẠN BÈ'));
+      await tester.tap(find.text('FRIENDS').first);
       await tester.pumpAndSettle();
       expect(find.text('Friends'), findsOneWidget);
     });
@@ -465,15 +465,15 @@ void main() {
         contest: contest,
       );
       await openFriendsTab(tester);
-      await tester.tap(find.text('NHÓM'));
+      await tester.tap(find.text('GROUPS'));
       await tester.pumpAndSettle();
       expect(find.text('The Starry Night'), findsOneWidget);
       expect(find.text('12/100'), findsOneWidget);
 
       await tester.tap(find.text('The Starry Night'));
       await tester.pumpAndSettle();
-      expect(find.text('Cuộc thi tuần'), findsOneWidget);
-      expect(find.text('LUẬT CHƠI'), findsOneWidget);
+      expect(find.text('Weekly contest'), findsOneWidget);
+      expect(find.text('RULES'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
@@ -490,10 +490,10 @@ void main() {
         canvas: FakeCanvas(),
       );
       await openFriendsTab(tester);
-      await tester.tap(find.text('NHÓM'));
+      await tester.tap(find.text('GROUPS'));
       await tester.pumpAndSettle();
       expect(find.text('Group a'), findsOneWidget);
-      expect(find.textContaining('CUỘC THI TUẦN'), findsNothing);
+      expect(find.textContaining('WEEKLY CONTEST'), findsNothing);
     });
 
     testWidgets('an empty list invites you to add friends', (tester) async {

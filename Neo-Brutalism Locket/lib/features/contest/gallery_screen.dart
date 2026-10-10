@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_store.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The Gallery Room: a long exhibition corridor with the entries framed on both
 /// walls. Walk down it, tap a picture to look closer, rate and comment. A grid
@@ -80,7 +81,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 children: [
                   NeoIconButton(
                     icon: Icons.arrow_back,
-                    tooltip: 'Quay lại',
+                    tooltip: AppLocalizations.of(context).backTooltip,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 12),
@@ -112,7 +113,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
                   ),
                   NeoIconButton(
                     icon: _grid ? Icons.museum_outlined : Icons.grid_view,
-                    tooltip: _grid ? 'Xem dạng hành lang' : 'Xem dạng lưới',
+                    tooltip: _grid
+                        ? AppLocalizations.of(context).galleryViewCorridor
+                        : AppLocalizations.of(context).galleryViewGrid,
                     fill: NeoColors.yellow,
                     onPressed: () => setState(() => _grid = !_grid),
                   ),
@@ -137,19 +140,18 @@ class _GalleryScreenState extends State<GalleryScreen> {
         child: _store.error == null
             ? const CircularProgressIndicator(color: NeoColors.paper)
             : _Notice(
-                text: contestFailureText(_store.error!),
-                actionLabel: 'THỬ LẠI',
+                text: contestFailureText(
+                  AppLocalizations.of(context),
+                  _store.error!,
+                ),
+                actionLabel: AppLocalizations.of(context).retry,
                 onAction: _store.load,
               ),
       );
     }
     if (_store.entries.isEmpty) {
-      return const Center(
-        child: _Notice(
-          text:
-              'Hành lang còn trống. Bài dự thi sẽ xuất hiện ở đây khi các '
-              'nhóm nộp bài.',
-        ),
+      return Center(
+        child: _Notice(text: AppLocalizations.of(context).galleryEmpty),
       );
     }
     return Stack(
@@ -171,9 +173,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: NeoTheme.panel(color: NeoColors.orange),
-              child: const Text(
-                'Không tải thêm được. Kéo lên để thử lại.',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context).galleryLoadMoreFailed,
+                style: const TextStyle(
                   color: NeoColors.ink,
                   fontWeight: FontWeight.w800,
                 ),
@@ -240,7 +242,9 @@ class _GridView extends StatelessWidget {
         final entry = entries[index];
         return Semantics(
           button: true,
-          label: 'Bài số ${entry.seq}, nhóm ${entry.groupName}',
+          label: AppLocalizations.of(
+            context,
+          ).galleryEntrySemantics(entry.seq, entry.groupName),
           child: GestureDetector(
             onTap: () => onOpen(entry),
             child: Container(

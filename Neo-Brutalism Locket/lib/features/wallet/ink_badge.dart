@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// How much Ink I have (the canvas currency, not Sunbit).
 class InkBadge extends StatelessWidget {
@@ -10,10 +11,10 @@ class InkBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '$amount mực',
+      label: AppLocalizations.of(context).inkAmountSemantics(amount),
       child: ExcludeSemantics(
         child: NeoLabel(
-          '$amount MỰC',
+          AppLocalizations.of(context).inkAmountLabel(amount),
           color: NeoColors.blue,
           icon: Icons.water_drop,
         ),

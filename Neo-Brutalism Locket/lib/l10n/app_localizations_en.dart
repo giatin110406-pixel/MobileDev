@@ -1013,4 +1013,1154 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get styleWorking => 'WORKING…';
+
+  @override
+  String get backTooltip => 'Back';
+
+  @override
+  String get contestTitle => 'Weekly contest';
+
+  @override
+  String get contestLoadFailed => 'Could not load the contest.';
+
+  @override
+  String get contestNone => 'No contest yet.';
+
+  @override
+  String get contestStale => 'Could not refresh. Showing old data.';
+
+  @override
+  String contestEnterGallery(int count) {
+    return 'ENTER GALLERY ($count ENTRIES)';
+  }
+
+  @override
+  String get contestSeeResults => 'SEE RESULTS';
+
+  @override
+  String contestPrevResults(String title) {
+    return 'LAST WEEK\'S RESULTS: $title';
+  }
+
+  @override
+  String contestEntriesCount(int count, int max) {
+    return '$count/$max entries';
+  }
+
+  @override
+  String contestCountdownUntil(String event) {
+    return 'until $event';
+  }
+
+  @override
+  String get contestUntilOpen => 'submissions open';
+
+  @override
+  String get contestUntilJudging => 'submissions close and judging starts';
+
+  @override
+  String get contestUntilClosed => 'results are final';
+
+  @override
+  String get contestLineOpens => 'Submissions open';
+
+  @override
+  String get contestLineJudging => 'Judging from';
+
+  @override
+  String contestLineJudgingNote(String moment) {
+    return '$moment (or once 100 entries are in)';
+  }
+
+  @override
+  String get contestLineEnds => 'Results final';
+
+  @override
+  String contestLineEndsNote(String moment) {
+    return '$moment (23:59 Sunday, Vietnam time)';
+  }
+
+  @override
+  String contestMyEntry(String group, int seq) {
+    return 'Group \"$group\" has entered, entry no. $seq.';
+  }
+
+  @override
+  String get contestNothingToRate =>
+      'No entries from other groups to rate yet.';
+
+  @override
+  String contestRatedProgress(int done, int needed) {
+    return 'You rated $done/$needed entries';
+  }
+
+  @override
+  String get contestVoteRule =>
+      'Your votes only count once you have rated this many entries and your account is at least 7 days old.';
+
+  @override
+  String get contestOnlyOwner =>
+      'Only a group owner can submit. Ask your group owner.';
+
+  @override
+  String get contestGroupSubmitted => 'Submitted this week';
+
+  @override
+  String get contestOwnerHint =>
+      'You own this group: submit its canvas to enter';
+
+  @override
+  String contestOpensAt(String moment) {
+    return 'Submissions open $moment';
+  }
+
+  @override
+  String get contestSubmitButton => 'SUBMIT';
+
+  @override
+  String get contestRulesTitle => 'RULES';
+
+  @override
+  String get contestRules =>
+      '• A group owner submits the group canvas, one entry per group.\n• Only the first 100 entries make it into the Gallery.\n• Members of groups with an entry rate other groups 1–5 stars and comment.\n• The ranking score is an adjusted average (Bayes), so a few 5-star votes are not enough to jump ahead.\n• All times are Vietnam time (UTC+7).';
+
+  @override
+  String contestSubmittedSnack(int seq) {
+    return 'Submitted! Your entry is no. $seq.';
+  }
+
+  @override
+  String get cfNotFound => 'Entry not found.';
+
+  @override
+  String get cfNotOwner => 'Only a group owner can submit.';
+
+  @override
+  String get cfNotOpen => 'Submissions are not open, or have closed.';
+
+  @override
+  String get cfNotJudging => 'It is not judging time yet.';
+
+  @override
+  String get cfAlreadySubmitted => 'This group already submitted this week.';
+
+  @override
+  String get cfContestFull =>
+      'This week\'s Gallery already has 100 entries. See you next week!';
+
+  @override
+  String get cfCanvasTooEmpty =>
+      'The canvas is too empty. Draw a bit more, then submit.';
+
+  @override
+  String get cfGroupTooSmall => 'A group needs at least 2 people to enter.';
+
+  @override
+  String get cfNoCanvas => 'The group has no canvas yet.';
+
+  @override
+  String get cfNotParticipant =>
+      'Only members of groups with an entry can rate and comment.';
+
+  @override
+  String get cfOwnEntry => 'You cannot rate your own group\'s entry.';
+
+  @override
+  String get cfBadScore => 'The score must be 1 to 5 stars.';
+
+  @override
+  String get cfEmpty => 'Write something first.';
+
+  @override
+  String get cfTooLong => 'Comments can be 200 characters at most.';
+
+  @override
+  String get cfTooFast => 'Slow down a little, then comment again.';
+
+  @override
+  String get cfTooMany => 'You have used all your comments for this week.';
+
+  @override
+  String get cfBlockedWord => 'That comment has a word that is not allowed.';
+
+  @override
+  String get cfTooManyReports => 'You have reported a lot today.';
+
+  @override
+  String get cfNetwork => 'Could not connect. Please try again.';
+
+  @override
+  String get cfUnknown => 'Something went wrong. Please try again.';
+
+  @override
+  String get phaseUpcoming => 'COMING UP';
+
+  @override
+  String get phaseOpen => 'OPEN FOR ENTRIES';
+
+  @override
+  String get phaseJudging => 'JUDGING';
+
+  @override
+  String get phaseClosed => 'WRAPPING UP';
+
+  @override
+  String get phaseFinalized => 'RESULTS ARE IN';
+
+  @override
+  String countdownDays(int days, String clock) {
+    return '${days}d $clock';
+  }
+
+  @override
+  String get milestoneOpen => 'until submissions open';
+
+  @override
+  String get milestoneJudging => 'until submissions close, then judging';
+
+  @override
+  String get milestoneClosed => 'until results are final';
+
+  @override
+  String contestTimeLeft(String time, String event) {
+    return '$time left $event';
+  }
+
+  @override
+  String contestBannerTitle(String phase) {
+    return 'WEEKLY CONTEST · $phase';
+  }
+
+  @override
+  String contestBannerSemantics(String week, String title, String phase) {
+    return 'Weekly contest $week: $title. $phase';
+  }
+
+  @override
+  String get weekdayMon => 'Mon';
+
+  @override
+  String get weekdayTue => 'Tue';
+
+  @override
+  String get weekdayWed => 'Wed';
+
+  @override
+  String get weekdayThu => 'Thu';
+
+  @override
+  String get weekdayFri => 'Fri';
+
+  @override
+  String get weekdaySat => 'Sat';
+
+  @override
+  String get weekdaySun => 'Sun';
+
+  @override
+  String entryHeader(int seq, String moment) {
+    return 'Entry no. $seq · submitted $moment';
+  }
+
+  @override
+  String get reportEntryTooltip => 'Report this entry';
+
+  @override
+  String entryArtSemantics(String group, int seq) {
+    return '$group\'s painting, entry no. $seq';
+  }
+
+  @override
+  String get commentsTitle => 'COMMENTS';
+
+  @override
+  String commentsTitleCount(int count) {
+    return 'COMMENTS ($count)';
+  }
+
+  @override
+  String get noComments => 'No comments yet.';
+
+  @override
+  String get rank1 => '1ST PLACE';
+
+  @override
+  String get rank2 => '2ND PLACE';
+
+  @override
+  String get rank3 => '3RD PLACE';
+
+  @override
+  String get rankTop3 => 'TOP 3';
+
+  @override
+  String rankScoreLine(String rank, String score, int votes) {
+    return '$rank  ·  $score points ($votes votes)';
+  }
+
+  @override
+  String get ratingLoading => 'Loading…';
+
+  @override
+  String get ratingOwnGroup =>
+      'This is your group\'s entry. You cannot rate it.';
+
+  @override
+  String get ratingNotParticipant =>
+      'Only members of groups with an entry can rate.';
+
+  @override
+  String get ratingContestOver => 'The contest is over.';
+
+  @override
+  String get ratingNotYet => 'It is not judging time yet.';
+
+  @override
+  String get ratingTapStar =>
+      'Tap a star to rate. You can change it until the contest ends.';
+
+  @override
+  String ratingYouGave(int stars) {
+    return 'You gave $stars stars. Tap to change.';
+  }
+
+  @override
+  String rateStars(int stars) {
+    return 'Rate $stars stars';
+  }
+
+  @override
+  String get commentYou => 'You';
+
+  @override
+  String get reportCommentTooltip => 'Report this comment';
+
+  @override
+  String get writeCommentHint => 'Write a comment…';
+
+  @override
+  String get sendTooltip => 'Send';
+
+  @override
+  String get resultsTitle => 'Results';
+
+  @override
+  String resultsTitleWeek(String title) {
+    return 'Results: $title';
+  }
+
+  @override
+  String get resultsLater => 'Results come at 23:59 on Sunday (Vietnam time).';
+
+  @override
+  String get resultsNoEntries => 'No entries this week.';
+
+  @override
+  String get resultsNoRanked =>
+      'No entry has enough valid votes to be ranked (at least 3 votes needed).';
+
+  @override
+  String resultsEntryCount(int count, String week) {
+    return '$count entries · $week';
+  }
+
+  @override
+  String resultsScoreVotes(String score, int votes) {
+    return '$score · $votes votes';
+  }
+
+  @override
+  String submitSheetTitle(String group) {
+    return 'SUBMIT: $group';
+  }
+
+  @override
+  String get canvasWillBeSubmitted => 'The canvas that will be submitted';
+
+  @override
+  String get noPreview => 'No preview available.';
+
+  @override
+  String submitSpotsLeft(int count, int max) {
+    return '$count/$max entries so far. Only the first $max make it into the Gallery.';
+  }
+
+  @override
+  String submitGalleryFull(int max) {
+    return 'The Gallery already has $max entries.';
+  }
+
+  @override
+  String get submitSnapshotNote =>
+      'The canvas is captured the moment you submit and cannot be changed. Each group submits one entry per week.';
+
+  @override
+  String get submitting => 'SUBMITTING…';
+
+  @override
+  String get galleryViewCorridor => 'Switch to corridor view';
+
+  @override
+  String get galleryViewGrid => 'Switch to grid view';
+
+  @override
+  String get galleryEmpty =>
+      'The corridor is empty. Entries show up here once groups submit.';
+
+  @override
+  String get galleryLoadMoreFailed =>
+      'Could not load more. Pull up to try again.';
+
+  @override
+  String galleryEntrySemantics(int seq, String group) {
+    return 'Entry no. $seq, group $group';
+  }
+
+  @override
+  String corridorSemantics(int count) {
+    return 'Exhibition corridor with $count paintings. Swipe up to walk forward, tap one to view it. Use the grid view button to browse as a list.';
+  }
+
+  @override
+  String get walkForward => 'Walk forward';
+
+  @override
+  String get walkBack => 'Walk back';
+
+  @override
+  String get groupsInvitesTitle => 'GROUP INVITES';
+
+  @override
+  String get groupsStale => 'Could not refresh. Showing old data.';
+
+  @override
+  String get groupsLoadFailed => 'Could not load your groups.';
+
+  @override
+  String get groupsEmptyTitle => 'No groups yet';
+
+  @override
+  String get groupsEmptyBody =>
+      'Start a group with friends to chat and draw one pixel canvas together. Each daily quest gives you 10 ink, and each cell you draw costs 1 ink.';
+
+  @override
+  String get groupPreviewNone => 'No messages yet';
+
+  @override
+  String get groupPreviewActivity => 'New activity in the group';
+
+  @override
+  String memberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupTileSemantics(String name, String members) {
+    return 'Group $name, $members';
+  }
+
+  @override
+  String groupTileSemanticsUnread(String name, String members, int unread) {
+    return 'Group $name, $members, $unread unread';
+  }
+
+  @override
+  String groupMembersLine(int count, int max) {
+    return '$count/$max members';
+  }
+
+  @override
+  String groupMembersLineOwner(int count, int max) {
+    return '$count/$max members · owner';
+  }
+
+  @override
+  String groupJoinedSnack(String name) {
+    return 'Joined $name.';
+  }
+
+  @override
+  String groupInviteFrom(String person) {
+    return '$person invited you to a group';
+  }
+
+  @override
+  String get groupJoin => 'JOIN';
+
+  @override
+  String get groupCreateTitle => 'CREATE A NEW GROUP';
+
+  @override
+  String get groupNameLabel => 'Group name';
+
+  @override
+  String get groupRulesOptional => 'Rules (optional)';
+
+  @override
+  String get groupMaxMembers => 'Max members';
+
+  @override
+  String get decrease => 'Decrease';
+
+  @override
+  String get increase => 'Increase';
+
+  @override
+  String get groupCreating => 'CREATING…';
+
+  @override
+  String get segmentGroups => 'GROUPS';
+
+  @override
+  String get personFriendsNote =>
+      'You are friends: each other\'s new photos show up in the feed.';
+
+  @override
+  String get personNotFriendsNote =>
+      'Being in the same group does not make you friends. Only once you are friends can you see each other\'s photos.';
+
+  @override
+  String get personAlreadyFriends => 'ALREADY FRIENDS';
+
+  @override
+  String get personRequestSent => 'REQUEST SENT';
+
+  @override
+  String get personBefriend => 'ADD FRIEND';
+
+  @override
+  String get reportFailed => 'Could not send the report. Please try again.';
+
+  @override
+  String get blockFailed => 'Could not block. Please try again.';
+
+  @override
+  String sysJoined(String name) {
+    return '$name joined the group';
+  }
+
+  @override
+  String sysLeft(String name) {
+    return '$name left the group';
+  }
+
+  @override
+  String sysKicked(String name) {
+    return '$name was removed from the group';
+  }
+
+  @override
+  String sysOwnerChanged(String name) {
+    return '$name is the new group owner';
+  }
+
+  @override
+  String get sysEntrySubmitted => 'The group submitted an entry this week';
+
+  @override
+  String get gfNotFound => 'Could not find that group or person.';
+
+  @override
+  String get gfNotOwner => 'Only the group owner can do this.';
+
+  @override
+  String get gfNotMember => 'You are no longer in this group.';
+
+  @override
+  String get gfSelf => 'You cannot do this to yourself.';
+
+  @override
+  String get gfEmpty => 'Write something first.';
+
+  @override
+  String get gfTooLong => 'That is too long.';
+
+  @override
+  String get gfBlockedWord =>
+      'That has a word that is not allowed. Please keep it friendly so everyone has fun.';
+
+  @override
+  String get gfBadName => 'A group name needs 1 to 40 characters.';
+
+  @override
+  String get gfBadSize =>
+      'Max members must be 2 to 12, and not less than the people already in.';
+
+  @override
+  String get gfGroupLimit =>
+      'You can be in 5 groups at most and own 3 at most.';
+
+  @override
+  String get gfMemberLimit => 'The group is full (pending invites count too).';
+
+  @override
+  String get gfTheirGroupLimit => 'You are in too many groups (5 at most).';
+
+  @override
+  String get gfAlreadyMember => 'That person is already in the group.';
+
+  @override
+  String get gfAlreadyInvited => 'You already invited that person.';
+
+  @override
+  String get gfExpired => 'That invite has expired.';
+
+  @override
+  String get gfOwnerMustTransfer =>
+      'Hand the group over to someone else before you leave.';
+
+  @override
+  String get gfNetwork => 'Could not connect. Please try again.';
+
+  @override
+  String get gfUnknown => 'Something went wrong. Please try again.';
+
+  @override
+  String get kfInsufficientInk =>
+      'Out of ink. Finish the daily quest to get 10 more.';
+
+  @override
+  String get kfRateLimited => 'Draw a bit slower (30 cells a minute at most).';
+
+  @override
+  String get kfCanvasLocked => 'This canvas has been archived.';
+
+  @override
+  String get kfNotFound => 'Could not find the canvas.';
+
+  @override
+  String get kfNotOwner => 'Only the group owner can do this.';
+
+  @override
+  String get kfBadPixel => 'That cell is not valid.';
+
+  @override
+  String get kfBadSize => 'The size or palette is not valid.';
+
+  @override
+  String get kfNetwork => 'Connection lost. The canvas is now view-only.';
+
+  @override
+  String get groupSettingsTooltip => 'Group settings';
+
+  @override
+  String get youLabel => 'You';
+
+  @override
+  String get someoneLabel => 'Someone';
+
+  @override
+  String get chatLoadFailed => 'Could not load the messages.';
+
+  @override
+  String get chatSayHi => 'Say hi to the group 👋';
+
+  @override
+  String get chatHint => 'Message the group…';
+
+  @override
+  String get groupSettingsTitle => 'Group settings';
+
+  @override
+  String get ownerBadge => 'OWNER';
+
+  @override
+  String get sectionInfo => 'INFO';
+
+  @override
+  String sectionMembers(int count, int max) {
+    return 'MEMBERS ($count/$max)';
+  }
+
+  @override
+  String get inviteToGroup => 'INVITE TO GROUP';
+
+  @override
+  String get inviteNote =>
+      'You can only invite your friends. Invites expire after 7 days.';
+
+  @override
+  String get sectionPendingInvites => 'PENDING INVITES';
+
+  @override
+  String get newCanvasButton => 'NEW CANVAS';
+
+  @override
+  String get leaveGroup => 'LEAVE GROUP';
+
+  @override
+  String get dissolveGroup => 'DISBAND GROUP';
+
+  @override
+  String get rulesNone => 'This group has no rules yet.';
+
+  @override
+  String get rulesLabel => 'Rules';
+
+  @override
+  String memberYou(String name) {
+    return '$name (you)';
+  }
+
+  @override
+  String get ownerRole => 'Owner';
+
+  @override
+  String get optionsTooltip => 'Options';
+
+  @override
+  String get menuTransfer => 'Transfer ownership';
+
+  @override
+  String get menuRollback => 'Undo their drawing (24 h)';
+
+  @override
+  String get menuKick => 'Remove from group';
+
+  @override
+  String get revokeInvite => 'REVOKE';
+
+  @override
+  String get inviteFriendsTitle => 'INVITE FRIENDS';
+
+  @override
+  String get noOneToInvite =>
+      'No friends left to invite. You can only invite your friends.';
+
+  @override
+  String get newCanvasTitle => 'New canvas';
+
+  @override
+  String get sizeLabel => 'Size';
+
+  @override
+  String get paletteLabel => 'Palette';
+
+  @override
+  String get savedSnack => 'Saved.';
+
+  @override
+  String kickTitle(String name) {
+    return 'Remove $name from the group?';
+  }
+
+  @override
+  String get kickBody =>
+      'They will no longer see the group messages. The cells they drew stay.';
+
+  @override
+  String get kickAction => 'Remove';
+
+  @override
+  String get transferTitle => 'Transfer ownership?';
+
+  @override
+  String transferBody(String name) {
+    return '$name becomes the new owner. You become a regular member.';
+  }
+
+  @override
+  String get transferAction => 'Transfer';
+
+  @override
+  String transferDone(String name) {
+    return '$name is the new owner.';
+  }
+
+  @override
+  String rollbackTitle(String name) {
+    return 'Undo $name\'s drawing?';
+  }
+
+  @override
+  String get rollbackBody =>
+      'Cells they drew in the last 24 hours that nobody painted over go back to their earlier colour. Their ink is not refunded.';
+
+  @override
+  String get rollbackAction => 'Undo';
+
+  @override
+  String rollbackDone(int count) {
+    return 'Undid $count cells.';
+  }
+
+  @override
+  String leaveTitle(String group) {
+    return 'Leave $group?';
+  }
+
+  @override
+  String get leaveBody =>
+      'You will no longer see the group messages and canvas.';
+
+  @override
+  String get leaveAction => 'Leave';
+
+  @override
+  String dissolveTitle(String group) {
+    return 'Disband $group?';
+  }
+
+  @override
+  String get dissolveBody =>
+      'Everyone loses access to the messages and canvas. This cannot be undone.';
+
+  @override
+  String get dissolveAction => 'Disband';
+
+  @override
+  String invitedSnack(String name) {
+    return 'Invited $name.';
+  }
+
+  @override
+  String get newCanvasConfirmTitle => 'Start a new canvas?';
+
+  @override
+  String get newCanvasConfirmBody =>
+      'The current canvas is saved and can no longer be drawn on. The new canvas starts empty.';
+
+  @override
+  String get newCanvasConfirmAction => 'Create canvas';
+
+  @override
+  String get newCanvasDone => 'New canvas created.';
+
+  @override
+  String get avatarTitle => 'PROFILE PHOTO';
+
+  @override
+  String get avatarTakePhoto => 'TAKE PHOTO';
+
+  @override
+  String get avatarFromLibrary => 'CHOOSE FROM LIBRARY';
+
+  @override
+  String get avatarChange => 'CHANGE PHOTO';
+
+  @override
+  String get avatarChangeFailed => 'Could not change the profile photo.';
+
+  @override
+  String get questsDoneTitle => 'COMPLETED QUESTS';
+
+  @override
+  String get questsNoneYet =>
+      'No quests yet. Open the SHOOT tab to do today\'s quest and earn 25 Sunbit!';
+
+  @override
+  String get postsTitle => 'POSTS';
+
+  @override
+  String inkAmountSemantics(int amount) {
+    return '$amount ink';
+  }
+
+  @override
+  String inkAmountLabel(int amount) {
+    return '$amount INK';
+  }
+
+  @override
+  String streakSemantics(int streak) {
+    return '$streak-day streak';
+  }
+
+  @override
+  String get musicOn => 'Turn music on';
+
+  @override
+  String get musicOff => 'Turn music off';
+
+  @override
+  String get photoMissingRetake => 'PHOTO NOT FOUND · PLEASE SHOOT AGAIN';
+
+  @override
+  String get newDayQuest => 'NEW DAY · NEW QUEST!';
+
+  @override
+  String get outOfTriesTitle => 'NO TRIES LEFT TODAY';
+
+  @override
+  String get outOfTriesBody =>
+      'Not quite. You used all 3 tries today. A new quest arrives at 00:00.';
+
+  @override
+  String wrongTriesLeft(int left, String debug) {
+    return 'NOT QUITE · $left TRIES LEFT$debug';
+  }
+
+  @override
+  String get questModeBanner => 'QUEST MODE · LIVE CAMERA ONLY';
+
+  @override
+  String shootSubject(String subject) {
+    return 'Shoot $subject';
+  }
+
+  @override
+  String get exitQuestMode => 'Leave quest mode';
+
+  @override
+  String get checkingPhoto => 'CHECKING...';
+
+  @override
+  String questSemantics(String subject) {
+    return 'Today\'s quest: shoot $subject';
+  }
+
+  @override
+  String questTodayLabel(String style) {
+    return 'TODAY\'S QUEST · $style';
+  }
+
+  @override
+  String get qsDone => 'DONE ✓';
+
+  @override
+  String get qsPostNow => 'POST NOW';
+
+  @override
+  String get qsOutOfTries => 'NO TRIES';
+
+  @override
+  String triesLeft(int left) {
+    String _temp0 = intl.Intl.pluralLogic(
+      left,
+      locale: localeName,
+      other: '$left tries left',
+      one: '1 try left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shootToday => 'TODAY, SHOOT';
+
+  @override
+  String rewardWithBonus(int reward, int bonus, int streak) {
+    return '+$reward Sunbit, +$bonus streak bonus for $streak days!';
+  }
+
+  @override
+  String rewardPlain(int reward, int bonus, int every) {
+    return '+$reward Sunbit · plus +$bonus every $every streak days';
+  }
+
+  @override
+  String get questRulesNote =>
+      'Live camera only · 3 tries a day · A new day starts at 00:00 Vietnam time';
+
+  @override
+  String get startShooting => 'START SHOOTING';
+
+  @override
+  String get postQuestPhoto => 'POST QUEST PHOTO';
+
+  @override
+  String get questCompletedBtn => 'COMPLETED ✓';
+
+  @override
+  String get questNextAt => 'A new quest arrives at 00:00. See you then!';
+
+  @override
+  String get questAllTriesUsed =>
+      'You used all 3 tries. A new quest arrives at 00:00.';
+
+  @override
+  String get postFailedTitle => 'COULD NOT POST';
+
+  @override
+  String get closeAction => 'CLOSE';
+
+  @override
+  String get postSuccessTitle => 'POSTED!';
+
+  @override
+  String get niceAction => 'NICE!';
+
+  @override
+  String get rewardQuest => 'Quest completed';
+
+  @override
+  String rewardStreak(int days) {
+    return '$days-day streak bonus';
+  }
+
+  @override
+  String get rewardInk => 'Ink for the group canvas';
+
+  @override
+  String get streakNew => 'A new streak starts. Come back tomorrow!';
+
+  @override
+  String streakDaysRow(int days) {
+    return 'You have completed $days days in a row!';
+  }
+
+  @override
+  String get laterTooltip =>
+      'Later (your photo is kept until the end of today)';
+
+  @override
+  String photoNailedTitle(String emoji) {
+    return 'NAILED IT! $emoji';
+  }
+
+  @override
+  String get photoAcceptedTitle => 'PHOTO ACCEPTED';
+
+  @override
+  String get transformFailed =>
+      'Could not transform the photo. The original is safe.';
+
+  @override
+  String get captionLabel => 'CAPTION';
+
+  @override
+  String get captionHint => 'Write a short line...';
+
+  @override
+  String get postingBusy => 'POSTING...';
+
+  @override
+  String get postToProfile => 'POST TO MY PROFILE';
+
+  @override
+  String get questMusicOrchestral =>
+      'Quest posts play their own orchestral music when friends scroll to them.';
+
+  @override
+  String get questMusicChiptune =>
+      'Quest posts play their own chiptune music when friends scroll to them.';
+
+  @override
+  String get shopDecorate => 'DECORATE YOUR PROFILE';
+
+  @override
+  String get shopInUse => 'IN USE';
+
+  @override
+  String get shopOwned => 'OWNED';
+
+  @override
+  String shopBuy(int price) {
+    return 'BUY · $price SUNBIT';
+  }
+
+  @override
+  String shopShort(int missing) {
+    return '$missing SUNBIT SHORT';
+  }
+
+  @override
+  String get shopEquip => 'EQUIP';
+
+  @override
+  String get shopUnequip => 'REMOVE';
+
+  @override
+  String get shopHintBuy => 'Buy once, keep forever.';
+
+  @override
+  String get shopHintLocked => 'Finish the daily quest to earn more Sunbit.';
+
+  @override
+  String get shopHintEquip => 'You own this one. Swapping is free.';
+
+  @override
+  String get shopHintUnequip => 'You are using this one.';
+
+  @override
+  String get kindFrame => 'AVATAR FRAME';
+
+  @override
+  String get kindBanner => 'BANNER';
+
+  @override
+  String get rarityCommon => 'COMMON';
+
+  @override
+  String get rarityRare => 'RARE';
+
+  @override
+  String get rarityLegendary => 'LEGENDARY';
+
+  @override
+  String get itemFrameSunflower => 'Sunflower frame';
+
+  @override
+  String get itemFrameBrush => 'Swirling brush frame';
+
+  @override
+  String get itemFramePixel => 'Pixel border frame';
+
+  @override
+  String get itemFrameHearts => '8-bit heart frame';
+
+  @override
+  String get itemFrameGoldCoins => 'Gold coin frame';
+
+  @override
+  String get itemBannerStarryNight => 'Starry night banner';
+
+  @override
+  String get itemBannerWheatField => 'Wheat field banner';
+
+  @override
+  String get itemBannerAlmond => 'Almond blossom banner';
+
+  @override
+  String get itemBannerRetroSky => 'Retro game sky banner';
+
+  @override
+  String get itemBannerSpace => 'Pixel space banner';
+
+  @override
+  String canvasWhoNobody(int x, int y) {
+    return 'Cell ($x, $y): nobody drew here yet';
+  }
+
+  @override
+  String canvasWhoSomeone(int x, int y, String name) {
+    return 'Cell ($x, $y): drawn by $name';
+  }
+
+  @override
+  String get canvasLeftMember => 'someone who left the group';
+
+  @override
+  String get canvasLoadFailed => 'Could not load the canvas.';
+
+  @override
+  String get canvasNone => 'This group has no canvas yet.';
+
+  @override
+  String get canvasNoInk => 'Out of ink: finish a quest to get 10 ink.';
+
+  @override
+  String get canvasInkHint =>
+      'Each cell costs 1 ink. Hold a cell to see who drew it.';
+
+  @override
+  String get canvasOffline => 'Connection lost: the canvas is view-only.';
+
+  @override
+  String get canvasArchived => 'This canvas is archived (view-only).';
+
+  @override
+  String canvasSemantics(int w, int h) {
+    return 'Canvas $w by $h cells. Tap a cell to draw.';
+  }
+
+  @override
+  String colorSemantics(int n) {
+    return 'Colour $n';
+  }
 }
