@@ -1594,16 +1594,18 @@
   "contestEnterGalleryEmpty": "ENTER GALLERY",
   "hallOfFameButton": "HALL OF FAME",
   "hallOfFameTitle": "Hall of Fame",
-  "hallViewRoom": "Switch to room view",
-  "hallEmpty": "Nothing has been honoured yet. The top three of every week hang here for good.",
-  "hallSemantics": "Hall of Fame room with {count} paintings. Swipe up to walk forward and tap one to look closer. Use the grid button to browse as a list.",
-  "@hallSemantics": {
+  "hallEarlierWeek": "Earlier week",
+  "hallLaterWeek": "Later week",
+  "hallNoWinner": "No winner yet",
+  "hallPodiumSemantics": "Podium of week {week}. Tap a painting to look closer.",
+  "@hallPodiumSemantics": {
     "placeholders": {
-      "count": {
-        "type": "int"
+      "week": {
+        "type": "String"
       }
     }
   },
+  "hallEmpty": "Nothing has been honoured yet. The top three of every week hang here for good.",
   "entrySavePhoto": "SAVE PHOTO",
   "entrySavedSnack": "Saved to your photo library.",
   "entrySaveFailed": "Could not save the painting. Please try again.",

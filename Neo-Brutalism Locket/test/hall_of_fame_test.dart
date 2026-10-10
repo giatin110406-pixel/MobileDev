@@ -8,8 +8,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/entry_detail_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/entry_export.dart';
-import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
-import 'package:neo_brutalism_locket/features/contest/gallery/corridor_painter.dart';
+import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/hall_store.dart';
@@ -18,7 +17,7 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'canvas_store_test.dart' show FakeCanvas;
 import 'contest_test.dart';
 
-GalleryEntry winner(int n, {int? rank}) => GalleryEntry(
+GalleryEntry winner(int n, {int? rank, String? week}) => GalleryEntry(
   id: 'w$n',
   contestId: 'c$n',
   seq: 1,
@@ -31,7 +30,7 @@ GalleryEntry winner(int n, {int? rank}) => GalleryEntry(
   rank: rank ?? (n % 3) + 1,
   score: 3.5,
   voteCount: 4,
-  weekKey: '2026-W${40 - n}',
+  weekKey: week ?? '2026-W${40 - n}',
   titleVi: 'Hoa hướng dương',
   titleEn: 'Sunflowers',
 );
@@ -76,70 +75,12 @@ class FakeExporter implements EntryExporter {
 }
 
 void main() {
-  group('the Hall of Fame room', () {
-    test(
-      'every painting has a bay of its own, twice the size, alternating',
-      () {
-        final slots = layoutHall(11);
-        expect(slots.length, 11);
-        for (final slot in slots) {
-          expect(slot.size, 2.0);
-          expect(slot.side, slot.index.isEven ? -1 : 1);
-          expect(slot.yTop, greaterThanOrEqualTo(Corridor.wallTop));
-          expect(slot.yBottom, lessThanOrEqualTo(Corridor.wallBottom));
-          expect(slot.z0, greaterThanOrEqualTo(Corridor.startZ));
-        }
-      },
-    );
-
-    test('nothing overlaps, and newer paintings are nearer the entrance', () {
-      final slots = layoutHall(40);
-      for (var i = 0; i < slots.length; i++) {
-        for (var j = i + 1; j < slots.length; j++) {
-          final a = slots[i], b = slots[j];
-          if (a.side != b.side) continue;
-          final overlap = a.z0 < b.z1 && b.z0 < a.z1;
-          expect(overlap, isFalse, reason: 'bays $i and $j overlap');
-        }
-      }
-      for (var i = 1; i < slots.length; i++) {
-        expect(
-          slots[i].z0,
-          greaterThanOrEqualTo(slots[i - 2 < 0 ? 0 : i - 2].z0),
-        );
-      }
-      expect(layoutHall(0), isEmpty);
-    });
-
-    test('a hall of 3 reaches further than the Gallery needs for 3', () {
-      expect(corridorLength(layoutHall(3)), greaterThan(Corridor.startZ + 4));
-    });
-
-    test('the frames are gold, silver and bronze by rank', () {
-      expect(hallFrameColor(1), const Color(0xFFD4A82E));
-      expect(hallFrameColor(2), const Color(0xFFB9BEC7));
-      expect(hallFrameColor(3), const Color(0xFFB0703A));
+  group('the podium colours', () {
+    test('the pedestals are yellow, blue and orange by rank', () {
+      expect(hallFrameColor(1), const Color(0xFFFFE66D));
+      expect(hallFrameColor(2), const Color(0xFF45B7D1));
+      expect(hallFrameColor(3), const Color(0xFFF7A072));
       expect(hallFrameColor(null), hallFrameColor(3));
-    });
-
-    test(
-      'a painting gets a spot light and a plate with group, week, theme',
-      () {
-        final decor = hallDecor(winner(1, rank: 1), vietnamese: false);
-        expect(decor.spot, isTrue);
-        expect(decor.frame, hallFrameColor(1));
-        expect(decor.plaque, ['Team 1', 'W39: Sunflowers']);
-        expect(
-          hallDecor(winner(1, rank: 1), vietnamese: true).plaque.last,
-          'W39: Hoa hướng dương',
-        );
-      },
-    );
-
-    test('the hall looks different from the Gallery', () {
-      expect(CorridorStyle.hall.wall, isNot(CorridorStyle.gallery.wall));
-      expect(CorridorStyle.hall.ceilingLights, isFalse);
-      expect(CorridorStyle.gallery.ceilingLights, isTrue);
     });
   });
 
@@ -186,15 +127,17 @@ void main() {
   });
 
   group('the Hall of Fame screen', () {
-    final corridor = find.byWidgetPredicate(
-      (w) => w is CustomPaint && w.painter is CorridorPainter,
-    );
-
-    testWidgets('an empty hall explains itself', (tester) async {
+    testWidgets('an empty hall still shows the podium and explains itself', (
+      tester,
+    ) async {
       bigScreen(tester);
       await tester.pumpWidget(app(HallOfFameScreen(repository: FakeContest())));
       await tester.pump();
       await tester.pump();
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('?'), findsNWidgets(3));
       expect(
         find.textContaining('Nothing has been honoured yet'),
         findsOneWidget,
@@ -202,47 +145,59 @@ void main() {
       await leave(tester);
     });
 
-    testWidgets('shows the room, then a grid on request', (tester) async {
+    testWidgets('the newest week stands on the podium, first in the middle', (
+      tester,
+    ) async {
       bigScreen(tester);
       final repo = FakeContest();
-      for (var i = 1; i <= 6; i++) {
-        repo.hall.add(winner(i));
-      }
+      // Week 39 (newest) has all three places, week 38 has first place only.
+      repo.hall.addAll([
+        winner(1, rank: 1),
+        winner(2, rank: 2, week: '2026-W39'),
+        winner(3, rank: 3, week: '2026-W39'),
+        winner(4, rank: 1),
+      ]);
       await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
       await tester.pump();
       await tester.pump();
-      expect(find.text('Hall of Fame'), findsOneWidget);
-      expect(corridor, findsOneWidget);
-      final painter =
-          tester.widget<CustomPaint>(corridor).painter as CorridorPainter;
-      expect(painter.style, same(CorridorStyle.hall));
-      expect(painter.decorOf, isNotNull);
-      await tester.tap(find.byTooltip('Switch to grid view'));
-      await tester.pump();
-      expect(corridor, findsNothing);
-      expect(find.text('#1 · Team 1'), findsOneWidget);
+      expect(find.textContaining('W39'), findsOneWidget);
+      expect(find.text('Team 1'), findsOneWidget);
+      expect(find.text('Team 2'), findsOneWidget);
+      expect(find.text('Team 3'), findsOneWidget);
+      // Second place is left of first, third is right of it.
+      final first = tester.getCenter(find.text('Team 1')).dx;
+      expect(tester.getCenter(find.text('Team 2')).dx, lessThan(first));
+      expect(tester.getCenter(find.text('Team 3')).dx, greaterThan(first));
       await leave(tester);
     });
 
-    testWidgets('tapping a painting in the room opens it', (tester) async {
+    testWidgets('the arrows go to earlier weeks and back', (tester) async {
       bigScreen(tester);
       final repo = FakeContest();
-      for (var i = 1; i <= 6; i++) {
-        repo.hall.add(winner(i));
-        repo.entries.add(winner(i));
-      }
+      repo.hall.addAll([winner(1, rank: 1), winner(4, rank: 1)]);
       await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
       await tester.pump();
       await tester.pump();
-      final topLeft = tester.getTopLeft(corridor);
-      final size = tester.getSize(corridor);
-      final first = layoutHall(6).first;
-      final quad = Projection(size, 0).wallQuad(first)!;
-      final centre = Offset(
-        quad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
-        quad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
-      );
-      await tester.tapAt(topLeft + centre);
+      expect(find.text('Team 1'), findsOneWidget);
+      await tester.tap(find.byTooltip('Earlier week'));
+      await tester.pump();
+      expect(find.text('Team 4'), findsOneWidget);
+      expect(find.text('Team 1'), findsNothing);
+      await tester.tap(find.byTooltip('Later week'));
+      await tester.pump();
+      expect(find.text('Team 1'), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('tapping a winning painting opens it', (tester) async {
+      bigScreen(tester);
+      final repo = FakeContest();
+      repo.hall.add(winner(1, rank: 1));
+      repo.entries.add(winner(1, rank: 1));
+      await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
+      await tester.pump();
+      await tester.pump();
+      await tester.tap(find.byType(PixelArt));
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsOneWidget);
       expect(find.text('Team 1'), findsWidgets);
@@ -261,7 +216,7 @@ void main() {
       await tester.tap(find.text('TRY AGAIN'));
       await tester.pump();
       await tester.pump();
-      expect(corridor, findsOneWidget);
+      expect(find.text('Team 1'), findsOneWidget);
       await leave(tester);
     });
   });

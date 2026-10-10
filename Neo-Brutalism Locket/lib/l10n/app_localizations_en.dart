@@ -2399,16 +2399,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hallOfFameTitle => 'Hall of Fame';
 
   @override
-  String get hallViewRoom => 'Switch to room view';
+  String get hallEarlierWeek => 'Earlier week';
+
+  @override
+  String get hallLaterWeek => 'Later week';
+
+  @override
+  String get hallNoWinner => 'No winner yet';
+
+  @override
+  String hallPodiumSemantics(String week) {
+    return 'Podium of week $week. Tap a painting to look closer.';
+  }
 
   @override
   String get hallEmpty =>
       'Nothing has been honoured yet. The top three of every week hang here for good.';
-
-  @override
-  String hallSemantics(int count) {
-    return 'Hall of Fame room with $count paintings. Swipe up to walk forward and tap one to look closer. Use the grid button to browse as a list.';
-  }
 
   @override
   String get entrySavePhoto => 'SAVE PHOTO';

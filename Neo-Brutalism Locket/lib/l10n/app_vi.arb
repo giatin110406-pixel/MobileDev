@@ -1600,16 +1600,18 @@
   "contestEnterGalleryEmpty": "VÀO GALLERY",
   "hallOfFameButton": "HALL OF FAME",
   "hallOfFameTitle": "Hall of Fame",
-  "hallViewRoom": "Xem dạng phòng",
-  "hallEmpty": "Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.",
-  "hallSemantics": "Phòng Hall of Fame với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.",
-  "@hallSemantics": {
+  "hallEarlierWeek": "Tuần trước",
+  "hallLaterWeek": "Tuần sau",
+  "hallNoWinner": "Chưa có tranh",
+  "hallPodiumSemantics": "Bục vinh danh tuần {week}. Chạm vào một bức tranh để xem kỹ hơn.",
+  "@hallPodiumSemantics": {
     "placeholders": {
-      "count": {
-        "type": "int"
+      "week": {
+        "type": "String"
       }
     }
   },
+  "hallEmpty": "Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.",
   "entrySavePhoto": "LƯU ẢNH",
   "entrySavedSnack": "Đã lưu tranh vào thư viện ảnh.",
   "entrySaveFailed": "Không lưu được tranh. Thử lại nhé.",

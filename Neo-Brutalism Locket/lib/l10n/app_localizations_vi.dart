@@ -2380,16 +2380,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String get hallOfFameTitle => 'Hall of Fame';
 
   @override
-  String get hallViewRoom => 'Xem dạng phòng';
+  String get hallEarlierWeek => 'Tuần trước';
+
+  @override
+  String get hallLaterWeek => 'Tuần sau';
+
+  @override
+  String get hallNoWinner => 'Chưa có tranh';
+
+  @override
+  String hallPodiumSemantics(String week) {
+    return 'Bục vinh danh tuần $week. Chạm vào một bức tranh để xem kỹ hơn.';
+  }
 
   @override
   String get hallEmpty =>
       'Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.';
-
-  @override
-  String hallSemantics(int count) {
-    return 'Phòng Hall of Fame với $count bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.';
-  }
 
   @override
   String get entrySavePhoto => 'LƯU ẢNH';

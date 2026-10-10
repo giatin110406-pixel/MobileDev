@@ -4238,23 +4238,35 @@ abstract class AppLocalizations {
   /// **'Hall of Fame'**
   String get hallOfFameTitle;
 
-  /// No description provided for @hallViewRoom.
+  /// No description provided for @hallEarlierWeek.
   ///
   /// In vi, this message translates to:
-  /// **'Xem dạng phòng'**
-  String get hallViewRoom;
+  /// **'Tuần trước'**
+  String get hallEarlierWeek;
+
+  /// No description provided for @hallLaterWeek.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuần sau'**
+  String get hallLaterWeek;
+
+  /// No description provided for @hallNoWinner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tranh'**
+  String get hallNoWinner;
+
+  /// No description provided for @hallPodiumSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bục vinh danh tuần {week}. Chạm vào một bức tranh để xem kỹ hơn.'**
+  String hallPodiumSemantics(String week);
 
   /// No description provided for @hallEmpty.
   ///
   /// In vi, this message translates to:
   /// **'Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.'**
   String get hallEmpty;
-
-  /// No description provided for @hallSemantics.
-  ///
-  /// In vi, this message translates to:
-  /// **'Phòng Hall of Fame với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.'**
-  String hallSemantics(int count);
 
   /// No description provided for @entrySavePhoto.
   ///

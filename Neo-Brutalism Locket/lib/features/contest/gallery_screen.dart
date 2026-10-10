@@ -329,6 +329,6 @@ class GalleryGrid extends StatelessWidget {
 
 /// The colours of the frames in the grid view (the same as in the corridor).
 abstract final class CorridorFrameColors {
-  static const frame = Color(0xFF17110E);
-  static const mat = Color(0xFFF5F2E9);
+  static const frame = Color(0xFF1A1A1A);
+  static const mat = Color(0xFFFDF2E9);
 }
