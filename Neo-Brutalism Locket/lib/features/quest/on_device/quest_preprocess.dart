@@ -16,8 +16,7 @@ Float32List preprocessQuestPhoto(Uint8List jpeg, int size) {
     throw const FormatException('not an image');
   }
   if (decoded == null) throw const FormatException('not an image');
-  final scale =
-      size / (decoded.width < decoded.height ? decoded.width : decoded.height);
+  final scale = size / (decoded.width < decoded.height ? decoded.width : decoded.height);
   final width = (decoded.width * scale).round().clamp(size, 1 << 16);
   final height = (decoded.height * scale).round().clamp(size, 1 << 16);
   // Averaging is the right filter when shrinking; the check was measured to

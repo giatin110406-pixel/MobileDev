@@ -55,12 +55,10 @@ class QuestLabels {
       quests: {
         for (final entry in (data['quests'] as Map<String, dynamic>).entries)
           entry.key: QuestLabelSet(
-            positives:
-                (entry.value as Map<String, dynamic>)['positives'] as int,
+            positives: (entry.value as Map<String, dynamic>)['positives'] as int,
             labelIds: [
-              for (final id
-                  in (entry.value as Map<String, dynamic>)['labels']
-                      as List<dynamic>)
+              for (final id in (entry.value as Map<String, dynamic>)['labels']
+                  as List<dynamic>)
                 id as int,
             ],
           ),
