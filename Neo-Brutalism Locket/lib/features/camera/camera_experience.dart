@@ -784,7 +784,10 @@ class CameraTabState extends State<CameraTab> {
       decoration: NeoTheme.panel(color: questStyleColor(quest.style)),
       child: Row(
         children: [
-          Text(quest.emoji, style: const TextStyle(fontSize: 22)),
+          Text(
+            quest.emoji,
+            style: const TextStyle(fontFamily: NeoFont.display, fontSize: 22),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -916,6 +919,7 @@ class CameraTabState extends State<CameraTab> {
                 child: Text(
                   '$_countdown',
                   style: const TextStyle(
+                    fontFamily: NeoFont.display,
                     color: NeoColors.ink,
                     fontSize: 44,
                     fontWeight: FontWeight.w900,
@@ -949,7 +953,9 @@ class CameraTabState extends State<CameraTab> {
             Semantics(
               button: true,
               selected: level == nearest,
-              label: AppLocalizations.of(context).zoomSemantics(zoomLabel(level)),
+              label: AppLocalizations.of(
+                context,
+              ).zoomSemantics(zoomLabel(level)),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _setZoom(level),
@@ -1034,9 +1040,11 @@ class CameraTabState extends State<CameraTab> {
                 Text(
                   _cameraLoading
                       ? AppLocalizations.of(context).findingCamera
-                      : _cameraMessage ?? AppLocalizations.of(context).cameraReady,
+                      : _cameraMessage ??
+                            AppLocalizations.of(context).cameraReady,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
+                    fontFamily: NeoFont.display,
                     color: NeoColors.ink,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -1279,7 +1287,9 @@ class CameraTabState extends State<CameraTab> {
                     key: ValueKey('before-after-${photo.id}'),
                     originalPath: photo.originalPath,
                     styledPath: styledPath,
-                    styleLabel: photo.styleType?.label ?? AppLocalizations.of(context).editLabel,
+                    styleLabel:
+                        photo.styleType?.label ??
+                        AppLocalizations.of(context).editLabel,
                     showStyled: !_showOriginal,
                     onChanged: (styled) =>
                         setState(() => _showOriginal = !styled),

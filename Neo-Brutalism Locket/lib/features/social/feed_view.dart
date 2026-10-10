@@ -447,13 +447,17 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   widget.onReplyRemote != null &&
                   widget.onReactRemote != null
             ? ReplyBar(
-                hint: AppLocalizations.of(context).replyHint(friend.name.split(' ').first),
+                hint: AppLocalizations.of(
+                  context,
+                ).replyHint(friend.name.split(' ').first),
                 onSendText: (text) => widget.onReplyRemote!(remote, text),
                 onReact: (emoji) => widget.onReactRemote!(remote, emoji),
               )
             : post != null && friend != null && widget.allowReplies
             ? ReplyBar(
-                hint: AppLocalizations.of(context).replyHint(friend.name.split(' ').first),
+                hint: AppLocalizations.of(
+                  context,
+                ).replyHint(friend.name.split(' ').first),
                 onSendText: (text) => widget.onReplyText(post, text),
                 onReact: (emoji) => widget.onReact(post, emoji),
               )
@@ -487,7 +491,13 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           ColoredBox(
             color: Color(post.color),
             child: Center(
-              child: Text(post.emoji, style: const TextStyle(fontSize: 96)),
+              child: Text(
+                post.emoji,
+                style: const TextStyle(
+                  fontFamily: NeoFont.display,
+                  fontSize: 96,
+                ),
+              ),
             ),
           ),
         if (post.caption.isNotEmpty) _caption(post.caption),

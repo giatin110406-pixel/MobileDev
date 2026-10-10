@@ -263,13 +263,15 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                       child: Text(
                         'Cài đặt nhóm',
                         style: TextStyle(
+                          fontFamily: NeoFont.display,
                           color: NeoColors.ink,
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    if (owner) const NeoLabel('TRƯỞNG NHÓM', color: NeoColors.yellow),
+                    if (owner)
+                      const NeoLabel('TRƯỞNG NHÓM', color: NeoColors.yellow),
                   ],
                 ),
                 const SizedBox(height: 18),
@@ -302,8 +304,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                 if (owner && sent.isNotEmpty) ...[
                   const SizedBox(height: 22),
                   _section('LỜI MỜI ĐANG CHỜ'),
-                  for (final invite in sent)
-                    _inviteTile(invite),
+                  for (final invite in sent) _inviteTile(invite),
                 ],
                 if (owner) ...[
                   const SizedBox(height: 22),
@@ -363,6 +364,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         Text(
           summary.group.name,
           style: const TextStyle(
+            fontFamily: NeoFont.display,
             color: NeoColors.ink,
             fontSize: 18,
             fontWeight: FontWeight.w900,
@@ -429,6 +431,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
             Text(
               '$_max',
               style: const TextStyle(
+                fontFamily: NeoFont.display,
                 color: NeoColors.ink,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
@@ -522,7 +525,10 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                       value: 'rollback',
                       child: Text('Hoàn tác nét vẽ (24 giờ)'),
                     ),
-                    PopupMenuItem(value: 'kick', child: Text('Mời ra khỏi nhóm')),
+                    PopupMenuItem(
+                      value: 'kick',
+                      child: Text('Mời ra khỏi nhóm'),
+                    ),
                   ],
                 ),
             ],
@@ -584,6 +590,7 @@ class _FriendPicker extends StatelessWidget {
           const Text(
             'MỜI BẠN BÈ',
             style: TextStyle(
+              fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 18,
               fontWeight: FontWeight.w900,
@@ -668,10 +675,7 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Bảng màu',
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
+          const Text('Bảng màu', style: TextStyle(fontWeight: FontWeight.w800)),
           Wrap(
             spacing: 8,
             children: [

@@ -95,6 +95,7 @@ class FriendsScreen extends StatelessWidget {
                     Text(
                       AppLocalizations.of(context).friendsTitle,
                       style: const TextStyle(
+                        fontFamily: NeoFont.display,
                         color: NeoColors.ink,
                         fontSize: 26,
                         height: 1,
@@ -193,6 +194,7 @@ class FriendsScreen extends StatelessWidget {
           emptyTitle ?? AppLocalizations.of(context).noFriendsOnDevice,
           textAlign: TextAlign.center,
           style: const TextStyle(
+            fontFamily: NeoFont.display,
             color: NeoColors.ink,
             fontSize: 22,
             height: 1,
@@ -271,6 +273,7 @@ class InboxScreen extends StatelessWidget {
                     Text(
                       AppLocalizations.of(context).inboxTitle,
                       style: const TextStyle(
+                        fontFamily: NeoFont.display,
                         color: NeoColors.ink,
                         fontSize: 26,
                         height: 1,
@@ -647,7 +650,13 @@ class _MessageBubble extends StatelessWidget {
                   const SizedBox(height: 8),
                 ],
                 if (message.reaction != null)
-                  Text(message.reaction!, style: const TextStyle(fontSize: 34)),
+                  Text(
+                    message.reaction!,
+                    style: const TextStyle(
+                      fontFamily: NeoFont.display,
+                      fontSize: 34,
+                    ),
+                  ),
                 if (!message.isPostReply &&
                     message.photoPath != null &&
                     File(message.photoPath!).existsSync()) ...[
@@ -1094,6 +1103,7 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
               Text(
                 AppLocalizations.of(context).addAFriend,
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,

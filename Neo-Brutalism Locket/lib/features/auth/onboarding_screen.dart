@@ -180,6 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Text(
                     l10n.onboardingTitle,
                     style: const TextStyle(
+                      fontFamily: NeoFont.display,
                       color: NeoColors.ink,
                       fontSize: 30,
                       height: 1,

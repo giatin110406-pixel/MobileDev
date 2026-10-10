@@ -17,6 +17,13 @@ abstract final class NeoColors {
   static const cyan = blue;
 }
 
+/// The two bundled font families: Space Grotesk for headings, numbers, labels
+/// and buttons; Public Sans for everything else.
+abstract final class NeoFont {
+  static const display = 'SpaceGrotesk';
+  static const body = 'PublicSans';
+}
+
 abstract final class NeoTheme {
   static ThemeData get data => ThemeData(
     useMaterial3: true,
@@ -37,7 +44,7 @@ abstract final class NeoTheme {
       selectionHandleColor: NeoColors.ink,
     ),
     splashFactory: NoSplash.splashFactory,
-    fontFamily: 'sans-serif',
+    fontFamily: NeoFont.body,
   );
 
   static BoxDecoration panel({
@@ -91,10 +98,11 @@ class NeoLabel extends StatelessWidget {
             text,
             style: TextStyle(
               color: textColor,
+              fontFamily: NeoFont.display,
               fontSize: 10,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               height: 1,
-              letterSpacing: 0,
+              letterSpacing: 0.4,
             ),
           ),
         ],
@@ -180,6 +188,7 @@ class _NeoButtonState extends State<NeoButton> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: NeoColors.ink,
+                fontFamily: NeoFont.display,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 height: 1,

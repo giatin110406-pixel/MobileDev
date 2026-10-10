@@ -57,7 +57,13 @@ class QuestStrip extends StatelessWidget {
                   border: Border.all(color: NeoColors.ink, width: 2),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(quest.emoji, style: const TextStyle(fontSize: 20)),
+                child: Text(
+                  quest.emoji,
+                  style: const TextStyle(
+                    fontFamily: NeoFont.display,
+                    fontSize: 20,
+                  ),
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -219,6 +225,7 @@ class _QuestSheet extends StatelessWidget {
               Text(
                 '${quest.emoji} ${_capitalized(quest.subject)}',
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 26,
                   height: 1.1,

@@ -340,6 +340,7 @@ class _AddFriendOnlineSheetState extends State<_AddFriendOnlineSheet> {
               Text(
                 l10n.addFriendTitle,
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,

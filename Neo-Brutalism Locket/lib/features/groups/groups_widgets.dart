@@ -44,7 +44,8 @@ String canvasFailureText(CanvasFailureKind kind) => switch (kind) {
   CanvasFailureKind.badPixel ||
   CanvasFailureKind.tooManyPixels => 'Ô vẽ không hợp lệ.',
   CanvasFailureKind.badSize => 'Kích thước hoặc bảng màu không hợp lệ.',
-  CanvasFailureKind.network => 'Mất kết nối. Canvas chuyển sang chế độ chỉ xem.',
+  CanvasFailureKind.network =>
+    'Mất kết nối. Canvas chuyển sang chế độ chỉ xem.',
   CanvasFailureKind.unknown => 'Có lỗi xảy ra. Thử lại nhé.',
 };
 
@@ -126,7 +127,9 @@ class PersonBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        name.isEmpty ? '?' : String.fromCharCode(name.runes.first).toUpperCase(),
+        name.isEmpty
+            ? '?'
+            : String.fromCharCode(name.runes.first).toUpperCase(),
         style: TextStyle(
           color: NeoColors.ink,
           fontSize: size * 0.42,
@@ -295,6 +298,7 @@ class _PersonCard extends StatelessWidget {
                           Text(
                             person.displayName,
                             style: const TextStyle(
+                              fontFamily: NeoFont.display,
                               color: NeoColors.ink,
                               fontSize: 20,
                               fontWeight: FontWeight.w900,

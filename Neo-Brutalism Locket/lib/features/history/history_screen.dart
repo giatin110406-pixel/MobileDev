@@ -141,6 +141,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Text(
                   l10n.historyTitle,
                   style: const TextStyle(
+                    fontFamily: NeoFont.display,
                     color: NeoColors.ink,
                     fontSize: 26,
                     height: 1,

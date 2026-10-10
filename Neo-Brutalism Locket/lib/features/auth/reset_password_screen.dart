@@ -92,6 +92,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   Text(
                     l10n.resetPasswordTitle,
                     style: const TextStyle(
+                      fontFamily: NeoFont.display,
                       color: NeoColors.ink,
                       fontSize: 30,
                       height: 1,

@@ -187,6 +187,7 @@ class ProfileScreen extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
+                                fontFamily: NeoFont.display,
                                 color: NeoColors.ink,
                                 fontSize: 26,
                                 height: 1,
@@ -371,7 +372,10 @@ class FriendProfileScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       if (friend.isSample)
-                        NeoLabel(AppLocalizations.of(context).sampleLabel, color: NeoColors.teal),
+                        NeoLabel(
+                          AppLocalizations.of(context).sampleLabel,
+                          color: NeoColors.teal,
+                        ),
                       if (onBlock != null || onReport != null)
                         PopupMenuButton<String>(
                           tooltip: AppLocalizations.of(context).menuTooltip,
@@ -414,6 +418,7 @@ class FriendProfileScreen extends StatelessWidget {
                   Text(
                     friend.name,
                     style: const TextStyle(
+                      fontFamily: NeoFont.display,
                       color: NeoColors.ink,
                       fontSize: 26,
                       height: 1,
@@ -477,7 +482,10 @@ class FriendProfileScreen extends StatelessWidget {
                             child: Center(
                               child: Text(
                                 post.emoji,
-                                style: const TextStyle(fontSize: 34),
+                                style: const TextStyle(
+                                  fontFamily: NeoFont.display,
+                                  fontSize: 34,
+                                ),
                               ),
                             ),
                           ),
