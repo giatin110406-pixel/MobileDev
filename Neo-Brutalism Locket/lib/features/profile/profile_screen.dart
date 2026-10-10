@@ -182,7 +182,8 @@ class ProfileScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              session?.profile.displayName ?? 'You',
+                              session?.profile.displayName ??
+                                  AppLocalizations.of(context).youLabel,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(

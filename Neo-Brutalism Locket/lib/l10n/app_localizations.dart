@@ -3835,6 +3835,384 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Màu {n}'**
   String colorSemantics(int n);
+
+  /// No description provided for @peQuestExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!'**
+  String get peQuestExpired;
+
+  /// No description provided for @peAlreadyDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay bạn đã hoàn thành nhiệm vụ rồi.'**
+  String get peAlreadyDone;
+
+  /// No description provided for @peNoAttempts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!'**
+  String get peNoAttempts;
+
+  /// No description provided for @peNotPassed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh nhiệm vụ chưa vượt qua bước kiểm tra.'**
+  String get peNotPassed;
+
+  /// No description provided for @peCaptionTooLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chú thích tối đa {max} ký tự.'**
+  String peCaptionTooLong(int max);
+
+  /// No description provided for @peAlreadyOwned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã sở hữu món này.'**
+  String get peAlreadyOwned;
+
+  /// No description provided for @peNotOwned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy mua món này trước.'**
+  String get peNotOwned;
+
+  /// No description provided for @peItemNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy món này.'**
+  String get peItemNotFound;
+
+  /// No description provided for @peNeedsNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần kết nối mạng để thực hiện việc này.'**
+  String get peNeedsNetwork;
+
+  /// No description provided for @peNotEnoughSunbit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu {missing} Sunbit'**
+  String peNotEnoughSunbit(int missing);
+
+  /// No description provided for @peUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có lỗi xảy ra. Thử lại nhé.'**
+  String get peUnknown;
+
+  /// No description provided for @qcNeedsLaptop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần kết nối laptop để kiểm tra ảnh. Bấm nút server (màu xanh) để cài đặt.'**
+  String get qcNeedsLaptop;
+
+  /// No description provided for @qcLaptopFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được ảnh ({detail}). Lượt thử không bị trừ.'**
+  String qcLaptopFailed(String detail);
+
+  /// No description provided for @qcQuestUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ này chưa có trong bộ kiểm ảnh. Hãy cập nhật ứng dụng.'**
+  String get qcQuestUnknown;
+
+  /// No description provided for @qcUnreadable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đọc được ảnh. Lượt thử không bị trừ.'**
+  String get qcUnreadable;
+
+  /// No description provided for @qcDeviceFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.'**
+  String get qcDeviceFailed;
+
+  /// No description provided for @seNotSetUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa cài đặt máy chủ laptop'**
+  String get seNotSetUp;
+
+  /// No description provided for @seTooLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop xử lý quá lâu'**
+  String get seTooLong;
+
+  /// No description provided for @seWrongToken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sai mã token của máy chủ'**
+  String get seWrongToken;
+
+  /// No description provided for @sePhotoTooLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh quá lớn so với máy chủ'**
+  String get sePhotoTooLarge;
+
+  /// No description provided for @seBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop đang bận'**
+  String get seBusy;
+
+  /// No description provided for @seNoAnswer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop không trả lời'**
+  String get seNoAnswer;
+
+  /// No description provided for @seUnreachable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được tới laptop'**
+  String get seUnreachable;
+
+  /// No description provided for @seFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop không tạo được tranh'**
+  String get seFailed;
+
+  /// No description provided for @appTagline.
+  ///
+  /// In vi, this message translates to:
+  /// **'CLB MÁY ẢNH NEO BRUTAL'**
+  String get appTagline;
+
+  /// No description provided for @archiveEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHƯA IN\nẢNH NÀO'**
+  String get archiveEmptyTitle;
+
+  /// No description provided for @galleryRoomTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'PHÒNG TRIỂN LÃM'**
+  String get galleryRoomTitle;
+
+  /// No description provided for @styleNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG HIỆU ỨNG'**
+  String get styleNone;
+
+  /// No description provided for @sourceLaptop.
+  ///
+  /// In vi, this message translates to:
+  /// **'LAPTOP · KHUẾCH TÁN'**
+  String get sourceLaptop;
+
+  /// No description provided for @sourceOnDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRÊN MÁY'**
+  String get sourceOnDevice;
+
+  /// No description provided for @sourceMagenta.
+  ///
+  /// In vi, this message translates to:
+  /// **'DỰ PHÒNG · MAGENTA'**
+  String get sourceMagenta;
+
+  /// No description provided for @sourceMock.
+  ///
+  /// In vi, this message translates to:
+  /// **'DỰ PHÒNG · THỬ'**
+  String get sourceMock;
+
+  /// No description provided for @sourceOriginal.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH GỐC'**
+  String get sourceOriginal;
+
+  /// No description provided for @timeNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'vừa xong'**
+  String get timeNow;
+
+  /// No description provided for @timeMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}p'**
+  String timeMinutes(int n);
+
+  /// No description provided for @timeHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}g'**
+  String timeHours(int n);
+
+  /// No description provided for @timeDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}n'**
+  String timeDays(int n);
+
+  /// No description provided for @periodAm.
+  ///
+  /// In vi, this message translates to:
+  /// **'SA'**
+  String get periodAm;
+
+  /// No description provided for @periodPm.
+  ///
+  /// In vi, this message translates to:
+  /// **'CH'**
+  String get periodPm;
+
+  /// No description provided for @sendMessageHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi tin nhắn...'**
+  String get sendMessageHint;
+
+  /// No description provided for @youUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN'**
+  String get youUpper;
+
+  /// No description provided for @lfNeedNameHandle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy nhập tên và tên người dùng.'**
+  String get lfNeedNameHandle;
+
+  /// No description provided for @lfHandleTaken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên người dùng này đã có trong danh sách bạn bè.'**
+  String get lfHandleTaken;
+
+  /// No description provided for @lfWriteSomething.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy viết tin nhắn hoặc đính kèm một ảnh.'**
+  String get lfWriteSomething;
+
+  /// No description provided for @lfFriendMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy bạn bè.'**
+  String get lfFriendMissing;
+
+  /// No description provided for @lfWriteReply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy viết trả lời hoặc chọn một emoji.'**
+  String get lfWriteReply;
+
+  /// No description provided for @lfPostGone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài đăng này không còn nữa.'**
+  String get lfPostGone;
+
+  /// No description provided for @seStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ trả lời mã {code}'**
+  String seStatus(String code);
+
+  /// No description provided for @seFailedDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop gặp lỗi: {detail}'**
+  String seFailedDetail(String detail);
+
+  /// No description provided for @seError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi laptop'**
+  String get seError;
+
+  /// No description provided for @seMagentaFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô hình Van Gogh trên máy bị lỗi'**
+  String get seMagentaFailed;
+
+  /// No description provided for @styleBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'PHONG CÁCH: {style}'**
+  String styleBadge(String style);
+
+  /// No description provided for @sampleCaptionAva.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ánh nắng sớm đẹp không thật'**
+  String get sampleCaptionAva;
+
+  /// No description provided for @sampleCaptionJules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi dạo uống cà phê sau giờ học'**
+  String get sampleCaptionJules;
+
+  /// No description provided for @sampleCaptionRemy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh mới rửa trong phòng tối'**
+  String get sampleCaptionRemy;
+
+  /// No description provided for @sampleMessageAva.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay ánh nắng sớm đẹp không thật.'**
+  String get sampleMessageAva;
+
+  /// No description provided for @sampleMessageJules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi dạo uống cà phê sau giờ học không?'**
+  String get sampleMessageJules;
+
+  /// No description provided for @sampleMessageRemy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tấm ảnh đó lên đẹp quá.'**
+  String get sampleMessageRemy;
+
+  /// No description provided for @quoteReactedTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ THẢ CẢM XÚC VÀO {whose}'**
+  String quoteReactedTo(String whose);
+
+  /// No description provided for @quoteRepliedTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ TRẢ LỜI {whose}'**
+  String quoteRepliedTo(String whose);
+
+  /// No description provided for @sayHelloTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHÀO {name} ĐI'**
+  String sayHelloTo(String name);
+
+  /// No description provided for @printNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH SỐ {n}'**
+  String printNumber(String n);
+
+  /// No description provided for @printListTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH {n}'**
+  String printListTitle(String n);
 }
 
 class _AppLocalizationsDelegate

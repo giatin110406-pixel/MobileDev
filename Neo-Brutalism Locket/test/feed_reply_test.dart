@@ -301,10 +301,34 @@ void main() {
 
     test('time ago', () {
       final now = DateTime(2026, 1, 1, 12);
-      expect(timeAgo(now, now: now), 'now');
-      expect(timeAgo(now.subtract(const Duration(minutes: 5)), now: now), '5m');
-      expect(timeAgo(now.subtract(const Duration(hours: 3)), now: now), '3h');
-      expect(timeAgo(now.subtract(const Duration(days: 2)), now: now), '2d');
+      final en = lookupAppLocalizations(const Locale('en'));
+      final vi = lookupAppLocalizations(const Locale('vi'));
+      expect(timeAgo(en, now, now: now), 'now');
+      expect(
+        timeAgo(en, now.subtract(const Duration(minutes: 5)), now: now),
+        '5m',
+      );
+      expect(
+        timeAgo(en, now.subtract(const Duration(hours: 3)), now: now),
+        '3h',
+      );
+      expect(
+        timeAgo(en, now.subtract(const Duration(days: 2)), now: now),
+        '2d',
+      );
+      expect(timeAgo(vi, now, now: now), 'vừa xong');
+      expect(
+        timeAgo(vi, now.subtract(const Duration(minutes: 5)), now: now),
+        '5p',
+      );
+      expect(
+        timeAgo(vi, now.subtract(const Duration(hours: 3)), now: now),
+        '3g',
+      );
+      expect(
+        timeAgo(vi, now.subtract(const Duration(days: 2)), now: now),
+        '2n',
+      );
     });
 
     Future<List<String>> pumpFeed(

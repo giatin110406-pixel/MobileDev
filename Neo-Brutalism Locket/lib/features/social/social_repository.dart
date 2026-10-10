@@ -195,6 +195,26 @@ class SocialSnapshot {
   final List<FriendPost> posts;
 }
 
+/// Why an action with a friend kept on this phone was refused.
+enum LocalFriendError {
+  needNameHandle,
+  handleTaken,
+  writeSomething,
+  friendMissing,
+  writeReply,
+  postGone,
+}
+
+/// A [FormatException] that screens can turn into words in the app's language.
+class LocalFriendException extends FormatException {
+  const LocalFriendException(this.kind) : super('');
+
+  final LocalFriendError kind;
+
+  @override
+  String toString() => 'LocalFriendException(${kind.name})';
+}
+
 class SocialRepository {
   static const _friendsKey = 'pocket_friends_v1';
   static const _messagesKey = 'pocket_messages_v1';
@@ -290,14 +310,14 @@ class SocialRepository {
     final cleanName = name.trim();
     final cleanHandle = _normalizeHandle(handle);
     if (cleanName.isEmpty || cleanHandle.length < 2) {
-      throw const FormatException('Enter a name and handle.');
+      throw const LocalFriendException(LocalFriendError.needNameHandle);
     }
 
     final snapshot = await load();
     if (snapshot.friends.any(
       (friend) => friend.handle.toLowerCase() == cleanHandle.toLowerCase(),
     )) {
-      throw const FormatException('That handle is already in your friends.');
+      throw const LocalFriendException(LocalFriendError.handleTaken);
     }
 
     final id = DateTime.now().microsecondsSinceEpoch.toString();
@@ -341,12 +361,12 @@ class SocialRepository {
   }) async {
     final cleanText = text.trim();
     if (cleanText.isEmpty && photoPath == null) {
-      throw const FormatException('Write a message or attach a print.');
+      throw const LocalFriendException(LocalFriendError.writeSomething);
     }
 
     final snapshot = await load();
     if (!snapshot.friends.any((friend) => friend.id == friendId)) {
-      throw const FormatException('Friend not found.');
+      throw const LocalFriendException(LocalFriendError.friendMissing);
     }
     final message = PocketMessage(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
@@ -371,13 +391,15 @@ class SocialRepository {
     final cleanText = text.trim();
     final cleanReaction = reaction?.trim();
     if (cleanText.isEmpty && (cleanReaction == null || cleanReaction.isEmpty)) {
-      throw const FormatException('Write a reply or pick an emoji.');
+      throw const LocalFriendException(LocalFriendError.writeReply);
     }
     final snapshot = await load();
     final post = snapshot.posts.where((post) => post.id == postId).firstOrNull;
-    if (post == null) throw const FormatException('That post is gone.');
+    if (post == null) {
+      throw const LocalFriendException(LocalFriendError.postGone);
+    }
     if (!snapshot.friends.any((friend) => friend.id == post.friendId)) {
-      throw const FormatException('Friend not found.');
+      throw const LocalFriendException(LocalFriendError.friendMissing);
     }
     final message = PocketMessage(
       id: DateTime.now().microsecondsSinceEpoch.toString(),

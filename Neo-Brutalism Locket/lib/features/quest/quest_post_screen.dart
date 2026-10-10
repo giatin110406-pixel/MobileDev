@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
@@ -50,9 +52,8 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
   final _confetti = GlobalKey<ConfettiState>();
   late final PhotoRepository _photos =
       widget.photoRepository ?? PhotoRepository();
-  late final TextEditingController _caption = TextEditingController(
-    text: widget.quest.caption,
-  );
+  final TextEditingController _caption = TextEditingController();
+  bool _captionSeeded = false;
   late NeoPhoto _photo = widget.photo;
   double _progress = 0;
   bool _posting = false;
@@ -61,6 +62,17 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
       _photo.status == ProcessingStatus.done &&
       _photo.processedPath != null &&
       _photo.styleType == widget.quest.style;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_captionSeeded) {
+      _captionSeeded = true;
+      _caption.text = widget.quest.captionFor(
+        vietnamese: isVietnamese(context),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -141,7 +153,10 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
         context: context,
         builder: (context) => _NeoDialog(
           title: AppLocalizations.of(context).postFailedTitle,
-          body: Text(error.message, style: _bodyStyle),
+          body: Text(
+            playerErrorText(AppLocalizations.of(context), error),
+            style: _bodyStyle,
+          ),
           action: AppLocalizations.of(context).closeAction,
         ),
       );
@@ -258,7 +273,11 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            quest.storyTitle.toUpperCase(),
+                            quest
+                                .storyTitleFor(
+                                  vietnamese: isVietnamese(context),
+                                )
+                                .toUpperCase(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

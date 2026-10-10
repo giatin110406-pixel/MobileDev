@@ -2144,4 +2144,226 @@ class AppLocalizationsVi extends AppLocalizations {
   String colorSemantics(int n) {
     return 'Màu $n';
   }
+
+  @override
+  String get peQuestExpired =>
+      'Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!';
+
+  @override
+  String get peAlreadyDone => 'Hôm nay bạn đã hoàn thành nhiệm vụ rồi.';
+
+  @override
+  String get peNoAttempts => 'Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!';
+
+  @override
+  String get peNotPassed => 'Ảnh nhiệm vụ chưa vượt qua bước kiểm tra.';
+
+  @override
+  String peCaptionTooLong(int max) {
+    return 'Chú thích tối đa $max ký tự.';
+  }
+
+  @override
+  String get peAlreadyOwned => 'Bạn đã sở hữu món này.';
+
+  @override
+  String get peNotOwned => 'Hãy mua món này trước.';
+
+  @override
+  String get peItemNotFound => 'Không tìm thấy món này.';
+
+  @override
+  String get peNeedsNetwork => 'Cần kết nối mạng để thực hiện việc này.';
+
+  @override
+  String peNotEnoughSunbit(int missing) {
+    return 'Còn thiếu $missing Sunbit';
+  }
+
+  @override
+  String get peUnknown => 'Có lỗi xảy ra. Thử lại nhé.';
+
+  @override
+  String get qcNeedsLaptop =>
+      'Cần kết nối laptop để kiểm tra ảnh. Bấm nút server (màu xanh) để cài đặt.';
+
+  @override
+  String qcLaptopFailed(String detail) {
+    return 'Không kiểm tra được ảnh ($detail). Lượt thử không bị trừ.';
+  }
+
+  @override
+  String get qcQuestUnknown =>
+      'Nhiệm vụ này chưa có trong bộ kiểm ảnh. Hãy cập nhật ứng dụng.';
+
+  @override
+  String get qcUnreadable => 'Không đọc được ảnh. Lượt thử không bị trừ.';
+
+  @override
+  String get qcDeviceFailed =>
+      'Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.';
+
+  @override
+  String get seNotSetUp => 'Chưa cài đặt máy chủ laptop';
+
+  @override
+  String get seTooLong => 'Laptop xử lý quá lâu';
+
+  @override
+  String get seWrongToken => 'Sai mã token của máy chủ';
+
+  @override
+  String get sePhotoTooLarge => 'Ảnh quá lớn so với máy chủ';
+
+  @override
+  String get seBusy => 'Laptop đang bận';
+
+  @override
+  String get seNoAnswer => 'Laptop không trả lời';
+
+  @override
+  String get seUnreachable => 'Không kết nối được tới laptop';
+
+  @override
+  String get seFailed => 'Laptop không tạo được tranh';
+
+  @override
+  String get appTagline => 'CLB MÁY ẢNH NEO BRUTAL';
+
+  @override
+  String get archiveEmptyTitle => 'CHƯA IN\nẢNH NÀO';
+
+  @override
+  String get galleryRoomTitle => 'PHÒNG TRIỂN LÃM';
+
+  @override
+  String get styleNone => 'KHÔNG HIỆU ỨNG';
+
+  @override
+  String get sourceLaptop => 'LAPTOP · KHUẾCH TÁN';
+
+  @override
+  String get sourceOnDevice => 'TRÊN MÁY';
+
+  @override
+  String get sourceMagenta => 'DỰ PHÒNG · MAGENTA';
+
+  @override
+  String get sourceMock => 'DỰ PHÒNG · THỬ';
+
+  @override
+  String get sourceOriginal => 'ẢNH GỐC';
+
+  @override
+  String get timeNow => 'vừa xong';
+
+  @override
+  String timeMinutes(int n) {
+    return '${n}p';
+  }
+
+  @override
+  String timeHours(int n) {
+    return '${n}g';
+  }
+
+  @override
+  String timeDays(int n) {
+    return '${n}n';
+  }
+
+  @override
+  String get periodAm => 'SA';
+
+  @override
+  String get periodPm => 'CH';
+
+  @override
+  String get sendMessageHint => 'Gửi tin nhắn...';
+
+  @override
+  String get youUpper => 'BẠN';
+
+  @override
+  String get lfNeedNameHandle => 'Hãy nhập tên và tên người dùng.';
+
+  @override
+  String get lfHandleTaken =>
+      'Tên người dùng này đã có trong danh sách bạn bè.';
+
+  @override
+  String get lfWriteSomething => 'Hãy viết tin nhắn hoặc đính kèm một ảnh.';
+
+  @override
+  String get lfFriendMissing => 'Không tìm thấy bạn bè.';
+
+  @override
+  String get lfWriteReply => 'Hãy viết trả lời hoặc chọn một emoji.';
+
+  @override
+  String get lfPostGone => 'Bài đăng này không còn nữa.';
+
+  @override
+  String seStatus(String code) {
+    return 'Máy chủ trả lời mã $code';
+  }
+
+  @override
+  String seFailedDetail(String detail) {
+    return 'Laptop gặp lỗi: $detail';
+  }
+
+  @override
+  String get seError => 'Lỗi laptop';
+
+  @override
+  String get seMagentaFailed => 'Mô hình Van Gogh trên máy bị lỗi';
+
+  @override
+  String styleBadge(String style) {
+    return 'PHONG CÁCH: $style';
+  }
+
+  @override
+  String get sampleCaptionAva => 'Ánh nắng sớm đẹp không thật';
+
+  @override
+  String get sampleCaptionJules => 'Đi dạo uống cà phê sau giờ học';
+
+  @override
+  String get sampleCaptionRemy => 'Ảnh mới rửa trong phòng tối';
+
+  @override
+  String get sampleMessageAva => 'Hôm nay ánh nắng sớm đẹp không thật.';
+
+  @override
+  String get sampleMessageJules => 'Đi dạo uống cà phê sau giờ học không?';
+
+  @override
+  String get sampleMessageRemy => 'Tấm ảnh đó lên đẹp quá.';
+
+  @override
+  String quoteReactedTo(String whose) {
+    return 'ĐÃ THẢ CẢM XÚC VÀO $whose';
+  }
+
+  @override
+  String quoteRepliedTo(String whose) {
+    return 'ĐÃ TRẢ LỜI $whose';
+  }
+
+  @override
+  String sayHelloTo(String name) {
+    return 'CHÀO $name ĐI';
+  }
+
+  @override
+  String printNumber(String n) {
+    return 'ẢNH SỐ $n';
+  }
+
+  @override
+  String printListTitle(String n) {
+    return 'ẢNH $n';
+  }
 }

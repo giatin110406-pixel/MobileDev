@@ -7,10 +7,30 @@ import 'package:http/http.dart' as http;
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_server_config.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 
-class StylizeException implements Exception {
-  const StylizeException(this.message);
+/// Why the laptop server could not be used.
+enum StylizeError {
+  notSetUp,
+  tooLong,
+  wrongToken,
+  tooLarge,
+  busy,
+  noAnswer,
+  unreachable,
+  failed,
+  status,
+}
 
-  final String message;
+class StylizeException implements Exception {
+  const StylizeException(this.kind, [this.detail = '']);
+
+  final StylizeError kind;
+
+  /// The server's own words (a status code, a failure text), if it gave any.
+  final String detail;
+
+  /// A short code the screens turn into a sentence (stylizeCodeText).
+  String get message =>
+      detail.isEmpty ? 'laptop:${kind.name}' : 'laptop:${kind.name}|$detail';
 
   @override
   String toString() => message;
@@ -66,7 +86,7 @@ class StylizeClient {
       () => _client.get(_uri('/v1/health')).timeout(const Duration(seconds: 5)),
     );
     if (response.statusCode != 200) {
-      throw StylizeException('Server answered ${response.statusCode}');
+      throw StylizeException(StylizeError.status, '${response.statusCode}');
     }
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     return ServerHealth(
@@ -103,7 +123,7 @@ class StylizeClient {
     var failures = 0;
     while (true) {
       if (DateTime.now().isAfter(deadline)) {
-        throw const StylizeException('Laptop took too long');
+        throw const StylizeException(StylizeError.tooLong);
       }
       await Future<void>.delayed(pollInterval);
       final http.Response status;
@@ -127,7 +147,7 @@ class StylizeClient {
       );
       final state = body['state'];
       if (state == 'failed') {
-        throw StylizeException('Laptop failed: ${body['error']}');
+        throw StylizeException(StylizeError.failed, '${body['error'] ?? ''}');
       }
       if (state == 'done') break;
     }
@@ -189,23 +209,23 @@ class StylizeClient {
 
   void _checkStatus(http.Response response, {int expected = 200}) {
     if (response.statusCode == expected) return;
-    throw StylizeException(switch (response.statusCode) {
-      401 => 'Wrong server token',
-      413 => 'Photo too large for server',
-      429 => 'Laptop is busy',
-      final code => 'Server answered $code',
-    });
+    throw switch (response.statusCode) {
+      401 => const StylizeException(StylizeError.wrongToken),
+      413 => const StylizeException(StylizeError.tooLarge),
+      429 => const StylizeException(StylizeError.busy),
+      final code => StylizeException(StylizeError.status, '$code'),
+    };
   }
 
   Future<T> _guard<T>(Future<T> Function() call) async {
     try {
       return await call();
     } on TimeoutException {
-      throw const StylizeException('Laptop did not answer');
+      throw const StylizeException(StylizeError.noAnswer);
     } on SocketException {
-      throw const StylizeException('Laptop not reachable');
+      throw const StylizeException(StylizeError.unreachable);
     } on http.ClientException {
-      throw const StylizeException('Laptop not reachable');
+      throw const StylizeException(StylizeError.unreachable);
     }
   }
 

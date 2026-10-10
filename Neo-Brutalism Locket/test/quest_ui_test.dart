@@ -292,7 +292,10 @@ void main() {
           ),
         ),
       );
-      expect(find.text('Shoot ${store.todayQuest!.subject}'), findsOneWidget);
+      expect(
+        find.text('Shoot ${store.todayQuest!.subjectFor(vietnamese: false)}'),
+        findsOneWidget,
+      );
       expect(tester.widget<AttemptDots>(find.byType(AttemptDots)).left, 3);
 
       await tester.runAsync(() async {

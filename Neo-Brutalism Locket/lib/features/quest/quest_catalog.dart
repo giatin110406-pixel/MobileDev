@@ -13,6 +13,10 @@ class Quest {
     required this.caption,
     required this.emoji,
     this.negatives = const [],
+    this.subjectEn,
+    this.storyTitleEn,
+    this.storyEn,
+    this.captionEn,
   });
 
   final String id;
@@ -36,6 +40,23 @@ class Quest {
   /// Pre-filled post caption, taken from the story (the user can edit it).
   final String caption;
   final String emoji;
+
+  /// The same four texts in English. The Vietnamese ones above are the
+  /// original; an English reader gets these (and falls back to Vietnamese only
+  /// for a quest that has none yet, which the catalogue test forbids).
+  final String? subjectEn;
+  final String? storyTitleEn;
+  final String? storyEn;
+  final String? captionEn;
+
+  String subjectFor({required bool vietnamese}) =>
+      vietnamese ? subject : (subjectEn ?? subject);
+  String storyTitleFor({required bool vietnamese}) =>
+      vietnamese ? storyTitle : (storyTitleEn ?? storyTitle);
+  String storyFor({required bool vietnamese}) =>
+      vietnamese ? story : (storyEn ?? story);
+  String captionFor({required bool vietnamese}) =>
+      vietnamese ? caption : (captionEn ?? caption);
 }
 
 /// Every quest, in a fixed order (ids are stored, so never rename one).
@@ -55,6 +76,15 @@ const questCatalog = <Quest>[
         'duy nhất ông bán được lúc còn sống.',
     caption: 'Bức tranh duy nhất Van Gogh bán được lúc sinh thời 🍇',
     emoji: '🍇',
+    subjectEn: 'a bunch of grapes',
+    storyTitleEn: 'The Red Vineyard at Arles (1888)',
+    storyEn:
+        'In the autumn of 1888 in Arles, Van Gogh painted farmers picking '
+        'grapes under a blazing red evening sun. In 1890 the painter Anna '
+        'Boch bought the painting for 400 francs at an exhibition in '
+        'Brussels. It is usually told as the only painting he sold in his '
+        'lifetime.',
+    captionEn: 'The only painting Van Gogh sold in his lifetime 🍇',
   ),
   Quest(
     id: 'vg_sunflower',
@@ -69,6 +99,14 @@ const questCatalog = <Quest>[
         'tranh thủ từng giờ.',
     caption: 'Vẽ thật nhanh trước khi hoa kịp héo 🌻',
     emoji: '🌻',
+    subjectEn: 'a sunflower',
+    storyTitleEn: 'Sunflowers (1888)',
+    storyEn:
+        'In August 1888 Van Gogh painted four sunflower pictures in a row '
+        'to decorate the room of Paul Gauguin, who was about to move in '
+        'with him at the Yellow House in Arles. Flowers wilt very fast, so '
+        'he painted from early morning, using every hour.',
+    captionEn: 'Paint fast before the flowers wilt 🌻',
   ),
   Quest(
     id: 'vg_bed',
@@ -82,6 +120,14 @@ const questCatalog = <Quest>[
         'nhìn bức tranh phải khiến người ta thấy được nghỉ ngơi.',
     caption: 'Căn phòng giản dị đủ để vẽ ba lần 🛏️',
     emoji: '🛏️',
+    subjectEn: 'a bed',
+    storyTitleEn: 'The Bedroom in Arles (1888)',
+    storyEn:
+        'Van Gogh painted his simple bedroom in the Yellow House and loved '
+        'it so much that he painted three versions of it. He wrote to his '
+        'brother Theo that looking at the picture should make people feel '
+        'rested.',
+    captionEn: 'A simple room worth painting three times 🛏️',
   ),
   Quest(
     id: 'vg_shoes',
@@ -95,6 +141,13 @@ const questCatalog = <Quest>[
         'vất vả mà ông luôn trân trọng.',
     caption: 'Đôi giày cũ cũng đáng được vẽ chân dung 👞',
     emoji: '👞',
+    subjectEn: 'a pair of shoes',
+    storyTitleEn: 'A Pair of Shoes (1886)',
+    storyEn:
+        'In Paris, Van Gogh bought a pair of old boots at a flea market and '
+        'painted them as seriously as a portrait. Those worn-out shoes '
+        'recall the hard working life he always respected.',
+    captionEn: 'Old shoes deserve a portrait too 👞',
   ),
   Quest(
     id: 'vg_chair',
@@ -109,6 +162,14 @@ const questCatalog = <Quest>[
         'dung của hai con người rất khác nhau.',
     caption: 'Một chiếc ghế cũng có thể là chân dung 🪑',
     emoji: '🪑',
+    subjectEn: 'a chair',
+    storyTitleEn: 'Van Gogh\'s Chair (1888)',
+    storyEn:
+        'In late 1888, while living with Gauguin in Arles, Van Gogh painted '
+        'his plain wooden chair with his pipe on the seat, then Gauguin\'s '
+        'grander armchair. The two chairs are like portraits of two very '
+        'different men.',
+    captionEn: 'A chair can be a portrait too 🪑',
   ),
   Quest(
     id: 'vg_almond',
@@ -126,6 +187,13 @@ const questCatalog = <Quest>[
         'người bác: Vincent Willem.',
     caption: 'Món quà mừng cháu trai chào đời 🌸',
     emoji: '🌸',
+    subjectEn: 'a flowering branch',
+    storyTitleEn: 'Almond Blossom (1890)',
+    storyEn:
+        'In early 1890 Van Gogh painted white almond branches against a '
+        'blue sky to celebrate the birth of his nephew. Theo named the baby '
+        'after his uncle: Vincent Willem.',
+    captionEn: 'A gift to welcome a newborn nephew 🌸',
   ),
   Quest(
     id: 'vg_potato',
@@ -140,6 +208,14 @@ const questCatalog = <Quest>[
         'lớn đầu tiên của ông.',
     caption: 'Những bàn tay đã trồng ra bữa tối 🥔',
     emoji: '🥔',
+    subjectEn: 'a potato',
+    storyTitleEn: 'The Potato Eaters (1885)',
+    storyEn:
+        'In the village of Nuenen in the Netherlands, Van Gogh painted a '
+        'farming family eating potatoes by oil lamp. He wanted viewers to '
+        'feel that the very hands putting the potatoes on the plate had dug '
+        'them from the earth. It is considered his first great masterpiece.',
+    captionEn: 'The hands that grew dinner 🥔',
   ),
   Quest(
     id: 'vg_cafe',
@@ -154,6 +230,14 @@ const questCatalog = <Quest>[
         'nào.',
     caption: 'Màn đêm không cần một chút màu đen nào ☕',
     emoji: '☕',
+    subjectEn: 'a café',
+    storyTitleEn: 'Café Terrace at Night (1888)',
+    storyEn:
+        'Van Gogh set up his easel in the middle of the night to paint the '
+        'terrace of a café on the Place du Forum in Arles. It was his first '
+        'painting of a starry sky, and he was proud to have painted the '
+        'night without using any black.',
+    captionEn: 'A night that needs no black ☕',
   ),
   Quest(
     id: 'vg_bridge',
@@ -167,6 +251,13 @@ const questCatalog = <Quest>[
         'khiến ông nhớ về quê hương Hà Lan.',
     caption: 'Một góc Hà Lan giữa miền Nam nước Pháp 🌉',
     emoji: '🌉',
+    subjectEn: 'a bridge',
+    storyTitleEn: 'The Langlois Bridge at Arles (1888)',
+    storyEn:
+        'Van Gogh painted the wooden drawbridge over a canal near Arles '
+        'several times. The bridge, the canal and the women washing clothes '
+        'on the bank reminded him of his homeland, the Netherlands.',
+    captionEn: 'A corner of Holland in the south of France 🌉',
   ),
   Quest(
     id: 'vg_boat',
@@ -181,6 +272,15 @@ const questCatalog = <Quest>[
         'mới vẽ thành tranh.',
     caption: 'Những con thuyền chờ ra khơi lúc bình minh ⛵',
     emoji: '⛵',
+    subjectEn: 'a boat',
+    storyTitleEn: 'Boats on the Beach at Saintes-Maries (1888)',
+    storyEn:
+        'In June 1888 Van Gogh went to the fishing village of '
+        'Saintes-Maries-de-la-Mer on the Mediterranean. He sketched the '
+        'colourful boats lying on the sand early in the morning, before the '
+        'fishermen set out, and only turned them into a painting back in '
+        'Arles.',
+    captionEn: 'Boats waiting at dawn to put to sea ⛵',
   ),
   Quest(
     id: 'vg_selfie',
@@ -194,6 +294,13 @@ const questCatalog = <Quest>[
         'nhìn vào gương và vẽ chính mình.',
     caption: 'Không có tiền thuê mẫu thì tự làm mẫu 🪞',
     emoji: '🪞',
+    subjectEn: 'a self-portrait (selfie)',
+    storyTitleEn: 'More than 35 self-portraits',
+    storyEn:
+        'Van Gogh painted more than 35 self-portraits in about ten years. '
+        'The reason was very ordinary: he was too poor to hire a model, so '
+        'he looked in the mirror and painted himself.',
+    captionEn: 'No money for a model? Be your own 🪞',
   ),
   Quest(
     id: 'vg_field',
@@ -213,6 +320,13 @@ const questCatalog = <Quest>[
         'những cánh đồng lúa mì bao la trải dài dưới bầu trời giông bão.',
     caption: 'Cánh đồng bao la dưới bầu trời giông 🌾',
     emoji: '🌾',
+    subjectEn: 'a field or meadow',
+    storyTitleEn: 'Wheatfield with Crows (1890)',
+    storyEn:
+        'This is one of Van Gogh\'s last paintings, made in Auvers-sur-Oise '
+        'in July 1890. In a letter to Theo he described the vast wheat '
+        'fields stretching under a stormy sky.',
+    captionEn: 'A vast field under a stormy sky 🌾',
   ),
   Quest(
     id: 'vg_tree',
@@ -226,6 +340,14 @@ const questCatalog = <Quest>[
         'một cột tháp Ai Cập, và lạ là chưa ai vẽ chúng theo cách ông thấy.',
     caption: 'Cây xanh vươn lên như ngọn lửa 🌲',
     emoji: '🌲',
+    subjectEn: 'a tree',
+    storyTitleEn: 'Cypresses (1889)',
+    storyEn:
+        'In Saint-Rémy, Van Gogh was captivated by cypress trees rising '
+        'like green flames. He wrote to Theo that their lines and '
+        'proportions were as beautiful as an Egyptian obelisk, and '
+        'strangely nobody had painted them the way he saw them.',
+    captionEn: 'Green reaching up like a flame 🌲',
   ),
 
   // ---- 8-bit ----
@@ -241,6 +363,14 @@ const questCatalog = <Quest>[
         'triệu bản và giữ kỷ lục game bán chạy nhất suốt hơn hai mươi năm.',
     caption: 'Ăn nấm, to gấp đôi! 🍄',
     emoji: '🍄',
+    subjectEn: 'a mushroom',
+    storyTitleEn: 'Super Mario Bros. (1985)',
+    storyEn:
+        'In Super Mario Bros. on the NES, eating a Super Mushroom makes '
+        'Mario twice as big and lets him take one more hit. The game sold '
+        'more than 40 million copies and held the best-selling game record '
+        'for over twenty years.',
+    captionEn: 'Eat a mushroom, grow double! 🍄',
   ),
   Quest(
     id: 'px_pizza',
@@ -255,6 +385,14 @@ const questCatalog = <Quest>[
         'game vốn toàn trò bắn súng.',
     caption: 'Pizza thiếu một miếng = Pac-Man 🍕',
     emoji: '🍕',
+    subjectEn: 'a pizza',
+    storyTitleEn: 'Pac-Man (1980)',
+    storyEn:
+        'Tōru Iwatani, the creator of Pac-Man, said he came up with the '
+        'character\'s shape while looking at a pizza with a slice missing. '
+        'He wanted a cute game about eating, so that women would also enjoy '
+        'arcades that were full of shooting games.',
+    captionEn: 'Pizza with a slice missing = Pac-Man 🍕',
   ),
   Quest(
     id: 'px_apple',
@@ -268,6 +406,14 @@ const questCatalog = <Quest>[
         '700 điểm. Ăn kịp trước khi nó biến mất là bí quyết lên bảng xếp hạng.',
     caption: 'Một quả táo = 700 điểm 🍎',
     emoji: '🍎',
+    subjectEn: 'an apple',
+    storyTitleEn: 'Pac-Man bonus fruit',
+    storyEn:
+        'In Pac-Man, bonus fruit appears in the maze and is worth more on '
+        'higher levels: cherry 100 points, strawberry 300, orange 500 and '
+        'apple up to 700. Eating it before it vanishes is the secret to the '
+        'leaderboard.',
+    captionEn: 'One apple = 700 points 🍎',
   ),
   Quest(
     id: 'px_controller',
@@ -282,6 +428,14 @@ const questCatalog = <Quest>[
         'tận hôm nay.',
     caption: 'Nút chữ thập đã thay đổi cách ta chơi game 🎮',
     emoji: '🎮',
+    subjectEn: 'a game controller or remote control',
+    storyTitleEn: 'The D-pad (1982)',
+    storyEn:
+        'Nintendo engineer Gunpei Yokoi created the cross-shaped button for '
+        'the 1982 Donkey Kong Game & Watch. The design moved to the '
+        'Famicom/NES controller and became the standard for game '
+        'controllers to this day.',
+    captionEn: 'The D-pad changed how we play 🎮',
   ),
   Quest(
     id: 'px_dog',
@@ -295,6 +449,14 @@ const questCatalog = <Quest>[
         'và ở bản máy nhà thì bạn không thể bắn nó dù muốn đến đâu.',
     caption: 'Chú chó cười nhạo nổi tiếng nhất làng game 🐶',
     emoji: '🐶',
+    subjectEn: 'a dog',
+    storyTitleEn: 'Duck Hunt (1984)',
+    storyEn:
+        'In Duck Hunt on the NES, players use the Zapper light gun to shoot '
+        'ducks. Each time you miss, the hunting dog pops up and laughs, and '
+        'on the home console you cannot shoot it no matter how much you '
+        'want to.',
+    captionEn: 'The most famous laughing dog in gaming 🐶',
   ),
   Quest(
     id: 'px_bricks',
@@ -309,6 +471,14 @@ const questCatalog = <Quest>[
         'Apple.',
     caption: 'Phá gạch từng viên một 🧱',
     emoji: '🧱',
+    subjectEn: 'a brick wall',
+    storyTitleEn: 'Breakout (1976)',
+    storyEn:
+        'Atari gave Steve Jobs the job of making the brick-breaking game '
+        'Breakout, and Jobs asked his friend Steve Wozniak to design it. '
+        'Wozniak finished a prototype in about four days using very few '
+        'chips. A few years later the two founded Apple.',
+    captionEn: 'Breaking bricks one at a time 🧱',
   ),
   Quest(
     id: 'px_ladder',
@@ -322,6 +492,14 @@ const questCatalog = <Quest>[
         'tên Mario Segale, chủ nhà kho mà chi nhánh Nintendo ở Mỹ thuê.',
     caption: 'Leo thang như Jumpman năm 1981 🪜',
     emoji: '🪜',
+    subjectEn: 'a ladder',
+    storyTitleEn: 'Donkey Kong (1981)',
+    storyEn:
+        'Mario first appeared in Donkey Kong as Jumpman, climbing ladders '
+        'and jumping over barrels to rescue a lady. He was later named '
+        'after Mario Segale, the owner of the warehouse that Nintendo\'s '
+        'American branch rented.',
+    captionEn: 'Climbing like Jumpman in 1981 🪜',
   ),
   Quest(
     id: 'px_key',
@@ -335,6 +513,14 @@ const questCatalog = <Quest>[
         'chìa khóa nhỏ giúp Link mở thêm một cánh cửa trong hầm ngục.',
     caption: 'Mỗi chìa khóa mở ra một cuộc phiêu lưu 🗝️',
     emoji: '🗝️',
+    subjectEn: 'a key',
+    storyTitleEn: 'The Legend of Zelda (1986)',
+    storyEn:
+        'Shigeru Miyamoto took inspiration for Zelda from exploring '
+        'forests, lakes and caves in the countryside near Kyoto as a child. '
+        'In the game, every small key lets Link open another door in a '
+        'dungeon.',
+    captionEn: 'Every key opens an adventure 🗝️',
   ),
   Quest(
     id: 'px_clock',
@@ -348,6 +534,14 @@ const questCatalog = <Quest>[
         'chán. Đúng như tên gọi, mỗi máy vừa là trò chơi vừa là đồng hồ.',
     caption: 'Vừa là game vừa là đồng hồ ⌚',
     emoji: '⌚',
+    subjectEn: 'a clock',
+    storyTitleEn: 'Game & Watch (1980)',
+    storyEn:
+        'Gunpei Yokoi got the idea for the Game & Watch handheld when he '
+        'saw a businessman on the Shinkansen pressing a pocket calculator '
+        'to pass the time. As the name says, each unit is both a game and a '
+        'clock.',
+    captionEn: 'Both a game and a clock ⌚',
   ),
   Quest(
     id: 'px_box',
@@ -362,6 +556,14 @@ const questCatalog = <Quest>[
         'mọi thời đại.',
     caption: 'Xếp khối khít từng ô một 📦',
     emoji: '📦',
+    subjectEn: 'a box',
+    storyTitleEn: 'Tetris (1984)',
+    storyEn:
+        'Alexey Pajitnov created Tetris at the Soviet Academy of Sciences '
+        'in Moscow, inspired by the pentomino puzzle. In 1989 Tetris came '
+        'bundled with the Game Boy and became one of the most popular games '
+        'of all time.',
+    captionEn: 'Stacking blocks to fit, cell by cell 📦',
   ),
   Quest(
     id: 'px_motorbike',
@@ -375,6 +577,13 @@ const questCatalog = <Quest>[
         'chơi game tại nhà cho phép người chơi tự thiết kế đường đua.',
     caption: 'Tự thiết kế đường đua từ năm 1984 🏍️',
     emoji: '🏍️',
+    subjectEn: 'a motorbike',
+    storyTitleEn: 'Excitebike (1984)',
+    storyEn:
+        'Excitebike on the NES lets you race a motorcycle across rough '
+        'terrain without letting the engine overheat. It was one of the '
+        'first home-console games to let players design their own tracks.',
+    captionEn: 'Designing your own track since 1984 🏍️',
   ),
   Quest(
     id: 'px_coin',
@@ -388,6 +597,13 @@ const questCatalog = <Quest>[
         'trong những biểu tượng quen thuộc nhất của trò chơi điện tử.',
     caption: '100 xu = thêm một mạng 🪙',
     emoji: '🪙',
+    subjectEn: 'a coin',
+    storyTitleEn: 'Mario\'s coins',
+    storyEn:
+        'In Super Mario Bros., collecting 100 coins earns Mario an extra '
+        'life. The question-mark blocks hiding coins and items became one '
+        'of the most recognisable symbols in video games.',
+    captionEn: '100 coins = an extra life 🪙',
   ),
   Quest(
     id: 'px_sky',
@@ -402,6 +618,14 @@ const questCatalog = <Quest>[
         'tình trở thành độ khó tăng dần kinh điển.',
     caption: 'Lũ xâm lăng đến từ bầu trời 👾',
     emoji: '👾',
+    subjectEn: 'the sky',
+    storyTitleEn: 'Space Invaders (1978)',
+    storyEn:
+        'Tomohiro Nishikado created Space Invaders with a horde of aliens '
+        'marching down from the sky. The hardware of the time was weak, so '
+        'the fewer aliens were left, the faster they were drawn and moved. '
+        'An accidental "bug" became the classic rising difficulty.',
+    captionEn: 'The invaders come from the sky 👾',
   ),
 ];
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
@@ -35,7 +36,9 @@ class QuestStrip extends StatelessWidget {
     final status = questStatusOf(store);
     return Semantics(
       button: true,
-      label: AppLocalizations.of(context).questSemantics(quest.subject),
+      label: AppLocalizations.of(
+        context,
+      ).questSemantics(quest.subjectFor(vietnamese: isVietnamese(context))),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
@@ -86,7 +89,9 @@ class QuestStrip extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      AppLocalizations.of(context).shootSubject(quest.subject),
+                      AppLocalizations.of(context).shootSubject(
+                        quest.subjectFor(vietnamese: isVietnamese(context)),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -226,7 +231,7 @@ class _QuestSheet extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${quest.emoji} ${_capitalized(quest.subject)}',
+                '${quest.emoji} ${_capitalized(quest.subjectFor(vietnamese: isVietnamese(context)))}',
                 style: const TextStyle(
                   fontFamily: NeoFont.display,
                   color: NeoColors.ink,
@@ -245,7 +250,7 @@ class _QuestSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      quest.storyTitle,
+                      quest.storyTitleFor(vietnamese: isVietnamese(context)),
                       style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 15,
@@ -254,7 +259,7 @@ class _QuestSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      quest.story,
+                      quest.storyFor(vietnamese: isVietnamese(context)),
                       style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 14,

@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
+import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_labels.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
@@ -331,7 +332,9 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
           break;
       }
     } on PlayerException catch (error) {
-      _error = error.message;
+      if (mounted) {
+        _error = playerErrorText(AppLocalizations.of(context), error);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

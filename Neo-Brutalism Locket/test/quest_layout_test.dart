@@ -79,7 +79,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('START SHOOTING'), findsOneWidget);
-    expect(find.text(store.todayQuest!.storyTitle), findsOneWidget);
+    expect(
+      find.text(store.todayQuest!.storyTitleFor(vietnamese: false)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('camera tab with the status strip, quest strip and 5 tabs', (

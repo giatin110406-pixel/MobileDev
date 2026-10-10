@@ -112,7 +112,8 @@ class ServerPlayerRepository implements PlayerGateway {
     final text = caption.trim();
     if (text.length > QuestRules.maxCaptionLength) {
       throw const PlayerException(
-        'Chú thích tối đa ${QuestRules.maxCaptionLength} ký tự.',
+        PlayerError.captionTooLong,
+        value: QuestRules.maxCaptionLength,
       );
     }
     final json = await _rpc('complete_quest', {
@@ -199,30 +200,22 @@ class ServerPlayerRepository implements PlayerGateway {
     } on PlayerException {
       rethrow;
     } catch (_) {
-      throw const PlayerException('Cần kết nối mạng để thực hiện việc này.');
+      throw const PlayerException(PlayerError.needsNetwork);
     }
   }
 }
 
-/// The message for a rule the server refused (its short error code).
+/// The failure for a rule the server refused (its short error code).
 PlayerException playerFailureFor(String code, {PlayerState? known}) {
   return switch (code) {
-    'already_done' => const PlayerException(
-      'Hôm nay bạn đã hoàn thành nhiệm vụ rồi.',
-    ),
-    'no_attempts' => const PlayerException(
-      'Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!',
-    ),
-    'not_passed' => const PlayerException(
-      'Ảnh nhiệm vụ chưa vượt qua bước kiểm tra.',
-    ),
-    'expired' => const PlayerException(
-      'Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!',
-    ),
-    'already_owned' => const PlayerException('Bạn đã sở hữu món này.'),
-    'not_owned' => const PlayerException('Hãy mua món này trước.'),
-    'not_found' => const PlayerException('Không tìm thấy món này.'),
+    'already_done' => const PlayerException(PlayerError.alreadyDone),
+    'no_attempts' => const PlayerException(PlayerError.noAttempts),
+    'not_passed' => const PlayerException(PlayerError.notPassed),
+    'expired' => const PlayerException(PlayerError.questExpired),
+    'already_owned' => const PlayerException(PlayerError.alreadyOwned),
+    'not_owned' => const PlayerException(PlayerError.notOwned),
+    'not_found' => const PlayerException(PlayerError.itemNotFound),
     'insufficient_funds' => const NotEnoughSunbit(1),
-    _ => const PlayerException('Có lỗi xảy ra. Thử lại nhé.'),
+    _ => const PlayerException(PlayerError.unknown),
   };
 }
