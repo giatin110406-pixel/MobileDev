@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/neo_progress.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
@@ -406,11 +407,10 @@ class _ContestScreenState extends State<ContestScreen> {
               ),
               if (needed > 0) ...[
                 const SizedBox(height: 8),
-                LinearProgressIndicator(
+                NeoProgress(
                   value: (done / needed).clamp(0, 1).toDouble(),
-                  minHeight: 8,
-                  color: NeoColors.teal,
-                  backgroundColor: NeoColors.switchOff,
+                  showPercent: false,
+                  height: 14,
                 ),
               ],
             ],

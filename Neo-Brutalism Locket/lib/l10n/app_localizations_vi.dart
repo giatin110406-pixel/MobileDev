@@ -1004,4 +1004,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holdToFilm => 'GIỮ ĐỂ QUAY';
+
+  @override
+  String get styleWorking8bit => 'ĐANG MÀI PIXEL…';
+
+  @override
+  String get styleWorkingVanGogh => 'ĐANG QUÉT MÀU VAN GOGH…';
+
+  @override
+  String get styleWorking => 'ĐANG XỬ LÝ…';
 }

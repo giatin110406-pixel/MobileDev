@@ -13,6 +13,9 @@ import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
+import 'package:neo_brutalism_locket/core/neo_progress.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// After a quest photo passes the check: turn it into the quest's style,
 /// celebrate, let the user edit the caption and post it. Pops `true` once
@@ -51,7 +54,6 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
     text: widget.quest.caption,
   );
   late NeoPhoto _photo = widget.photo;
-  String _stage = '';
   double _progress = 0;
   bool _posting = false;
 
@@ -86,7 +88,6 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
     );
     setState(() {
       _photo = pending;
-      _stage = 'starting';
       _progress = 0;
     });
     try {
@@ -97,7 +98,6 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
         onProgress: (stage, fraction) {
           if (!mounted) return;
           setState(() {
-            _stage = stage;
             _progress = fraction;
           });
         },
@@ -302,20 +302,12 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                 ),
                 const SizedBox(height: 12),
                 if (!_ready && !failed) ...[
-                  Text(
-                    'ĐANG BIẾN THÀNH ${quest.style.label} · ${_stage.toUpperCase()}',
-                    style: const TextStyle(
-                      color: NeoColors.ink,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  LinearProgressIndicator(
+                  NeoProgress(
                     value: _progress <= 0 ? null : _progress,
-                    color: NeoColors.teal,
-                    backgroundColor: NeoColors.surface,
-                    minHeight: 6,
+                    label: styleWorkingLabel(
+                      AppLocalizations.of(context),
+                      quest.style,
+                    ),
                   ),
                 ],
                 if (failed) ...[
