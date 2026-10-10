@@ -286,5 +286,247 @@
   "notifyNewPost": "New photos from friends",
   "notifyMessages": "Messages",
   "notifyReactions": "Reactions to my photos",
-  "notifyFriendRequests": "Friend requests"
+  "notifyFriendRequests": "Friend requests",
+  "tabShoot": "SHOOT",
+  "tabFriends": "FRIENDS",
+  "tabInbox": "INBOX",
+  "tabPrints": "PRINTS",
+  "tabMe": "ME",
+  "laptopSettingsTooltip": "Home laptop settings",
+  "cameraAccessHint": "ENABLE CAMERA ACCESS TO START SHOOTING",
+  "originalLabel": "ORIGINAL",
+  "imageNotFound": "IMAGE NOT FOUND",
+  "groupsKicker": "YOUR CIRCLES",
+  "groupsTitle": "Groups",
+  "groupsCount": "{count} GROUPS",
+  "@groupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCreate": "NEW GROUP",
+  "questDataUnreadable": "QUEST DATA COULD NOT BE READ",
+  "archiveUnreadable": "ARCHIVE COULD NOT BE READ",
+  "friendsLoadFailed": "FRIENDS COULD NOT BE LOADED",
+  "friendAddedLocally": "{name} ADDED LOCALLY",
+  "@friendAddedLocally": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shareNeedsPrint": "TAKE A PRINT BEFORE SHARING",
+  "replyWord": "REPLY",
+  "sentNotice": "{what} SENT",
+  "@sentNotice": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "sentNoticeTo": "{what} SENT TO {name}",
+  "@sentNoticeTo": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeLocalFriendBody": "Remove {name} and this local thread from this device?",
+  "@removeLocalFriendBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "photoNotSaved": "PHOTO DID NOT SAVE. TRY AGAIN.",
+  "photoOpenFailed": "COULD NOT OPEN THAT PHOTO. TRY ANOTHER.",
+  "fallbackUsed": "FALLBACK USED: {note}",
+  "@fallbackUsed": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "styleFailedOriginalSafe": "STYLE PASS FAILED. ORIGINAL IS SAFE.",
+  "flashUnavailable": "FLASH IS NOT AVAILABLE",
+  "flashTooltip": "Change flash mode",
+  "openFeedLabel": "Open feed",
+  "feedLabel": "FEED",
+  "zoomSemantics": "Zoom {level}",
+  "@zoomSemantics": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadPhotoTooltip": "Upload a photo from this device",
+  "takePhotoLabel": "Take photo",
+  "switchCameraTooltip": "Switch camera",
+  "openArchiveLabel": "Open archive",
+  "retryShort": "RETRY",
+  "newShot": "NEW SHOT",
+  "statusInking": "INKING",
+  "statusReady": "READY",
+  "statusOriginalSafe": "ORIGINAL SAFE",
+  "cameraAccessOff": "CAMERA ACCESS IS OFF",
+  "cameraUnavailable": "CAMERA IS NOT AVAILABLE",
+  "findingCamera": "FINDING CAMERA",
+  "cameraReady": "CAMERA READY",
+  "originalPlusStyle": "ORIGINAL + {style}",
+  "@originalPlusStyle": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "legacyEdit": "LEGACY EDIT",
+  "editLabel": "EDIT",
+  "styleSliderSemantics": "Style. Swipe to change",
+  "retryTooltip": "Retry",
+  "backToCameraTooltip": "Back to camera",
+  "noPostsYet": "NO POSTS YET",
+  "replyHint": "Reply to {name}...",
+  "@replyHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "openPrint": "OPEN PRINT",
+  "reactWith": "REACT WITH",
+  "sendReplyTooltip": "Send reply",
+  "reactSemantics": "React {emoji}",
+  "@reactSemantics": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "moreEmojiTooltip": "More emoji",
+  "localCollection": "LOCAL COLLECTION",
+  "printArchive": "Print archive",
+  "itemsCount": "{count} ITEMS",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveEmptyBody": "YOUR PHOTOS STAY IN THIS DEVICE-ONLY ARCHIVE.",
+  "openCamera": "OPEN CAMERA",
+  "printReady": "NEO PRINT READY",
+  "originalSaved": "ORIGINAL SAVED",
+  "serverTesting": "TESTING…",
+  "serverConnected": "CONNECTED · {gpu}",
+  "@serverConnected": {
+    "placeholders": {
+      "gpu": {
+        "type": "String"
+      }
+    }
+  },
+  "serverModelsLoading": "CONNECTED · MODELS STILL LOADING",
+  "serverInvalidAddress": "INVALID ADDRESS",
+  "homeLaptop": "HOME LAPTOP",
+  "vanGoghOnLaptop": "VAN GOGH RUNS ON YOUR LAPTOP",
+  "serverAddressLabel": "ADDRESS (IP:PORT)",
+  "serverTokenLabel": "TOKEN",
+  "serverTokenHint": "printed when the server starts",
+  "serverTestButton": "TEST",
+  "shopLabel": "SHOP",
+  "sunbitShop": "SUNBIT SHOP",
+  "sampleLabel": "SAMPLE",
+  "menuTooltip": "Menu",
+  "yourPeople": "YOUR PEOPLE",
+  "friendsTitle": "Friends",
+  "peopleCount": "{count} PEOPLE",
+  "@peopleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localMode": "LOCAL MODE",
+  "noFriendsOnDevice": "NO FRIENDS\nON THIS DEVICE",
+  "noFriendsOnDeviceBody": "ADD A LOCAL PROFILE TO START A SAMPLE THREAD.",
+  "privateThreads": "PRIVATE THREADS",
+  "inboxTitle": "Inbox",
+  "deviceOnly": "DEVICE ONLY",
+  "addFriendToStart": "ADD A FRIEND TO START A THREAD",
+  "backToInboxTooltip": "Back to inbox",
+  "openProfileLabel": "Open profile",
+  "removeFriendTooltip": "Remove friend",
+  "localThread": "LOCAL THREAD",
+  "sendLatestPrintTooltip": "Send latest print",
+  "writeMessageHint": "Write a message...",
+  "sendMessageTooltip": "Send message",
+  "whosePost": "{name}'S POST",
+  "@whosePost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "yourPost": "YOUR POST",
+  "previewStart": "START A LOCAL THREAD",
+  "previewReacted": "{who} REACTED {emoji}",
+  "@previewReacted": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "previewYou": "YOU",
+  "previewYouReplied": "YOU REPLIED: {text}",
+  "@previewYouReplied": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "previewReplied": "REPLIED: {text}",
+  "@previewReplied": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "previewSentPrint": "SENT A PRINT",
+  "previewYouText": "YOU: {text}",
+  "@previewYouText": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "localLabel": "LOCAL",
+  "addAFriend": "ADD A FRIEND",
+  "localProfileOnly": "LOCAL PROFILE ONLY",
+  "handleLabel": "HANDLE",
+  "friendNameHint": "A friend name",
+  "addToFriends": "ADD TO FRIENDS"
 }

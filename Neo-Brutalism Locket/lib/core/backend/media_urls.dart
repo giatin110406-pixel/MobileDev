@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Turns a path in a private storage bucket into a URL the phone can load.
 abstract interface class MediaUrls {
@@ -170,7 +171,7 @@ class _RemoteImageState extends State<RemoteImage> {
       );
 
   Widget _retryButton() => IconButton.filled(
-    tooltip: 'Retry',
+    tooltip: AppLocalizations.of(context).retryTooltip,
     onPressed: _retry,
     style: IconButton.styleFrom(
       backgroundColor: const Color(0xFFFDF2E9),

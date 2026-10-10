@@ -221,7 +221,7 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: NeoButton(
                           expand: true,
-                          label: 'SHOP',
+                          label: AppLocalizations.of(context).shopLabel,
                           icon: Icons.storefront_outlined,
                           variant: NeoButtonVariant.primary,
                           onPressed: () => openShop(context, store),
@@ -371,10 +371,10 @@ class FriendProfileScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       if (friend.isSample)
-                        const NeoLabel('SAMPLE', color: NeoColors.teal),
+                        NeoLabel(AppLocalizations.of(context).sampleLabel, color: NeoColors.teal),
                       if (onBlock != null || onReport != null)
                         PopupMenuButton<String>(
-                          tooltip: 'Menu',
+                          tooltip: AppLocalizations.of(context).menuTooltip,
                           icon: const Icon(
                             Icons.more_vert,
                             color: NeoColors.ink,

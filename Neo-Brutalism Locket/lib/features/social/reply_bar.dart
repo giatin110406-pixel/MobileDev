@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Quick reactions shown in the bar, like Locket.
 const quickReactions = ['💛', '🔥', '😍'];
@@ -83,9 +84,9 @@ class _ReplyBarState extends State<ReplyBar> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'REACT WITH',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).reactWith,
+                style: const TextStyle(
                   color: NeoColors.ink,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -158,7 +159,7 @@ class _ReplyBarState extends State<ReplyBar> {
           ),
           if (_hasText)
             IconButton(
-              tooltip: 'Send reply',
+              tooltip: AppLocalizations.of(context).sendReplyTooltip,
               onPressed: _busy ? null : _send,
               icon: const Icon(Icons.send_rounded, color: NeoColors.ink),
             )
@@ -166,7 +167,7 @@ class _ReplyBarState extends State<ReplyBar> {
             for (final emoji in quickReactions)
               Semantics(
                 button: true,
-                label: 'React $emoji',
+                label: AppLocalizations.of(context).reactSemantics(emoji),
                 child: InkResponse(
                   onTap: _busy ? null : () => _react(emoji),
                   radius: 20,
@@ -177,7 +178,7 @@ class _ReplyBarState extends State<ReplyBar> {
                 ),
               ),
             IconButton(
-              tooltip: 'More emoji',
+              tooltip: AppLocalizations.of(context).moreEmojiTooltip,
               onPressed: _busy ? null : _openPicker,
               icon: const Icon(
                 Icons.add_reaction_outlined,

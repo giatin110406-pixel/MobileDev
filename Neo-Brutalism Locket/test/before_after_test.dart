@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Holds the side shown, like the camera screen does.
 class Host extends StatefulWidget {
@@ -26,6 +28,14 @@ class HostState extends State<Host> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('en'),
     home: Center(
       child: SizedBox.square(
         dimension: 300,

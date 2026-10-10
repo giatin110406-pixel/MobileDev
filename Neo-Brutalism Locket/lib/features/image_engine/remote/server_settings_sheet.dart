@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_client.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_server_config.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 Future<void> showServerSettingsSheet(BuildContext context) =>
     showModalBottomSheet<void>(
@@ -46,20 +47,21 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
       StylizeServerConfig(address: _address.text, token: _token.text);
 
   Future<void> _test() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _busy = true;
-      _status = 'TESTING…';
+      _status = l10n.serverTesting;
     });
     String message;
     try {
       final health = await StylizeClient(_config).health();
       message = health.modelsReady
-          ? 'CONNECTED · ${health.gpu ?? 'CPU'}'
-          : 'CONNECTED · MODELS STILL LOADING';
+          ? l10n.serverConnected(health.gpu ?? 'CPU')
+          : l10n.serverModelsLoading;
     } on StylizeException catch (error) {
       message = error.message.toUpperCase();
     } catch (_) {
-      message = 'INVALID ADDRESS';
+      message = l10n.serverInvalidAddress;
     }
     if (!mounted) return;
     setState(() {
@@ -91,27 +93,27 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'HOME LAPTOP',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).homeLaptop,
+                style: const TextStyle(
                   color: NeoColors.ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 5),
-              const NeoLabel(
-                'VAN GOGH RUNS ON YOUR LAPTOP',
+              NeoLabel(
+                AppLocalizations.of(context).vanGoghOnLaptop,
                 color: NeoColors.yellow,
               ),
               const SizedBox(height: 20),
-              _fieldLabel('ADDRESS (IP:PORT)'),
+              _fieldLabel(AppLocalizations.of(context).serverAddressLabel),
               const SizedBox(height: 6),
               _input(_address, '192.168.1.10:8765'),
               const SizedBox(height: 14),
-              _fieldLabel('TOKEN'),
+              _fieldLabel(AppLocalizations.of(context).serverTokenLabel),
               const SizedBox(height: 6),
-              _input(_token, 'printed when the server starts'),
+              _input(_token, AppLocalizations.of(context).serverTokenHint),
               const SizedBox(height: 12),
               Text(
                 _status,
@@ -126,7 +128,7 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
                 children: [
                   Expanded(
                     child: NeoButton(
-                      label: 'TEST',
+                      label: AppLocalizations.of(context).serverTestButton,
                       icon: Icons.wifi_tethering,
                       variant: NeoButtonVariant.outline,
                       expand: true,
@@ -136,7 +138,7 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: NeoButton(
-                      label: 'SAVE',
+                      label: AppLocalizations.of(context).saveButton,
                       icon: Icons.check,
                       variant: NeoButtonVariant.primary,
                       expand: true,

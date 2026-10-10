@@ -3,6 +3,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// My groups: invitations first, then the groups, then a button to start one.
 class GroupsScreen extends StatelessWidget {
@@ -25,6 +26,7 @@ class GroupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListenableBuilder(
       listenable: store,
       builder: (context, _) {
@@ -39,22 +41,22 @@ class GroupsScreen extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'YOUR CIRCLES',
-                          style: TextStyle(
+                          l10n.groupsKicker,
+                          style: const TextStyle(
                             color: NeoColors.muted,
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
-                          'Nhóm',
-                          style: TextStyle(
+                          l10n.groupsTitle,
+                          style: const TextStyle(
                             color: NeoColors.ink,
                             fontSize: 26,
                             height: 1,
@@ -65,14 +67,14 @@ class GroupsScreen extends StatelessWidget {
                     ),
                   ),
                   NeoLabel(
-                    '${store.groups.length} NHÓM',
+                    l10n.groupsCount(store.groups.length),
                     color: NeoColors.yellow,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               NeoButton(
-                label: 'TẠO NHÓM',
+                label: l10n.groupCreate,
                 icon: Icons.group_add_outlined,
                 expand: true,
                 onPressed: () => showCreateGroupSheet(context, store: store),

@@ -292,5 +292,247 @@
   "notifyNewPost": "Có ảnh mới từ bạn bè",
   "notifyMessages": "Tin nhắn",
   "notifyReactions": "Reaction vào ảnh của tôi",
-  "notifyFriendRequests": "Lời mời kết bạn"
+  "notifyFriendRequests": "Lời mời kết bạn",
+  "tabShoot": "CHỤP",
+  "tabFriends": "BẠN BÈ",
+  "tabInbox": "HỘP THƯ",
+  "tabPrints": "TỦ ẢNH",
+  "tabMe": "TÔI",
+  "laptopSettingsTooltip": "Cài đặt laptop ở nhà",
+  "cameraAccessHint": "BẬT QUYỀN CAMERA ĐỂ BẮT ĐẦU CHỤP",
+  "originalLabel": "ẢNH GỐC",
+  "imageNotFound": "KHÔNG TÌM THẤY ẢNH",
+  "groupsKicker": "NHÓM CỦA BẠN",
+  "groupsTitle": "Nhóm",
+  "groupsCount": "{count} NHÓM",
+  "@groupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCreate": "TẠO NHÓM",
+  "questDataUnreadable": "KHÔNG ĐỌC ĐƯỢC DỮ LIỆU NHIỆM VỤ",
+  "archiveUnreadable": "KHÔNG ĐỌC ĐƯỢC TỦ ẢNH",
+  "friendsLoadFailed": "KHÔNG TẢI ĐƯỢC DANH SÁCH BẠN BÈ",
+  "friendAddedLocally": "ĐÃ THÊM {name} TRÊN MÁY",
+  "@friendAddedLocally": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shareNeedsPrint": "HÃY CHỤP MỘT TẤM TRƯỚC KHI CHIA SẺ",
+  "replyWord": "TIN NHẮN",
+  "sentNotice": "ĐÃ GỬI {what}",
+  "@sentNotice": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "sentNoticeTo": "ĐÃ GỬI {what} CHO {name}",
+  "@sentNoticeTo": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeLocalFriendBody": "Xóa {name} và cuộc trò chuyện này khỏi máy?",
+  "@removeLocalFriendBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "photoNotSaved": "ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.",
+  "photoOpenFailed": "KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.",
+  "fallbackUsed": "ĐÃ DÙNG PHƯƠNG ÁN DỰ PHÒNG: {note}",
+  "@fallbackUsed": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "styleFailedOriginalSafe": "TẠO TRANH THẤT BẠI. ẢNH GỐC VẪN AN TOÀN.",
+  "flashUnavailable": "MÁY KHÔNG CÓ ĐÈN FLASH",
+  "flashTooltip": "Đổi chế độ flash",
+  "openFeedLabel": "Mở bảng tin",
+  "feedLabel": "BẢNG TIN",
+  "zoomSemantics": "Thu phóng {level}",
+  "@zoomSemantics": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadPhotoTooltip": "Tải ảnh lên từ máy",
+  "takePhotoLabel": "Chụp ảnh",
+  "switchCameraTooltip": "Đổi camera",
+  "openArchiveLabel": "Mở tủ ảnh",
+  "retryShort": "THỬ LẠI",
+  "newShot": "CHỤP MỚI",
+  "statusInking": "ĐANG VẼ",
+  "statusReady": "XONG",
+  "statusOriginalSafe": "ĐÃ GIỮ ẢNH GỐC",
+  "cameraAccessOff": "CAMERA ĐANG BỊ TẮT QUYỀN",
+  "cameraUnavailable": "KHÔNG DÙNG ĐƯỢC CAMERA",
+  "findingCamera": "ĐANG TÌM CAMERA",
+  "cameraReady": "CAMERA SẴN SÀNG",
+  "originalPlusStyle": "ẢNH GỐC + {style}",
+  "@originalPlusStyle": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "legacyEdit": "BẢN CHỈNH CŨ",
+  "editLabel": "ĐÃ CHỈNH",
+  "styleSliderSemantics": "Phong cách. Vuốt để đổi",
+  "retryTooltip": "Thử lại",
+  "backToCameraTooltip": "Về camera",
+  "noPostsYet": "CHƯA CÓ BÀI NÀO",
+  "replyHint": "Trả lời {name}...",
+  "@replyHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "openPrint": "XEM ẢNH",
+  "reactWith": "THẢ CẢM XÚC",
+  "sendReplyTooltip": "Gửi trả lời",
+  "reactSemantics": "Thả {emoji}",
+  "@reactSemantics": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "moreEmojiTooltip": "Thêm emoji",
+  "localCollection": "BỘ SƯU TẬP TRÊN MÁY",
+  "printArchive": "Tủ ảnh",
+  "itemsCount": "{count} ẢNH",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveEmptyBody": "ẢNH CỦA BẠN CHỈ NẰM TRONG TỦ ẢNH TRÊN MÁY NÀY.",
+  "openCamera": "MỞ CAMERA",
+  "printReady": "TRANH ĐÃ XONG",
+  "originalSaved": "ĐÃ LƯU ẢNH GỐC",
+  "serverTesting": "ĐANG KIỂM TRA…",
+  "serverConnected": "ĐÃ KẾT NỐI · {gpu}",
+  "@serverConnected": {
+    "placeholders": {
+      "gpu": {
+        "type": "String"
+      }
+    }
+  },
+  "serverModelsLoading": "ĐÃ KẾT NỐI · MÔ HÌNH ĐANG TẢI",
+  "serverInvalidAddress": "ĐỊA CHỈ KHÔNG HỢP LỆ",
+  "homeLaptop": "LAPTOP Ở NHÀ",
+  "vanGoghOnLaptop": "TRANH VAN GOGH CHẠY TRÊN LAPTOP CỦA BẠN",
+  "serverAddressLabel": "ĐỊA CHỈ (IP:CỔNG)",
+  "serverTokenLabel": "MÃ TOKEN",
+  "serverTokenHint": "in ra khi máy chủ khởi động",
+  "serverTestButton": "KIỂM TRA",
+  "shopLabel": "CỬA HÀNG",
+  "sunbitShop": "CỬA HÀNG SUNBIT",
+  "sampleLabel": "MẪU",
+  "menuTooltip": "Menu",
+  "yourPeople": "BẠN BÈ CỦA BẠN",
+  "friendsTitle": "Bạn bè",
+  "peopleCount": "{count} NGƯỜI",
+  "@peopleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localMode": "CHẾ ĐỘ TRÊN MÁY",
+  "noFriendsOnDevice": "CHƯA CÓ BẠN\nTRÊN MÁY NÀY",
+  "noFriendsOnDeviceBody": "THÊM MỘT HỒ SƠ TRÊN MÁY ĐỂ BẮT ĐẦU CUỘC TRÒ CHUYỆN MẪU.",
+  "privateThreads": "TIN NHẮN RIÊNG",
+  "inboxTitle": "Hộp thư",
+  "deviceOnly": "CHỈ TRÊN MÁY",
+  "addFriendToStart": "THÊM BẠN ĐỂ BẮT ĐẦU TRÒ CHUYỆN",
+  "backToInboxTooltip": "Về hộp thư",
+  "openProfileLabel": "Mở hồ sơ",
+  "removeFriendTooltip": "Xóa bạn",
+  "localThread": "TRÒ CHUYỆN TRÊN MÁY",
+  "sendLatestPrintTooltip": "Gửi ảnh mới nhất",
+  "writeMessageHint": "Viết tin nhắn...",
+  "sendMessageTooltip": "Gửi tin nhắn",
+  "whosePost": "BÀI CỦA {name}",
+  "@whosePost": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "yourPost": "BÀI CỦA BẠN",
+  "previewStart": "BẮT ĐẦU TRÒ CHUYỆN",
+  "previewReacted": "{who} ĐÃ THẢ {emoji}",
+  "@previewReacted": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "previewYou": "BẠN",
+  "previewYouReplied": "BẠN ĐÃ TRẢ LỜI: {text}",
+  "@previewYouReplied": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "previewReplied": "ĐÃ TRẢ LỜI: {text}",
+  "@previewReplied": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "previewSentPrint": "ĐÃ GỬI MỘT ẢNH",
+  "previewYouText": "BẠN: {text}",
+  "@previewYouText": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "localLabel": "TRÊN MÁY",
+  "addAFriend": "THÊM BẠN",
+  "localProfileOnly": "CHỈ LƯU TRÊN MÁY",
+  "handleLabel": "TÊN NGƯỜI DÙNG",
+  "friendNameHint": "Tên của bạn bè",
+  "addToFriends": "THÊM VÀO BẠN BÈ"
 }

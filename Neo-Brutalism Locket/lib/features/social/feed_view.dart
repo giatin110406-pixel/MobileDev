@@ -17,6 +17,7 @@ import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/social/reply_bar.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// One page of the feed: a friend's post, one of your own prints or one of
 /// your daily quest posts.
@@ -252,15 +253,15 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
             children: [
               NeoIconButton(
                 icon: Icons.keyboard_arrow_down,
-                tooltip: 'Back to camera',
+                tooltip: AppLocalizations.of(context).backToCameraTooltip,
                 fill: NeoColors.yellow,
                 onPressed: widget.onClose,
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'FEED',
-                  style: TextStyle(
+                  AppLocalizations.of(context).feedLabel,
+                  style: const TextStyle(
                     color: NeoColors.ink,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -284,8 +285,11 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           const SizedBox(height: 14),
           Expanded(
             child: widget.entries.isEmpty
-                ? const Center(
-                    child: NeoLabel('NO POSTS YET', color: NeoColors.yellow),
+                ? Center(
+                    child: NeoLabel(
+                      AppLocalizations.of(context).noPostsYet,
+                      color: NeoColors.yellow,
+                    ),
                   )
                 : PageView.builder(
                     controller: _pages,
@@ -443,19 +447,19 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   widget.onReplyRemote != null &&
                   widget.onReactRemote != null
             ? ReplyBar(
-                hint: 'Reply to ${friend.name.split(' ').first}...',
+                hint: AppLocalizations.of(context).replyHint(friend.name.split(' ').first),
                 onSendText: (text) => widget.onReplyRemote!(remote, text),
                 onReact: (emoji) => widget.onReactRemote!(remote, emoji),
               )
             : post != null && friend != null && widget.allowReplies
             ? ReplyBar(
-                hint: 'Reply to ${friend.name.split(' ').first}...',
+                hint: AppLocalizations.of(context).replyHint(friend.name.split(' ').first),
                 onSendText: (text) => widget.onReplyText(post, text),
                 onReact: (emoji) => widget.onReact(post, emoji),
               )
             : entry.print != null
             ? NeoButton(
-                label: 'OPEN PRINT',
+                label: AppLocalizations.of(context).openPrint,
                 icon: Icons.open_in_full,
                 variant: NeoButtonVariant.accent,
                 onPressed: () => widget.onOpenPrint(entry.print!),
@@ -513,10 +517,13 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
       Image.file(
         File(post.imagePath),
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(
+        errorBuilder: (context, error, stackTrace) => Center(
           child: Text(
-            'IMAGE NOT FOUND',
-            style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w700),
+            AppLocalizations.of(context).imageNotFound,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
@@ -553,10 +560,13 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
   Widget _printImage(NeoPhoto photo) => Image.file(
     File(photo.processedPath ?? photo.originalPath),
     fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) => const Center(
+    errorBuilder: (context, error, stackTrace) => Center(
       child: Text(
-        'IMAGE NOT FOUND',
-        style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w700),
+        AppLocalizations.of(context).imageNotFound,
+        style: const TextStyle(
+          color: NeoColors.ink,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     ),
   );

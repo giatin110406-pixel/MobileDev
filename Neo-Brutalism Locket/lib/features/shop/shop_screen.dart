@@ -7,6 +7,7 @@ import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// What the main button of an item does right now.
 enum ShopAction { buy, locked, equip, unequip }
@@ -58,13 +59,13 @@ class _ShopScreenState extends State<ShopScreen> {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'SUNBIT SHOP',
-                              style: TextStyle(
+                              AppLocalizations.of(context).sunbitShop,
+                              style: const TextStyle(
                                 color: NeoColors.ink,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,

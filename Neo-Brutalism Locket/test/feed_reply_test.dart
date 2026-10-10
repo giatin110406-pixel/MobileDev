@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/features/social/reply_bar.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 void main() {
   group('replies to posts (local)', () {
@@ -163,6 +164,9 @@ void main() {
       List<FriendPost> posts = const [],
     }) => tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Scaffold(
           body: ConversationScreen(
             friend: friend,
@@ -217,6 +221,9 @@ void main() {
       final reactions = <String>[];
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: Scaffold(
             body: Center(
               child: ReplyBar(
@@ -307,6 +314,9 @@ void main() {
       final sent = <String>[];
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: Scaffold(
             body: FeedScreen(
               entries: entries,

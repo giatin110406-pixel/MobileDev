@@ -779,7 +779,7 @@ void main() {
 
     testWidgets('the profile tab opens the settings', (tester) async {
       await pumpShell(tester, FakeFriends());
-      await tester.tap(find.text('TÔI'));
+      await tester.tap(find.text('ME'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.text('Settings'),
