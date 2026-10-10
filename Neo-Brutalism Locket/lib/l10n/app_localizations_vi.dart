@@ -1003,9 +1003,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get holdToCompare => 'GIỮ ĐỂ SO SÁNH';
 
   @override
-  String get holdToFilm => 'GIỮ ĐỂ QUAY';
-
-  @override
   String get styleWorking8bit => 'ĐANG MÀI PIXEL…';
 
   @override
