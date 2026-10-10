@@ -1885,6 +1885,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Rung khi chạm'**
   String get settingsHaptics;
+
+  /// No description provided for @holdToCompare.
+  ///
+  /// In vi, this message translates to:
+  /// **'GIỮ ĐỂ SO SÁNH'**
+  String get holdToCompare;
+
+  /// No description provided for @holdToFilm.
+  ///
+  /// In vi, this message translates to:
+  /// **'GIỮ ĐỂ QUAY'**
+  String get holdToFilm;
 }
 
 class _AppLocalizationsDelegate

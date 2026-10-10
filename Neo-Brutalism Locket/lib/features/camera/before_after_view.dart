@@ -37,6 +37,12 @@ class BeforeAfterView extends StatefulWidget {
 class _BeforeAfterViewState extends State<BeforeAfterView> {
   late final PageController _pages = PageController(initialPage: _targetPage);
 
+  /// A finger is held on the picture: the other side shows until it lifts.
+  bool _peeking = false;
+
+  /// The hint goes away once the person has tried holding.
+  bool _hasPeeked = false;
+
   bool get _hasStyled => widget.styledPath != null;
   int get _targetPage => _hasStyled && widget.showStyled ? 1 : 0;
 
@@ -60,6 +66,15 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
   void dispose() {
     _pages.dispose();
     super.dispose();
+  }
+
+  void _setPeeking(bool value) {
+    if (!_hasStyled || _peeking == value) return;
+    Haptics.light();
+    setState(() {
+      _peeking = value;
+      if (value) _hasPeeked = true;
+    });
   }
 
   void _toggle() {
@@ -86,12 +101,16 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
   @override
   Widget build(BuildContext context) {
     final styled = widget.styledPath;
-    final onStyled = _hasStyled && widget.showStyled;
+    // What is on screen: the other side while a finger holds the picture.
+    final onStyled = _hasStyled && (widget.showStyled != _peeking);
     return Stack(
       fit: StackFit.expand,
       children: [
         GestureDetector(
           onTap: _toggle,
+          onLongPressStart: _hasStyled ? (_) => _setPeeking(true) : null,
+          onLongPressEnd: (_) => _setPeeking(false),
+          onLongPressCancel: () => _setPeeking(false),
           child: PageView(
             controller: _pages,
             physics: _hasStyled
@@ -107,7 +126,25 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
             ],
           ),
         ),
+        if (_peeking && styled != null)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: _picture(widget.showStyled ? widget.originalPath : styled),
+            ),
+          ),
         if (_hasStyled) ...[
+          if (!_hasPeeked)
+            Positioned(
+              top: 12,
+              right: 12,
+              child: IgnorePointer(
+                child: NeoLabel(
+                  AppLocalizations.of(context).holdToCompare,
+                  color: NeoColors.yellow,
+                  icon: Icons.touch_app_outlined,
+                ),
+              ),
+            ),
           Positioned(
             top: 12,
             left: 12,

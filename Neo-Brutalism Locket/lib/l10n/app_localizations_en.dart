@@ -1001,4 +1001,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsHaptics => 'Vibrate on taps';
+
+  @override
+  String get holdToCompare => 'HOLD TO COMPARE';
+
+  @override
+  String get holdToFilm => 'HOLD TO FILM';
 }

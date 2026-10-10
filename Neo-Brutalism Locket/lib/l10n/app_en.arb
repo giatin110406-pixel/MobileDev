@@ -530,5 +530,7 @@
   "friendNameHint": "A friend name",
   "addToFriends": "ADD TO FRIENDS",
   "settingsFeedback": "FEEL",
-  "settingsHaptics": "Vibrate on taps"
+  "settingsHaptics": "Vibrate on taps",
+  "holdToCompare": "HOLD TO COMPARE",
+  "holdToFilm": "HOLD TO FILM"
 }
