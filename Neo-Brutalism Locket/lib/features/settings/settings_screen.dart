@@ -122,6 +122,20 @@ class SettingsScreen extends StatelessWidget {
                   _heading(l10n.settingsNotifications),
                   _card([_NotificationSwitches(repository: notifications!)]),
                 ],
+                _heading(l10n.settingsFeedback),
+                _card([
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    child: NeoSwitch(
+                      value: settings.hapticsEnabled,
+                      label: l10n.settingsHaptics,
+                      onChanged: settings.setHaptics,
+                    ),
+                  ),
+                ]),
                 _heading(l10n.settingsLanguage),
                 _card([
                   _languageRow(context, l10n.settingsLanguageSystem, null),

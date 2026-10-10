@@ -992,4 +992,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get addToFriends => 'THÊM VÀO BẠN BÈ';
+
+  @override
+  String get settingsFeedback => 'CẢM GIÁC';
+
+  @override
+  String get settingsHaptics => 'Rung khi chạm';
 }

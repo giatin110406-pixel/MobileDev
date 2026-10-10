@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Background colour of the pill for each mode.
 Color stylePillColor(StyleType style) => switch (style) {
@@ -49,6 +50,7 @@ class _StylePillState extends State<StylePill> {
   void _step(int delta) {
     final index = widget.value.index + delta;
     if (index < 0 || index >= StyleType.values.length) return;
+    Haptics.select();
     setState(() => _direction = delta);
     widget.onChanged(StyleType.values[index]);
   }

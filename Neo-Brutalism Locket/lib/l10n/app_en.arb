@@ -528,5 +528,7 @@
   "localProfileOnly": "LOCAL PROFILE ONLY",
   "handleLabel": "HANDLE",
   "friendNameHint": "A friend name",
-  "addToFriends": "ADD TO FRIENDS"
+  "addToFriends": "ADD TO FRIENDS",
+  "settingsFeedback": "FEEL",
+  "settingsHaptics": "Vibrate on taps"
 }

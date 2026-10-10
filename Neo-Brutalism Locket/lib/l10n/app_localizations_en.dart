@@ -995,4 +995,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addToFriends => 'ADD TO FRIENDS';
+
+  @override
+  String get settingsFeedback => 'FEEL';
+
+  @override
+  String get settingsHaptics => 'Vibrate on taps';
 }
