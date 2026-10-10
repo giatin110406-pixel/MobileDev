@@ -105,16 +105,17 @@ void main() {
       expect(playerStateFromServer(doc(balance: -5)).balance, 0);
     });
 
-    test('server error codes become messages the app shows', () {
-      expect(
-        playerFailureFor('already_done').message,
-        contains('đã hoàn thành'),
-      );
-      expect(playerFailureFor('no_attempts').message, contains('Hết lượt'));
-      expect(playerFailureFor('expired').message, contains('00:00'));
-      expect(playerFailureFor('already_owned').message, contains('sở hữu'));
+    test('server error codes become typed failures the app words', () {
+      PlayerError kind(String code) => playerFailureFor(code).kind;
+      expect(kind('already_done'), PlayerError.alreadyDone);
+      expect(kind('no_attempts'), PlayerError.noAttempts);
+      expect(kind('not_passed'), PlayerError.notPassed);
+      expect(kind('expired'), PlayerError.questExpired);
+      expect(kind('already_owned'), PlayerError.alreadyOwned);
+      expect(kind('not_owned'), PlayerError.notOwned);
+      expect(kind('not_found'), PlayerError.itemNotFound);
       expect(playerFailureFor('insufficient_funds'), isA<NotEnoughSunbit>());
-      expect(playerFailureFor('???').message, contains('Có lỗi'));
+      expect(kind('???'), PlayerError.unknown);
     });
   });
 
@@ -277,9 +278,9 @@ void main() {
         repository.recordFailedAttempt(),
         throwsA(
           isA<PlayerException>().having(
-            (e) => e.message,
-            'message',
-            contains('Hết lượt'),
+            (e) => e.kind,
+            'kind',
+            PlayerError.noAttempts,
           ),
         ),
       );
@@ -291,9 +292,9 @@ void main() {
         repository.load(),
         throwsA(
           isA<PlayerException>().having(
-            (e) => e.message,
-            'message',
-            contains('kết nối mạng'),
+            (e) => e.kind,
+            'kind',
+            PlayerError.needsNetwork,
           ),
         ),
       );

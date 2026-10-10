@@ -1892,12 +1892,6 @@ abstract class AppLocalizations {
   /// **'GIỮ ĐỂ SO SÁNH'**
   String get holdToCompare;
 
-  /// No description provided for @holdToFilm.
-  ///
-  /// In vi, this message translates to:
-  /// **'GIỮ ĐỂ QUAY'**
-  String get holdToFilm;
-
   /// No description provided for @styleWorking8bit.
   ///
   /// In vi, this message translates to:
@@ -1915,6 +1909,2424 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'ĐANG XỬ LÝ…'**
   String get styleWorking;
+
+  /// No description provided for @backTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lại'**
+  String get backTooltip;
+
+  /// No description provided for @contestTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cuộc thi tuần'**
+  String get contestTitle;
+
+  /// No description provided for @contestLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được cuộc thi.'**
+  String get contestLoadFailed;
+
+  /// No description provided for @contestNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có cuộc thi nào.'**
+  String get contestNone;
+
+  /// No description provided for @contestStale.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không cập nhật được. Đang hiện dữ liệu cũ.'**
+  String get contestStale;
+
+  /// No description provided for @contestEnterGallery.
+  ///
+  /// In vi, this message translates to:
+  /// **'VÀO GALLERY ({count} BÀI)'**
+  String contestEnterGallery(int count);
+
+  /// No description provided for @contestSeeResults.
+  ///
+  /// In vi, this message translates to:
+  /// **'XEM KẾT QUẢ'**
+  String get contestSeeResults;
+
+  /// No description provided for @contestPrevResults.
+  ///
+  /// In vi, this message translates to:
+  /// **'KẾT QUẢ TUẦN TRƯỚC: {title}'**
+  String contestPrevResults(String title);
+
+  /// No description provided for @contestEntriesCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count}/{max} bài'**
+  String contestEntriesCount(int count, int max);
+
+  /// No description provided for @contestCountdownUntil.
+  ///
+  /// In vi, this message translates to:
+  /// **'cho đến khi {event}'**
+  String contestCountdownUntil(String event);
+
+  /// No description provided for @contestUntilOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'bắt đầu nhận bài'**
+  String get contestUntilOpen;
+
+  /// No description provided for @contestUntilJudging.
+  ///
+  /// In vi, this message translates to:
+  /// **'hết giờ nhận bài và bắt đầu chấm'**
+  String get contestUntilJudging;
+
+  /// No description provided for @contestUntilClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'chốt kết quả'**
+  String get contestUntilClosed;
+
+  /// No description provided for @contestLineOpens.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận bài từ'**
+  String get contestLineOpens;
+
+  /// No description provided for @contestLineJudging.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm điểm từ'**
+  String get contestLineJudging;
+
+  /// No description provided for @contestLineJudgingNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'{moment} (hoặc khi đủ 100 bài)'**
+  String contestLineJudgingNote(String moment);
+
+  /// No description provided for @contestLineEnds.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chốt kết quả'**
+  String get contestLineEnds;
+
+  /// No description provided for @contestLineEndsNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'{moment} (23:59 CN giờ Việt Nam)'**
+  String contestLineEndsNote(String moment);
+
+  /// No description provided for @contestMyEntry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm \"{group}\" đã dự thi, bài số {seq}.'**
+  String contestMyEntry(String group, int seq);
+
+  /// No description provided for @contestNothingToRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bài của nhóm khác để chấm.'**
+  String get contestNothingToRate;
+
+  /// No description provided for @contestRatedProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã chấm {done}/{needed} bài'**
+  String contestRatedProgress(int done, int needed);
+
+  /// No description provided for @contestVoteRule.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu của bạn chỉ được tính khi chấm đủ số bài này, và tài khoản đã đủ 7 ngày tuổi.'**
+  String get contestVoteRule;
+
+  /// No description provided for @contestOnlyOwner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ trưởng nhóm mới nộp bài được. Hãy nhờ trưởng nhóm của bạn.'**
+  String get contestOnlyOwner;
+
+  /// No description provided for @contestGroupSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nộp bài tuần này'**
+  String get contestGroupSubmitted;
+
+  /// No description provided for @contestOwnerHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn là trưởng nhóm: nộp canvas để dự thi'**
+  String get contestOwnerHint;
+
+  /// No description provided for @contestOpensAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận bài vào {moment}'**
+  String contestOpensAt(String moment);
+
+  /// No description provided for @contestSubmitButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'NỘP BÀI'**
+  String get contestSubmitButton;
+
+  /// No description provided for @contestRulesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'LUẬT CHƠI'**
+  String get contestRulesTitle;
+
+  /// No description provided for @contestRules.
+  ///
+  /// In vi, this message translates to:
+  /// **'• Trưởng nhóm nộp canvas của nhóm, mỗi nhóm một bài.\n• Chỉ 100 bài nộp nhanh nhất được vào Gallery.\n• Thành viên các nhóm có bài dự thi chấm 1–5 sao và bình luận bài của nhóm khác.\n• Điểm xếp hạng là trung bình có hiệu chỉnh (Bayes), nên một vài phiếu 5 sao không đủ để vượt lên.\n• Mọi thời điểm tính theo giờ Việt Nam (UTC+7).'**
+  String get contestRules;
+
+  /// No description provided for @contestSubmittedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nộp! Bài của bạn là số {seq}.'**
+  String contestSubmittedSnack(int seq);
+
+  /// No description provided for @cfNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy bài dự thi.'**
+  String get cfNotFound;
+
+  /// No description provided for @cfNotOwner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ trưởng nhóm mới nộp bài được.'**
+  String get cfNotOwner;
+
+  /// No description provided for @cfNotOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đến giờ nộp bài, hoặc đã hết giờ nộp.'**
+  String get cfNotOpen;
+
+  /// No description provided for @cfNotJudging.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện chưa phải lúc chấm điểm.'**
+  String get cfNotJudging;
+
+  /// No description provided for @cfAlreadySubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm này đã nộp bài tuần này rồi.'**
+  String get cfAlreadySubmitted;
+
+  /// No description provided for @cfContestFull.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gallery tuần này đã đủ 100 bài. Hẹn bạn tuần sau!'**
+  String get cfContestFull;
+
+  /// No description provided for @cfCanvasTooEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas còn quá trống. Hãy vẽ thêm rồi nộp nhé.'**
+  String get cfCanvasTooEmpty;
+
+  /// No description provided for @cfGroupTooSmall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm cần ít nhất 2 người để dự thi.'**
+  String get cfGroupTooSmall;
+
+  /// No description provided for @cfNoCanvas.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm chưa có canvas.'**
+  String get cfNoCanvas;
+
+  /// No description provided for @cfNotParticipant.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ thành viên các nhóm có bài dự thi mới chấm và bình luận được.'**
+  String get cfNotParticipant;
+
+  /// No description provided for @cfOwnEntry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không chấm được bài của nhóm mình.'**
+  String get cfOwnEntry;
+
+  /// No description provided for @cfBadScore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm phải từ 1 đến 5 sao.'**
+  String get cfBadScore;
+
+  /// No description provided for @cfEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy nhập nội dung.'**
+  String get cfEmpty;
+
+  /// No description provided for @cfTooLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình luận tối đa 200 ký tự.'**
+  String get cfTooLong;
+
+  /// No description provided for @cfTooFast.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chậm lại một chút rồi bình luận tiếp nhé.'**
+  String get cfTooFast;
+
+  /// No description provided for @cfTooMany.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã bình luận đủ số lần cho tuần này.'**
+  String get cfTooMany;
+
+  /// No description provided for @cfBlockedWord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình luận có từ không phù hợp.'**
+  String get cfBlockedWord;
+
+  /// No description provided for @cfTooManyReports.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay bạn đã báo cáo quá nhiều.'**
+  String get cfTooManyReports;
+
+  /// No description provided for @cfNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được. Thử lại nhé.'**
+  String get cfNetwork;
+
+  /// No description provided for @cfUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có lỗi xảy ra. Thử lại nhé.'**
+  String get cfUnknown;
+
+  /// No description provided for @phaseUpcoming.
+  ///
+  /// In vi, this message translates to:
+  /// **'SẮP DIỄN RA'**
+  String get phaseUpcoming;
+
+  /// No description provided for @phaseOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG NHẬN BÀI'**
+  String get phaseOpen;
+
+  /// No description provided for @phaseJudging.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG CHẤM ĐIỂM'**
+  String get phaseJudging;
+
+  /// No description provided for @phaseClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG TỔNG KẾT'**
+  String get phaseClosed;
+
+  /// No description provided for @phaseFinalized.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ CÓ KẾT QUẢ'**
+  String get phaseFinalized;
+
+  /// No description provided for @countdownDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày {clock}'**
+  String countdownDays(int days, String clock);
+
+  /// No description provided for @milestoneOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'đến giờ nhận bài'**
+  String get milestoneOpen;
+
+  /// No description provided for @milestoneJudging.
+  ///
+  /// In vi, this message translates to:
+  /// **'hết giờ nhận bài, bắt đầu chấm'**
+  String get milestoneJudging;
+
+  /// No description provided for @milestoneClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'chốt kết quả'**
+  String get milestoneClosed;
+
+  /// No description provided for @contestTimeLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {time} {event}'**
+  String contestTimeLeft(String time, String event);
+
+  /// No description provided for @contestBannerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CUỘC THI TUẦN · {phase}'**
+  String contestBannerTitle(String phase);
+
+  /// No description provided for @contestBannerSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cuộc thi tuần {week}: {title}. {phase}'**
+  String contestBannerSemantics(String week, String title, String phase);
+
+  /// No description provided for @weekdayMon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Th 2'**
+  String get weekdayMon;
+
+  /// No description provided for @weekdayTue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Th 3'**
+  String get weekdayTue;
+
+  /// No description provided for @weekdayWed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Th 4'**
+  String get weekdayWed;
+
+  /// No description provided for @weekdayThu.
+  ///
+  /// In vi, this message translates to:
+  /// **'Th 5'**
+  String get weekdayThu;
+
+  /// No description provided for @weekdayFri.
+  ///
+  /// In vi, this message translates to:
+  /// **'Th 6'**
+  String get weekdayFri;
+
+  /// No description provided for @weekdaySat.
+  ///
+  /// In vi, this message translates to:
+  /// **'Th 7'**
+  String get weekdaySat;
+
+  /// No description provided for @weekdaySun.
+  ///
+  /// In vi, this message translates to:
+  /// **'CN'**
+  String get weekdaySun;
+
+  /// No description provided for @entryHeader.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài số {seq} · nộp {moment}'**
+  String entryHeader(int seq, String moment);
+
+  /// No description provided for @reportEntryTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo bài này'**
+  String get reportEntryTooltip;
+
+  /// No description provided for @entryArtSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tranh của nhóm {group}, bài số {seq}'**
+  String entryArtSemantics(String group, int seq);
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'BÌNH LUẬN'**
+  String get commentsTitle;
+
+  /// No description provided for @commentsTitleCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'BÌNH LUẬN ({count})'**
+  String commentsTitleCount(int count);
+
+  /// No description provided for @noComments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bình luận.'**
+  String get noComments;
+
+  /// No description provided for @rank1.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẠNG NHẤT'**
+  String get rank1;
+
+  /// No description provided for @rank2.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẠNG NHÌ'**
+  String get rank2;
+
+  /// No description provided for @rank3.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẠNG BA'**
+  String get rank3;
+
+  /// No description provided for @rankTop3.
+  ///
+  /// In vi, this message translates to:
+  /// **'TOP 3'**
+  String get rankTop3;
+
+  /// No description provided for @rankScoreLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'{rank}  ·  {score} điểm ({votes} phiếu)'**
+  String rankScoreLine(String rank, String score, int votes);
+
+  /// No description provided for @ratingLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải…'**
+  String get ratingLoading;
+
+  /// No description provided for @ratingOwnGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đây là bài của nhóm bạn. Bạn không tự chấm được.'**
+  String get ratingOwnGroup;
+
+  /// No description provided for @ratingNotParticipant.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ thành viên các nhóm có bài dự thi mới chấm điểm được.'**
+  String get ratingNotParticipant;
+
+  /// No description provided for @ratingContestOver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cuộc thi đã kết thúc.'**
+  String get ratingContestOver;
+
+  /// No description provided for @ratingNotYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đến giờ chấm điểm.'**
+  String get ratingNotYet;
+
+  /// No description provided for @ratingTapStar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm vào ngôi sao để chấm. Bạn sửa được đến hết cuộc thi.'**
+  String get ratingTapStar;
+
+  /// No description provided for @ratingYouGave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chấm {stars} sao. Chạm để đổi.'**
+  String ratingYouGave(int stars);
+
+  /// No description provided for @rateStars.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm {stars} sao'**
+  String rateStars(int stars);
+
+  /// No description provided for @commentYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn'**
+  String get commentYou;
+
+  /// No description provided for @reportCommentTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo bình luận'**
+  String get reportCommentTooltip;
+
+  /// No description provided for @writeCommentHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Viết bình luận…'**
+  String get writeCommentHint;
+
+  /// No description provided for @sendTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi'**
+  String get sendTooltip;
+
+  /// No description provided for @resultsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả'**
+  String get resultsTitle;
+
+  /// No description provided for @resultsTitleWeek.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả: {title}'**
+  String resultsTitleWeek(String title);
+
+  /// No description provided for @resultsLater.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả sẽ có lúc 23:59 Chủ nhật (giờ Việt Nam).'**
+  String get resultsLater;
+
+  /// No description provided for @resultsNoEntries.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuần này chưa có bài dự thi nào.'**
+  String get resultsNoEntries;
+
+  /// No description provided for @resultsNoRanked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bài nào đủ số phiếu hợp lệ để xếp hạng (cần ít nhất 3 phiếu).'**
+  String get resultsNoRanked;
+
+  /// No description provided for @resultsEntryCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} bài dự thi · {week}'**
+  String resultsEntryCount(int count, String week);
+
+  /// No description provided for @resultsScoreVotes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{score} · {votes} phiếu'**
+  String resultsScoreVotes(String score, int votes);
+
+  /// No description provided for @submitSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'NỘP BÀI: {group}'**
+  String submitSheetTitle(String group);
+
+  /// No description provided for @canvasWillBeSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas sẽ được nộp'**
+  String get canvasWillBeSubmitted;
+
+  /// No description provided for @noPreview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xem trước được.'**
+  String get noPreview;
+
+  /// No description provided for @submitSpotsLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có {count}/{max} bài. Chỉ {max} bài nộp nhanh nhất vào Gallery.'**
+  String submitSpotsLeft(int count, int max);
+
+  /// No description provided for @submitGalleryFull.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gallery đã đủ {max} bài.'**
+  String submitGalleryFull(int max);
+
+  /// No description provided for @submitSnapshotNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản chụp canvas được lấy ngay lúc nộp và không đổi được nữa. Mỗi nhóm nộp một bài mỗi tuần.'**
+  String get submitSnapshotNote;
+
+  /// No description provided for @submitting.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG NỘP…'**
+  String get submitting;
+
+  /// No description provided for @galleryViewCorridor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem dạng hành lang'**
+  String get galleryViewCorridor;
+
+  /// No description provided for @galleryViewGrid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem dạng lưới'**
+  String get galleryViewGrid;
+
+  /// No description provided for @galleryEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hành lang còn trống. Bài dự thi sẽ xuất hiện ở đây khi các nhóm nộp bài.'**
+  String get galleryEmpty;
+
+  /// No description provided for @galleryLoadMoreFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải thêm được. Kéo lên để thử lại.'**
+  String get galleryLoadMoreFailed;
+
+  /// No description provided for @galleryEntrySemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài số {seq}, nhóm {group}'**
+  String galleryEntrySemantics(int seq, String group);
+
+  /// No description provided for @corridorSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hành lang triển lãm với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.'**
+  String corridorSemantics(int count);
+
+  /// No description provided for @walkForward.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi tới'**
+  String get walkForward;
+
+  /// No description provided for @walkBack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi lui'**
+  String get walkBack;
+
+  /// No description provided for @groupsInvitesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'LỜI MỜI VÀO NHÓM'**
+  String get groupsInvitesTitle;
+
+  /// No description provided for @groupsStale.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không cập nhật được. Đang hiện dữ liệu cũ.'**
+  String get groupsStale;
+
+  /// No description provided for @groupsLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách nhóm.'**
+  String get groupsLoadFailed;
+
+  /// No description provided for @groupsEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có nhóm nào'**
+  String get groupsEmptyTitle;
+
+  /// No description provided for @groupsEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo nhóm với bạn bè để cùng nhắn tin và cùng vẽ một canvas pixel. Mỗi nhiệm vụ hằng ngày cho bạn 10 mực, mỗi ô vẽ tốn 1 mực.'**
+  String get groupsEmptyBody;
+
+  /// No description provided for @groupPreviewNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tin nhắn'**
+  String get groupPreviewNone;
+
+  /// No description provided for @groupPreviewActivity.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoạt động mới trong nhóm'**
+  String get groupPreviewActivity;
+
+  /// No description provided for @memberCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} thành viên'**
+  String memberCount(int count);
+
+  /// No description provided for @groupTileSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm {name}, {members}'**
+  String groupTileSemantics(String name, String members);
+
+  /// No description provided for @groupTileSemanticsUnread.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm {name}, {members}, {unread} tin chưa đọc'**
+  String groupTileSemanticsUnread(String name, String members, int unread);
+
+  /// No description provided for @groupMembersLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count}/{max} thành viên'**
+  String groupMembersLine(int count, int max);
+
+  /// No description provided for @groupMembersLineOwner.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count}/{max} thành viên · trưởng nhóm'**
+  String groupMembersLineOwner(int count, int max);
+
+  /// No description provided for @groupJoinedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã vào nhóm {name}.'**
+  String groupJoinedSnack(String name);
+
+  /// No description provided for @groupInviteFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'{person} mời bạn vào nhóm'**
+  String groupInviteFrom(String person);
+
+  /// No description provided for @groupJoin.
+  ///
+  /// In vi, this message translates to:
+  /// **'THAM GIA'**
+  String get groupJoin;
+
+  /// No description provided for @groupCreateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠO NHÓM MỚI'**
+  String get groupCreateTitle;
+
+  /// No description provided for @groupNameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên nhóm'**
+  String get groupNameLabel;
+
+  /// No description provided for @groupRulesOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy tắc (không bắt buộc)'**
+  String get groupRulesOptional;
+
+  /// No description provided for @groupMaxMembers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số thành viên tối đa'**
+  String get groupMaxMembers;
+
+  /// No description provided for @decrease.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm'**
+  String get decrease;
+
+  /// No description provided for @increase.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tăng'**
+  String get increase;
+
+  /// No description provided for @groupCreating.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG TẠO…'**
+  String get groupCreating;
+
+  /// No description provided for @segmentGroups.
+  ///
+  /// In vi, this message translates to:
+  /// **'NHÓM'**
+  String get segmentGroups;
+
+  /// No description provided for @personFriendsNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hai bạn là bạn bè: ảnh mới của nhau hiện trong feed.'**
+  String get personFriendsNote;
+
+  /// No description provided for @personNotFriendsNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ở chung nhóm chưa phải là bạn bè. Chỉ khi kết bạn, hai người mới xem được ảnh của nhau.'**
+  String get personNotFriendsNote;
+
+  /// No description provided for @personAlreadyFriends.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ LÀ BẠN BÈ'**
+  String get personAlreadyFriends;
+
+  /// No description provided for @personRequestSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ GỬI LỜI MỜI'**
+  String get personRequestSent;
+
+  /// No description provided for @personBefriend.
+  ///
+  /// In vi, this message translates to:
+  /// **'KẾT BẠN'**
+  String get personBefriend;
+
+  /// No description provided for @reportFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gửi được báo cáo. Thử lại nhé.'**
+  String get reportFailed;
+
+  /// No description provided for @blockFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không chặn được. Thử lại nhé.'**
+  String get blockFailed;
+
+  /// No description provided for @sysJoined.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} đã tham gia nhóm'**
+  String sysJoined(String name);
+
+  /// No description provided for @sysLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} đã rời nhóm'**
+  String sysLeft(String name);
+
+  /// No description provided for @sysKicked.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} đã bị mời ra khỏi nhóm'**
+  String sysKicked(String name);
+
+  /// No description provided for @sysOwnerChanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} là trưởng nhóm mới'**
+  String sysOwnerChanged(String name);
+
+  /// No description provided for @sysEntrySubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm đã nộp bài dự thi tuần này'**
+  String get sysEntrySubmitted;
+
+  /// No description provided for @gfNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy nhóm hoặc người này.'**
+  String get gfNotFound;
+
+  /// No description provided for @gfNotOwner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ trưởng nhóm mới làm được việc này.'**
+  String get gfNotOwner;
+
+  /// No description provided for @gfNotMember.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không còn ở trong nhóm này.'**
+  String get gfNotMember;
+
+  /// No description provided for @gfSelf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể làm việc này với chính mình.'**
+  String get gfSelf;
+
+  /// No description provided for @gfEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy nhập nội dung.'**
+  String get gfEmpty;
+
+  /// No description provided for @gfTooLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung quá dài.'**
+  String get gfTooLong;
+
+  /// No description provided for @gfBlockedWord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có từ không phù hợp. Hãy dùng ngôn từ lịch sự để mọi người cùng vui nhé.'**
+  String get gfBlockedWord;
+
+  /// No description provided for @gfBadName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên nhóm cần từ 1 đến 40 ký tự.'**
+  String get gfBadName;
+
+  /// No description provided for @gfBadSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số thành viên tối đa phải từ 2 đến 12 và không nhỏ hơn số người hiện có.'**
+  String get gfBadSize;
+
+  /// No description provided for @gfGroupLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chỉ được ở tối đa 5 nhóm và làm trưởng tối đa 3 nhóm.'**
+  String get gfGroupLimit;
+
+  /// No description provided for @gfMemberLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm đã đủ người (kể cả lời mời đang chờ).'**
+  String get gfMemberLimit;
+
+  /// No description provided for @gfTheirGroupLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang ở quá nhiều nhóm (tối đa 5).'**
+  String get gfTheirGroupLimit;
+
+  /// No description provided for @gfAlreadyMember.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người này đã ở trong nhóm.'**
+  String get gfAlreadyMember;
+
+  /// No description provided for @gfAlreadyInvited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã mời người này rồi.'**
+  String get gfAlreadyInvited;
+
+  /// No description provided for @gfExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời mời đã hết hạn.'**
+  String get gfExpired;
+
+  /// No description provided for @gfOwnerMustTransfer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy chuyển quyền trưởng nhóm cho người khác trước khi rời.'**
+  String get gfOwnerMustTransfer;
+
+  /// No description provided for @gfNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được. Thử lại nhé.'**
+  String get gfNetwork;
+
+  /// No description provided for @gfUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có lỗi xảy ra. Thử lại nhé.'**
+  String get gfUnknown;
+
+  /// No description provided for @kfInsufficientInk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết mực. Hoàn thành nhiệm vụ hằng ngày để nhận thêm 10 mực.'**
+  String get kfInsufficientInk;
+
+  /// No description provided for @kfRateLimited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vẽ chậm lại một chút (tối đa 30 ô/phút).'**
+  String get kfRateLimited;
+
+  /// No description provided for @kfCanvasLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas này đã được lưu trữ.'**
+  String get kfCanvasLocked;
+
+  /// No description provided for @kfNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy canvas.'**
+  String get kfNotFound;
+
+  /// No description provided for @kfNotOwner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ trưởng nhóm mới làm được việc này.'**
+  String get kfNotOwner;
+
+  /// No description provided for @kfBadPixel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô vẽ không hợp lệ.'**
+  String get kfBadPixel;
+
+  /// No description provided for @kfBadSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước hoặc bảng màu không hợp lệ.'**
+  String get kfBadSize;
+
+  /// No description provided for @kfNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất kết nối. Canvas chuyển sang chế độ chỉ xem.'**
+  String get kfNetwork;
+
+  /// No description provided for @groupSettingsTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt nhóm'**
+  String get groupSettingsTooltip;
+
+  /// No description provided for @youLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn'**
+  String get youLabel;
+
+  /// No description provided for @someoneLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Một người'**
+  String get someoneLabel;
+
+  /// No description provided for @chatLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được tin nhắn.'**
+  String get chatLoadFailed;
+
+  /// No description provided for @chatSayHi.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy chào cả nhóm 👋'**
+  String get chatSayHi;
+
+  /// No description provided for @chatHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhắn cho cả nhóm…'**
+  String get chatHint;
+
+  /// No description provided for @groupSettingsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt nhóm'**
+  String get groupSettingsTitle;
+
+  /// No description provided for @ownerBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRƯỞNG NHÓM'**
+  String get ownerBadge;
+
+  /// No description provided for @sectionInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÔNG TIN'**
+  String get sectionInfo;
+
+  /// No description provided for @sectionMembers.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÀNH VIÊN ({count}/{max})'**
+  String sectionMembers(int count, int max);
+
+  /// No description provided for @inviteToGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỜI BẠN VÀO NHÓM'**
+  String get inviteToGroup;
+
+  /// No description provided for @inviteNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ mời được bạn bè của bạn. Lời mời hết hạn sau 7 ngày.'**
+  String get inviteNote;
+
+  /// No description provided for @sectionPendingInvites.
+  ///
+  /// In vi, this message translates to:
+  /// **'LỜI MỜI ĐANG CHỜ'**
+  String get sectionPendingInvites;
+
+  /// No description provided for @newCanvasButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠO CANVAS MỚI'**
+  String get newCanvasButton;
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'RỜI NHÓM'**
+  String get leaveGroup;
+
+  /// No description provided for @dissolveGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'GIẢI TÁN NHÓM'**
+  String get dissolveGroup;
+
+  /// No description provided for @rulesNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm chưa đặt quy tắc.'**
+  String get rulesNone;
+
+  /// No description provided for @rulesLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy tắc'**
+  String get rulesLabel;
+
+  /// No description provided for @memberYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} (bạn)'**
+  String memberYou(String name);
+
+  /// No description provided for @ownerRole.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trưởng nhóm'**
+  String get ownerRole;
+
+  /// No description provided for @optionsTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuỳ chọn'**
+  String get optionsTooltip;
+
+  /// No description provided for @menuTransfer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển quyền trưởng nhóm'**
+  String get menuTransfer;
+
+  /// No description provided for @menuRollback.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tác nét vẽ (24 giờ)'**
+  String get menuRollback;
+
+  /// No description provided for @menuKick.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mời ra khỏi nhóm'**
+  String get menuKick;
+
+  /// No description provided for @revokeInvite.
+  ///
+  /// In vi, this message translates to:
+  /// **'THU HỒI'**
+  String get revokeInvite;
+
+  /// No description provided for @inviteFriendsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỜI BẠN BÈ'**
+  String get inviteFriendsTitle;
+
+  /// No description provided for @noOneToInvite.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không còn người bạn nào để mời. Chỉ mời được bạn bè của bạn.'**
+  String get noOneToInvite;
+
+  /// No description provided for @newCanvasTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas mới'**
+  String get newCanvasTitle;
+
+  /// No description provided for @sizeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước'**
+  String get sizeLabel;
+
+  /// No description provided for @paletteLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảng màu'**
+  String get paletteLabel;
+
+  /// No description provided for @savedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu.'**
+  String get savedSnack;
+
+  /// No description provided for @kickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mời {name} ra khỏi nhóm?'**
+  String kickTitle(String name);
+
+  /// No description provided for @kickBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ sẽ không đọc được tin nhắn của nhóm nữa. Những ô họ đã vẽ vẫn giữ nguyên.'**
+  String get kickBody;
+
+  /// No description provided for @kickAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mời ra'**
+  String get kickAction;
+
+  /// No description provided for @transferTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển quyền trưởng nhóm?'**
+  String get transferTitle;
+
+  /// No description provided for @transferBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} sẽ là trưởng nhóm mới. Bạn trở thành thành viên thường.'**
+  String transferBody(String name);
+
+  /// No description provided for @transferAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển quyền'**
+  String get transferAction;
+
+  /// No description provided for @transferDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} là trưởng nhóm mới.'**
+  String transferDone(String name);
+
+  /// No description provided for @rollbackTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tác nét vẽ của {name}?'**
+  String rollbackTitle(String name);
+
+  /// No description provided for @rollbackBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Những ô họ vẽ trong 24 giờ qua và chưa bị ai vẽ đè sẽ quay về màu trước đó. Mực của họ không được hoàn lại.'**
+  String get rollbackBody;
+
+  /// No description provided for @rollbackAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tác'**
+  String get rollbackAction;
+
+  /// No description provided for @rollbackDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tác {count} ô.'**
+  String rollbackDone(int count);
+
+  /// No description provided for @leaveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rời nhóm {group}?'**
+  String leaveTitle(String group);
+
+  /// No description provided for @leaveBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn sẽ không đọc được tin nhắn và canvas của nhóm nữa.'**
+  String get leaveBody;
+
+  /// No description provided for @leaveAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rời nhóm'**
+  String get leaveAction;
+
+  /// No description provided for @dissolveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giải tán nhóm {group}?'**
+  String dissolveTitle(String group);
+
+  /// No description provided for @dissolveBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cả nhóm sẽ mất quyền xem tin nhắn và canvas. Không thể hoàn tác.'**
+  String get dissolveBody;
+
+  /// No description provided for @dissolveAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giải tán'**
+  String get dissolveAction;
+
+  /// No description provided for @invitedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã mời {name}.'**
+  String invitedSnack(String name);
+
+  /// No description provided for @newCanvasConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu canvas mới?'**
+  String get newCanvasConfirmTitle;
+
+  /// No description provided for @newCanvasConfirmBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas hiện tại được lưu lại và không vẽ thêm được nữa. Canvas mới bắt đầu trống.'**
+  String get newCanvasConfirmBody;
+
+  /// No description provided for @newCanvasConfirmAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo canvas'**
+  String get newCanvasConfirmAction;
+
+  /// No description provided for @newCanvasDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo canvas mới.'**
+  String get newCanvasDone;
+
+  /// No description provided for @avatarTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH ĐẠI DIỆN'**
+  String get avatarTitle;
+
+  /// No description provided for @avatarTakePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP ẢNH'**
+  String get avatarTakePhoto;
+
+  /// No description provided for @avatarFromLibrary.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỌN TỪ THƯ VIỆN'**
+  String get avatarFromLibrary;
+
+  /// No description provided for @avatarChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐỔI ẢNH'**
+  String get avatarChange;
+
+  /// No description provided for @avatarChangeFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đổi được ảnh đại diện.'**
+  String get avatarChangeFailed;
+
+  /// No description provided for @questsDoneTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'NHIỆM VỤ ĐÃ HOÀN THÀNH'**
+  String get questsDoneTitle;
+
+  /// No description provided for @questsNoneYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có nhiệm vụ nào. Mở tab CHỤP để làm nhiệm vụ hôm nay và nhận 25 Sunbit!'**
+  String get questsNoneYet;
+
+  /// No description provided for @postsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'BÀI ĐĂNG'**
+  String get postsTitle;
+
+  /// No description provided for @inkAmountSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'{amount} mực'**
+  String inkAmountSemantics(int amount);
+
+  /// No description provided for @inkAmountLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'{amount} MỰC'**
+  String inkAmountLabel(int amount);
+
+  /// No description provided for @streakSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Streak {streak} ngày'**
+  String streakSemantics(int streak);
+
+  /// No description provided for @musicOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật nhạc'**
+  String get musicOn;
+
+  /// No description provided for @musicOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt nhạc'**
+  String get musicOff;
+
+  /// No description provided for @photoMissingRetake.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG TÌM THẤY ẢNH · HÃY CHỤP LẠI'**
+  String get photoMissingRetake;
+
+  /// No description provided for @newDayQuest.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!'**
+  String get newDayQuest;
+
+  /// No description provided for @outOfTriesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẾT LƯỢT HÔM NAY'**
+  String get outOfTriesTitle;
+
+  /// No description provided for @outOfTriesBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.'**
+  String get outOfTriesBody;
+
+  /// No description provided for @wrongTriesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG ĐÚNG · CÒN {left} LƯỢT THỬ{debug}'**
+  String wrongTriesLeft(int left, String debug);
+
+  /// No description provided for @questModeBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP'**
+  String get questModeBanner;
+
+  /// No description provided for @shootSubject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp {subject}'**
+  String shootSubject(String subject);
+
+  /// No description provided for @exitQuestMode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thoát chế độ nhiệm vụ'**
+  String get exitQuestMode;
+
+  /// No description provided for @checkingPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG KIỂM TRA...'**
+  String get checkingPhoto;
+
+  /// No description provided for @questSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ hôm nay: chụp {subject}'**
+  String questSemantics(String subject);
+
+  /// No description provided for @questTodayLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'NHIỆM VỤ HÔM NAY · {style}'**
+  String questTodayLabel(String style);
+
+  /// No description provided for @qsDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'XONG ✓'**
+  String get qsDone;
+
+  /// No description provided for @qsPostNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐĂNG NGAY'**
+  String get qsPostNow;
+
+  /// No description provided for @qsOutOfTries.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẾT LƯỢT'**
+  String get qsOutOfTries;
+
+  /// No description provided for @triesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {left} lượt thử'**
+  String triesLeft(int left);
+
+  /// No description provided for @shootToday.
+  ///
+  /// In vi, this message translates to:
+  /// **'HÔM NAY, HÃY CHỤP'**
+  String get shootToday;
+
+  /// No description provided for @rewardWithBonus.
+  ///
+  /// In vi, this message translates to:
+  /// **'+{reward} Sunbit, +{bonus} thưởng streak {streak} ngày!'**
+  String rewardWithBonus(int reward, int bonus, int streak);
+
+  /// No description provided for @rewardPlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'+{reward} Sunbit · thêm +{bonus} mỗi {every} ngày streak'**
+  String rewardPlain(int reward, int bonus, int every);
+
+  /// No description provided for @questRulesNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ chụp trực tiếp bằng camera · 3 lượt thử mỗi ngày · Ngày mới bắt đầu lúc 00:00 giờ Việt Nam'**
+  String get questRulesNote;
+
+  /// No description provided for @startShooting.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẮT ĐẦU CHỤP'**
+  String get startShooting;
+
+  /// No description provided for @postQuestPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐĂNG ẢNH NHIỆM VỤ'**
+  String get postQuestPhoto;
+
+  /// No description provided for @questCompletedBtn.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ HOÀN THÀNH ✓'**
+  String get questCompletedBtn;
+
+  /// No description provided for @questNextAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ mới sẽ đến lúc 00:00. Hẹn gặp lại!'**
+  String get questNextAt;
+
+  /// No description provided for @questAllTriesUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã dùng hết 3 lượt thử. Nhiệm vụ mới sẽ đến lúc 00:00.'**
+  String get questAllTriesUsed;
+
+  /// No description provided for @postFailedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG ĐĂNG ĐƯỢC'**
+  String get postFailedTitle;
+
+  /// No description provided for @closeAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÓNG'**
+  String get closeAction;
+
+  /// No description provided for @postSuccessTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐĂNG THÀNH CÔNG!'**
+  String get postSuccessTitle;
+
+  /// No description provided for @niceAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'TUYỆT!'**
+  String get niceAction;
+
+  /// No description provided for @rewardQuest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn thành nhiệm vụ'**
+  String get rewardQuest;
+
+  /// No description provided for @rewardStreak.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thưởng streak {days} ngày'**
+  String rewardStreak(int days);
+
+  /// No description provided for @rewardInk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mực để vẽ canvas nhóm'**
+  String get rewardInk;
+
+  /// No description provided for @streakNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu streak mới. Quay lại vào ngày mai nhé!'**
+  String get streakNew;
+
+  /// No description provided for @streakDaysRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã hoàn thành {days} ngày liên tiếp!'**
+  String streakDaysRow(int days);
+
+  /// No description provided for @laterTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để sau (ảnh vẫn được giữ đến hết hôm nay)'**
+  String get laterTooltip;
+
+  /// No description provided for @photoNailedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHUẨN RỒI! {emoji}'**
+  String photoNailedTitle(String emoji);
+
+  /// No description provided for @photoAcceptedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH ĐẠT YÊU CẦU'**
+  String get photoAcceptedTitle;
+
+  /// No description provided for @transformFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa biến đổi được ảnh. Ảnh gốc vẫn an toàn.'**
+  String get transformFailed;
+
+  /// No description provided for @captionLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHÚ THÍCH'**
+  String get captionLabel;
+
+  /// No description provided for @captionHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Viết một dòng ngắn...'**
+  String get captionHint;
+
+  /// No description provided for @postingBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG ĐĂNG...'**
+  String get postingBusy;
+
+  /// No description provided for @postToProfile.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐĂNG LÊN TRANG CÁ NHÂN'**
+  String get postToProfile;
+
+  /// No description provided for @questMusicOrchestral.
+  ///
+  /// In vi, this message translates to:
+  /// **'Post nhiệm vụ có nhạc giao hưởng riêng khi bạn bè lướt đến.'**
+  String get questMusicOrchestral;
+
+  /// No description provided for @questMusicChiptune.
+  ///
+  /// In vi, this message translates to:
+  /// **'Post nhiệm vụ có nhạc chiptune riêng khi bạn bè lướt đến.'**
+  String get questMusicChiptune;
+
+  /// No description provided for @shopDecorate.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRANG TRÍ TRANG CÁ NHÂN'**
+  String get shopDecorate;
+
+  /// No description provided for @shopInUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG DÙNG'**
+  String get shopInUse;
+
+  /// No description provided for @shopOwned.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ CÓ'**
+  String get shopOwned;
+
+  /// No description provided for @shopBuy.
+  ///
+  /// In vi, this message translates to:
+  /// **'MUA · {price} SUNBIT'**
+  String shopBuy(int price);
+
+  /// No description provided for @shopShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÒN THIẾU {missing} SUNBIT'**
+  String shopShort(int missing);
+
+  /// No description provided for @shopEquip.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRANG BỊ'**
+  String get shopEquip;
+
+  /// No description provided for @shopUnequip.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÁO RA'**
+  String get shopUnequip;
+
+  /// No description provided for @shopHintBuy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mua một lần, dùng mãi mãi.'**
+  String get shopHintBuy;
+
+  /// No description provided for @shopHintLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn thành nhiệm vụ hằng ngày để kiếm thêm Sunbit.'**
+  String get shopHintLocked;
+
+  /// No description provided for @shopHintEquip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã sở hữu món này. Đổi món miễn phí.'**
+  String get shopHintEquip;
+
+  /// No description provided for @shopHintUnequip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang dùng món này.'**
+  String get shopHintUnequip;
+
+  /// No description provided for @kindFrame.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHUNG AVATAR'**
+  String get kindFrame;
+
+  /// No description provided for @kindBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'BANNER'**
+  String get kindBanner;
+
+  /// No description provided for @rarityCommon.
+  ///
+  /// In vi, this message translates to:
+  /// **'THƯỜNG'**
+  String get rarityCommon;
+
+  /// No description provided for @rarityRare.
+  ///
+  /// In vi, this message translates to:
+  /// **'HIẾM'**
+  String get rarityRare;
+
+  /// No description provided for @rarityLegendary.
+  ///
+  /// In vi, this message translates to:
+  /// **'HUYỀN THOẠI'**
+  String get rarityLegendary;
+
+  /// No description provided for @itemFrameSunflower.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung hoa hướng dương'**
+  String get itemFrameSunflower;
+
+  /// No description provided for @itemFrameBrush.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung nét cọ xoáy'**
+  String get itemFrameBrush;
+
+  /// No description provided for @itemFramePixel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung viền pixel'**
+  String get itemFramePixel;
+
+  /// No description provided for @itemFrameHearts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung trái tim 8-bit'**
+  String get itemFrameHearts;
+
+  /// No description provided for @itemFrameGoldCoins.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung xu vàng'**
+  String get itemFrameGoldCoins;
+
+  /// No description provided for @itemBannerStarryNight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner đêm đầy sao'**
+  String get itemBannerStarryNight;
+
+  /// No description provided for @itemBannerWheatField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner đồng lúa mì'**
+  String get itemBannerWheatField;
+
+  /// No description provided for @itemBannerAlmond.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner hoa hạnh nhân'**
+  String get itemBannerAlmond;
+
+  /// No description provided for @itemBannerRetroSky.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner bầu trời game cổ'**
+  String get itemBannerRetroSky;
+
+  /// No description provided for @itemBannerSpace.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner không gian pixel'**
+  String get itemBannerSpace;
+
+  /// No description provided for @canvasWhoNobody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô ({x}, {y}): chưa ai vẽ'**
+  String canvasWhoNobody(int x, int y);
+
+  /// No description provided for @canvasWhoSomeone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô ({x}, {y}): {name} vẽ'**
+  String canvasWhoSomeone(int x, int y, String name);
+
+  /// No description provided for @canvasLeftMember.
+  ///
+  /// In vi, this message translates to:
+  /// **'một người đã rời nhóm'**
+  String get canvasLeftMember;
+
+  /// No description provided for @canvasLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được canvas.'**
+  String get canvasLoadFailed;
+
+  /// No description provided for @canvasNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm này chưa có canvas.'**
+  String get canvasNone;
+
+  /// No description provided for @canvasNoInk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết mực: hoàn thành nhiệm vụ để nhận 10 mực.'**
+  String get canvasNoInk;
+
+  /// No description provided for @canvasInkHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi ô vẽ tốn 1 mực. Giữ một ô để xem ai vẽ.'**
+  String get canvasInkHint;
+
+  /// No description provided for @canvasOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất kết nối: canvas chỉ để xem.'**
+  String get canvasOffline;
+
+  /// No description provided for @canvasArchived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas này đã được lưu trữ (chỉ xem).'**
+  String get canvasArchived;
+
+  /// No description provided for @canvasSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canvas {w} nhân {h} ô. Chạm một ô để vẽ.'**
+  String canvasSemantics(int w, int h);
+
+  /// No description provided for @colorSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu {n}'**
+  String colorSemantics(int n);
+
+  /// No description provided for @peQuestExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!'**
+  String get peQuestExpired;
+
+  /// No description provided for @peAlreadyDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay bạn đã hoàn thành nhiệm vụ rồi.'**
+  String get peAlreadyDone;
+
+  /// No description provided for @peNoAttempts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!'**
+  String get peNoAttempts;
+
+  /// No description provided for @peNotPassed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh nhiệm vụ chưa vượt qua bước kiểm tra.'**
+  String get peNotPassed;
+
+  /// No description provided for @peCaptionTooLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chú thích tối đa {max} ký tự.'**
+  String peCaptionTooLong(int max);
+
+  /// No description provided for @peAlreadyOwned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã sở hữu món này.'**
+  String get peAlreadyOwned;
+
+  /// No description provided for @peNotOwned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy mua món này trước.'**
+  String get peNotOwned;
+
+  /// No description provided for @peItemNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy món này.'**
+  String get peItemNotFound;
+
+  /// No description provided for @peNeedsNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần kết nối mạng để thực hiện việc này.'**
+  String get peNeedsNetwork;
+
+  /// No description provided for @peNotEnoughSunbit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu {missing} Sunbit'**
+  String peNotEnoughSunbit(int missing);
+
+  /// No description provided for @peUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có lỗi xảy ra. Thử lại nhé.'**
+  String get peUnknown;
+
+  /// No description provided for @qcNeedsLaptop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần kết nối laptop để kiểm tra ảnh. Bấm nút server (màu xanh) để cài đặt.'**
+  String get qcNeedsLaptop;
+
+  /// No description provided for @qcLaptopFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được ảnh ({detail}). Lượt thử không bị trừ.'**
+  String qcLaptopFailed(String detail);
+
+  /// No description provided for @qcQuestUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ này chưa có trong bộ kiểm ảnh. Hãy cập nhật ứng dụng.'**
+  String get qcQuestUnknown;
+
+  /// No description provided for @qcUnreadable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đọc được ảnh. Lượt thử không bị trừ.'**
+  String get qcUnreadable;
+
+  /// No description provided for @qcDeviceFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.'**
+  String get qcDeviceFailed;
+
+  /// No description provided for @seNotSetUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa cài đặt máy chủ laptop'**
+  String get seNotSetUp;
+
+  /// No description provided for @seTooLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop xử lý quá lâu'**
+  String get seTooLong;
+
+  /// No description provided for @seWrongToken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sai mã token của máy chủ'**
+  String get seWrongToken;
+
+  /// No description provided for @sePhotoTooLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh quá lớn so với máy chủ'**
+  String get sePhotoTooLarge;
+
+  /// No description provided for @seBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop đang bận'**
+  String get seBusy;
+
+  /// No description provided for @seNoAnswer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop không trả lời'**
+  String get seNoAnswer;
+
+  /// No description provided for @seUnreachable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được tới laptop'**
+  String get seUnreachable;
+
+  /// No description provided for @seFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop không tạo được tranh'**
+  String get seFailed;
+
+  /// No description provided for @appTagline.
+  ///
+  /// In vi, this message translates to:
+  /// **'CLB MÁY ẢNH NEO BRUTAL'**
+  String get appTagline;
+
+  /// No description provided for @archiveEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHƯA IN\nẢNH NÀO'**
+  String get archiveEmptyTitle;
+
+  /// No description provided for @galleryRoomTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'PHÒNG TRIỂN LÃM'**
+  String get galleryRoomTitle;
+
+  /// No description provided for @styleNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG HIỆU ỨNG'**
+  String get styleNone;
+
+  /// No description provided for @sourceLaptop.
+  ///
+  /// In vi, this message translates to:
+  /// **'LAPTOP · KHUẾCH TÁN'**
+  String get sourceLaptop;
+
+  /// No description provided for @sourceOnDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRÊN MÁY'**
+  String get sourceOnDevice;
+
+  /// No description provided for @sourceMagenta.
+  ///
+  /// In vi, this message translates to:
+  /// **'DỰ PHÒNG · MAGENTA'**
+  String get sourceMagenta;
+
+  /// No description provided for @sourceMock.
+  ///
+  /// In vi, this message translates to:
+  /// **'DỰ PHÒNG · THỬ'**
+  String get sourceMock;
+
+  /// No description provided for @sourceOriginal.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH GỐC'**
+  String get sourceOriginal;
+
+  /// No description provided for @timeNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'vừa xong'**
+  String get timeNow;
+
+  /// No description provided for @timeMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}p'**
+  String timeMinutes(int n);
+
+  /// No description provided for @timeHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}g'**
+  String timeHours(int n);
+
+  /// No description provided for @timeDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}n'**
+  String timeDays(int n);
+
+  /// No description provided for @periodAm.
+  ///
+  /// In vi, this message translates to:
+  /// **'SA'**
+  String get periodAm;
+
+  /// No description provided for @periodPm.
+  ///
+  /// In vi, this message translates to:
+  /// **'CH'**
+  String get periodPm;
+
+  /// No description provided for @sendMessageHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi tin nhắn...'**
+  String get sendMessageHint;
+
+  /// No description provided for @youUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN'**
+  String get youUpper;
+
+  /// No description provided for @lfNeedNameHandle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy nhập tên và tên người dùng.'**
+  String get lfNeedNameHandle;
+
+  /// No description provided for @lfHandleTaken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên người dùng này đã có trong danh sách bạn bè.'**
+  String get lfHandleTaken;
+
+  /// No description provided for @lfWriteSomething.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy viết tin nhắn hoặc đính kèm một ảnh.'**
+  String get lfWriteSomething;
+
+  /// No description provided for @lfFriendMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy bạn bè.'**
+  String get lfFriendMissing;
+
+  /// No description provided for @lfWriteReply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy viết trả lời hoặc chọn một emoji.'**
+  String get lfWriteReply;
+
+  /// No description provided for @lfPostGone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài đăng này không còn nữa.'**
+  String get lfPostGone;
+
+  /// No description provided for @seStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ trả lời mã {code}'**
+  String seStatus(String code);
+
+  /// No description provided for @seFailedDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Laptop gặp lỗi: {detail}'**
+  String seFailedDetail(String detail);
+
+  /// No description provided for @seError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi laptop'**
+  String get seError;
+
+  /// No description provided for @seMagentaFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô hình Van Gogh trên máy bị lỗi'**
+  String get seMagentaFailed;
+
+  /// No description provided for @styleBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'PHONG CÁCH: {style}'**
+  String styleBadge(String style);
+
+  /// No description provided for @sampleCaptionAva.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ánh nắng sớm đẹp không thật'**
+  String get sampleCaptionAva;
+
+  /// No description provided for @sampleCaptionJules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi dạo uống cà phê sau giờ học'**
+  String get sampleCaptionJules;
+
+  /// No description provided for @sampleCaptionRemy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh mới rửa trong phòng tối'**
+  String get sampleCaptionRemy;
+
+  /// No description provided for @sampleMessageAva.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay ánh nắng sớm đẹp không thật.'**
+  String get sampleMessageAva;
+
+  /// No description provided for @sampleMessageJules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi dạo uống cà phê sau giờ học không?'**
+  String get sampleMessageJules;
+
+  /// No description provided for @sampleMessageRemy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tấm ảnh đó lên đẹp quá.'**
+  String get sampleMessageRemy;
+
+  /// No description provided for @quoteReactedTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ THẢ CẢM XÚC VÀO {whose}'**
+  String quoteReactedTo(String whose);
+
+  /// No description provided for @quoteRepliedTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ TRẢ LỜI {whose}'**
+  String quoteRepliedTo(String whose);
+
+  /// No description provided for @sayHelloTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHÀO {name} ĐI'**
+  String sayHelloTo(String name);
+
+  /// No description provided for @printNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH SỐ {n}'**
+  String printNumber(String n);
+
+  /// No description provided for @printListTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH {n}'**
+  String printListTitle(String n);
+
+  /// No description provided for @peSoldOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Món này đã hết bản. Hẹn bạn tuần sau!'**
+  String get peSoldOut;
+
+  /// No description provided for @contestEnterGalleryEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'VÀO GALLERY'**
+  String get contestEnterGalleryEmpty;
+
+  /// No description provided for @hallOfFameButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'HALL OF FAME'**
+  String get hallOfFameButton;
+
+  /// No description provided for @hallOfFameTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hall of Fame'**
+  String get hallOfFameTitle;
+
+  /// No description provided for @hallViewRoom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem dạng phòng'**
+  String get hallViewRoom;
+
+  /// No description provided for @hallEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.'**
+  String get hallEmpty;
+
+  /// No description provided for @hallSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng Hall of Fame với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.'**
+  String hallSemantics(int count);
+
+  /// No description provided for @entrySavePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'LƯU ẢNH'**
+  String get entrySavePhoto;
+
+  /// No description provided for @entrySavedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu tranh vào thư viện ảnh.'**
+  String get entrySavedSnack;
+
+  /// No description provided for @entrySaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lưu được tranh. Thử lại nhé.'**
+  String get entrySaveFailed;
+
+  /// No description provided for @entryShareFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không chia sẻ được tranh. Thử lại nhé.'**
+  String get entryShareFailed;
+
+  /// No description provided for @entryShareText.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tranh của nhóm {group} trong Gallery Room'**
+  String entryShareText(String group);
+
+  /// No description provided for @bannerArtSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner tranh của nhóm {group}'**
+  String bannerArtSemantics(String group);
+
+  /// No description provided for @shopPaintingsTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRANH'**
+  String get shopPaintingsTab;
+
+  /// No description provided for @shopPaintingsFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được tranh đoạt giải.'**
+  String get shopPaintingsFailed;
+
+  /// No description provided for @shopPaintingsEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.'**
+  String get shopPaintingsEmpty;
+
+  /// No description provided for @shopCopiesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÒN {count} BẢN'**
+  String shopCopiesLeft(int count);
+
+  /// No description provided for @shopSoldOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẾT BẢN'**
+  String get shopSoldOut;
+
+  /// No description provided for @shopLimitedNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.'**
+  String shopLimitedNote(int left, int total);
 }
 
 class _AppLocalizationsDelegate

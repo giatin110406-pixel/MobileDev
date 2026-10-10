@@ -66,11 +66,7 @@ class MagentaVanGoghBackend implements VanGoghBackend {
         originalBytes,
         onProgress: onProgress,
       );
-      return StyleResult(
-        result.png,
-        result.source,
-        note: 'Magenta failed: $error',
-      );
+      return StyleResult(result.png, result.source, note: 'magenta:failed');
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_progress.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
@@ -10,6 +11,7 @@ import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/results_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/submit_entry_sheet.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// This week's contest: the theme, the clock, how to enter, and the way in to
 /// the Gallery.
@@ -82,7 +84,11 @@ class _ContestScreenState extends State<ContestScreen> {
     group: group,
     canvases: widget.canvases,
     onSubmitted: (seq) {
-      if (mounted) showNeoSnack(context, 'Đã nộp! Bài của bạn là số $seq.');
+      if (!mounted) return;
+      showNeoSnack(
+        context,
+        AppLocalizations.of(context).contestSubmittedSnack(seq),
+      );
     },
   );
 
@@ -101,13 +107,13 @@ class _ContestScreenState extends State<ContestScreen> {
                   children: [
                     NeoIconButton(
                       icon: Icons.arrow_back,
-                      tooltip: 'Quay lại',
+                      tooltip: AppLocalizations.of(context).backTooltip,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Cuộc thi tuần',
+                        AppLocalizations.of(context).contestTitle,
                         style: TextStyle(
                           fontFamily: NeoFont.display,
                           color: NeoColors.ink,
@@ -137,23 +143,26 @@ class _ContestScreenState extends State<ContestScreen> {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Không tải được cuộc thi.',
+                  Text(
+                    AppLocalizations.of(context).contestLoadFailed,
                     style: TextStyle(
                       color: NeoColors.ink,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  NeoButton(label: 'THỬ LẠI', onPressed: store.refresh),
+                  NeoButton(
+                    label: AppLocalizations.of(context).retry,
+                    onPressed: store.refresh,
+                  ),
                 ],
               ),
       );
     }
     if (overview == null) {
-      return const Center(
+      return Center(
         child: Text(
-          'Chưa có cuộc thi nào.',
+          AppLocalizations.of(context).contestNone,
           style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w700),
         ),
       );
@@ -175,8 +184,8 @@ class _ContestScreenState extends State<ContestScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
               decoration: NeoTheme.panel(color: NeoColors.orange),
-              child: const Text(
-                'Không cập nhật được. Đang hiện dữ liệu cũ.',
+              child: Text(
+                AppLocalizations.of(context).contestStale,
                 style: TextStyle(
                   color: NeoColors.ink,
                   fontWeight: FontWeight.w700,
@@ -230,8 +239,10 @@ class _ContestScreenState extends State<ContestScreen> {
           const SizedBox(height: 4),
           NeoButton(
             label: contest.acceptedCount > 0
-                ? 'VÀO GALLERY (${contest.acceptedCount} BÀI)'
-                : 'VÀO GALLERY',
+                ? AppLocalizations.of(
+                    context,
+                  ).contestEnterGallery(contest.acceptedCount)
+                : AppLocalizations.of(context).contestEnterGalleryEmpty,
             icon: Icons.museum_outlined,
             expand: true,
             variant: NeoButtonVariant.secondary,
@@ -239,7 +250,7 @@ class _ContestScreenState extends State<ContestScreen> {
           ),
           const SizedBox(height: 10),
           NeoButton(
-            label: 'HALL OF FAME',
+            label: AppLocalizations.of(context).hallOfFameButton,
             icon: Icons.emoji_events_outlined,
             expand: true,
             variant: NeoButtonVariant.accent,
@@ -248,7 +259,7 @@ class _ContestScreenState extends State<ContestScreen> {
           if (phase == ContestPhase.finalized) ...[
             const SizedBox(height: 10),
             NeoButton(
-              label: 'XEM KẾT QUẢ',
+              label: AppLocalizations.of(context).contestSeeResults,
               icon: Icons.emoji_events_outlined,
               expand: true,
               variant: NeoButtonVariant.accent,
@@ -258,9 +269,13 @@ class _ContestScreenState extends State<ContestScreen> {
           if (overview.previous != null) ...[
             const SizedBox(height: 10),
             NeoButton(
-              label:
-                  'KẾT QUẢ TUẦN TRƯỚC: ${vi ? overview.previous!.titleVi : overview.previous!.titleEn}'
-                      .toUpperCase(),
+              label: AppLocalizations.of(context)
+                  .contestPrevResults(
+                    vi
+                        ? overview.previous!.titleVi
+                        : overview.previous!.titleEn,
+                  )
+                  .toUpperCase(),
               icon: Icons.history,
               expand: true,
               variant: NeoButtonVariant.outline,
@@ -288,22 +303,34 @@ class _ContestScreenState extends State<ContestScreen> {
         children: [
           Row(
             children: [
-              NeoLabel(phaseLabel(phase), color: phaseColor(phase)),
-              const Spacer(),
-              if (phase == ContestPhase.open || phase == ContestPhase.judging)
-                Text(
-                  '${contest.acceptedCount}/${contest.maxEntries} bài',
-                  style: const TextStyle(
-                    color: NeoColors.ink,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+              NeoLabel(
+                phaseLabel(AppLocalizations.of(context), phase),
+                color: phaseColor(phase),
+              ),
+              Expanded(
+                child:
+                    phase == ContestPhase.open || phase == ContestPhase.judging
+                    ? Text(
+                        AppLocalizations.of(context).contestEntriesCount(
+                          contest.acceptedCount,
+                          contest.maxEntries,
+                        ),
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: NeoColors.ink,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
           ),
           if (left != null && milestone != null) ...[
             const SizedBox(height: 12),
             Text(
-              formatCountdown(left),
+              formatCountdown(AppLocalizations.of(context), left),
               style: const TextStyle(
                 fontFamily: NeoFont.display,
                 color: NeoColors.ink,
@@ -312,7 +339,9 @@ class _ContestScreenState extends State<ContestScreen> {
               ),
             ),
             Text(
-              'cho đến khi ${_until(milestone.phase)}',
+              AppLocalizations.of(
+                context,
+              ).contestCountdownUntil(_until(milestone.phase)),
               style: const TextStyle(
                 color: NeoColors.muted,
                 fontSize: 12,
@@ -321,14 +350,21 @@ class _ContestScreenState extends State<ContestScreen> {
             ),
           ],
           const SizedBox(height: 12),
-          _line('Nhận bài từ', formatMoment(contest.opensAt)),
           _line(
-            'Chấm điểm từ',
-            '${formatMoment(contest.submitClosesAt)} (hoặc khi đủ 100 bài)',
+            AppLocalizations.of(context).contestLineOpens,
+            formatMoment(context, contest.opensAt),
           ),
           _line(
-            'Chốt kết quả',
-            '${formatMoment(contest.endsAt)} (23:59 CN giờ Việt Nam)',
+            AppLocalizations.of(context).contestLineJudging,
+            AppLocalizations.of(context).contestLineJudgingNote(
+              formatMoment(context, contest.submitClosesAt),
+            ),
+          ),
+          _line(
+            AppLocalizations.of(context).contestLineEnds,
+            AppLocalizations.of(
+              context,
+            ).contestLineEndsNote(formatMoment(context, contest.endsAt)),
           ),
         ],
       ),
@@ -336,9 +372,9 @@ class _ContestScreenState extends State<ContestScreen> {
   }
 
   String _until(ContestPhase next) => switch (next) {
-    ContestPhase.open => 'bắt đầu nhận bài',
-    ContestPhase.judging => 'hết giờ nhận bài và bắt đầu chấm',
-    ContestPhase.closed => 'chốt kết quả',
+    ContestPhase.open => AppLocalizations.of(context).contestUntilOpen,
+    ContestPhase.judging => AppLocalizations.of(context).contestUntilJudging,
+    ContestPhase.closed => AppLocalizations.of(context).contestUntilClosed,
     _ => '',
   };
 
@@ -383,7 +419,9 @@ class _ContestScreenState extends State<ContestScreen> {
           margin: const EdgeInsets.only(bottom: 10),
           decoration: NeoTheme.panel(color: NeoColors.teal),
           child: Text(
-            'Nhóm "${mine.groupName}" đã dự thi, bài số ${mine.seq}.',
+            AppLocalizations.of(
+              context,
+            ).contestMyEntry(mine.groupName, mine.seq),
             style: const TextStyle(
               color: NeoColors.ink,
               fontWeight: FontWeight.w900,
@@ -405,17 +443,18 @@ class _ContestScreenState extends State<ContestScreen> {
             children: [
               Text(
                 needed == 0
-                    ? 'Chưa có bài của nhóm khác để chấm.'
-                    : 'Bạn đã chấm $done/$needed bài',
+                    ? AppLocalizations.of(context).contestNothingToRate
+                    : AppLocalizations.of(
+                        context,
+                      ).contestRatedProgress(done, needed),
                 style: const TextStyle(
                   color: NeoColors.ink,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Phiếu của bạn chỉ được tính khi chấm đủ số bài này, '
-                'và tài khoản đã đủ 7 ngày tuổi.',
+              Text(
+                AppLocalizations.of(context).contestVoteRule,
                 style: TextStyle(
                   color: NeoColors.muted,
                   fontSize: 12,
@@ -439,10 +478,10 @@ class _ContestScreenState extends State<ContestScreen> {
     if (overview.ownerGroups.isEmpty) {
       if (phase == ContestPhase.open && mine == null) {
         cards.add(
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 10),
             child: Text(
-              'Chỉ trưởng nhóm mới nộp bài được. Hãy nhờ trưởng nhóm của bạn.',
+              AppLocalizations.of(context).contestOnlyOwner,
               style: TextStyle(
                 color: NeoColors.muted,
                 fontSize: 12,
@@ -478,10 +517,12 @@ class _ContestScreenState extends State<ContestScreen> {
                     ),
                     Text(
                       group.submitted
-                          ? 'Đã nộp bài tuần này'
+                          ? AppLocalizations.of(context).contestGroupSubmitted
                           : phase == ContestPhase.open
-                          ? 'Bạn là trưởng nhóm: nộp canvas để dự thi'
-                          : 'Nhận bài vào ${formatMoment(overview.contest.opensAt)}',
+                          ? AppLocalizations.of(context).contestOwnerHint
+                          : AppLocalizations.of(context).contestOpensAt(
+                              formatMoment(context, overview.contest.opensAt),
+                            ),
                       style: const TextStyle(
                         color: NeoColors.muted,
                         fontSize: 11,
@@ -493,7 +534,7 @@ class _ContestScreenState extends State<ContestScreen> {
               ),
               if (!group.submitted)
                 NeoButton(
-                  label: 'NỘP BÀI',
+                  label: AppLocalizations.of(context).contestSubmitButton,
                   icon: Icons.upload_outlined,
                   onPressed: canSubmit ? () => _submit(group) : null,
                 ),
@@ -511,11 +552,11 @@ class _Rules extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'LUẬT CHƠI',
+          AppLocalizations.of(context).contestRulesTitle,
           style: TextStyle(
             color: NeoColors.muted,
             fontSize: 10,
@@ -524,13 +565,7 @@ class _Rules extends StatelessWidget {
         ),
         SizedBox(height: 6),
         Text(
-          '• Trưởng nhóm nộp canvas của nhóm, mỗi nhóm một bài.\n'
-          '• Chỉ 100 bài nộp nhanh nhất được vào Gallery.\n'
-          '• Thành viên các nhóm có bài dự thi chấm 1–5 sao và bình luận '
-          'bài của nhóm khác.\n'
-          '• Điểm xếp hạng là trung bình có hiệu chỉnh (Bayes), nên một vài '
-          'phiếu 5 sao không đủ để vượt lên.\n'
-          '• Mọi thời điểm tính theo giờ Việt Nam (UTC+7).',
+          AppLocalizations.of(context).contestRules,
           style: TextStyle(
             color: NeoColors.ink,
             fontSize: 12,

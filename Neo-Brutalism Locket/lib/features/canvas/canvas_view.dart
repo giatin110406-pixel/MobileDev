@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/wallet/ink_badge.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The group's canvas: tap a cell to paint it with the chosen colour, pinch
 /// to zoom, drag to move, hold a cell to see who painted it.
@@ -45,7 +46,12 @@ class _CanvasViewState extends State<CanvasView> {
       _told = null;
     } else if (failure != _told && store.status == CanvasStatus.ready) {
       _told = failure;
-      if (mounted) showNeoSnack(context, canvasFailureText(failure));
+      if (mounted) {
+        showNeoSnack(
+          context,
+          canvasFailureText(AppLocalizations.of(context), failure),
+        );
+      }
     }
   }
 
@@ -66,8 +72,12 @@ class _CanvasViewState extends State<CanvasView> {
     showNeoSnack(
       context,
       userId == null
-          ? 'Ô (${x + 1}, ${y + 1}): chưa ai vẽ'
-          : 'Ô (${x + 1}, ${y + 1}): ${name ?? 'một người đã rời nhóm'} vẽ',
+          ? AppLocalizations.of(context).canvasWhoNobody(x + 1, y + 1)
+          : AppLocalizations.of(context).canvasWhoSomeone(
+              x + 1,
+              y + 1,
+              name ?? AppLocalizations.of(context).canvasLeftMember,
+            ),
     );
   }
 
@@ -83,12 +93,12 @@ class _CanvasViewState extends State<CanvasView> {
             );
           case CanvasStatus.error:
             return _Message(
-              text: 'Không tải được canvas.',
-              actionLabel: 'THỬ LẠI',
+              text: AppLocalizations.of(context).canvasLoadFailed,
+              actionLabel: AppLocalizations.of(context).retry,
               onAction: store.reload,
             );
           case CanvasStatus.empty:
-            return const _Message(text: 'Nhóm này chưa có canvas.');
+            return _Message(text: AppLocalizations.of(context).canvasNone);
           case CanvasStatus.ready:
             return _ready(context);
         }
@@ -109,8 +119,8 @@ class _CanvasViewState extends State<CanvasView> {
               Expanded(
                 child: Text(
                   store.ink == 0
-                      ? 'Hết mực: hoàn thành nhiệm vụ để nhận 10 mực.'
-                      : 'Mỗi ô vẽ tốn 1 mực. Giữ một ô để xem ai vẽ.',
+                      ? AppLocalizations.of(context).canvasNoInk
+                      : AppLocalizations.of(context).canvasInkHint,
                   style: const TextStyle(
                     color: NeoColors.muted,
                     fontSize: 11,
@@ -123,12 +133,11 @@ class _CanvasViewState extends State<CanvasView> {
         ),
         if (store.offline)
           _Banner(
-            text: 'Mất kết nối: canvas chỉ để xem.',
-            actionLabel: 'THỬ LẠI',
+            text: AppLocalizations.of(context).canvasOffline,
+            actionLabel: AppLocalizations.of(context).retry,
             onAction: store.reload,
           ),
-        if (locked)
-          const _Banner(text: 'Canvas này đã được lưu trữ (chỉ xem).'),
+        if (locked) _Banner(text: AppLocalizations.of(context).canvasArchived),
         Expanded(
           child: LayoutBuilder(
             builder: (context, box) {
@@ -155,9 +164,9 @@ class _CanvasViewState extends State<CanvasView> {
                       onLongPressStart: (d) =>
                           _whoAt(d.localPosition, side - 4),
                       child: Semantics(
-                        label:
-                            'Canvas ${store.width} nhân ${store.height} ô. '
-                            'Chạm một ô để vẽ.',
+                        label: AppLocalizations.of(
+                          context,
+                        ).canvasSemantics(store.width, store.height),
                         child: CustomPaint(
                           size: Size.square(side - 4),
                           painter: CanvasPainter(store),
@@ -190,7 +199,7 @@ class _CanvasViewState extends State<CanvasView> {
             Semantics(
               button: true,
               selected: i == _selected,
-              label: 'Màu ${i + 1}',
+              label: AppLocalizations.of(context).colorSemantics(i + 1),
               child: GestureDetector(
                 onTap: () => setState(() => _selected = i),
                 child: Container(

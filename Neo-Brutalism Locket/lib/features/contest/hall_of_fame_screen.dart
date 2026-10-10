@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
@@ -10,6 +11,7 @@ import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.
 import 'package:neo_brutalism_locket/features/contest/gallery_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/hall_store.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The wood of a winner's frame: gold, silver or bronze.
 Color hallFrameColor(int? rank) => switch (rank) {
@@ -89,16 +91,16 @@ class _HallOfFameScreenState extends State<HallOfFameScreen> {
                 children: [
                   NeoIconButton(
                     icon: Icons.arrow_back,
-                    tooltip: 'Quay lại',
+                    tooltip: AppLocalizations.of(context).backTooltip,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'GALLERY ROOM',
+                          AppLocalizations.of(context).galleryRoomTitle,
                           style: TextStyle(
                             color: NeoColors.muted,
                             fontSize: 10,
@@ -106,7 +108,7 @@ class _HallOfFameScreenState extends State<HallOfFameScreen> {
                           ),
                         ),
                         Text(
-                          'Hall of Fame',
+                          AppLocalizations.of(context).hallOfFameTitle,
                           style: TextStyle(
                             color: NeoColors.ink,
                             fontSize: 18,
@@ -118,7 +120,9 @@ class _HallOfFameScreenState extends State<HallOfFameScreen> {
                   ),
                   NeoIconButton(
                     icon: _grid ? Icons.museum_outlined : Icons.grid_view,
-                    tooltip: _grid ? 'Xem dạng phòng' : 'Xem dạng lưới',
+                    tooltip: _grid
+                        ? AppLocalizations.of(context).hallViewRoom
+                        : AppLocalizations.of(context).galleryViewGrid,
                     fill: NeoColors.yellow,
                     onPressed: () => setState(() => _grid = !_grid),
                   ),
@@ -143,20 +147,14 @@ class _HallOfFameScreenState extends State<HallOfFameScreen> {
         child: _store.error == null
             ? const CircularProgressIndicator(color: NeoColors.paper)
             : _Notice(
-                text: contestFailureText(_store.error!),
-                actionLabel: 'THỬ LẠI',
+                text: contestFailureText(AppLocalizations.of(context), _store.error!),
+                actionLabel: AppLocalizations.of(context).retry,
                 onAction: _store.load,
               ),
       );
     }
     if (_store.entries.isEmpty) {
-      return const Center(
-        child: _Notice(
-          text:
-              'Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần '
-              'sẽ được treo ở đây mãi mãi.',
-        ),
-      );
+      return Center(child: _Notice(text: AppLocalizations.of(context).hallEmpty));
     }
     if (_grid) {
       return GalleryGrid(entries: _store.entries, onOpen: _open);
@@ -169,7 +167,7 @@ class _HallOfFameScreenState extends State<HallOfFameScreen> {
       layout: (entries) => layoutHall(entries.length),
       style: CorridorStyle.hall,
       decorOf: (entry) => hallDecor(entry, vietnamese: vi),
-      label: 'Phòng Hall of Fame',
+      label: AppLocalizations.of(context).hallSemantics(_store.entries.length),
     );
   }
 }

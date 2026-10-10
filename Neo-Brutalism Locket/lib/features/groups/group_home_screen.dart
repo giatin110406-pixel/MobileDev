@@ -12,6 +12,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// One group: its chat and its canvas, side by side as two tabs.
 class GroupHomeScreen extends StatefulWidget {
@@ -74,7 +75,7 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
-      showNeoSnack(context, 'Bạn không còn ở trong nhóm này.');
+      showNeoSnack(context, AppLocalizations.of(context).gfNotMember);
     });
   }
 
@@ -132,7 +133,7 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
                     children: [
                       NeoIconButton(
                         icon: Icons.arrow_back,
-                        tooltip: 'Quay lại',
+                        tooltip: AppLocalizations.of(context).backTooltip,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 12),
@@ -154,7 +155,9 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
                               ),
                             ),
                             Text(
-                              '${summary.members.length} thành viên',
+                              AppLocalizations.of(
+                                context,
+                              ).memberCount(summary.members.length),
                               style: const TextStyle(
                                 color: NeoColors.muted,
                                 fontSize: 11,
@@ -166,7 +169,9 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
                       ),
                       NeoIconButton(
                         icon: Icons.settings_outlined,
-                        tooltip: 'Cài đặt nhóm',
+                        tooltip: AppLocalizations.of(
+                          context,
+                        ).groupSettingsTooltip,
                         onPressed: () => _openSettings(summary),
                       ),
                     ],
@@ -210,7 +215,7 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
                       CanvasView(
                         store: _canvas,
                         nameOf: (id) => id == widget.myId
-                            ? 'Bạn'
+                            ? AppLocalizations.of(context).youLabel
                             : members[id]?.displayName,
                       ),
                     ],

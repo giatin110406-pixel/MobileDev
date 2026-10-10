@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
@@ -50,9 +52,8 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
   final _confetti = GlobalKey<ConfettiState>();
   late final PhotoRepository _photos =
       widget.photoRepository ?? PhotoRepository();
-  late final TextEditingController _caption = TextEditingController(
-    text: widget.quest.caption,
-  );
+  final TextEditingController _caption = TextEditingController();
+  bool _captionSeeded = false;
   late NeoPhoto _photo = widget.photo;
   double _progress = 0;
   bool _posting = false;
@@ -61,6 +62,17 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
       _photo.status == ProcessingStatus.done &&
       _photo.processedPath != null &&
       _photo.styleType == widget.quest.style;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_captionSeeded) {
+      _captionSeeded = true;
+      _caption.text = widget.quest.captionFor(
+        vietnamese: isVietnamese(context),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -140,9 +152,12 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => _NeoDialog(
-          title: 'KHÔNG ĐĂNG ĐƯỢC',
-          body: Text(error.message, style: _bodyStyle),
-          action: 'ĐÓNG',
+          title: AppLocalizations.of(context).postFailedTitle,
+          body: Text(
+            playerErrorText(AppLocalizations.of(context), error),
+            style: _bodyStyle,
+          ),
+          action: AppLocalizations.of(context).closeAction,
         ),
       );
       if (mounted) Navigator.of(context).pop(false);
@@ -155,23 +170,30 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
     context: context,
     barrierDismissible: false,
     builder: (context) => _NeoDialog(
-      title: 'ĐĂNG THÀNH CÔNG!',
-      action: 'TUYỆT!',
+      title: AppLocalizations.of(context).postSuccessTitle,
+      action: AppLocalizations.of(context).niceAction,
       body: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _rewardRow('Hoàn thành nhiệm vụ', reward.base),
+          _rewardRow(AppLocalizations.of(context).rewardQuest, reward.base),
           if (reward.bonus > 0)
-            _rewardRow('Thưởng streak ${reward.streak} ngày', reward.bonus),
+            _rewardRow(
+              AppLocalizations.of(context).rewardStreak(reward.streak),
+              reward.bonus,
+            ),
           if (reward.ink > 0)
-            _rewardRow('Mực để vẽ canvas nhóm', reward.ink, ink: true),
+            _rewardRow(
+              AppLocalizations.of(context).rewardInk,
+              reward.ink,
+              ink: true,
+            ),
           const SizedBox(height: 14),
           StreakChip(streak: reward.streak),
           const SizedBox(height: 8),
           Text(
             reward.streak == 1
-                ? 'Bắt đầu streak mới. Quay lại vào ngày mai nhé!'
-                : 'Bạn đã hoàn thành ${reward.streak} ngày liên tiếp!',
+                ? AppLocalizations.of(context).streakNew
+                : AppLocalizations.of(context).streakDaysRow(reward.streak),
             textAlign: TextAlign.center,
             style: _bodyStyle,
           ),
@@ -226,7 +248,7 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                   children: [
                     NeoIconButton(
                       icon: Icons.arrow_back,
-                      tooltip: 'Để sau (ảnh vẫn được giữ đến hết hôm nay)',
+                      tooltip: AppLocalizations.of(context).laterTooltip,
                       fill: NeoColors.yellow,
                       onPressed: () => Navigator.of(context).pop(false),
                     ),
@@ -237,8 +259,12 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                         children: [
                           Text(
                             _ready
-                                ? 'CHUẨN RỒI! ${quest.emoji}'
-                                : 'ẢNH ĐẠT YÊU CẦU',
+                                ? AppLocalizations.of(
+                                    context,
+                                  ).photoNailedTitle(quest.emoji)
+                                : AppLocalizations.of(
+                                    context,
+                                  ).photoAcceptedTitle,
                             style: const TextStyle(
                               color: NeoColors.ink,
                               fontSize: 14,
@@ -247,7 +273,11 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            quest.storyTitle.toUpperCase(),
+                            quest
+                                .storyTitleFor(
+                                  vietnamese: isVietnamese(context),
+                                )
+                                .toUpperCase(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -311,23 +341,23 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                   ),
                 ],
                 if (failed) ...[
-                  const Text(
-                    'Chưa biến đổi được ảnh. Ảnh gốc vẫn an toàn.',
+                  Text(
+                    AppLocalizations.of(context).transformFailed,
                     style: _bodyStyle,
                   ),
                   const SizedBox(height: 10),
                   NeoButton(
                     expand: true,
-                    label: 'THỬ LẠI',
+                    label: AppLocalizations.of(context).retry,
                     icon: Icons.refresh,
                     variant: NeoButtonVariant.accent,
                     onPressed: _process,
                   ),
                 ],
                 const SizedBox(height: 14),
-                const Text(
-                  'CHÚ THÍCH',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).captionLabel,
+                  style: const TextStyle(
                     color: NeoColors.muted,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
@@ -348,23 +378,27 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Viết một dòng ngắn...',
+                      hintText: AppLocalizations.of(context).captionHint,
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 NeoButton(
                   expand: true,
-                  label: _posting ? 'ĐANG ĐĂNG...' : 'ĐĂNG LÊN TRANG CÁ NHÂN',
+                  label: _posting
+                      ? AppLocalizations.of(context).postingBusy
+                      : AppLocalizations.of(context).postToProfile,
                   icon: Icons.send_rounded,
                   variant: NeoButtonVariant.primary,
                   onPressed: _ready && !_posting ? _post : null,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Post nhiệm vụ có nhạc ${quest.style == StyleType.vanGogh ? 'giao hưởng' : 'chiptune'} riêng khi bạn bè lướt đến.',
+                  quest.style == StyleType.vanGogh
+                      ? AppLocalizations.of(context).questMusicOrchestral
+                      : AppLocalizations.of(context).questMusicChiptune,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: NeoColors.muted,

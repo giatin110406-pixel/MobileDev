@@ -20,12 +20,14 @@ class ReplyBar extends StatefulWidget {
     super.key,
     required this.onSendText,
     required this.onReact,
-    this.hint = 'Send a message...',
+    this.hint,
   });
 
   final Future<void> Function(String text) onSendText;
   final Future<void> Function(String emoji) onReact;
-  final String hint;
+
+  /// Null: the standard "Send a message..." in the app's language.
+  final String? hint;
 
   @override
   State<ReplyBar> createState() => _ReplyBarState();
@@ -149,7 +151,8 @@ class _ReplyBarState extends State<ReplyBar> {
                 fontWeight: FontWeight.w600,
               ),
               decoration: InputDecoration(
-                hintText: widget.hint,
+                hintText:
+                    widget.hint ?? AppLocalizations.of(context).sendMessageHint,
                 hintStyle: const TextStyle(
                   color: NeoColors.muted,
                   fontSize: 12,

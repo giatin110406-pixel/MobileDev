@@ -8,22 +8,24 @@ import 'package:image_picker/image_picker.dart';
 import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_progress.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
-import 'package:neo_brutalism_locket/features/camera/video_hint.dart';
+import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
-import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
+import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
+import 'package:neo_brutalism_locket/features/quest/quest_check_text.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_verifier.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -139,9 +141,6 @@ class CameraTabState extends State<CameraTab> {
   void initState() {
     super.initState();
     _initializeCamera();
-    VideoHint.shouldShow().then((show) {
-      if (mounted && show) setState(() => _showVideoHint = true);
-    });
   }
 
   @override
@@ -169,7 +168,7 @@ class CameraTabState extends State<CameraTab> {
   void onNewDay() {
     if (_questMode && !_checkingQuest) {
       setState(() => _questModeQuest = null);
-      _notify('ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!');
+      _notify(AppLocalizations.of(context).newDayQuest);
     }
   }
 
@@ -246,18 +245,21 @@ class CameraTabState extends State<CameraTab> {
         side: const BorderSide(color: NeoColors.ink, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      title: const Text(
-        'HẾT LƯỢT HÔM NAY',
-        style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w800),
+      title: Text(
+        AppLocalizations.of(context).outOfTriesTitle,
+        style: const TextStyle(
+          color: NeoColors.ink,
+          fontWeight: FontWeight.w800,
+        ),
       ),
-      content: const Text(
-        'Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.',
-        style: TextStyle(color: NeoColors.ink),
+      content: Text(
+        AppLocalizations.of(context).outOfTriesBody,
+        style: const TextStyle(color: NeoColors.ink),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('OK'),
+          child: Text(AppLocalizations.of(context).ok),
         ),
       ],
     ),
@@ -276,7 +278,7 @@ class CameraTabState extends State<CameraTab> {
     }
     if (widget.player.todayQuest?.id != quest.id) {
       setState(() => _questModeQuest = null);
-      _notify('ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!');
+      _notify(AppLocalizations.of(context).newDayQuest);
       return;
     }
     setState(() {
@@ -291,7 +293,11 @@ class CameraTabState extends State<CameraTab> {
       try {
         match = await widget.questVerifier.check(bytes, quest);
       } on QuestCheckUnavailable catch (error) {
-        _notify('${error.message.toUpperCase()}${_debugSuffix()}');
+        if (mounted) {
+          _notify(
+            '${questCheckText(AppLocalizations.of(context), error).toUpperCase()}${_debugSuffix()}',
+          );
+        }
         return;
       }
       if (!match) {
@@ -300,8 +306,10 @@ class CameraTabState extends State<CameraTab> {
         if (left == 0) {
           if (mounted) setState(() => _questModeQuest = null);
           await _showOutOfTries();
-        } else {
-          _notify('KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ${_debugSuffix()}');
+        } else if (mounted) {
+          _notify(
+            AppLocalizations.of(context).wrongTriesLeft(left, _debugSuffix()),
+          );
         }
         return;
       }
@@ -316,7 +324,11 @@ class CameraTabState extends State<CameraTab> {
       await widget.onQuestPassed(quest, photo, day);
     } on PlayerException catch (error) {
       if (mounted) setState(() => _questModeQuest = null);
-      _notify(error.message.toUpperCase());
+      if (mounted) {
+        _notify(
+          playerErrorText(AppLocalizations.of(context), error).toUpperCase(),
+        );
+      }
     } catch (_) {
       if (mounted) _notify(AppLocalizations.of(context).photoNotSaved);
     } finally {
@@ -390,11 +402,6 @@ class CameraTabState extends State<CameraTab> {
   /// it), otherwise shoots now.
   Future<void> _capture() async {
     if (_recording) return;
-    if (_showVideoHint) {
-      VideoHint.countTap().then((show) {
-        if (mounted && !show) setState(() => _showVideoHint = false);
-      });
-    }
     if (_countdown != null) {
       _cancelCountdown();
       return;
@@ -440,9 +447,6 @@ class CameraTabState extends State<CameraTab> {
     }
   }
 
-  /// Until the person has found "hold to film" on their own.
-  bool _showVideoHint = false;
-
   bool get _canRecord =>
       widget.onVideoRecorded != null &&
       !_questMode &&
@@ -487,8 +491,6 @@ class CameraTabState extends State<CameraTab> {
         return;
       }
       await widget.onVideoRecorded?.call(File(file.path));
-      VideoHint.markFilmed();
-      if (mounted && _showVideoHint) setState(() => _showVideoHint = false);
     } catch (_) {
       _notify(l10n.videoFailed);
     }
@@ -582,7 +584,11 @@ class CameraTabState extends State<CameraTab> {
         clearFailureReason: true,
       );
       if (output.note != null && mounted) {
-        _notify(AppLocalizations.of(context).fallbackUsed(output.note!));
+        _notify(
+          AppLocalizations.of(context).fallbackUsed(
+            fallbackNoteText(AppLocalizations.of(context), output.note!),
+          ),
+        );
       }
       await widget.repository.upsert(complete);
       widget.onPhotoChanged(complete);
@@ -742,7 +748,12 @@ class CameraTabState extends State<CameraTab> {
           _questMode
               ? Center(
                   child: NeoLabel(
-                    'STYLE: ${_questModeQuest!.style.label}',
+                    AppLocalizations.of(context).styleBadge(
+                      styleName(
+                        AppLocalizations.of(context),
+                        _questModeQuest!.style,
+                      ),
+                    ),
                     color: questStyleColor(_questModeQuest!.style),
                     icon: Icons.lock_outline,
                   ),
@@ -808,8 +819,8 @@ class CameraTabState extends State<CameraTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP',
+                Text(
+                  AppLocalizations.of(context).questModeBanner,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -820,7 +831,9 @@ class CameraTabState extends State<CameraTab> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Chụp ${quest.subject}',
+                  AppLocalizations.of(context).shootSubject(
+                    quest.subjectFor(vietnamese: isVietnamese(context)),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -836,7 +849,7 @@ class CameraTabState extends State<CameraTab> {
           const SizedBox(width: 8),
           NeoIconButton(
             icon: Icons.close,
-            tooltip: 'Thoát chế độ nhiệm vụ',
+            tooltip: AppLocalizations.of(context).exitQuestMode,
             fill: NeoColors.surface,
             onPressed: _processing
                 ? null
@@ -905,8 +918,8 @@ class CameraTabState extends State<CameraTab> {
                       color: NeoColors.pink,
                       icon: Icons.circle,
                     )
-                  : const NeoLabel(
-                      'ĐANG KIỂM TRA...',
+                  : NeoLabel(
+                      AppLocalizations.of(context).checkingPhoto,
                       color: NeoColors.yellow,
                       icon: Icons.search,
                     ),
@@ -1116,11 +1129,7 @@ class CameraTabState extends State<CameraTab> {
             ),
           ),
         ),
-        Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [_shutterButton(), if (_hintVisible) _videoHintChip()],
-        ),
+        _shutterButton(),
         Expanded(
           child: Align(
             alignment: Alignment.centerRight,
@@ -1135,19 +1144,6 @@ class CameraTabState extends State<CameraTab> {
       ],
     );
   }
-
-  bool get _hintVisible => _showVideoHint && _canRecord && !_recording;
-
-  Widget _videoHintChip() => Positioned(
-    bottom: 98,
-    child: IgnorePointer(
-      child: NeoLabel(
-        AppLocalizations.of(context).holdToFilm,
-        color: NeoColors.yellow,
-        icon: Icons.videocam_outlined,
-      ),
-    ),
-  );
 
   Widget _shutterButton() => Semantics(
     button: true,
@@ -1174,58 +1170,53 @@ class CameraTabState extends State<CameraTab> {
               _stopVideo();
             }
           : null,
-      child: CustomPaint(
-        foregroundPainter: _canRecord && !_recording
-            ? const DashedRingPainter()
-            : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 100),
-          width: 78,
-          height: 78,
-          padding: const EdgeInsets.all(7),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: 78,
+        height: 78,
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          color: _processing ? NeoColors.switchOff : NeoColors.ink,
+          shape: BoxShape.circle,
+          border: Border.all(color: NeoColors.ink, width: 2),
+          boxShadow: _processing
+              ? const []
+              : const [
+                  BoxShadow(
+                    color: NeoColors.ink,
+                    offset: Offset(4, 4),
+                    blurRadius: 0,
+                  ),
+                ],
+        ),
+        child: DecoratedBox(
           decoration: BoxDecoration(
-            color: _processing ? NeoColors.switchOff : NeoColors.ink,
+            color: _recording ? NeoColors.pink : NeoColors.yellow,
             shape: BoxShape.circle,
-            border: Border.all(color: NeoColors.ink, width: 2),
-            boxShadow: _processing
-                ? const []
-                : const [
-                    BoxShadow(
-                      color: NeoColors.ink,
-                      offset: Offset(4, 4),
-                      blurRadius: 0,
-                    ),
-                  ],
+            border: Border.all(color: NeoColors.surface, width: 2),
           ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _recording ? NeoColors.pink : NeoColors.yellow,
-              shape: BoxShape.circle,
-              border: Border.all(color: NeoColors.surface, width: 2),
-            ),
-            child: _processing
-                ? const Padding(
-                    padding: EdgeInsets.all(17),
+          child: _processing
+              ? const Padding(
+                  padding: EdgeInsets.all(17),
+                  child: CircularProgressIndicator(
+                    color: NeoColors.ink,
+                    strokeWidth: 2,
+                  ),
+                )
+              : _recording
+              ? TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: maxVideoLength,
+                  builder: (context, value, _) => Padding(
+                    padding: const EdgeInsets.all(4),
                     child: CircularProgressIndicator(
+                      value: value,
                       color: NeoColors.ink,
-                      strokeWidth: 2,
+                      strokeWidth: 4,
                     ),
-                  )
-                : _recording
-                ? TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: 1),
-                    duration: maxVideoLength,
-                    builder: (context, value, _) => Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: CircularProgressIndicator(
-                        value: value,
-                        color: NeoColors.ink,
-                        strokeWidth: 4,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
+                  ),
+                )
+              : null,
         ),
       ),
     ),
@@ -1281,7 +1272,7 @@ class CameraTabState extends State<CameraTab> {
                 icon: _draftMode ? Icons.close : Icons.arrow_back,
                 tooltip: _draftMode
                     ? AppLocalizations.of(context).printDiscard
-                    : 'Back to camera',
+                    : AppLocalizations.of(context).backToCameraTooltip,
                 onPressed: _draftMode
                     ? () => _discardPrint(photo)
                     : () => setState(() => _showPrint = false),
@@ -1293,7 +1284,9 @@ class CameraTabState extends State<CameraTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PRINT NO. ${photo.id.substring(photo.id.length - 2)}',
+                      AppLocalizations.of(
+                        context,
+                      ).printNumber(photo.id.substring(photo.id.length - 2)),
                       style: TextStyle(
                         color: NeoColors.ink,
                         fontSize: 14,
@@ -1303,12 +1296,17 @@ class CameraTabState extends State<CameraTab> {
                     SizedBox(height: 3),
                     Text(
                       AppLocalizations.of(context).originalPlusStyle(
-                            photo.styleType?.label ??
+                            (photo.styleType == null
+                                    ? null
+                                    : styleName(
+                                        AppLocalizations.of(context),
+                                        photo.styleType!,
+                                      )) ??
                                 AppLocalizations.of(context).legacyEdit,
                           ) +
                           (photo.status == ProcessingStatus.done &&
                                   photo.styleSource != null
-                              ? ' · ${photo.styleSource!.label}'
+                              ? ' · ${styleSourceLabel(AppLocalizations.of(context), photo.styleSource!)}'
                               : ''),
                       style: TextStyle(
                         color: NeoColors.muted,
@@ -1339,7 +1337,12 @@ class CameraTabState extends State<CameraTab> {
                     originalPath: photo.originalPath,
                     styledPath: styledPath,
                     styleLabel:
-                        photo.styleType?.label ??
+                        (photo.styleType == null
+                            ? null
+                            : styleName(
+                                AppLocalizations.of(context),
+                                photo.styleType!,
+                              )) ??
                         AppLocalizations.of(context).editLabel,
                     showStyled: !_showOriginal,
                     onChanged: (styled) =>
@@ -1380,7 +1383,10 @@ class CameraTabState extends State<CameraTab> {
             children: [
               Expanded(
                 child: Text(
-                  formatPrintDate(photo.createdAt),
+                  formatPrintDate(
+                    AppLocalizations.of(context),
+                    photo.createdAt,
+                  ),
                   style: const TextStyle(
                     color: NeoColors.muted,
                     fontSize: 11,

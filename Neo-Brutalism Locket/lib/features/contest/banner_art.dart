@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Where painting-banners get their picture from, and a memory of what was
 /// already fetched (a profile may show the same banner many times). Make one for
@@ -75,7 +76,7 @@ class ContestBannerView extends StatelessWidget {
         if (art == null) return fallback;
         return Semantics(
           image: true,
-          label: 'Banner tranh của nhóm ${art.groupName}',
+          label: AppLocalizations.of(context).bannerArtSemantics(art.groupName),
           child: RepaintBoundary(
             child: CustomPaint(
               painter: BannerArtPainter(art),

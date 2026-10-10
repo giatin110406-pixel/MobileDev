@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Everything about one group. The owner can edit it, invite, remove people,
 /// hand it over, start a new canvas or close the group. Members see the rules
@@ -64,9 +65,19 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
       if (mounted && done != null) showNeoSnack(context, done);
       return true;
     } on GroupFailure catch (failure) {
-      if (mounted) showNeoSnack(context, groupFailureText(failure));
+      if (mounted) {
+        showNeoSnack(
+          context,
+          groupFailureText(AppLocalizations.of(context), failure),
+        );
+      }
     } on CanvasFailure catch (failure) {
-      if (mounted) showNeoSnack(context, canvasFailureText(failure.kind));
+      if (mounted) {
+        showNeoSnack(
+          context,
+          canvasFailureText(AppLocalizations.of(context), failure.kind),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -93,7 +104,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Huỷ'),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -112,14 +123,14 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
       rules: _rules.text,
       maxMembers: _max,
     ),
-    done: 'Đã lưu.',
+    done: AppLocalizations.of(context).savedSnack,
   );
 
   Future<void> _kick(GroupSummary summary, Person person) async {
     if (!await _confirm(
-      'Mời ${person.displayName} ra khỏi nhóm?',
-      'Họ sẽ không đọc được tin nhắn của nhóm nữa. Những ô họ đã vẽ vẫn giữ nguyên.',
-      'Mời ra',
+      AppLocalizations.of(context).kickTitle(person.displayName),
+      AppLocalizations.of(context).kickBody,
+      AppLocalizations.of(context).kickAction,
     )) {
       return;
     }
@@ -128,24 +139,25 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
 
   Future<void> _transfer(GroupSummary summary, Person person) async {
     if (!await _confirm(
-      'Chuyển quyền trưởng nhóm?',
-      '${person.displayName} sẽ là trưởng nhóm mới. Bạn trở thành thành viên thường.',
-      'Chuyển quyền',
+      AppLocalizations.of(context).transferTitle,
+      AppLocalizations.of(context).transferBody(person.displayName),
+      AppLocalizations.of(context).transferAction,
     )) {
       return;
     }
+    if (!mounted) return;
+    final done = AppLocalizations.of(context).transferDone(person.displayName);
     await _run(
       () => widget.groups.transferOwnership(summary, person),
-      done: '${person.displayName} là trưởng nhóm mới.',
+      done: done,
     );
   }
 
   Future<void> _rollback(Person person) async {
     if (!await _confirm(
-      'Hoàn tác nét vẽ của ${person.displayName}?',
-      'Những ô họ vẽ trong 24 giờ qua và chưa bị ai vẽ đè sẽ quay về màu trước đó. '
-          'Mực của họ không được hoàn lại.',
-      'Hoàn tác',
+      AppLocalizations.of(context).rollbackTitle(person.displayName),
+      AppLocalizations.of(context).rollbackBody,
+      AppLocalizations.of(context).rollbackAction,
     )) {
       return;
     }
@@ -156,14 +168,19 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         DateTime.now().subtract(const Duration(hours: 24)),
       );
     });
-    if (ok && mounted) showNeoSnack(context, 'Đã hoàn tác $restored ô.');
+    if (ok && mounted) {
+      showNeoSnack(
+        context,
+        AppLocalizations.of(context).rollbackDone(restored),
+      );
+    }
   }
 
   Future<void> _leave(GroupSummary summary) async {
     if (!await _confirm(
-      'Rời nhóm ${summary.group.name}?',
-      'Bạn sẽ không đọc được tin nhắn và canvas của nhóm nữa.',
-      'Rời nhóm',
+      AppLocalizations.of(context).leaveTitle(summary.group.name),
+      AppLocalizations.of(context).leaveBody,
+      AppLocalizations.of(context).leaveAction,
     )) {
       return;
     }
@@ -172,9 +189,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
 
   Future<void> _dissolve(GroupSummary summary) async {
     if (!await _confirm(
-      'Giải tán nhóm ${summary.group.name}?',
-      'Cả nhóm sẽ mất quyền xem tin nhắn và canvas. Không thể hoàn tác.',
-      'Giải tán',
+      AppLocalizations.of(context).dissolveTitle(summary.group.name),
+      AppLocalizations.of(context).dissolveBody,
+      AppLocalizations.of(context).dissolveAction,
     )) {
       return;
     }
@@ -196,11 +213,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
       isScrollControlled: true,
       builder: (context) => _FriendPicker(candidates: candidates),
     );
-    if (picked == null) return;
-    await _run(
-      () => widget.groups.invite(summary, picked),
-      done: 'Đã mời ${picked.displayName}.',
-    );
+    if (picked == null || !mounted) return;
+    final done = AppLocalizations.of(context).invitedSnack(picked.displayName);
+    await _run(() => widget.groups.invite(summary, picked), done: done);
   }
 
   Future<void> _newCanvas() async {
@@ -210,18 +225,20 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
     );
     if (choice == null || !mounted) return;
     if (!await _confirm(
-      'Bắt đầu canvas mới?',
-      'Canvas hiện tại được lưu lại và không vẽ thêm được nữa. Canvas mới bắt đầu trống.',
-      'Tạo canvas',
+      AppLocalizations.of(context).newCanvasConfirmTitle,
+      AppLocalizations.of(context).newCanvasConfirmBody,
+      AppLocalizations.of(context).newCanvasConfirmAction,
     )) {
       return;
     }
+    if (!mounted) return;
+    final done = AppLocalizations.of(context).newCanvasDone;
     await _run(
       () => widget.canvas.startNewCanvas(
         size: choice.size,
         paletteId: choice.palette,
       ),
-      done: 'Đã tạo canvas mới.',
+      done: done,
     );
   }
 
@@ -255,14 +272,14 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                   children: [
                     NeoIconButton(
                       icon: Icons.arrow_back,
-                      tooltip: 'Quay lại',
+                      tooltip: AppLocalizations.of(context).backTooltip,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Cài đặt nhóm',
-                        style: TextStyle(
+                        AppLocalizations.of(context).groupSettingsTitle,
+                        style: const TextStyle(
                           fontFamily: NeoFont.display,
                           color: NeoColors.ink,
                           fontSize: 22,
@@ -271,30 +288,36 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                       ),
                     ),
                     if (owner)
-                      const NeoLabel('TRƯỞNG NHÓM', color: NeoColors.yellow),
+                      NeoLabel(
+                        AppLocalizations.of(context).ownerBadge,
+                        color: NeoColors.yellow,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 18),
-                _section('THÔNG TIN'),
+                _section(AppLocalizations.of(context).sectionInfo),
                 if (owner) _editForm(summary) else _readOnlyInfo(summary),
                 const SizedBox(height: 22),
                 _section(
-                  'THÀNH VIÊN (${summary.members.length}/${summary.group.maxMembers})',
+                  AppLocalizations.of(context).sectionMembers(
+                    summary.members.length,
+                    summary.group.maxMembers,
+                  ),
                 ),
                 for (final member in summary.members)
                   _memberTile(summary, member, owner),
                 if (owner) ...[
                   const SizedBox(height: 6),
                   NeoButton(
-                    label: 'MỜI BẠN VÀO NHÓM',
+                    label: AppLocalizations.of(context).inviteToGroup,
                     icon: Icons.person_add_alt_1,
                     expand: true,
                     onPressed: _busy ? null : () => _invite(summary),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Chỉ mời được bạn bè của bạn. Lời mời hết hạn sau 7 ngày.',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).inviteNote,
+                    style: const TextStyle(
                       color: NeoColors.muted,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -303,14 +326,14 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                 ],
                 if (owner && sent.isNotEmpty) ...[
                   const SizedBox(height: 22),
-                  _section('LỜI MỜI ĐANG CHỜ'),
+                  _section(AppLocalizations.of(context).sectionPendingInvites),
                   for (final invite in sent) _inviteTile(invite),
                 ],
                 if (owner) ...[
                   const SizedBox(height: 22),
                   _section('CANVAS'),
                   NeoButton(
-                    label: 'TẠO CANVAS MỚI',
+                    label: AppLocalizations.of(context).newCanvasButton,
                     icon: Icons.grid_on,
                     variant: NeoButtonVariant.secondary,
                     expand: true,
@@ -319,7 +342,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                 ],
                 const SizedBox(height: 28),
                 NeoButton(
-                  label: 'RỜI NHÓM',
+                  label: AppLocalizations.of(context).leaveGroup,
                   icon: Icons.logout,
                   variant: NeoButtonVariant.outline,
                   expand: true,
@@ -328,7 +351,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                 if (owner) ...[
                   const SizedBox(height: 10),
                   NeoButton(
-                    label: 'GIẢI TÁN NHÓM',
+                    label: AppLocalizations.of(context).dissolveGroup,
                     icon: Icons.delete_outline,
                     variant: NeoButtonVariant.accent,
                     expand: true,
@@ -373,7 +396,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         const SizedBox(height: 8),
         Text(
           summary.group.rules.isEmpty
-              ? 'Nhóm chưa đặt quy tắc.'
+              ? AppLocalizations.of(context).rulesNone
               : summary.group.rules,
           style: const TextStyle(
             color: NeoColors.ink,
@@ -395,8 +418,8 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         TextField(
           controller: _name,
           maxLength: 40,
-          decoration: const InputDecoration(
-            labelText: 'Tên nhóm',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context).groupNameLabel,
             border: OutlineInputBorder(),
           ),
         ),
@@ -405,24 +428,24 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
           controller: _rules,
           maxLength: 500,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'Quy tắc',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context).rulesLabel,
             border: OutlineInputBorder(),
           ),
         ),
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
-                'Số thành viên tối đa',
-                style: TextStyle(
+                AppLocalizations.of(context).groupMaxMembers,
+                style: const TextStyle(
                   color: NeoColors.ink,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
             IconButton(
-              tooltip: 'Giảm',
+              tooltip: AppLocalizations.of(context).decrease,
               onPressed: _max > summary.members.length && _max > 2
                   ? () => setState(() => _max--)
                   : null,
@@ -438,7 +461,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
               ),
             ),
             IconButton(
-              tooltip: 'Tăng',
+              tooltip: AppLocalizations.of(context).increase,
               onPressed: _max < 12 ? () => setState(() => _max++) : null,
               icon: const Icon(Icons.add_circle_outline),
             ),
@@ -446,7 +469,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         ),
         const SizedBox(height: 6),
         NeoButton(
-          label: 'LƯU',
+          label: AppLocalizations.of(context).saveButton,
           icon: Icons.check,
           expand: true,
           onPressed: _busy ? null : () => _save(summary),
@@ -481,7 +504,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                   children: [
                     Text(
                       me
-                          ? '${member.person.displayName} (bạn)'
+                          ? AppLocalizations.of(
+                              context,
+                            ).memberYou(member.person.displayName)
                           : member.person.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -492,7 +517,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                       ),
                     ),
                     Text(
-                      member.isOwner ? 'Trưởng nhóm' : member.person.handle,
+                      member.isOwner
+                          ? AppLocalizations.of(context).ownerRole
+                          : member.person.handle,
                       style: const TextStyle(
                         color: NeoColors.muted,
                         fontSize: 11,
@@ -504,7 +531,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
               ),
               if (owner && !me)
                 PopupMenuButton<String>(
-                  tooltip: 'Tuỳ chọn',
+                  tooltip: AppLocalizations.of(context).optionsTooltip,
                   icon: const Icon(Icons.more_vert, color: NeoColors.ink),
                   onSelected: (value) {
                     switch (value) {
@@ -516,18 +543,18 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                         _kick(summary, member.person);
                     }
                   },
-                  itemBuilder: (context) => const [
+                  itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'transfer',
-                      child: Text('Chuyển quyền trưởng nhóm'),
+                      child: Text(AppLocalizations.of(context).menuTransfer),
                     ),
                     PopupMenuItem(
                       value: 'rollback',
-                      child: Text('Hoàn tác nét vẽ (24 giờ)'),
+                      child: Text(AppLocalizations.of(context).menuRollback),
                     ),
                     PopupMenuItem(
                       value: 'kick',
-                      child: Text('Mời ra khỏi nhóm'),
+                      child: Text(AppLocalizations.of(context).menuKick),
                     ),
                   ],
                 ),
@@ -557,7 +584,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
             ),
           ),
           NeoButton(
-            label: 'THU HỒI',
+            label: AppLocalizations.of(context).revokeInvite,
             variant: NeoButtonVariant.outline,
             onPressed: _busy
                 ? null
@@ -587,9 +614,9 @@ class _FriendPicker extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'MỜI BẠN BÈ',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).inviteFriendsTitle,
+            style: const TextStyle(
               fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 18,
@@ -598,11 +625,11 @@ class _FriendPicker extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (candidates.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
-                'Không còn người bạn nào để mời. Chỉ mời được bạn bè của bạn.',
-                style: TextStyle(
+                AppLocalizations.of(context).noOneToInvite,
+                style: const TextStyle(
                   color: NeoColors.muted,
                   fontWeight: FontWeight.w700,
                 ),
@@ -651,17 +678,20 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
         side: const BorderSide(color: NeoColors.ink, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      title: const Text(
-        'Canvas mới',
-        style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w800),
+      title: Text(
+        AppLocalizations.of(context).newCanvasTitle,
+        style: const TextStyle(
+          color: NeoColors.ink,
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Kích thước',
-            style: TextStyle(fontWeight: FontWeight.w800),
+          Text(
+            AppLocalizations.of(context).sizeLabel,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           Wrap(
             spacing: 8,
@@ -675,7 +705,10 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text('Bảng màu', style: TextStyle(fontWeight: FontWeight.w800)),
+          Text(
+            AppLocalizations.of(context).paletteLabel,
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
           Wrap(
             spacing: 8,
             children: [
@@ -696,12 +729,12 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Huỷ'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
         TextButton(
           onPressed: () =>
               Navigator.pop(context, (size: _size, palette: _palette)),
-          child: const Text('Tiếp tục'),
+          child: Text(AppLocalizations.of(context).continueButton),
         ),
       ],
     );

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,9 +58,9 @@ void main() {
         ),
       );
       expect(find.text('The Starry Night'), findsOneWidget);
-      expect(find.textContaining('ĐANG NHẬN BÀI'), findsOneWidget);
+      expect(find.textContaining('OPEN FOR ENTRIES'), findsOneWidget);
       expect(find.text('87/100'), findsOneWidget);
-      expect(find.textContaining('Còn 20:00:00'), findsOneWidget);
+      expect(find.textContaining('20:00:00 left'), findsOneWidget);
       await tester.tap(find.text('The Starry Night'));
       expect(tapped, isTrue);
       await leave(tester);
@@ -72,7 +71,11 @@ void main() {
       final store = ContestStore(FakeContest(), clock: () => t0);
       await store.refresh();
       await tester.pumpWidget(
-        app(Scaffold(body: ContestBanner(store: store, onTap: () {}))),
+        app(
+          Scaffold(
+            body: ContestBanner(store: store, onTap: () {}),
+          ),
+        ),
       );
       expect(find.byType(Text), findsNothing);
       await leave(tester);
@@ -102,19 +105,21 @@ void main() {
       final (repo, store) = await open(
         tester,
         overviewOf(
-          owned: const [OwnedGroup(id: 'g1', name: 'Painters', submitted: false)],
+          owned: const [
+            OwnedGroup(id: 'g1', name: 'Painters', submitted: false),
+          ],
         ),
       );
       expect(find.text('The Starry Night'), findsOneWidget);
       expect(find.text('Painters'), findsOneWidget);
-      await tester.tap(find.text('NỘP BÀI'));
+      await tester.tap(find.text('SUBMIT'));
       await tester.pumpAndSettle();
-      expect(find.text('NỘP BÀI: Painters'), findsOneWidget);
-      expect(find.textContaining('Đã có 5/100 bài'), findsOneWidget);
-      await tester.tap(find.text('NỘP BÀI').last);
+      expect(find.text('SUBMIT: Painters'), findsOneWidget);
+      expect(find.textContaining('5/100 entries so far'), findsOneWidget);
+      await tester.tap(find.text('SUBMIT').last);
       await tester.pumpAndSettle();
       expect(repo.calls, contains('submit:g1:c1'));
-      expect(find.text('Đã nộp! Bài của bạn là số 7.'), findsOneWidget);
+      expect(find.text('Submitted! Your entry is no. 7.'), findsOneWidget);
       await leave(tester);
       store.dispose();
     });
@@ -123,15 +128,17 @@ void main() {
       final (repo, store) = await open(
         tester,
         overviewOf(
-          owned: const [OwnedGroup(id: 'g1', name: 'Painters', submitted: false)],
+          owned: const [
+            OwnedGroup(id: 'g1', name: 'Painters', submitted: false),
+          ],
         ),
       );
       repo.failNext = const ContestFailure(ContestFailureKind.contestFull);
-      await tester.tap(find.text('NỘP BÀI'));
+      await tester.tap(find.text('SUBMIT'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('NỘP BÀI').last);
+      await tester.tap(find.text('SUBMIT').last);
       await tester.pumpAndSettle();
-      expect(find.textContaining('đã đủ 100 bài'), findsOneWidget);
+      expect(find.textContaining('already has 100 entries'), findsOneWidget);
       await leave(tester);
       store.dispose();
     });
@@ -140,8 +147,11 @@ void main() {
       tester,
     ) async {
       final (_, store) = await open(tester, overviewOf());
-      expect(find.textContaining('Chỉ trưởng nhóm mới nộp bài'), findsOneWidget);
-      expect(find.text('NỘP BÀI'), findsNothing);
+      expect(
+        find.textContaining('Only a group owner can submit'),
+        findsOneWidget,
+      );
+      expect(find.text('SUBMIT'), findsNothing);
       await leave(tester);
       store.dispose();
     });
@@ -159,9 +169,9 @@ void main() {
           votesNeeded: 10,
         ),
       );
-      expect(find.text('Bạn đã chấm 3/10 bài'), findsOneWidget);
-      expect(find.textContaining('bài số 4'), findsOneWidget);
-      expect(find.text('VÀO GALLERY (5 BÀI)'), findsOneWidget);
+      expect(find.text('You rated 3/10 entries'), findsOneWidget);
+      expect(find.textContaining('entry no. 4'), findsOneWidget);
+      expect(find.text('ENTER GALLERY (5 ENTRIES)'), findsOneWidget);
       await leave(tester);
       store.dispose();
     });
@@ -179,7 +189,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('XEM KẾT QUẢ'), findsOneWidget);
+      expect(find.text('SEE RESULTS'), findsOneWidget);
       expect(find.textContaining('SUNFLOWERS'), findsOneWidget);
       await leave(tester);
       store.dispose();
@@ -197,11 +207,11 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text('Không tải được cuộc thi.'), findsOneWidget);
+      expect(find.text('Could not load the contest.'), findsOneWidget);
       repo
         ..failOverview = null
         ..current = overviewOf();
-      await tester.tap(find.text('THỬ LẠI'));
+      await tester.tap(find.text('TRY AGAIN'));
       await tester.pump();
       await tester.pump();
       expect(find.text('The Starry Night'), findsOneWidget);
@@ -231,7 +241,7 @@ void main() {
 
     testWidgets('an empty gallery explains itself', (tester) async {
       await open(tester, 0);
-      expect(find.textContaining('Hành lang còn trống'), findsOneWidget);
+      expect(find.textContaining('The corridor is empty'), findsOneWidget);
       await leave(tester);
     });
 
@@ -242,12 +252,12 @@ void main() {
       expect(corridor, findsOneWidget);
       expect(find.text('GALLERY ROOM'), findsOneWidget);
       expect(find.text('1 / 6'), findsOneWidget);
-      await tester.tap(find.byTooltip('Xem dạng lưới'));
+      await tester.tap(find.byTooltip('Switch to grid view'));
       await tester.pump();
       expect(corridor, findsNothing);
       expect(find.text('#1 · Group 1'), findsOneWidget);
       expect(find.text('#6 · Group 6'), findsOneWidget);
-      await tester.tap(find.byTooltip('Xem dạng hành lang'));
+      await tester.tap(find.byTooltip('Switch to corridor view'));
       await tester.pump();
       expect(corridor, findsOneWidget);
       await leave(tester);
@@ -270,7 +280,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsOneWidget);
       expect(find.text('Group 1'), findsWidgets);
-      await tester.tap(find.byTooltip('Quay lại').last);
+      await tester.tap(find.byTooltip('Back').last);
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsNothing);
       await leave(tester);
@@ -279,9 +289,9 @@ void main() {
     testWidgets('walking forward moves the position', (tester) async {
       await open(tester, 40);
       expect(find.text('1 / 20+'), findsOneWidget); // 20 loaded, more to come
-      await tester.tap(find.byTooltip('Đi tới'));
+      await tester.tap(find.byTooltip('Walk forward'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Đi tới'));
+      await tester.tap(find.byTooltip('Walk forward'));
       await tester.pumpAndSettle();
       expect(find.text('1 / 20+'), findsNothing);
       await leave(tester);
@@ -299,7 +309,7 @@ void main() {
       final repo = await open(tester, 45);
       expect(repo.pageLoads, 1);
       for (var i = 0; i < 12; i++) {
-        await tester.tap(find.byTooltip('Đi tới'));
+        await tester.tap(find.byTooltip('Walk forward'));
         await tester.pumpAndSettle();
       }
       expect(repo.pageLoads, greaterThan(1));
@@ -357,35 +367,38 @@ void main() {
 
     testWidgets('a participant rates with the stars', (tester) async {
       final repo = await open(tester);
-      expect(find.textContaining('Chạm vào ngôi sao'), findsOneWidget);
-      await tester.tap(find.byTooltip('Chấm 4 sao'));
+      expect(find.textContaining('Tap a star to rate'), findsOneWidget);
+      await tester.tap(find.byTooltip('Rate 4 stars'));
       await tester.pump();
       expect(repo.calls, contains('vote:e2:4'));
-      expect(find.textContaining('Bạn chấm 4 sao'), findsOneWidget);
+      expect(find.textContaining('You gave 4 stars'), findsOneWidget);
       await leave(tester);
     });
 
     testWidgets('a refused rating goes back and says why', (tester) async {
       final repo = await open(tester);
       repo.failNext = const ContestFailure(ContestFailureKind.notJudging);
-      await tester.tap(find.byTooltip('Chấm 5 sao'));
+      await tester.tap(find.byTooltip('Rate 5 stars'));
       await tester.pump();
       await tester.pump();
-      expect(find.textContaining('Chạm vào ngôi sao'), findsOneWidget);
-      expect(find.text('Hiện chưa phải lúc chấm điểm.'), findsOneWidget);
+      expect(find.textContaining('Tap a star to rate'), findsOneWidget);
+      expect(find.text('It is not judging time yet.'), findsOneWidget);
       await leave(tester);
     });
 
     testWidgets('an outsider can look but not rate or comment', (tester) async {
       await open(tester, participant: false);
-      expect(find.textContaining('Chỉ thành viên các nhóm'), findsOneWidget);
+      expect(
+        find.textContaining('Only members of groups with an entry'),
+        findsOneWidget,
+      );
       expect(find.byType(TextField), findsNothing);
       await leave(tester);
     });
 
     testWidgets('you cannot rate your own group', (tester) async {
       await open(tester, entry: entryOf(2, mine: true));
-      expect(find.textContaining('bài của nhóm bạn'), findsOneWidget);
+      expect(find.textContaining('This is your group'), findsOneWidget);
       await leave(tester);
     });
 
@@ -409,7 +422,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.send));
       await tester.pump();
       await tester.pump();
-      expect(find.textContaining('Chậm lại một chút'), findsOneWidget);
+      expect(find.textContaining('Slow down a little'), findsOneWidget);
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller?.text,
         'again',
@@ -425,9 +438,9 @@ void main() {
         phase: ContestPhase.finalized,
         entry: entryOf(2, rank: 1, score: 3.7222),
       );
-      expect(find.textContaining('HẠNG NHẤT'), findsOneWidget);
+      expect(find.textContaining('1ST PLACE'), findsOneWidget);
       expect(find.textContaining('3.72'), findsOneWidget);
-      expect(find.textContaining('Cuộc thi đã kết thúc'), findsOneWidget);
+      expect(find.textContaining('The contest is over'), findsOneWidget);
       await leave(tester);
     });
 
@@ -447,9 +460,12 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text('HẠNG NHẤT'), findsOneWidget);
-      expect(find.text('HẠNG NHÌ'), findsOneWidget);
-      expect(find.text('HẠNG BA'), findsNothing); // only two had enough ratings
+      expect(find.text('1ST PLACE'), findsOneWidget);
+      expect(find.text('2ND PLACE'), findsOneWidget);
+      expect(
+        find.text('3RD PLACE'),
+        findsNothing,
+      ); // only two had enough ratings
       expect(find.text('Group 2'), findsOneWidget);
       await leave(tester);
     });
@@ -471,7 +487,7 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.textContaining('ít nhất 3 phiếu'), findsOneWidget);
+      expect(find.textContaining('at least 3 votes'), findsOneWidget);
       await leave(tester);
     });
 
@@ -492,7 +508,7 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.textContaining('23:59 Chủ nhật'), findsOneWidget);
+      expect(find.textContaining('23:59 on Sunday'), findsOneWidget);
       await leave(tester);
     });
   });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Your own avatar: your photo (or "YOU") with a frame — the equipped one by
 /// default, or [frameId] to preview another.
@@ -30,7 +31,7 @@ class PlayerAvatar extends StatelessWidget {
     size: size,
     frameId: previewFrame ? frameId : state?.equippedFrame,
     child: AvatarFace(
-      initials: 'YOU',
+      initials: AppLocalizations.of(context).youUpper,
       color: NeoColors.pink,
       imagePath: state?.avatarPath,
       remotePath: remotePath,

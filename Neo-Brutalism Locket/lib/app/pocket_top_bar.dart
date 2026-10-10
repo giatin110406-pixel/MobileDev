@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The app header: logo, name and optional icon buttons on the right.
 class PocketTopBar extends StatelessWidget {
@@ -27,7 +28,7 @@ class PocketTopBar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -41,7 +42,7 @@ class PocketTopBar extends StatelessWidget {
               ),
               SizedBox(height: 3),
               Text(
-                'NEO BRUTAL CAMERA CLUB',
+                AppLocalizations.of(context).appTagline,
                 style: TextStyle(
                   color: NeoColors.muted,
                   fontSize: 9,

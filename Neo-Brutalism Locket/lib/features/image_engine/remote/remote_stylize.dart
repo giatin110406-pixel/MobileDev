@@ -26,7 +26,7 @@ Future<RemoteAttempt> tryRemoteStylize(
   try {
     final config = await store.load();
     if (!config.isConfigured) {
-      return const RemoteAttempt.failure('Laptop server not set up');
+      return const RemoteAttempt.failure('laptop:notSetUp');
     }
     final client = StylizeClient(
       config,
@@ -49,6 +49,6 @@ Future<RemoteAttempt> tryRemoteStylize(
   } on StylizeException catch (error) {
     return RemoteAttempt.failure(error.message);
   } catch (error) {
-    return RemoteAttempt.failure('Laptop error: $error');
+    return RemoteAttempt.failure('laptop:error');
   }
 }

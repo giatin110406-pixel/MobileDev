@@ -532,8 +532,1119 @@
   "settingsFeedback": "FEEL",
   "settingsHaptics": "Vibrate on taps",
   "holdToCompare": "HOLD TO COMPARE",
-  "holdToFilm": "HOLD TO FILM",
   "styleWorking8bit": "GRINDING PIXELS…",
   "styleWorkingVanGogh": "SWIRLING VAN GOGH COLOURS…",
-  "styleWorking": "WORKING…"
+  "styleWorking": "WORKING…",
+  "backTooltip": "Back",
+  "contestTitle": "Weekly contest",
+  "contestLoadFailed": "Could not load the contest.",
+  "contestNone": "No contest yet.",
+  "contestStale": "Could not refresh. Showing old data.",
+  "contestEnterGallery": "ENTER GALLERY ({count} ENTRIES)",
+  "@contestEnterGallery": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "contestSeeResults": "SEE RESULTS",
+  "contestPrevResults": "LAST WEEK'S RESULTS: {title}",
+  "@contestPrevResults": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "contestEntriesCount": "{count}/{max} entries",
+  "@contestEntriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "contestCountdownUntil": "until {event}",
+  "@contestCountdownUntil": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "contestUntilOpen": "submissions open",
+  "contestUntilJudging": "submissions close and judging starts",
+  "contestUntilClosed": "results are final",
+  "contestLineOpens": "Submissions open",
+  "contestLineJudging": "Judging from",
+  "contestLineJudgingNote": "{moment} (or once 100 entries are in)",
+  "@contestLineJudgingNote": {
+    "placeholders": {
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "contestLineEnds": "Results final",
+  "contestLineEndsNote": "{moment} (23:59 Sunday, Vietnam time)",
+  "@contestLineEndsNote": {
+    "placeholders": {
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "contestMyEntry": "Group \"{group}\" has entered, entry no. {seq}.",
+  "@contestMyEntry": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "contestNothingToRate": "No entries from other groups to rate yet.",
+  "contestRatedProgress": "You rated {done}/{needed} entries",
+  "@contestRatedProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "contestVoteRule": "Your votes only count once you have rated this many entries and your account is at least 7 days old.",
+  "contestOnlyOwner": "Only a group owner can submit. Ask your group owner.",
+  "contestGroupSubmitted": "Submitted this week",
+  "contestOwnerHint": "You own this group: submit its canvas to enter",
+  "contestOpensAt": "Submissions open {moment}",
+  "@contestOpensAt": {
+    "placeholders": {
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "contestSubmitButton": "SUBMIT",
+  "contestRulesTitle": "RULES",
+  "contestRules": "• A group owner submits the group canvas, one entry per group.\n• Only the first 100 entries make it into the Gallery.\n• Members of groups with an entry rate other groups 1–5 stars and comment.\n• The ranking score is an adjusted average (Bayes), so a few 5-star votes are not enough to jump ahead.\n• All times are Vietnam time (UTC+7).",
+  "contestSubmittedSnack": "Submitted! Your entry is no. {seq}.",
+  "@contestSubmittedSnack": {
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "cfNotFound": "Entry not found.",
+  "cfNotOwner": "Only a group owner can submit.",
+  "cfNotOpen": "Submissions are not open, or have closed.",
+  "cfNotJudging": "It is not judging time yet.",
+  "cfAlreadySubmitted": "This group already submitted this week.",
+  "cfContestFull": "This week's Gallery already has 100 entries. See you next week!",
+  "cfCanvasTooEmpty": "The canvas is too empty. Draw a bit more, then submit.",
+  "cfGroupTooSmall": "A group needs at least 2 people to enter.",
+  "cfNoCanvas": "The group has no canvas yet.",
+  "cfNotParticipant": "Only members of groups with an entry can rate and comment.",
+  "cfOwnEntry": "You cannot rate your own group's entry.",
+  "cfBadScore": "The score must be 1 to 5 stars.",
+  "cfEmpty": "Write something first.",
+  "cfTooLong": "Comments can be 200 characters at most.",
+  "cfTooFast": "Slow down a little, then comment again.",
+  "cfTooMany": "You have used all your comments for this week.",
+  "cfBlockedWord": "That comment has a word that is not allowed.",
+  "cfTooManyReports": "You have reported a lot today.",
+  "cfNetwork": "Could not connect. Please try again.",
+  "cfUnknown": "Something went wrong. Please try again.",
+  "phaseUpcoming": "COMING UP",
+  "phaseOpen": "OPEN FOR ENTRIES",
+  "phaseJudging": "JUDGING",
+  "phaseClosed": "WRAPPING UP",
+  "phaseFinalized": "RESULTS ARE IN",
+  "countdownDays": "{days}d {clock}",
+  "@countdownDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "milestoneOpen": "until submissions open",
+  "milestoneJudging": "until submissions close, then judging",
+  "milestoneClosed": "until results are final",
+  "contestTimeLeft": "{time} left {event}",
+  "@contestTimeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "contestBannerTitle": "WEEKLY CONTEST · {phase}",
+  "@contestBannerTitle": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "contestBannerSemantics": "Weekly contest {week}: {title}. {phase}",
+  "@contestBannerSemantics": {
+    "placeholders": {
+      "week": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "weekdayMon": "Mon",
+  "weekdayTue": "Tue",
+  "weekdayWed": "Wed",
+  "weekdayThu": "Thu",
+  "weekdayFri": "Fri",
+  "weekdaySat": "Sat",
+  "weekdaySun": "Sun",
+  "entryHeader": "Entry no. {seq} · submitted {moment}",
+  "@entryHeader": {
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "reportEntryTooltip": "Report this entry",
+  "entryArtSemantics": "{group}'s painting, entry no. {seq}",
+  "@entryArtSemantics": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "commentsTitle": "COMMENTS",
+  "commentsTitleCount": "COMMENTS ({count})",
+  "@commentsTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noComments": "No comments yet.",
+  "rank1": "1ST PLACE",
+  "rank2": "2ND PLACE",
+  "rank3": "3RD PLACE",
+  "rankTop3": "TOP 3",
+  "rankScoreLine": "{rank}  ·  {score} points ({votes} votes)",
+  "@rankScoreLine": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      },
+      "votes": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingLoading": "Loading…",
+  "ratingOwnGroup": "This is your group's entry. You cannot rate it.",
+  "ratingNotParticipant": "Only members of groups with an entry can rate.",
+  "ratingContestOver": "The contest is over.",
+  "ratingNotYet": "It is not judging time yet.",
+  "ratingTapStar": "Tap a star to rate. You can change it until the contest ends.",
+  "ratingYouGave": "You gave {stars} stars. Tap to change.",
+  "@ratingYouGave": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "rateStars": "Rate {stars} stars",
+  "@rateStars": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "commentYou": "You",
+  "reportCommentTooltip": "Report this comment",
+  "writeCommentHint": "Write a comment…",
+  "sendTooltip": "Send",
+  "resultsTitle": "Results",
+  "resultsTitleWeek": "Results: {title}",
+  "@resultsTitleWeek": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsLater": "Results come at 23:59 on Sunday (Vietnam time).",
+  "resultsNoEntries": "No entries this week.",
+  "resultsNoRanked": "No entry has enough valid votes to be ranked (at least 3 votes needed).",
+  "resultsEntryCount": "{count} entries · {week}",
+  "@resultsEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsScoreVotes": "{score} · {votes} votes",
+  "@resultsScoreVotes": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "votes": {
+        "type": "int"
+      }
+    }
+  },
+  "submitSheetTitle": "SUBMIT: {group}",
+  "@submitSheetTitle": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasWillBeSubmitted": "The canvas that will be submitted",
+  "noPreview": "No preview available.",
+  "submitSpotsLeft": "{count}/{max} entries so far. Only the first {max} make it into the Gallery.",
+  "@submitSpotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "submitGalleryFull": "The Gallery already has {max} entries.",
+  "@submitGalleryFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "submitSnapshotNote": "The canvas is captured the moment you submit and cannot be changed. Each group submits one entry per week.",
+  "submitting": "SUBMITTING…",
+  "galleryViewCorridor": "Switch to corridor view",
+  "galleryViewGrid": "Switch to grid view",
+  "galleryEmpty": "The corridor is empty. Entries show up here once groups submit.",
+  "galleryLoadMoreFailed": "Could not load more. Pull up to try again.",
+  "galleryEntrySemantics": "Entry no. {seq}, group {group}",
+  "@galleryEntrySemantics": {
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "corridorSemantics": "Exhibition corridor with {count} paintings. Swipe up to walk forward, tap one to view it. Use the grid view button to browse as a list.",
+  "@corridorSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkForward": "Walk forward",
+  "walkBack": "Walk back",
+  "groupsInvitesTitle": "GROUP INVITES",
+  "groupsStale": "Could not refresh. Showing old data.",
+  "groupsLoadFailed": "Could not load your groups.",
+  "groupsEmptyTitle": "No groups yet",
+  "groupsEmptyBody": "Start a group with friends to chat and draw one pixel canvas together. Each daily quest gives you 10 ink, and each cell you draw costs 1 ink.",
+  "groupPreviewNone": "No messages yet",
+  "groupPreviewActivity": "New activity in the group",
+  "memberCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupTileSemantics": "Group {name}, {members}",
+  "@groupTileSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "members": {
+        "type": "String"
+      }
+    }
+  },
+  "groupTileSemanticsUnread": "Group {name}, {members}, {unread} unread",
+  "@groupTileSemanticsUnread": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "members": {
+        "type": "String"
+      },
+      "unread": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersLine": "{count}/{max} members",
+  "@groupMembersLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersLineOwner": "{count}/{max} members · owner",
+  "@groupMembersLineOwner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "groupJoinedSnack": "Joined {name}.",
+  "@groupJoinedSnack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInviteFrom": "{person} invited you to a group",
+  "@groupInviteFrom": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "groupJoin": "JOIN",
+  "groupCreateTitle": "CREATE A NEW GROUP",
+  "groupNameLabel": "Group name",
+  "groupRulesOptional": "Rules (optional)",
+  "groupMaxMembers": "Max members",
+  "decrease": "Decrease",
+  "increase": "Increase",
+  "groupCreating": "CREATING…",
+  "segmentGroups": "GROUPS",
+  "personFriendsNote": "You are friends: each other's new photos show up in the feed.",
+  "personNotFriendsNote": "Being in the same group does not make you friends. Only once you are friends can you see each other's photos.",
+  "personAlreadyFriends": "ALREADY FRIENDS",
+  "personRequestSent": "REQUEST SENT",
+  "personBefriend": "ADD FRIEND",
+  "reportFailed": "Could not send the report. Please try again.",
+  "blockFailed": "Could not block. Please try again.",
+  "sysJoined": "{name} joined the group",
+  "@sysJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysLeft": "{name} left the group",
+  "@sysLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysKicked": "{name} was removed from the group",
+  "@sysKicked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysOwnerChanged": "{name} is the new group owner",
+  "@sysOwnerChanged": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysEntrySubmitted": "The group submitted an entry this week",
+  "gfNotFound": "Could not find that group or person.",
+  "gfNotOwner": "Only the group owner can do this.",
+  "gfNotMember": "You are no longer in this group.",
+  "gfSelf": "You cannot do this to yourself.",
+  "gfEmpty": "Write something first.",
+  "gfTooLong": "That is too long.",
+  "gfBlockedWord": "That has a word that is not allowed. Please keep it friendly so everyone has fun.",
+  "gfBadName": "A group name needs 1 to 40 characters.",
+  "gfBadSize": "Max members must be 2 to 12, and not less than the people already in.",
+  "gfGroupLimit": "You can be in 5 groups at most and own 3 at most.",
+  "gfMemberLimit": "The group is full (pending invites count too).",
+  "gfTheirGroupLimit": "You are in too many groups (5 at most).",
+  "gfAlreadyMember": "That person is already in the group.",
+  "gfAlreadyInvited": "You already invited that person.",
+  "gfExpired": "That invite has expired.",
+  "gfOwnerMustTransfer": "Hand the group over to someone else before you leave.",
+  "gfNetwork": "Could not connect. Please try again.",
+  "gfUnknown": "Something went wrong. Please try again.",
+  "kfInsufficientInk": "Out of ink. Finish the daily quest to get 10 more.",
+  "kfRateLimited": "Draw a bit slower (30 cells a minute at most).",
+  "kfCanvasLocked": "This canvas has been archived.",
+  "kfNotFound": "Could not find the canvas.",
+  "kfNotOwner": "Only the group owner can do this.",
+  "kfBadPixel": "That cell is not valid.",
+  "kfBadSize": "The size or palette is not valid.",
+  "kfNetwork": "Connection lost. The canvas is now view-only.",
+  "groupSettingsTooltip": "Group settings",
+  "youLabel": "You",
+  "someoneLabel": "Someone",
+  "chatLoadFailed": "Could not load the messages.",
+  "chatSayHi": "Say hi to the group 👋",
+  "chatHint": "Message the group…",
+  "groupSettingsTitle": "Group settings",
+  "ownerBadge": "OWNER",
+  "sectionInfo": "INFO",
+  "sectionMembers": "MEMBERS ({count}/{max})",
+  "@sectionMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "inviteToGroup": "INVITE TO GROUP",
+  "inviteNote": "You can only invite your friends. Invites expire after 7 days.",
+  "sectionPendingInvites": "PENDING INVITES",
+  "newCanvasButton": "NEW CANVAS",
+  "leaveGroup": "LEAVE GROUP",
+  "dissolveGroup": "DISBAND GROUP",
+  "rulesNone": "This group has no rules yet.",
+  "rulesLabel": "Rules",
+  "memberYou": "{name} (you)",
+  "@memberYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerRole": "Owner",
+  "optionsTooltip": "Options",
+  "menuTransfer": "Transfer ownership",
+  "menuRollback": "Undo their drawing (24 h)",
+  "menuKick": "Remove from group",
+  "revokeInvite": "REVOKE",
+  "inviteFriendsTitle": "INVITE FRIENDS",
+  "noOneToInvite": "No friends left to invite. You can only invite your friends.",
+  "newCanvasTitle": "New canvas",
+  "sizeLabel": "Size",
+  "paletteLabel": "Palette",
+  "savedSnack": "Saved.",
+  "kickTitle": "Remove {name} from the group?",
+  "@kickTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kickBody": "They will no longer see the group messages. The cells they drew stay.",
+  "kickAction": "Remove",
+  "transferTitle": "Transfer ownership?",
+  "transferBody": "{name} becomes the new owner. You become a regular member.",
+  "@transferBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferAction": "Transfer",
+  "transferDone": "{name} is the new owner.",
+  "@transferDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rollbackTitle": "Undo {name}'s drawing?",
+  "@rollbackTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rollbackBody": "Cells they drew in the last 24 hours that nobody painted over go back to their earlier colour. Their ink is not refunded.",
+  "rollbackAction": "Undo",
+  "rollbackDone": "Undid {count} cells.",
+  "@rollbackDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "leaveTitle": "Leave {group}?",
+  "@leaveTitle": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveBody": "You will no longer see the group messages and canvas.",
+  "leaveAction": "Leave",
+  "dissolveTitle": "Disband {group}?",
+  "@dissolveTitle": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "dissolveBody": "Everyone loses access to the messages and canvas. This cannot be undone.",
+  "dissolveAction": "Disband",
+  "invitedSnack": "Invited {name}.",
+  "@invitedSnack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "newCanvasConfirmTitle": "Start a new canvas?",
+  "newCanvasConfirmBody": "The current canvas is saved and can no longer be drawn on. The new canvas starts empty.",
+  "newCanvasConfirmAction": "Create canvas",
+  "newCanvasDone": "New canvas created.",
+  "avatarTitle": "PROFILE PHOTO",
+  "avatarTakePhoto": "TAKE PHOTO",
+  "avatarFromLibrary": "CHOOSE FROM LIBRARY",
+  "avatarChange": "CHANGE PHOTO",
+  "avatarChangeFailed": "Could not change the profile photo.",
+  "questsDoneTitle": "COMPLETED QUESTS",
+  "questsNoneYet": "No quests yet. Open the SHOOT tab to do today's quest and earn 25 Sunbit!",
+  "postsTitle": "POSTS",
+  "inkAmountSemantics": "{amount} ink",
+  "@inkAmountSemantics": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "inkAmountLabel": "{amount} INK",
+  "@inkAmountLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "streakSemantics": "{streak}-day streak",
+  "@streakSemantics": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "musicOn": "Turn music on",
+  "musicOff": "Turn music off",
+  "photoMissingRetake": "PHOTO NOT FOUND · PLEASE SHOOT AGAIN",
+  "newDayQuest": "NEW DAY · NEW QUEST!",
+  "outOfTriesTitle": "NO TRIES LEFT TODAY",
+  "outOfTriesBody": "Not quite. You used all 3 tries today. A new quest arrives at 00:00.",
+  "wrongTriesLeft": "NOT QUITE · {left} TRIES LEFT{debug}",
+  "@wrongTriesLeft": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "debug": {
+        "type": "String"
+      }
+    }
+  },
+  "questModeBanner": "QUEST MODE · LIVE CAMERA ONLY",
+  "shootSubject": "Shoot {subject}",
+  "@shootSubject": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "exitQuestMode": "Leave quest mode",
+  "checkingPhoto": "CHECKING...",
+  "questSemantics": "Today's quest: shoot {subject}",
+  "@questSemantics": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "questTodayLabel": "TODAY'S QUEST · {style}",
+  "@questTodayLabel": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "qsDone": "DONE ✓",
+  "qsPostNow": "POST NOW",
+  "qsOutOfTries": "NO TRIES",
+  "triesLeft": "{left, plural, =1{1 try left} other{{left} tries left}}",
+  "@triesLeft": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "shootToday": "TODAY, SHOOT",
+  "rewardWithBonus": "+{reward} Sunbit, +{bonus} streak bonus for {streak} days!",
+  "@rewardWithBonus": {
+    "placeholders": {
+      "reward": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardPlain": "+{reward} Sunbit · plus +{bonus} every {every} streak days",
+  "@rewardPlain": {
+    "placeholders": {
+      "reward": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "int"
+      },
+      "every": {
+        "type": "int"
+      }
+    }
+  },
+  "questRulesNote": "Live camera only · 3 tries a day · A new day starts at 00:00 Vietnam time",
+  "startShooting": "START SHOOTING",
+  "postQuestPhoto": "POST QUEST PHOTO",
+  "questCompletedBtn": "COMPLETED ✓",
+  "questNextAt": "A new quest arrives at 00:00. See you then!",
+  "questAllTriesUsed": "You used all 3 tries. A new quest arrives at 00:00.",
+  "postFailedTitle": "COULD NOT POST",
+  "closeAction": "CLOSE",
+  "postSuccessTitle": "POSTED!",
+  "niceAction": "NICE!",
+  "rewardQuest": "Quest completed",
+  "rewardStreak": "{days}-day streak bonus",
+  "@rewardStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardInk": "Ink for the group canvas",
+  "streakNew": "A new streak starts. Come back tomorrow!",
+  "streakDaysRow": "You have completed {days} days in a row!",
+  "@streakDaysRow": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "laterTooltip": "Later (your photo is kept until the end of today)",
+  "photoNailedTitle": "NAILED IT! {emoji}",
+  "@photoNailedTitle": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "photoAcceptedTitle": "PHOTO ACCEPTED",
+  "transformFailed": "Could not transform the photo. The original is safe.",
+  "captionLabel": "CAPTION",
+  "captionHint": "Write a short line...",
+  "postingBusy": "POSTING...",
+  "postToProfile": "POST TO MY PROFILE",
+  "questMusicOrchestral": "Quest posts play their own orchestral music when friends scroll to them.",
+  "questMusicChiptune": "Quest posts play their own chiptune music when friends scroll to them.",
+  "shopDecorate": "DECORATE YOUR PROFILE",
+  "shopInUse": "IN USE",
+  "shopOwned": "OWNED",
+  "shopBuy": "BUY · {price} SUNBIT",
+  "@shopBuy": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "shopShort": "{missing} SUNBIT SHORT",
+  "@shopShort": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "shopEquip": "EQUIP",
+  "shopUnequip": "REMOVE",
+  "shopHintBuy": "Buy once, keep forever.",
+  "shopHintLocked": "Finish the daily quest to earn more Sunbit.",
+  "shopHintEquip": "You own this one. Swapping is free.",
+  "shopHintUnequip": "You are using this one.",
+  "kindFrame": "AVATAR FRAME",
+  "kindBanner": "BANNER",
+  "rarityCommon": "COMMON",
+  "rarityRare": "RARE",
+  "rarityLegendary": "LEGENDARY",
+  "itemFrameSunflower": "Sunflower frame",
+  "itemFrameBrush": "Swirling brush frame",
+  "itemFramePixel": "Pixel border frame",
+  "itemFrameHearts": "8-bit heart frame",
+  "itemFrameGoldCoins": "Gold coin frame",
+  "itemBannerStarryNight": "Starry night banner",
+  "itemBannerWheatField": "Wheat field banner",
+  "itemBannerAlmond": "Almond blossom banner",
+  "itemBannerRetroSky": "Retro game sky banner",
+  "itemBannerSpace": "Pixel space banner",
+  "canvasWhoNobody": "Cell ({x}, {y}): nobody drew here yet",
+  "@canvasWhoNobody": {
+    "placeholders": {
+      "x": {
+        "type": "int"
+      },
+      "y": {
+        "type": "int"
+      }
+    }
+  },
+  "canvasWhoSomeone": "Cell ({x}, {y}): drawn by {name}",
+  "@canvasWhoSomeone": {
+    "placeholders": {
+      "x": {
+        "type": "int"
+      },
+      "y": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasLeftMember": "someone who left the group",
+  "canvasLoadFailed": "Could not load the canvas.",
+  "canvasNone": "This group has no canvas yet.",
+  "canvasNoInk": "Out of ink: finish a quest to get 10 ink.",
+  "canvasInkHint": "Each cell costs 1 ink. Hold a cell to see who drew it.",
+  "canvasOffline": "Connection lost: the canvas is view-only.",
+  "canvasArchived": "This canvas is archived (view-only).",
+  "canvasSemantics": "Canvas {w} by {h} cells. Tap a cell to draw.",
+  "@canvasSemantics": {
+    "placeholders": {
+      "w": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "colorSemantics": "Colour {n}",
+  "@colorSemantics": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "peQuestExpired": "The quest expired at 00:00. Today has a new one!",
+  "peAlreadyDone": "You already finished the quest today.",
+  "peNoAttempts": "No tries left today. Come back tomorrow!",
+  "peNotPassed": "The quest photo has not passed the check.",
+  "peCaptionTooLong": "Captions can be {max} characters at most.",
+  "@peCaptionTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "peAlreadyOwned": "You already own this item.",
+  "peNotOwned": "Buy this item first.",
+  "peItemNotFound": "Could not find that item.",
+  "peNeedsNetwork": "You need a connection to do this.",
+  "peNotEnoughSunbit": "{missing} Sunbit short",
+  "@peNotEnoughSunbit": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "peUnknown": "Something went wrong. Please try again.",
+  "qcNeedsLaptop": "Connect to your laptop to check the photo. Tap the server button (the blue one) to set it up.",
+  "qcLaptopFailed": "Could not check the photo ({detail}). The try is not used up.",
+  "@qcLaptopFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "qcQuestUnknown": "This quest is not in the photo checker yet. Please update the app.",
+  "qcUnreadable": "Could not read the photo. The try is not used up.",
+  "qcDeviceFailed": "Could not check the photo on this phone. The try is not used up.",
+  "seNotSetUp": "The laptop server is not set up",
+  "seTooLong": "The laptop took too long",
+  "seWrongToken": "Wrong server token",
+  "sePhotoTooLarge": "The photo is too large for the server",
+  "seBusy": "The laptop is busy",
+  "seNoAnswer": "The laptop did not answer",
+  "seUnreachable": "The laptop is not reachable",
+  "seFailed": "The laptop could not make the picture",
+  "appTagline": "NEO BRUTAL CAMERA CLUB",
+  "archiveEmptyTitle": "NOTHING\nPRINTED YET",
+  "galleryRoomTitle": "GALLERY ROOM",
+  "styleNone": "NO STYLE",
+  "sourceLaptop": "LAPTOP · DIFFUSION",
+  "sourceOnDevice": "ON DEVICE",
+  "sourceMagenta": "FALLBACK · MAGENTA",
+  "sourceMock": "FALLBACK · MOCK",
+  "sourceOriginal": "ORIGINAL",
+  "timeNow": "now",
+  "timeMinutes": "{n}m",
+  "@timeMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{n}h",
+  "@timeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDays": "{n}d",
+  "@timeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "periodAm": "AM",
+  "periodPm": "PM",
+  "sendMessageHint": "Send a message...",
+  "youUpper": "YOU",
+  "@fallbackNoteLaptop": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lfNeedNameHandle": "Enter a name and handle.",
+  "lfHandleTaken": "That handle is already in your friends.",
+  "lfWriteSomething": "Write a message or attach a print.",
+  "lfFriendMissing": "Friend not found.",
+  "lfWriteReply": "Write a reply or pick an emoji.",
+  "lfPostGone": "That post is gone.",
+  "seStatus": "The server answered {code}",
+  "@seStatus": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "seFailedDetail": "The laptop failed: {detail}",
+  "@seFailedDetail": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "seError": "Laptop error",
+  "seMagentaFailed": "The on-device Van Gogh model failed",
+  "styleBadge": "STYLE: {style}",
+  "@styleBadge": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "sampleCaptionAva": "Morning light looked unreal",
+  "sampleCaptionJules": "Coffee walk after class",
+  "sampleCaptionRemy": "Fresh print from the darkroom",
+  "sampleMessageAva": "Morning light looked unreal today.",
+  "sampleMessageJules": "Coffee walk after class?",
+  "sampleMessageRemy": "That print turned out so good.",
+  "quoteReactedTo": "REACTED TO {whose}",
+  "@quoteReactedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteRepliedTo": "REPLIED TO {whose}",
+  "@quoteRepliedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "sayHelloTo": "SAY HELLO TO {name}",
+  "@sayHelloTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "printNumber": "PRINT NO. {n}",
+  "@printNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "printListTitle": "PRINT {n}",
+  "@printListTitle": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "peSoldOut": "Sold out. See you next week!",
+  "contestEnterGalleryEmpty": "ENTER GALLERY",
+  "hallOfFameButton": "HALL OF FAME",
+  "hallOfFameTitle": "Hall of Fame",
+  "hallViewRoom": "Switch to room view",
+  "hallEmpty": "Nothing has been honoured yet. The top three of every week hang here for good.",
+  "hallSemantics": "Hall of Fame room with {count} paintings. Swipe up to walk forward and tap one to look closer. Use the grid button to browse as a list.",
+  "@hallSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "entrySavePhoto": "SAVE PHOTO",
+  "entrySavedSnack": "Saved to your photo library.",
+  "entrySaveFailed": "Could not save the painting. Please try again.",
+  "entryShareFailed": "Could not share the painting. Please try again.",
+  "entryShareText": "{group}'s painting in the Gallery Room",
+  "@entryShareText": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerArtSemantics": "Painting banner of the group {group}",
+  "@bannerArtSemantics": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "shopPaintingsTab": "PAINTINGS",
+  "shopPaintingsFailed": "Could not load the winning paintings.",
+  "shopPaintingsEmpty": "No painting has won yet. The top three entries of every week are sold here as banners for your profile.",
+  "shopCopiesLeft": "{count} LEFT",
+  "@shopCopiesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopSoldOut": "SOLD OUT",
+  "shopLimitedNote": "Limited edition: {left} of {total} left. 20% of every sale is shared by the group that painted it.",
+  "@shopLimitedNote": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

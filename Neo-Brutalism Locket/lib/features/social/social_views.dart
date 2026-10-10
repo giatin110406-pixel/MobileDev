@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
+import 'package:neo_brutalism_locket/features/social/sample_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
@@ -507,7 +508,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: NeoLabel(
-                      'SAY HELLO TO ${widget.friend.name.toUpperCase()}',
+                      AppLocalizations.of(
+                        context,
+                      ).sayHelloTo(widget.friend.name.toUpperCase()),
                       color: NeoColors.yellow,
                     ),
                   ),
@@ -673,7 +676,7 @@ class _MessageBubble extends StatelessWidget {
                 ],
                 if (message.text.isNotEmpty)
                   Text(
-                    message.text,
+                    sampleText(context, message.text),
                     style: const TextStyle(
                       color: NeoColors.ink,
                       fontSize: 13,
@@ -686,7 +689,7 @@ class _MessageBubble extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '${message.isMine ? 'YOU' : friend.name.toUpperCase()}  /  ${_time(message.createdAt)}',
+            '${message.isMine ? AppLocalizations.of(context).youUpper : friend.name.toUpperCase()}  /  ${_time(message.createdAt)}',
             style: const TextStyle(
               color: NeoColors.muted,
               fontSize: 9,
@@ -720,12 +723,17 @@ class _PostQuote extends StatelessWidget {
     final whose = message.isMine
         ? l10n.whosePost(friend.name.split(' ').first.toUpperCase())
         : l10n.yourPost;
-    final caption = post?.caption ?? message.replyPreview ?? '';
+    final caption = sampleText(
+      context,
+      post?.caption ?? message.replyPreview ?? '',
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          message.reaction != null ? 'REACTED TO $whose' : 'REPLIED TO $whose',
+          message.reaction != null
+              ? l10n.quoteReactedTo(whose)
+              : l10n.quoteRepliedTo(whose),
           style: const TextStyle(
             color: NeoColors.ink,
             fontSize: 9,
@@ -857,7 +865,7 @@ class _FriendTile extends StatelessWidget {
         ? l10n.previewSentPrint
         : (latestMessage!.isMine
               ? l10n.previewYouText(latestMessage!.text)
-              : latestMessage!.text);
+              : sampleText(context, latestMessage!.text));
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1026,7 +1034,7 @@ class _SocialMasthead extends StatelessWidget {
               ),
               SizedBox(height: 3),
               Text(
-                'NEO BRUTAL CAMERA CLUB',
+                AppLocalizations.of(context).appTagline,
                 style: TextStyle(
                   color: NeoColors.muted,
                   fontSize: 9,

@@ -196,7 +196,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(
-        find.textContaining('Chưa có tranh nào được vinh danh'),
+        find.textContaining('Nothing has been honoured yet'),
         findsOneWidget,
       );
       await leave(tester);
@@ -217,7 +217,7 @@ void main() {
           tester.widget<CustomPaint>(corridor).painter as CorridorPainter;
       expect(painter.style, same(CorridorStyle.hall));
       expect(painter.decorOf, isNotNull);
-      await tester.tap(find.byTooltip('Xem dạng lưới'));
+      await tester.tap(find.byTooltip('Switch to grid view'));
       await tester.pump();
       expect(corridor, findsNothing);
       expect(find.text('#1 · Team 1'), findsOneWidget);
@@ -257,8 +257,8 @@ void main() {
       await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
       await tester.pump();
       await tester.pump();
-      expect(find.text('THỬ LẠI'), findsOneWidget);
-      await tester.tap(find.text('THỬ LẠI'));
+      expect(find.text('TRY AGAIN'), findsOneWidget);
+      await tester.tap(find.text('TRY AGAIN'));
       await tester.pump();
       await tester.pump();
       expect(corridor, findsOneWidget);
@@ -294,13 +294,13 @@ void main() {
         );
         await tester.pump();
         await tester.pump();
-        expect(find.text('VÀO GALLERY'), findsOneWidget);
+        expect(find.text('ENTER GALLERY'), findsOneWidget);
         expect(find.text('HALL OF FAME'), findsOneWidget);
-        await tester.tap(find.text('VÀO GALLERY'));
+        await tester.tap(find.text('ENTER GALLERY'));
         await tester.pumpAndSettle();
         expect(find.byType(GalleryScreen), findsOneWidget);
-        expect(find.textContaining('Hành lang còn trống'), findsOneWidget);
-        await tester.tap(find.byTooltip('Quay lại').last);
+        expect(find.textContaining('The corridor is empty'), findsOneWidget);
+        await tester.tap(find.byTooltip('Back').last);
         await tester.pumpAndSettle();
         await tester.tap(find.text('HALL OF FAME'));
         await tester.pumpAndSettle();
@@ -331,27 +331,24 @@ void main() {
       tester,
     ) async {
       final (_, exporter) = await open(tester);
-      await tester.tap(find.text('LƯU ẢNH'));
+      await tester.tap(find.text('SAVE PHOTO'));
       await tester.pump();
       await tester.pump();
       expect(exporter.calls, ['save:e2']);
-      expect(find.text('Đã lưu tranh vào thư viện ảnh.'), findsOneWidget);
-      await tester.tap(find.text('CHIA SẺ'));
+      expect(find.text('Saved to your photo library.'), findsOneWidget);
+      await tester.tap(find.text('SHARE'));
       await tester.pump();
-      expect(
-        exporter.calls.last,
-        startsWith('share:e2:Tranh của nhóm Group 2'),
-      );
+      expect(exporter.calls.last, startsWith("share:e2:Group 2's painting"));
       await leave(tester);
     });
 
     testWidgets('a failure is told, not hidden', (tester) async {
       final (_, exporter) = await open(tester);
       exporter.works = false;
-      await tester.tap(find.text('LƯU ẢNH'));
+      await tester.tap(find.text('SAVE PHOTO'));
       await tester.pump();
       await tester.pump();
-      expect(find.textContaining('Không lưu được'), findsOneWidget);
+      expect(find.textContaining('Could not save'), findsOneWidget);
       await leave(tester);
     });
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/ort_image_encoder.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/quest_preprocess.dart';
@@ -32,9 +31,7 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
     try {
       final labels = await (_labels ??= _loadLabels());
       if (!labels.quests.containsKey(quest.id)) {
-        throw const QuestCheckUnavailable(
-          'Nhiệm vụ này chưa có trong bộ kiểm ảnh. Hãy cập nhật ứng dụng.',
-        );
+        throw const QuestCheckUnavailable(QuestCheckError.questUnknown);
       }
       final planes = await compute(_preprocess, (jpeg, labels.inputSize));
       final embedding = await _encoder.encode(planes, labels.inputSize);
@@ -45,16 +42,12 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
       rethrow;
     } on FormatException catch (error) {
       _remember('unreadable photo: ${error.message}');
-      throw const QuestCheckUnavailable(
-        'Không đọc được ảnh. Lượt thử không bị trừ.',
-      );
+      throw const QuestCheckUnavailable(QuestCheckError.unreadablePhoto);
     } catch (error, stack) {
       _labels = null;
       _remember('$error');
       if (kDebugMode) debugPrint('quest check failed: $error\n$stack');
-      throw const QuestCheckUnavailable(
-        'Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.',
-      );
+      throw const QuestCheckUnavailable(QuestCheckError.deviceFailed);
     }
   }
 

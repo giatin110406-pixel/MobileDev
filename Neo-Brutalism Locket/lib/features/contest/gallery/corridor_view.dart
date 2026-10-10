@@ -9,6 +9,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_painter.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Walk down the Gallery: swipe up to go forward, down to go back (or use the
 /// scroll wheel or the two arrow buttons). The pictures slide past on both
@@ -23,7 +24,7 @@ class CorridorView extends StatefulWidget {
     this.layout,
     this.style = CorridorStyle.gallery,
     this.decorOf,
-    this.label = 'Hành lang triển lãm',
+    this.label,
     super.key,
   });
 
@@ -41,7 +42,7 @@ class CorridorView extends StatefulWidget {
   final FrameDecor Function(GalleryEntry entry)? decorOf;
 
   /// What a screen reader calls this place.
-  final String label;
+  final String? label;
 
   @override
   State<CorridorView> createState() => _CorridorViewState();
@@ -144,9 +145,8 @@ class _CorridorViewState extends State<CorridorView>
     return Semantics(
       container: true,
       label:
-          '${widget.label} với ${widget.entries.length} bức tranh. '
-          'Vuốt lên để đi tới, chạm một bức để xem. '
-          'Dùng nút Xem dạng lưới để duyệt bằng danh sách.',
+          widget.label ??
+          AppLocalizations.of(context).corridorSemantics(widget.entries.length),
       child: LayoutBuilder(
         builder: (context, box) {
           final size = box.biggest;
@@ -199,13 +199,13 @@ class _CorridorViewState extends State<CorridorView>
                   children: [
                     NeoIconButton(
                       icon: Icons.keyboard_arrow_up,
-                      tooltip: 'Đi tới',
+                      tooltip: AppLocalizations.of(context).walkForward,
                       onPressed: () => _walk(4),
                     ),
                     const SizedBox(height: 10),
                     NeoIconButton(
                       icon: Icons.keyboard_arrow_down,
-                      tooltip: 'Đi lui',
+                      tooltip: AppLocalizations.of(context).walkBack,
                       onPressed: () => _walk(-4),
                     ),
                   ],

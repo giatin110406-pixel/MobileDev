@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/posts/interactions_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/post_models.dart';
@@ -16,6 +17,7 @@ import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/social/double_tap_heart.dart';
 import 'package:neo_brutalism_locket/features/social/reply_bar.dart';
+import 'package:neo_brutalism_locket/features/social/sample_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -274,7 +276,9 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   icon: widget.musicMuted
                       ? Icons.volume_off_rounded
                       : Icons.volume_up_rounded,
-                  tooltip: widget.musicMuted ? 'Bật nhạc' : 'Tắt nhạc',
+                  tooltip: widget.musicMuted
+                      ? AppLocalizations.of(context).musicOn
+                      : AppLocalizations.of(context).musicOff,
                   fill: widget.musicMuted
                       ? NeoColors.switchOff
                       : NeoColors.teal,
@@ -418,7 +422,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
               size: 32,
               frameId: widget.self.frameId,
               child: AvatarFace(
-                initials: 'YOU',
+                initials: AppLocalizations.of(context).youUpper,
                 color: NeoColors.pink,
                 imagePath: widget.self.avatarPath,
               ),
@@ -427,7 +431,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           ],
           Flexible(
             child: Text(
-              friend?.name ?? 'You',
+              friend?.name ?? AppLocalizations.of(context).youLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -439,7 +443,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(width: 8),
           Text(
-            timeAgo(time),
+            timeAgo(AppLocalizations.of(context), time),
             style: const TextStyle(
               color: NeoColors.muted,
               fontSize: 13,
@@ -525,7 +529,8 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
               ),
             ),
           ),
-        if (post.caption.isNotEmpty) _caption(post.caption),
+        if (post.caption.isNotEmpty)
+          _caption(sampleText(context, post.caption)),
       ],
     );
   }
@@ -542,7 +547,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
         right: 16,
         child: OverlayLabels(overlay: PostOverlay.fromJson(post.overlay)),
       ),
-      if (post.caption.isNotEmpty) _caption(post.caption),
+      if (post.caption.isNotEmpty) _caption(sampleText(context, post.caption)),
     ],
   );
 
@@ -562,7 +567,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           ),
         ),
       ),
-      if (post.caption.isNotEmpty) _caption(post.caption),
+      if (post.caption.isNotEmpty) _caption(sampleText(context, post.caption)),
     ],
   );
 
@@ -662,7 +667,7 @@ class QuestStyleTag extends StatelessWidget {
   );
 }
 
-/// The quest a post completed, e.g. "🍇 Vườn nho đỏ ở Arles (1888)".
+/// The quest a post completed, e.g. "🍇 The Red Vineyard at Arles (1888)".
 class QuestTitleTag extends StatelessWidget {
   const QuestTitleTag({super.key, required this.quest});
 
@@ -673,7 +678,7 @@ class QuestTitleTag extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: NeoTheme.panel(color: NeoColors.purple, radius: 999),
     child: Text(
-      '${quest.emoji}  ${quest.storyTitle}',
+      '${quest.emoji}  ${quest.storyTitleFor(vietnamese: isVietnamese(context))}',
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
@@ -685,10 +690,10 @@ class QuestTitleTag extends StatelessWidget {
   );
 }
 
-String timeAgo(DateTime time, {DateTime? now}) {
+String timeAgo(AppLocalizations l10n, DateTime time, {DateTime? now}) {
   final elapsed = (now ?? DateTime.now()).difference(time);
-  if (elapsed.inMinutes < 1) return 'now';
-  if (elapsed.inHours < 1) return '${elapsed.inMinutes}m';
-  if (elapsed.inDays < 1) return '${elapsed.inHours}h';
-  return '${elapsed.inDays}d';
+  if (elapsed.inMinutes < 1) return l10n.timeNow;
+  if (elapsed.inHours < 1) return l10n.timeMinutes(elapsed.inMinutes);
+  if (elapsed.inDays < 1) return l10n.timeHours(elapsed.inHours);
+  return l10n.timeDays(elapsed.inDays);
 }

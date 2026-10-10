@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Enter a group's canvas in the contest. Shows what will be sent (a snapshot
 /// taken now by the server), how many places are left, and asks to confirm.
@@ -82,7 +83,7 @@ class _SubmitSheetState extends State<_SubmitSheet> {
     } on ContestFailure catch (failure) {
       if (mounted) {
         setState(() {
-          _error = contestFailureText(failure);
+          _error = contestFailureText(AppLocalizations.of(context), failure);
           _busy = false;
         });
       }
@@ -104,7 +105,9 @@ class _SubmitSheetState extends State<_SubmitSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'NỘP BÀI: ${widget.group.name}',
+                AppLocalizations.of(
+                  context,
+                ).submitSheetTitle(widget.group.name),
                 style: const TextStyle(
                   fontFamily: NeoFont.display,
                   color: NeoColors.ink,
@@ -126,13 +129,15 @@ class _SubmitSheetState extends State<_SubmitSheet> {
                             height: preview.height,
                             palette: preview.palette,
                             pixels: preview.pixels,
-                            semanticLabel: 'Canvas sẽ được nộp',
+                            semanticLabel: AppLocalizations.of(
+                              context,
+                            ).canvasWillBeSubmitted,
                           )
                         : AspectRatio(
                             aspectRatio: 1,
                             child: Center(
                               child: _previewFailed
-                                  ? const Text('Không xem trước được.')
+                                  ? Text(AppLocalizations.of(context).noPreview)
                                   : const CircularProgressIndicator(
                                       color: NeoColors.ink,
                                     ),
@@ -150,9 +155,13 @@ class _SubmitSheetState extends State<_SubmitSheet> {
                   final left = contest.maxEntries - contest.acceptedCount;
                   return Text(
                     left > 0
-                        ? 'Đã có ${contest.acceptedCount}/${contest.maxEntries} bài. '
-                              'Chỉ ${contest.maxEntries} bài nộp nhanh nhất vào Gallery.'
-                        : 'Gallery đã đủ ${contest.maxEntries} bài.',
+                        ? AppLocalizations.of(context).submitSpotsLeft(
+                            contest.acceptedCount,
+                            contest.maxEntries,
+                          )
+                        : AppLocalizations.of(
+                            context,
+                          ).submitGalleryFull(contest.maxEntries),
                     style: const TextStyle(
                       color: NeoColors.ink,
                       fontSize: 13,
@@ -162,9 +171,8 @@ class _SubmitSheetState extends State<_SubmitSheet> {
                 },
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Bản chụp canvas được lấy ngay lúc nộp và không đổi được nữa. '
-                'Mỗi nhóm nộp một bài mỗi tuần.',
+              Text(
+                AppLocalizations.of(context).submitSnapshotNote,
                 style: TextStyle(
                   color: NeoColors.muted,
                   fontSize: 12,
@@ -184,7 +192,9 @@ class _SubmitSheetState extends State<_SubmitSheet> {
               ],
               const SizedBox(height: 14),
               NeoButton(
-                label: _busy ? 'ĐANG NỘP…' : 'NỘP BÀI',
+                label: _busy
+                    ? AppLocalizations.of(context).submitting
+                    : AppLocalizations.of(context).contestSubmitButton,
                 icon: Icons.upload_outlined,
                 expand: true,
                 onPressed: _busy || preview == null ? null : _submit,

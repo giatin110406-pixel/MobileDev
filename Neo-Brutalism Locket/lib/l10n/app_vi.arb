@@ -538,8 +538,1119 @@
   "settingsFeedback": "CẢM GIÁC",
   "settingsHaptics": "Rung khi chạm",
   "holdToCompare": "GIỮ ĐỂ SO SÁNH",
-  "holdToFilm": "GIỮ ĐỂ QUAY",
   "styleWorking8bit": "ĐANG MÀI PIXEL…",
   "styleWorkingVanGogh": "ĐANG QUÉT MÀU VAN GOGH…",
-  "styleWorking": "ĐANG XỬ LÝ…"
+  "styleWorking": "ĐANG XỬ LÝ…",
+  "backTooltip": "Quay lại",
+  "contestTitle": "Cuộc thi tuần",
+  "contestLoadFailed": "Không tải được cuộc thi.",
+  "contestNone": "Chưa có cuộc thi nào.",
+  "contestStale": "Không cập nhật được. Đang hiện dữ liệu cũ.",
+  "contestEnterGallery": "VÀO GALLERY ({count} BÀI)",
+  "@contestEnterGallery": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "contestSeeResults": "XEM KẾT QUẢ",
+  "contestPrevResults": "KẾT QUẢ TUẦN TRƯỚC: {title}",
+  "@contestPrevResults": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "contestEntriesCount": "{count}/{max} bài",
+  "@contestEntriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "contestCountdownUntil": "cho đến khi {event}",
+  "@contestCountdownUntil": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "contestUntilOpen": "bắt đầu nhận bài",
+  "contestUntilJudging": "hết giờ nhận bài và bắt đầu chấm",
+  "contestUntilClosed": "chốt kết quả",
+  "contestLineOpens": "Nhận bài từ",
+  "contestLineJudging": "Chấm điểm từ",
+  "contestLineJudgingNote": "{moment} (hoặc khi đủ 100 bài)",
+  "@contestLineJudgingNote": {
+    "placeholders": {
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "contestLineEnds": "Chốt kết quả",
+  "contestLineEndsNote": "{moment} (23:59 CN giờ Việt Nam)",
+  "@contestLineEndsNote": {
+    "placeholders": {
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "contestMyEntry": "Nhóm \"{group}\" đã dự thi, bài số {seq}.",
+  "@contestMyEntry": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "contestNothingToRate": "Chưa có bài của nhóm khác để chấm.",
+  "contestRatedProgress": "Bạn đã chấm {done}/{needed} bài",
+  "@contestRatedProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "contestVoteRule": "Phiếu của bạn chỉ được tính khi chấm đủ số bài này, và tài khoản đã đủ 7 ngày tuổi.",
+  "contestOnlyOwner": "Chỉ trưởng nhóm mới nộp bài được. Hãy nhờ trưởng nhóm của bạn.",
+  "contestGroupSubmitted": "Đã nộp bài tuần này",
+  "contestOwnerHint": "Bạn là trưởng nhóm: nộp canvas để dự thi",
+  "contestOpensAt": "Nhận bài vào {moment}",
+  "@contestOpensAt": {
+    "placeholders": {
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "contestSubmitButton": "NỘP BÀI",
+  "contestRulesTitle": "LUẬT CHƠI",
+  "contestRules": "• Trưởng nhóm nộp canvas của nhóm, mỗi nhóm một bài.\n• Chỉ 100 bài nộp nhanh nhất được vào Gallery.\n• Thành viên các nhóm có bài dự thi chấm 1–5 sao và bình luận bài của nhóm khác.\n• Điểm xếp hạng là trung bình có hiệu chỉnh (Bayes), nên một vài phiếu 5 sao không đủ để vượt lên.\n• Mọi thời điểm tính theo giờ Việt Nam (UTC+7).",
+  "contestSubmittedSnack": "Đã nộp! Bài của bạn là số {seq}.",
+  "@contestSubmittedSnack": {
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "cfNotFound": "Không tìm thấy bài dự thi.",
+  "cfNotOwner": "Chỉ trưởng nhóm mới nộp bài được.",
+  "cfNotOpen": "Chưa đến giờ nộp bài, hoặc đã hết giờ nộp.",
+  "cfNotJudging": "Hiện chưa phải lúc chấm điểm.",
+  "cfAlreadySubmitted": "Nhóm này đã nộp bài tuần này rồi.",
+  "cfContestFull": "Gallery tuần này đã đủ 100 bài. Hẹn bạn tuần sau!",
+  "cfCanvasTooEmpty": "Canvas còn quá trống. Hãy vẽ thêm rồi nộp nhé.",
+  "cfGroupTooSmall": "Nhóm cần ít nhất 2 người để dự thi.",
+  "cfNoCanvas": "Nhóm chưa có canvas.",
+  "cfNotParticipant": "Chỉ thành viên các nhóm có bài dự thi mới chấm và bình luận được.",
+  "cfOwnEntry": "Bạn không chấm được bài của nhóm mình.",
+  "cfBadScore": "Điểm phải từ 1 đến 5 sao.",
+  "cfEmpty": "Hãy nhập nội dung.",
+  "cfTooLong": "Bình luận tối đa 200 ký tự.",
+  "cfTooFast": "Chậm lại một chút rồi bình luận tiếp nhé.",
+  "cfTooMany": "Bạn đã bình luận đủ số lần cho tuần này.",
+  "cfBlockedWord": "Bình luận có từ không phù hợp.",
+  "cfTooManyReports": "Hôm nay bạn đã báo cáo quá nhiều.",
+  "cfNetwork": "Không kết nối được. Thử lại nhé.",
+  "cfUnknown": "Có lỗi xảy ra. Thử lại nhé.",
+  "phaseUpcoming": "SẮP DIỄN RA",
+  "phaseOpen": "ĐANG NHẬN BÀI",
+  "phaseJudging": "ĐANG CHẤM ĐIỂM",
+  "phaseClosed": "ĐANG TỔNG KẾT",
+  "phaseFinalized": "ĐÃ CÓ KẾT QUẢ",
+  "countdownDays": "{days} ngày {clock}",
+  "@countdownDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "milestoneOpen": "đến giờ nhận bài",
+  "milestoneJudging": "hết giờ nhận bài, bắt đầu chấm",
+  "milestoneClosed": "chốt kết quả",
+  "contestTimeLeft": "Còn {time} {event}",
+  "@contestTimeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "contestBannerTitle": "CUỘC THI TUẦN · {phase}",
+  "@contestBannerTitle": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "contestBannerSemantics": "Cuộc thi tuần {week}: {title}. {phase}",
+  "@contestBannerSemantics": {
+    "placeholders": {
+      "week": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "weekdayMon": "Th 2",
+  "weekdayTue": "Th 3",
+  "weekdayWed": "Th 4",
+  "weekdayThu": "Th 5",
+  "weekdayFri": "Th 6",
+  "weekdaySat": "Th 7",
+  "weekdaySun": "CN",
+  "entryHeader": "Bài số {seq} · nộp {moment}",
+  "@entryHeader": {
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "reportEntryTooltip": "Báo cáo bài này",
+  "entryArtSemantics": "Tranh của nhóm {group}, bài số {seq}",
+  "@entryArtSemantics": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "commentsTitle": "BÌNH LUẬN",
+  "commentsTitleCount": "BÌNH LUẬN ({count})",
+  "@commentsTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noComments": "Chưa có bình luận.",
+  "rank1": "HẠNG NHẤT",
+  "rank2": "HẠNG NHÌ",
+  "rank3": "HẠNG BA",
+  "rankTop3": "TOP 3",
+  "rankScoreLine": "{rank}  ·  {score} điểm ({votes} phiếu)",
+  "@rankScoreLine": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      },
+      "votes": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingLoading": "Đang tải…",
+  "ratingOwnGroup": "Đây là bài của nhóm bạn. Bạn không tự chấm được.",
+  "ratingNotParticipant": "Chỉ thành viên các nhóm có bài dự thi mới chấm điểm được.",
+  "ratingContestOver": "Cuộc thi đã kết thúc.",
+  "ratingNotYet": "Chưa đến giờ chấm điểm.",
+  "ratingTapStar": "Chạm vào ngôi sao để chấm. Bạn sửa được đến hết cuộc thi.",
+  "ratingYouGave": "Bạn chấm {stars} sao. Chạm để đổi.",
+  "@ratingYouGave": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "rateStars": "Chấm {stars} sao",
+  "@rateStars": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "commentYou": "Bạn",
+  "reportCommentTooltip": "Báo cáo bình luận",
+  "writeCommentHint": "Viết bình luận…",
+  "sendTooltip": "Gửi",
+  "resultsTitle": "Kết quả",
+  "resultsTitleWeek": "Kết quả: {title}",
+  "@resultsTitleWeek": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsLater": "Kết quả sẽ có lúc 23:59 Chủ nhật (giờ Việt Nam).",
+  "resultsNoEntries": "Tuần này chưa có bài dự thi nào.",
+  "resultsNoRanked": "Chưa có bài nào đủ số phiếu hợp lệ để xếp hạng (cần ít nhất 3 phiếu).",
+  "resultsEntryCount": "{count} bài dự thi · {week}",
+  "@resultsEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsScoreVotes": "{score} · {votes} phiếu",
+  "@resultsScoreVotes": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "votes": {
+        "type": "int"
+      }
+    }
+  },
+  "submitSheetTitle": "NỘP BÀI: {group}",
+  "@submitSheetTitle": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasWillBeSubmitted": "Canvas sẽ được nộp",
+  "noPreview": "Không xem trước được.",
+  "submitSpotsLeft": "Đã có {count}/{max} bài. Chỉ {max} bài nộp nhanh nhất vào Gallery.",
+  "@submitSpotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "submitGalleryFull": "Gallery đã đủ {max} bài.",
+  "@submitGalleryFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "submitSnapshotNote": "Bản chụp canvas được lấy ngay lúc nộp và không đổi được nữa. Mỗi nhóm nộp một bài mỗi tuần.",
+  "submitting": "ĐANG NỘP…",
+  "galleryViewCorridor": "Xem dạng hành lang",
+  "galleryViewGrid": "Xem dạng lưới",
+  "galleryEmpty": "Hành lang còn trống. Bài dự thi sẽ xuất hiện ở đây khi các nhóm nộp bài.",
+  "galleryLoadMoreFailed": "Không tải thêm được. Kéo lên để thử lại.",
+  "galleryEntrySemantics": "Bài số {seq}, nhóm {group}",
+  "@galleryEntrySemantics": {
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "corridorSemantics": "Hành lang triển lãm với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.",
+  "@corridorSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walkForward": "Đi tới",
+  "walkBack": "Đi lui",
+  "groupsInvitesTitle": "LỜI MỜI VÀO NHÓM",
+  "groupsStale": "Không cập nhật được. Đang hiện dữ liệu cũ.",
+  "groupsLoadFailed": "Không tải được danh sách nhóm.",
+  "groupsEmptyTitle": "Chưa có nhóm nào",
+  "groupsEmptyBody": "Tạo nhóm với bạn bè để cùng nhắn tin và cùng vẽ một canvas pixel. Mỗi nhiệm vụ hằng ngày cho bạn 10 mực, mỗi ô vẽ tốn 1 mực.",
+  "groupPreviewNone": "Chưa có tin nhắn",
+  "groupPreviewActivity": "Hoạt động mới trong nhóm",
+  "memberCount": "{count} thành viên",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupTileSemantics": "Nhóm {name}, {members}",
+  "@groupTileSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "members": {
+        "type": "String"
+      }
+    }
+  },
+  "groupTileSemanticsUnread": "Nhóm {name}, {members}, {unread} tin chưa đọc",
+  "@groupTileSemanticsUnread": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "members": {
+        "type": "String"
+      },
+      "unread": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersLine": "{count}/{max} thành viên",
+  "@groupMembersLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersLineOwner": "{count}/{max} thành viên · trưởng nhóm",
+  "@groupMembersLineOwner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "groupJoinedSnack": "Đã vào nhóm {name}.",
+  "@groupJoinedSnack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInviteFrom": "{person} mời bạn vào nhóm",
+  "@groupInviteFrom": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "groupJoin": "THAM GIA",
+  "groupCreateTitle": "TẠO NHÓM MỚI",
+  "groupNameLabel": "Tên nhóm",
+  "groupRulesOptional": "Quy tắc (không bắt buộc)",
+  "groupMaxMembers": "Số thành viên tối đa",
+  "decrease": "Giảm",
+  "increase": "Tăng",
+  "groupCreating": "ĐANG TẠO…",
+  "segmentGroups": "NHÓM",
+  "personFriendsNote": "Hai bạn là bạn bè: ảnh mới của nhau hiện trong feed.",
+  "personNotFriendsNote": "Ở chung nhóm chưa phải là bạn bè. Chỉ khi kết bạn, hai người mới xem được ảnh của nhau.",
+  "personAlreadyFriends": "ĐÃ LÀ BẠN BÈ",
+  "personRequestSent": "ĐÃ GỬI LỜI MỜI",
+  "personBefriend": "KẾT BẠN",
+  "reportFailed": "Không gửi được báo cáo. Thử lại nhé.",
+  "blockFailed": "Không chặn được. Thử lại nhé.",
+  "sysJoined": "{name} đã tham gia nhóm",
+  "@sysJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysLeft": "{name} đã rời nhóm",
+  "@sysLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysKicked": "{name} đã bị mời ra khỏi nhóm",
+  "@sysKicked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysOwnerChanged": "{name} là trưởng nhóm mới",
+  "@sysOwnerChanged": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysEntrySubmitted": "Nhóm đã nộp bài dự thi tuần này",
+  "gfNotFound": "Không tìm thấy nhóm hoặc người này.",
+  "gfNotOwner": "Chỉ trưởng nhóm mới làm được việc này.",
+  "gfNotMember": "Bạn không còn ở trong nhóm này.",
+  "gfSelf": "Không thể làm việc này với chính mình.",
+  "gfEmpty": "Hãy nhập nội dung.",
+  "gfTooLong": "Nội dung quá dài.",
+  "gfBlockedWord": "Có từ không phù hợp. Hãy dùng ngôn từ lịch sự để mọi người cùng vui nhé.",
+  "gfBadName": "Tên nhóm cần từ 1 đến 40 ký tự.",
+  "gfBadSize": "Số thành viên tối đa phải từ 2 đến 12 và không nhỏ hơn số người hiện có.",
+  "gfGroupLimit": "Bạn chỉ được ở tối đa 5 nhóm và làm trưởng tối đa 3 nhóm.",
+  "gfMemberLimit": "Nhóm đã đủ người (kể cả lời mời đang chờ).",
+  "gfTheirGroupLimit": "Bạn đang ở quá nhiều nhóm (tối đa 5).",
+  "gfAlreadyMember": "Người này đã ở trong nhóm.",
+  "gfAlreadyInvited": "Đã mời người này rồi.",
+  "gfExpired": "Lời mời đã hết hạn.",
+  "gfOwnerMustTransfer": "Hãy chuyển quyền trưởng nhóm cho người khác trước khi rời.",
+  "gfNetwork": "Không kết nối được. Thử lại nhé.",
+  "gfUnknown": "Có lỗi xảy ra. Thử lại nhé.",
+  "kfInsufficientInk": "Hết mực. Hoàn thành nhiệm vụ hằng ngày để nhận thêm 10 mực.",
+  "kfRateLimited": "Vẽ chậm lại một chút (tối đa 30 ô/phút).",
+  "kfCanvasLocked": "Canvas này đã được lưu trữ.",
+  "kfNotFound": "Không tìm thấy canvas.",
+  "kfNotOwner": "Chỉ trưởng nhóm mới làm được việc này.",
+  "kfBadPixel": "Ô vẽ không hợp lệ.",
+  "kfBadSize": "Kích thước hoặc bảng màu không hợp lệ.",
+  "kfNetwork": "Mất kết nối. Canvas chuyển sang chế độ chỉ xem.",
+  "groupSettingsTooltip": "Cài đặt nhóm",
+  "youLabel": "Bạn",
+  "someoneLabel": "Một người",
+  "chatLoadFailed": "Không tải được tin nhắn.",
+  "chatSayHi": "Hãy chào cả nhóm 👋",
+  "chatHint": "Nhắn cho cả nhóm…",
+  "groupSettingsTitle": "Cài đặt nhóm",
+  "ownerBadge": "TRƯỞNG NHÓM",
+  "sectionInfo": "THÔNG TIN",
+  "sectionMembers": "THÀNH VIÊN ({count}/{max})",
+  "@sectionMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "inviteToGroup": "MỜI BẠN VÀO NHÓM",
+  "inviteNote": "Chỉ mời được bạn bè của bạn. Lời mời hết hạn sau 7 ngày.",
+  "sectionPendingInvites": "LỜI MỜI ĐANG CHỜ",
+  "newCanvasButton": "TẠO CANVAS MỚI",
+  "leaveGroup": "RỜI NHÓM",
+  "dissolveGroup": "GIẢI TÁN NHÓM",
+  "rulesNone": "Nhóm chưa đặt quy tắc.",
+  "rulesLabel": "Quy tắc",
+  "memberYou": "{name} (bạn)",
+  "@memberYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerRole": "Trưởng nhóm",
+  "optionsTooltip": "Tuỳ chọn",
+  "menuTransfer": "Chuyển quyền trưởng nhóm",
+  "menuRollback": "Hoàn tác nét vẽ (24 giờ)",
+  "menuKick": "Mời ra khỏi nhóm",
+  "revokeInvite": "THU HỒI",
+  "inviteFriendsTitle": "MỜI BẠN BÈ",
+  "noOneToInvite": "Không còn người bạn nào để mời. Chỉ mời được bạn bè của bạn.",
+  "newCanvasTitle": "Canvas mới",
+  "sizeLabel": "Kích thước",
+  "paletteLabel": "Bảng màu",
+  "savedSnack": "Đã lưu.",
+  "kickTitle": "Mời {name} ra khỏi nhóm?",
+  "@kickTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kickBody": "Họ sẽ không đọc được tin nhắn của nhóm nữa. Những ô họ đã vẽ vẫn giữ nguyên.",
+  "kickAction": "Mời ra",
+  "transferTitle": "Chuyển quyền trưởng nhóm?",
+  "transferBody": "{name} sẽ là trưởng nhóm mới. Bạn trở thành thành viên thường.",
+  "@transferBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferAction": "Chuyển quyền",
+  "transferDone": "{name} là trưởng nhóm mới.",
+  "@transferDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rollbackTitle": "Hoàn tác nét vẽ của {name}?",
+  "@rollbackTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rollbackBody": "Những ô họ vẽ trong 24 giờ qua và chưa bị ai vẽ đè sẽ quay về màu trước đó. Mực của họ không được hoàn lại.",
+  "rollbackAction": "Hoàn tác",
+  "rollbackDone": "Đã hoàn tác {count} ô.",
+  "@rollbackDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "leaveTitle": "Rời nhóm {group}?",
+  "@leaveTitle": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveBody": "Bạn sẽ không đọc được tin nhắn và canvas của nhóm nữa.",
+  "leaveAction": "Rời nhóm",
+  "dissolveTitle": "Giải tán nhóm {group}?",
+  "@dissolveTitle": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "dissolveBody": "Cả nhóm sẽ mất quyền xem tin nhắn và canvas. Không thể hoàn tác.",
+  "dissolveAction": "Giải tán",
+  "invitedSnack": "Đã mời {name}.",
+  "@invitedSnack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "newCanvasConfirmTitle": "Bắt đầu canvas mới?",
+  "newCanvasConfirmBody": "Canvas hiện tại được lưu lại và không vẽ thêm được nữa. Canvas mới bắt đầu trống.",
+  "newCanvasConfirmAction": "Tạo canvas",
+  "newCanvasDone": "Đã tạo canvas mới.",
+  "avatarTitle": "ẢNH ĐẠI DIỆN",
+  "avatarTakePhoto": "CHỤP ẢNH",
+  "avatarFromLibrary": "CHỌN TỪ THƯ VIỆN",
+  "avatarChange": "ĐỔI ẢNH",
+  "avatarChangeFailed": "Không đổi được ảnh đại diện.",
+  "questsDoneTitle": "NHIỆM VỤ ĐÃ HOÀN THÀNH",
+  "questsNoneYet": "Chưa có nhiệm vụ nào. Mở tab CHỤP để làm nhiệm vụ hôm nay và nhận 25 Sunbit!",
+  "postsTitle": "BÀI ĐĂNG",
+  "inkAmountSemantics": "{amount} mực",
+  "@inkAmountSemantics": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "inkAmountLabel": "{amount} MỰC",
+  "@inkAmountLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "streakSemantics": "Streak {streak} ngày",
+  "@streakSemantics": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "musicOn": "Bật nhạc",
+  "musicOff": "Tắt nhạc",
+  "photoMissingRetake": "KHÔNG TÌM THẤY ẢNH · HÃY CHỤP LẠI",
+  "newDayQuest": "ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!",
+  "outOfTriesTitle": "HẾT LƯỢT HÔM NAY",
+  "outOfTriesBody": "Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.",
+  "wrongTriesLeft": "KHÔNG ĐÚNG · CÒN {left} LƯỢT THỬ{debug}",
+  "@wrongTriesLeft": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "debug": {
+        "type": "String"
+      }
+    }
+  },
+  "questModeBanner": "CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP",
+  "shootSubject": "Chụp {subject}",
+  "@shootSubject": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "exitQuestMode": "Thoát chế độ nhiệm vụ",
+  "checkingPhoto": "ĐANG KIỂM TRA...",
+  "questSemantics": "Nhiệm vụ hôm nay: chụp {subject}",
+  "@questSemantics": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "questTodayLabel": "NHIỆM VỤ HÔM NAY · {style}",
+  "@questTodayLabel": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "qsDone": "XONG ✓",
+  "qsPostNow": "ĐĂNG NGAY",
+  "qsOutOfTries": "HẾT LƯỢT",
+  "triesLeft": "Còn {left} lượt thử",
+  "@triesLeft": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "shootToday": "HÔM NAY, HÃY CHỤP",
+  "rewardWithBonus": "+{reward} Sunbit, +{bonus} thưởng streak {streak} ngày!",
+  "@rewardWithBonus": {
+    "placeholders": {
+      "reward": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardPlain": "+{reward} Sunbit · thêm +{bonus} mỗi {every} ngày streak",
+  "@rewardPlain": {
+    "placeholders": {
+      "reward": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "int"
+      },
+      "every": {
+        "type": "int"
+      }
+    }
+  },
+  "questRulesNote": "Chỉ chụp trực tiếp bằng camera · 3 lượt thử mỗi ngày · Ngày mới bắt đầu lúc 00:00 giờ Việt Nam",
+  "startShooting": "BẮT ĐẦU CHỤP",
+  "postQuestPhoto": "ĐĂNG ẢNH NHIỆM VỤ",
+  "questCompletedBtn": "ĐÃ HOÀN THÀNH ✓",
+  "questNextAt": "Nhiệm vụ mới sẽ đến lúc 00:00. Hẹn gặp lại!",
+  "questAllTriesUsed": "Bạn đã dùng hết 3 lượt thử. Nhiệm vụ mới sẽ đến lúc 00:00.",
+  "postFailedTitle": "KHÔNG ĐĂNG ĐƯỢC",
+  "closeAction": "ĐÓNG",
+  "postSuccessTitle": "ĐĂNG THÀNH CÔNG!",
+  "niceAction": "TUYỆT!",
+  "rewardQuest": "Hoàn thành nhiệm vụ",
+  "rewardStreak": "Thưởng streak {days} ngày",
+  "@rewardStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardInk": "Mực để vẽ canvas nhóm",
+  "streakNew": "Bắt đầu streak mới. Quay lại vào ngày mai nhé!",
+  "streakDaysRow": "Bạn đã hoàn thành {days} ngày liên tiếp!",
+  "@streakDaysRow": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "laterTooltip": "Để sau (ảnh vẫn được giữ đến hết hôm nay)",
+  "photoNailedTitle": "CHUẨN RỒI! {emoji}",
+  "@photoNailedTitle": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
+  },
+  "photoAcceptedTitle": "ẢNH ĐẠT YÊU CẦU",
+  "transformFailed": "Chưa biến đổi được ảnh. Ảnh gốc vẫn an toàn.",
+  "captionLabel": "CHÚ THÍCH",
+  "captionHint": "Viết một dòng ngắn...",
+  "postingBusy": "ĐANG ĐĂNG...",
+  "postToProfile": "ĐĂNG LÊN TRANG CÁ NHÂN",
+  "questMusicOrchestral": "Post nhiệm vụ có nhạc giao hưởng riêng khi bạn bè lướt đến.",
+  "questMusicChiptune": "Post nhiệm vụ có nhạc chiptune riêng khi bạn bè lướt đến.",
+  "shopDecorate": "TRANG TRÍ TRANG CÁ NHÂN",
+  "shopInUse": "ĐANG DÙNG",
+  "shopOwned": "ĐÃ CÓ",
+  "shopBuy": "MUA · {price} SUNBIT",
+  "@shopBuy": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "shopShort": "CÒN THIẾU {missing} SUNBIT",
+  "@shopShort": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "shopEquip": "TRANG BỊ",
+  "shopUnequip": "THÁO RA",
+  "shopHintBuy": "Mua một lần, dùng mãi mãi.",
+  "shopHintLocked": "Hoàn thành nhiệm vụ hằng ngày để kiếm thêm Sunbit.",
+  "shopHintEquip": "Bạn đã sở hữu món này. Đổi món miễn phí.",
+  "shopHintUnequip": "Bạn đang dùng món này.",
+  "kindFrame": "KHUNG AVATAR",
+  "kindBanner": "BANNER",
+  "rarityCommon": "THƯỜNG",
+  "rarityRare": "HIẾM",
+  "rarityLegendary": "HUYỀN THOẠI",
+  "itemFrameSunflower": "Khung hoa hướng dương",
+  "itemFrameBrush": "Khung nét cọ xoáy",
+  "itemFramePixel": "Khung viền pixel",
+  "itemFrameHearts": "Khung trái tim 8-bit",
+  "itemFrameGoldCoins": "Khung xu vàng",
+  "itemBannerStarryNight": "Banner đêm đầy sao",
+  "itemBannerWheatField": "Banner đồng lúa mì",
+  "itemBannerAlmond": "Banner hoa hạnh nhân",
+  "itemBannerRetroSky": "Banner bầu trời game cổ",
+  "itemBannerSpace": "Banner không gian pixel",
+  "canvasWhoNobody": "Ô ({x}, {y}): chưa ai vẽ",
+  "@canvasWhoNobody": {
+    "placeholders": {
+      "x": {
+        "type": "int"
+      },
+      "y": {
+        "type": "int"
+      }
+    }
+  },
+  "canvasWhoSomeone": "Ô ({x}, {y}): {name} vẽ",
+  "@canvasWhoSomeone": {
+    "placeholders": {
+      "x": {
+        "type": "int"
+      },
+      "y": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasLeftMember": "một người đã rời nhóm",
+  "canvasLoadFailed": "Không tải được canvas.",
+  "canvasNone": "Nhóm này chưa có canvas.",
+  "canvasNoInk": "Hết mực: hoàn thành nhiệm vụ để nhận 10 mực.",
+  "canvasInkHint": "Mỗi ô vẽ tốn 1 mực. Giữ một ô để xem ai vẽ.",
+  "canvasOffline": "Mất kết nối: canvas chỉ để xem.",
+  "canvasArchived": "Canvas này đã được lưu trữ (chỉ xem).",
+  "canvasSemantics": "Canvas {w} nhân {h} ô. Chạm một ô để vẽ.",
+  "@canvasSemantics": {
+    "placeholders": {
+      "w": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "colorSemantics": "Màu {n}",
+  "@colorSemantics": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "peQuestExpired": "Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!",
+  "peAlreadyDone": "Hôm nay bạn đã hoàn thành nhiệm vụ rồi.",
+  "peNoAttempts": "Hết lượt thử hôm nay. Quay lại vào ngày mai nhé!",
+  "peNotPassed": "Ảnh nhiệm vụ chưa vượt qua bước kiểm tra.",
+  "peCaptionTooLong": "Chú thích tối đa {max} ký tự.",
+  "@peCaptionTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "peAlreadyOwned": "Bạn đã sở hữu món này.",
+  "peNotOwned": "Hãy mua món này trước.",
+  "peItemNotFound": "Không tìm thấy món này.",
+  "peNeedsNetwork": "Cần kết nối mạng để thực hiện việc này.",
+  "peNotEnoughSunbit": "Còn thiếu {missing} Sunbit",
+  "@peNotEnoughSunbit": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "peUnknown": "Có lỗi xảy ra. Thử lại nhé.",
+  "qcNeedsLaptop": "Cần kết nối laptop để kiểm tra ảnh. Bấm nút server (màu xanh) để cài đặt.",
+  "qcLaptopFailed": "Không kiểm tra được ảnh ({detail}). Lượt thử không bị trừ.",
+  "@qcLaptopFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "qcQuestUnknown": "Nhiệm vụ này chưa có trong bộ kiểm ảnh. Hãy cập nhật ứng dụng.",
+  "qcUnreadable": "Không đọc được ảnh. Lượt thử không bị trừ.",
+  "qcDeviceFailed": "Không kiểm tra được ảnh trên máy. Lượt thử không bị trừ.",
+  "seNotSetUp": "Chưa cài đặt máy chủ laptop",
+  "seTooLong": "Laptop xử lý quá lâu",
+  "seWrongToken": "Sai mã token của máy chủ",
+  "sePhotoTooLarge": "Ảnh quá lớn so với máy chủ",
+  "seBusy": "Laptop đang bận",
+  "seNoAnswer": "Laptop không trả lời",
+  "seUnreachable": "Không kết nối được tới laptop",
+  "seFailed": "Laptop không tạo được tranh",
+  "appTagline": "CLB MÁY ẢNH NEO BRUTAL",
+  "archiveEmptyTitle": "CHƯA IN\nẢNH NÀO",
+  "galleryRoomTitle": "PHÒNG TRIỂN LÃM",
+  "styleNone": "KHÔNG HIỆU ỨNG",
+  "sourceLaptop": "LAPTOP · KHUẾCH TÁN",
+  "sourceOnDevice": "TRÊN MÁY",
+  "sourceMagenta": "DỰ PHÒNG · MAGENTA",
+  "sourceMock": "DỰ PHÒNG · THỬ",
+  "sourceOriginal": "ẢNH GỐC",
+  "timeNow": "vừa xong",
+  "timeMinutes": "{n}p",
+  "@timeMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{n}g",
+  "@timeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDays": "{n}n",
+  "@timeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "periodAm": "SA",
+  "periodPm": "CH",
+  "sendMessageHint": "Gửi tin nhắn...",
+  "youUpper": "BẠN",
+  "@fallbackNoteLaptop": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lfNeedNameHandle": "Hãy nhập tên và tên người dùng.",
+  "lfHandleTaken": "Tên người dùng này đã có trong danh sách bạn bè.",
+  "lfWriteSomething": "Hãy viết tin nhắn hoặc đính kèm một ảnh.",
+  "lfFriendMissing": "Không tìm thấy bạn bè.",
+  "lfWriteReply": "Hãy viết trả lời hoặc chọn một emoji.",
+  "lfPostGone": "Bài đăng này không còn nữa.",
+  "seStatus": "Máy chủ trả lời mã {code}",
+  "@seStatus": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "seFailedDetail": "Laptop gặp lỗi: {detail}",
+  "@seFailedDetail": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "seError": "Lỗi laptop",
+  "seMagentaFailed": "Mô hình Van Gogh trên máy bị lỗi",
+  "styleBadge": "PHONG CÁCH: {style}",
+  "@styleBadge": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "sampleCaptionAva": "Ánh nắng sớm đẹp không thật",
+  "sampleCaptionJules": "Đi dạo uống cà phê sau giờ học",
+  "sampleCaptionRemy": "Ảnh mới rửa trong phòng tối",
+  "sampleMessageAva": "Hôm nay ánh nắng sớm đẹp không thật.",
+  "sampleMessageJules": "Đi dạo uống cà phê sau giờ học không?",
+  "sampleMessageRemy": "Tấm ảnh đó lên đẹp quá.",
+  "quoteReactedTo": "ĐÃ THẢ CẢM XÚC VÀO {whose}",
+  "@quoteReactedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteRepliedTo": "ĐÃ TRẢ LỜI {whose}",
+  "@quoteRepliedTo": {
+    "placeholders": {
+      "whose": {
+        "type": "String"
+      }
+    }
+  },
+  "sayHelloTo": "CHÀO {name} ĐI",
+  "@sayHelloTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "printNumber": "ẢNH SỐ {n}",
+  "@printNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "printListTitle": "ẢNH {n}",
+  "@printListTitle": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "peSoldOut": "Món này đã hết bản. Hẹn bạn tuần sau!",
+  "contestEnterGalleryEmpty": "VÀO GALLERY",
+  "hallOfFameButton": "HALL OF FAME",
+  "hallOfFameTitle": "Hall of Fame",
+  "hallViewRoom": "Xem dạng phòng",
+  "hallEmpty": "Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.",
+  "hallSemantics": "Phòng Hall of Fame với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.",
+  "@hallSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "entrySavePhoto": "LƯU ẢNH",
+  "entrySavedSnack": "Đã lưu tranh vào thư viện ảnh.",
+  "entrySaveFailed": "Không lưu được tranh. Thử lại nhé.",
+  "entryShareFailed": "Không chia sẻ được tranh. Thử lại nhé.",
+  "entryShareText": "Tranh của nhóm {group} trong Gallery Room",
+  "@entryShareText": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerArtSemantics": "Banner tranh của nhóm {group}",
+  "@bannerArtSemantics": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "shopPaintingsTab": "TRANH",
+  "shopPaintingsFailed": "Không tải được tranh đoạt giải.",
+  "shopPaintingsEmpty": "Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.",
+  "shopCopiesLeft": "CÒN {count} BẢN",
+  "@shopCopiesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopSoldOut": "HẾT BẢN",
+  "shopLimitedNote": "Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.",
+  "@shopLimitedNote": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -118,22 +118,22 @@ void main() {
       final store = (await tester.runAsync(() => storeFor(FakeShopServer())))!;
       await tester.pumpWidget(app(ShopScreen(store: store)));
       await tester.pump();
-      expect(find.text('TRANH'), findsNothing);
+      expect(find.text('PAINTINGS'), findsNothing);
     });
 
     testWidgets('lists the winning paintings with price and copies left', (
       tester,
     ) async {
       final (contest, _, _) = await open(tester);
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
       expect(contest.shopLoads, 1);
       expect(find.text('Group 1'), findsOneWidget);
       expect(find.text('Group 3'), findsOneWidget);
-      expect(find.text('CÒN 100 BẢN'), findsNWidgets(3));
+      expect(find.text('100 LEFT'), findsNWidgets(3));
       expect(find.text('300'), findsOneWidget);
       expect(find.text('150'), findsOneWidget);
-      expect(find.textContaining('HẠNG NHẤT'), findsOneWidget);
+      expect(find.textContaining('1ST PLACE'), findsOneWidget);
       expect(find.textContaining('Sunflowers'), findsWidgets);
     });
 
@@ -141,21 +141,21 @@ void main() {
       tester,
     ) async {
       await open(tester, items: []);
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining('Chưa có tranh nào đoạt giải'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('No painting has won yet'), findsOneWidget);
     });
 
     testWidgets('a shelf that cannot load offers a retry', (tester) async {
       final (contest, _, _) = await open(tester);
       contest.failNext = const ContestFailure(ContestFailureKind.network);
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
-      expect(find.text('Không tải được tranh đoạt giải.'), findsOneWidget);
-      await tester.tap(find.text('THỬ LẠI'));
+      expect(
+        find.text('Could not load the winning paintings.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('TRY AGAIN'));
       await tester.pumpAndSettle();
       expect(find.text('Group 1'), findsOneWidget);
     });
@@ -164,36 +164,36 @@ void main() {
       tester,
     ) async {
       final (_, server, store) = await open(tester);
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Group 1'));
       await tester.pumpAndSettle();
-      expect(find.text('MUA · 300 SUNBIT'), findsOneWidget);
-      expect(find.textContaining('còn 100 / 100'), findsOneWidget);
-      await tester.tap(find.text('MUA · 300 SUNBIT'));
+      expect(find.text('BUY · 300 SUNBIT'), findsOneWidget);
+      expect(find.textContaining('100 of 100 left'), findsOneWidget);
+      await tester.tap(find.text('BUY · 300 SUNBIT'));
       await tester.pumpAndSettle();
       expect(server.calls, contains('buy_item:contest_e1'));
       expect(store.state!.owns('contest_e1'), isTrue);
       expect(store.balance, 200);
-      expect(find.text('TRANG BỊ'), findsOneWidget);
+      expect(find.text('EQUIP'), findsOneWidget);
 
-      await tester.tap(find.text('TRANG BỊ'));
+      await tester.tap(find.text('EQUIP'));
       await tester.pumpAndSettle();
       expect(server.calls, contains('equip_item:contest_e1'));
       expect(store.state!.equippedBanner, 'contest_e1');
-      expect(find.text('THÁO RA'), findsOneWidget);
+      expect(find.text('REMOVE'), findsOneWidget);
     });
 
     testWidgets('not enough Sunbit: says how much is missing, cannot buy', (
       tester,
     ) async {
       final (_, server, _) = await open(tester, balance: 100);
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Group 2'));
       await tester.pumpAndSettle();
-      expect(find.text('CÒN THIẾU 120 SUNBIT'), findsOneWidget);
-      await tester.tap(find.text('CÒN THIẾU 120 SUNBIT'));
+      expect(find.text('120 SUNBIT SHORT'), findsOneWidget);
+      await tester.tap(find.text('120 SUNBIT SHORT'));
       await tester.pump();
       expect(server.calls.where((c) => c.startsWith('buy_item')), isEmpty);
     });
@@ -205,13 +205,16 @@ void main() {
         tester,
         items: [shopItemOf(1, stock: 100, sold: 100)],
       );
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
-      expect(find.text('HẾT BẢN'), findsOneWidget);
+      expect(find.text('SOLD OUT'), findsOneWidget);
       await tester.tap(find.text('Group 1'));
       await tester.pumpAndSettle();
-      expect(find.text('HẾT BẢN'), findsNWidgets(2)); // the card and the button
-      await tester.tap(find.text('HẾT BẢN').last);
+      expect(
+        find.text('SOLD OUT'),
+        findsNWidgets(2),
+      ); // the card and the button
+      await tester.tap(find.text('SOLD OUT').last);
       await tester.pump();
       expect(server.calls.where((c) => c.startsWith('buy_item')), isEmpty);
     });
@@ -221,15 +224,15 @@ void main() {
     ) async {
       final (_, server, store) = await open(tester);
       server.failBuy = PostgrestException(message: 'sold_out');
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Group 1'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('MUA · 300 SUNBIT'));
+      await tester.tap(find.text('BUY · 300 SUNBIT'));
       await tester.pumpAndSettle();
       expect(store.state!.owns('contest_e1'), isFalse);
       expect(store.balance, 500);
-      expect(find.textContaining('hết bản'), findsOneWidget);
+      expect(find.textContaining('Sold out'), findsOneWidget);
     });
 
     testWidgets('a painting a winner already owns shows as owned', (
@@ -240,14 +243,14 @@ void main() {
         items: [shopItemOf(1, owned: true)],
         owned: const ['contest_e1'],
       );
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
-      expect(find.text('ĐÃ CÓ'), findsOneWidget);
+      expect(find.text('OWNED'), findsOneWidget);
     });
 
     testWidgets('going back to frames leaves the shelf', (tester) async {
       await open(tester);
-      await tester.tap(find.text('TRANH'));
+      await tester.tap(find.text('PAINTINGS'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('BANNER'));
       await tester.pumpAndSettle();

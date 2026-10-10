@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_client.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_server_config.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -59,7 +60,7 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
           ? l10n.serverConnected(health.gpu ?? 'CPU')
           : l10n.serverModelsLoading;
     } on StylizeException catch (error) {
-      message = error.message.toUpperCase();
+      message = stylizeCodeText(l10n, error.message).toUpperCase();
     } catch (_) {
       message = l10n.serverInvalidAddress;
     }

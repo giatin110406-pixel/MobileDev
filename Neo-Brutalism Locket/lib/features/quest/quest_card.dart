@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Where today's quest stands for the user.
 enum QuestStatus { open, passed, outOfTries, done }
@@ -34,7 +36,9 @@ class QuestStrip extends StatelessWidget {
     final status = questStatusOf(store);
     return Semantics(
       button: true,
-      label: 'Nhiệm vụ hôm nay: chụp ${quest.subject}',
+      label: AppLocalizations.of(
+        context,
+      ).questSemantics(quest.subjectFor(vietnamese: isVietnamese(context))),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
@@ -72,7 +76,9 @@ class QuestStrip extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'NHIỆM VỤ HÔM NAY · ${quest.style.label}',
+                      AppLocalizations.of(
+                        context,
+                      ).questTodayLabel(quest.style.label),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -83,7 +89,9 @@ class QuestStrip extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Chụp ${quest.subject}',
+                      AppLocalizations.of(context).shootSubject(
+                        quest.subjectFor(vietnamese: isVietnamese(context)),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -97,16 +105,16 @@ class QuestStrip extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               switch (status) {
-                QuestStatus.done => const NeoLabel(
-                  'XONG ✓',
+                QuestStatus.done => NeoLabel(
+                  AppLocalizations.of(context).qsDone,
                   color: NeoColors.surface,
                 ),
-                QuestStatus.passed => const NeoLabel(
-                  'ĐĂNG NGAY',
+                QuestStatus.passed => NeoLabel(
+                  AppLocalizations.of(context).qsPostNow,
                   color: NeoColors.pink,
                 ),
-                QuestStatus.outOfTries => const NeoLabel(
-                  'HẾT LƯỢT',
+                QuestStatus.outOfTries => NeoLabel(
+                  AppLocalizations.of(context).qsOutOfTries,
                   color: NeoColors.switchOff,
                 ),
                 QuestStatus.open => AttemptDots(left: store.attemptsLeft),
@@ -127,7 +135,7 @@ class AttemptDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Còn $left lượt thử',
+    label: AppLocalizations.of(context).triesLeft(left),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -213,9 +221,9 @@ class _QuestSheet extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              const Text(
-                'HÔM NAY, HÃY CHỤP',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).shootToday,
+                style: const TextStyle(
                   color: NeoColors.muted,
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
@@ -223,7 +231,7 @@ class _QuestSheet extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${quest.emoji} ${_capitalized(quest.subject)}',
+                '${quest.emoji} ${_capitalized(quest.subjectFor(vietnamese: isVietnamese(context)))}',
                 style: const TextStyle(
                   fontFamily: NeoFont.display,
                   color: NeoColors.ink,
@@ -242,7 +250,7 @@ class _QuestSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      quest.storyTitle,
+                      quest.storyTitleFor(vietnamese: isVietnamese(context)),
                       style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 15,
@@ -251,7 +259,7 @@ class _QuestSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      quest.story,
+                      quest.storyFor(vietnamese: isVietnamese(context)),
                       style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 14,
@@ -270,8 +278,16 @@ class _QuestSheet extends StatelessWidget {
                   Expanded(
                     child: Text(
                       bonus > 0
-                          ? '+${QuestRules.questReward} Sunbit, +$bonus thưởng streak $nextStreak ngày!'
-                          : '+${QuestRules.questReward} Sunbit · thêm +${QuestRules.streakBonus} mỗi ${QuestRules.streakBonusEvery} ngày streak',
+                          ? AppLocalizations.of(context).rewardWithBonus(
+                              QuestRules.questReward,
+                              bonus,
+                              nextStreak,
+                            )
+                          : AppLocalizations.of(context).rewardPlain(
+                              QuestRules.questReward,
+                              QuestRules.streakBonus,
+                              QuestRules.streakBonusEvery,
+                            ),
                       style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 12,
@@ -282,9 +298,9 @@ class _QuestSheet extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Chỉ chụp trực tiếp bằng camera · 3 lượt thử mỗi ngày · Ngày mới bắt đầu lúc 00:00 giờ Việt Nam',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).questRulesNote,
+                style: const TextStyle(
                   color: NeoColors.muted,
                   fontSize: 10,
                   height: 1.4,
@@ -295,7 +311,7 @@ class _QuestSheet extends StatelessWidget {
               switch (status) {
                 QuestStatus.open => NeoButton(
                   expand: true,
-                  label: 'BẮT ĐẦU CHỤP',
+                  label: AppLocalizations.of(context).startShooting,
                   icon: Icons.photo_camera_outlined,
                   variant: NeoButtonVariant.primary,
                   onPressed: () =>
@@ -303,22 +319,22 @@ class _QuestSheet extends StatelessWidget {
                 ),
                 QuestStatus.passed => NeoButton(
                   expand: true,
-                  label: 'ĐĂNG ẢNH NHIỆM VỤ',
+                  label: AppLocalizations.of(context).postQuestPhoto,
                   icon: Icons.send_rounded,
                   variant: NeoButtonVariant.primary,
                   onPressed: () =>
                       Navigator.pop(context, QuestSheetAction.post),
                 ),
-                QuestStatus.outOfTries => const NeoButton(
+                QuestStatus.outOfTries => NeoButton(
                   expand: true,
-                  label: 'HẾT LƯỢT HÔM NAY',
+                  label: AppLocalizations.of(context).outOfTriesTitle,
                   icon: Icons.lock_outline,
                   variant: NeoButtonVariant.outline,
                   onPressed: null,
                 ),
-                QuestStatus.done => const NeoButton(
+                QuestStatus.done => NeoButton(
                   expand: true,
-                  label: 'ĐÃ HOÀN THÀNH ✓',
+                  label: AppLocalizations.of(context).questCompletedBtn,
                   icon: Icons.check,
                   variant: NeoButtonVariant.accent,
                   onPressed: null,
@@ -329,8 +345,8 @@ class _QuestSheet extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   status == QuestStatus.done
-                      ? 'Nhiệm vụ mới sẽ đến lúc 00:00. Hẹn gặp lại!'
-                      : 'Bạn đã dùng hết 3 lượt thử. Nhiệm vụ mới sẽ đến lúc 00:00.',
+                      ? AppLocalizations.of(context).questNextAt
+                      : AppLocalizations.of(context).questAllTriesUsed,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: NeoColors.muted,

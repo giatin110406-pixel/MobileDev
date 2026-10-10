@@ -83,6 +83,7 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _changeAvatar(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     final uploadFailed = AppLocalizations.of(context).avatarUploadFailed;
+    final changeFailed = AppLocalizations.of(context).avatarChangeFailed;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -94,9 +95,9 @@ class ProfileScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'ẢNH ĐẠI DIỆN',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).avatarTitle,
+              style: const TextStyle(
                 color: NeoColors.ink,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
@@ -105,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 14),
             NeoButton(
               expand: true,
-              label: 'CHỤP ẢNH',
+              label: AppLocalizations.of(context).avatarTakePhoto,
               icon: Icons.photo_camera_outlined,
               variant: NeoButtonVariant.accent,
               onPressed: () => Navigator.pop(context, ImageSource.camera),
@@ -113,7 +114,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             NeoButton(
               expand: true,
-              label: 'CHỌN TỪ THƯ VIỆN',
+              label: AppLocalizations.of(context).avatarFromLibrary,
               icon: Icons.photo_library_outlined,
               variant: NeoButtonVariant.outline,
               onPressed: () => Navigator.pop(context, ImageSource.gallery),
@@ -143,9 +144,7 @@ class ProfileScreen extends StatelessWidget {
         }
       }
     } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Không đổi được ảnh đại diện.')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(changeFailed)));
     }
   }
 
@@ -183,7 +182,8 @@ class ProfileScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              session?.profile.displayName ?? 'You',
+                              session?.profile.displayName ??
+                                  AppLocalizations.of(context).youLabel,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -232,7 +232,7 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: NeoButton(
                           expand: true,
-                          label: 'ĐỔI ẢNH',
+                          label: AppLocalizations.of(context).avatarChange,
                           icon: Icons.face_retouching_natural,
                           variant: NeoButtonVariant.outline,
                           onPressed: () => _changeAvatar(context),
@@ -253,10 +253,10 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 22),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'NHIỆM VỤ ĐÃ HOÀN THÀNH',
-                          style: TextStyle(
+                          AppLocalizations.of(context).questsDoneTitle,
+                          style: const TextStyle(
                             color: NeoColors.muted,
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
@@ -271,9 +271,9 @@ class ProfileScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: NeoTheme.panel(color: NeoColors.blue),
-                      child: const Text(
-                        'Chưa có nhiệm vụ nào. Mở tab SHOOT để làm nhiệm vụ hôm nay và nhận 25 Sunbit!',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context).questsNoneYet,
+                        style: const TextStyle(
                           color: NeoColors.ink,
                           fontSize: 13,
                           height: 1.35,
@@ -366,7 +366,7 @@ class FriendProfileScreen extends StatelessWidget {
                     children: [
                       NeoIconButton(
                         icon: Icons.arrow_back,
-                        tooltip: 'Quay lại',
+                        tooltip: AppLocalizations.of(context).backTooltip,
                         fill: NeoColors.yellow,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
@@ -437,10 +437,10 @@ class FriendProfileScreen extends StatelessWidget {
                   const SizedBox(height: 22),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'BÀI ĐĂNG',
-                          style: TextStyle(
+                          AppLocalizations.of(context).postsTitle,
+                          style: const TextStyle(
                             color: NeoColors.muted,
                             fontSize: 10,
                             fontWeight: FontWeight.w800,

@@ -4,6 +4,7 @@ import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/group_chat_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The group's chat: messages with the newest at the bottom.
 class GroupChatView extends StatefulWidget {
@@ -45,15 +46,19 @@ class _GroupChatViewState extends State<GroupChatView> {
       // Put the text back so nothing typed is lost.
       if (mounted) {
         _input.text = text;
-        showNeoSnack(context, groupFailureText(failure));
+        showNeoSnack(
+          context,
+          groupFailureText(AppLocalizations.of(context), failure),
+        );
       }
     }
   }
 
   String _nameOf(String? id) {
-    if (id == null) return 'Một người';
-    if (id == widget.myId) return 'Bạn';
-    return widget.members[id]?.displayName ?? 'Một người';
+    final l10n = AppLocalizations.of(context);
+    if (id == null) return l10n.someoneLabel;
+    if (id == widget.myId) return l10n.youLabel;
+    return widget.members[id]?.displayName ?? l10n.someoneLabel;
   }
 
   @override
@@ -71,25 +76,28 @@ class _GroupChatViewState extends State<GroupChatView> {
                       ? Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'Không tải được tin nhắn.',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context).chatLoadFailed,
+                              style: const TextStyle(
                                 color: NeoColors.ink,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(height: 10),
-                            NeoButton(label: 'THỬ LẠI', onPressed: store.load),
+                            NeoButton(
+                              label: AppLocalizations.of(context).retry,
+                              onPressed: store.load,
+                            ),
                           ],
                         )
                       : const CircularProgressIndicator(color: NeoColors.ink),
                 );
               }
               if (store.messages.isEmpty) {
-                return const Center(
+                return Center(
                   child: Text(
-                    'Hãy chào cả nhóm 👋',
-                    style: TextStyle(
+                    AppLocalizations.of(context).chatSayHi,
+                    style: const TextStyle(
                       color: NeoColors.muted,
                       fontWeight: FontWeight.w700,
                     ),
@@ -108,7 +116,11 @@ class _GroupChatViewState extends State<GroupChatView> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Center(
                         child: Text(
-                          systemMessageText(message, _nameOf(message.senderId)),
+                          systemMessageText(
+                            AppLocalizations.of(context),
+                            message,
+                            _nameOf(message.senderId),
+                          ),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: NeoColors.muted,
@@ -155,9 +167,9 @@ class _GroupChatViewState extends State<GroupChatView> {
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
               onSubmitted: (_) => _send(),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 counterText: '',
-                hintText: 'Nhắn cho cả nhóm…',
+                hintText: AppLocalizations.of(context).chatHint,
                 isDense: true,
                 border: OutlineInputBorder(),
               ),
@@ -168,7 +180,7 @@ class _GroupChatViewState extends State<GroupChatView> {
             listenable: widget.store,
             builder: (context, _) => NeoIconButton(
               icon: Icons.send,
-              tooltip: 'Gửi',
+              tooltip: AppLocalizations.of(context).sendTooltip,
               fill: NeoColors.yellow,
               onPressed: widget.store.sending ? null : _send,
             ),
