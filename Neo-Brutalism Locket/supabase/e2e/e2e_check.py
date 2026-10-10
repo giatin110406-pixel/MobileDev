@@ -308,7 +308,7 @@ def main() -> int:
         status, rows = select(a["token"], "player_state", "select=balance")
         # B and C have player rows; A never opened the quest, so A may see none.
         check("one player cannot read another's state", status == 200 and rows == [], f"{status} {rows}")
-        status, shop = select(a["token"], "shop_items", "select=id,price&order=price")
+        status, shop = select(a["token"], "shop_items", "select=id,price&source_entry_id=is.null&order=price")
         check("the shop lists 10 items from 50 to 500 Sunbit",
               status == 200 and len(shop) == 10 and shop[0]["price"] == 50 and shop[-1]["price"] == 500,
               f"{status} {shop}")

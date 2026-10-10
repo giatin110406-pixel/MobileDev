@@ -22,6 +22,7 @@ import json
 import os
 import secrets
 import subprocess
+import threading
 import sys
 import time
 
@@ -292,6 +293,81 @@ def main() -> int:
         h.check("the Hall of Fame lists the three winners",
                 status == 200 and {e["id"] for e in hall} >= {entry_a, entry_b, entry_c}, str(hall)[:120])
 
+        h.section("The winning paintings go on sale")
+        item_a, item_b, item_c = (f"contest_{e}" for e in (entry_a, entry_b, entry_c))
+        status, shelf = h.rpc(x["token"], "get_contest_shop")
+        dump("shop", shelf)
+        mine = [s for s in shelf if s["id"] in (item_a, item_b, item_c)]
+        h.check("the three winners are in the shop, best first, at 300 / 220 / 150 Sunbit",
+                status == 200 and [(s["rank"], s["price"]) for s in mine] == [(1, 300), (2, 220), (3, 150)],
+                str(mine))
+        h.check("100 copies each, none sold, none owned by an outsider",
+                all(s["stock"] == 100 and s["sold"] == 0 and s["owned"] is False for s in mine), str(mine))
+        h.check("the theme and week are shown with the item",
+                all(s["week_key"].startswith("E2E-") and s["title_en"] for s in mine))
+        status, state_a2 = h.rpc(a2["token"], "get_player_state")
+        h.check("every person of the winning group owns a copy for free",
+                item_a in state_a2["owned"], str(state_a2["owned"]))
+        status, state_b1 = h.rpc(b1["token"], "get_player_state")
+        h.check("the group in second place owns theirs, not the first place's",
+                item_b in state_b1["owned"] and item_a not in state_b1["owned"], str(state_b1["owned"]))
+        status, art = h.rpc(x["token"], "get_banner_art", {"p_item": item_a})
+        dump("banner_art", art)
+        h.check("the banner's picture can be fetched by anyone",
+                status == 200 and art["width"] == 32 and len(art["pixels"]) > 1000 and "\n" not in art["pixels"]
+                and art["group_name"] == "E2E Team A", str(art)[:120])
+        h.rpc_refused(x["token"], "get_banner_art", {"p_item": "banner_space"}, "not_found",
+                      "an ordinary banner has no painting")
+        h.rpc_refused(x["token"], "buy_item", {"p_item": item_a}, "insufficient_funds",
+                      "without the Sunbit the purchase is refused")
+        sql("update public.player_state set balance = 1000 where user_id in "
+            f"('{x['id']}', '{b1['id']}', '{c1['id']}')")
+        status, bought = h.rpc(x["token"], "buy_item", {"p_item": item_a})
+        h.check("X buys first place for 300", status == 200 and bought["balance"] == 700
+                and item_a in bought["owned"], str(bought)[:160])
+        h.rpc_refused(x["token"], "buy_item", {"p_item": item_a}, "already_owned", "once only")
+        h.rpc_refused(a1["token"], "buy_item", {"p_item": item_a}, "already_owned",
+                      "the winners already own it")
+        status, state = h.rpc(a1["token"], "get_player_state")
+        status2, state2 = h.rpc(a2["token"], "get_player_state")
+        h.check("20% of the sale (60) is shared by the winning group: 30 each",
+                (state["balance"], state2["balance"]) == (180, 180), f"{state['balance']} {state2['balance']}")
+        status, shelf = h.rpc(x["token"], "get_contest_shop")
+        sold = {s["id"]: (s["sold"], s["owned"]) for s in shelf}
+        h.check("one copy is counted as sold, and X sees it as theirs",
+                sold[item_a] == (1, True) and sold[item_b] == (0, False), str(sold))
+        h.rpc_ok(x["token"], "equip_item", {"p_item": item_a}, "X puts the painting on their profile")
+        status, rows = h.select(x["token"], "profiles", f"select=banner_id&id=eq.{x['id']}")
+        h.check("and the profile now points at it", rows == [{"banner_id": item_a}], str(rows))
+        h.rpc_refused(x["token"], "buy_item", {"p_item": "contest_00000000-0000-0000-0000-000000000000"},
+                      "not_found", "an unknown painting is not found")
+
+        # One copy left, two buyers at the same moment: exactly one gets it.
+        sql(f"update public.shop_items set stock = 2 where id = '{item_a}'")
+        outcome = {}
+
+        def buy(user):
+            outcome[user["label"]] = h.rpc(user["token"], "buy_item", {"p_item": item_a})
+
+        threads = [threading.Thread(target=buy, args=(b1,)), threading.Thread(target=buy, args=(c1,))]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        wins = [label for label, (status, _) in outcome.items() if status == 200]
+        losses = [(label, h.error_text(payload)) for label, (status, payload) in outcome.items() if status != 200]
+        h.check("two people buy the last copy at once: one gets it, the other hears it is sold out",
+                len(wins) == 1 and len(losses) == 1 and losses[0][1] == "sold_out", str(outcome)[:300])
+        status, shelf = h.rpc(x["token"], "get_contest_shop")
+        h.check("and the count is exactly 2 of 2", {s["id"]: s["sold"] for s in shelf}[item_a] == 2)
+        loser = b1 if losses and losses[0][0] == b1["label"] else c1
+        status, state_loser = h.rpc(loser["token"], "get_player_state")
+        h.check("whoever lost was not charged", state_loser["balance"] == 1000, str(state_loser["balance"]))
+        # The group's total from three sales (300 + 300 + 300): 3 x 60 shared by 2 people.
+        status, state = h.rpc(a1["token"], "get_player_state")
+        h.check("the royalty comes with each sale (30 + 30 for one more sale)", state["balance"] == 210,
+                str(state["balance"]))
+
         h.section("A smaller contest: two entries, too few ratings to rank")
         c2id = new_contest("two", 100, "now() - interval '1 hour'", "now() + interval '1 hour'",
                            "now() + interval '2 hours'")
@@ -327,9 +403,12 @@ def main() -> int:
 
     try:
         sql("delete from public.groups where name like 'E2E %'")
-        h.check("test groups removed", True)
+        # Deleting a contest leaves its shop items behind with no painting (nobody
+        # owns them now that the accounts are gone), so remove those too.
+        sql("delete from public.shop_items where id like 'contest_%' and source_entry_id is null")
+        h.check("test groups and shop items removed", True)
     except RuntimeError as error:
-        h.check("test groups removed", False, str(error)[:200])
+        h.check("test groups and shop items removed", False, str(error)[:200])
 
     print(f"\n{h.passed} checks passed, {len(h.failed)} failed")
     for name in h.failed:
