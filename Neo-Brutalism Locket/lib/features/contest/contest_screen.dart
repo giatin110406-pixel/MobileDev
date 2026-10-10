@@ -98,6 +98,7 @@ class _ContestScreenState extends State<ContestScreen> {
                       child: Text(
                         'Cuộc thi tuần',
                         style: TextStyle(
+                          fontFamily: NeoFont.display,
                           color: NeoColors.ink,
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
@@ -191,6 +192,7 @@ class _ContestScreenState extends State<ContestScreen> {
                 Text(
                   theme.title(vietnamese: vi),
                   style: const TextStyle(
+                    fontFamily: NeoFont.display,
                     color: NeoColors.ink,
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
@@ -284,6 +286,7 @@ class _ContestScreenState extends State<ContestScreen> {
             Text(
               formatCountdown(left),
               style: const TextStyle(
+                fontFamily: NeoFont.display,
                 color: NeoColors.ink,
                 fontSize: 30,
                 fontWeight: FontWeight.w900,

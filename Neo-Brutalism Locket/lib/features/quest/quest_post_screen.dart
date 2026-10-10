@@ -415,6 +415,7 @@ class _NeoDialog extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
+              fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 18,
               fontWeight: FontWeight.w900,

@@ -57,6 +57,7 @@ class GroupsScreen extends StatelessWidget {
                         Text(
                           l10n.groupsTitle,
                           style: const TextStyle(
+                            fontFamily: NeoFont.display,
                             color: NeoColors.ink,
                             fontSize: 26,
                             height: 1,
@@ -194,6 +195,7 @@ class _EmptyGroups extends StatelessWidget {
           Text(
             'Chưa có nhóm nào',
             style: TextStyle(
+              fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 18,
               fontWeight: FontWeight.w900,
@@ -462,6 +464,7 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
               const Text(
                 'TẠO NHÓM MỚI',
                 style: TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -507,6 +510,7 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                   Text(
                     '$_max',
                     style: const TextStyle(
+                      fontFamily: NeoFont.display,
                       color: NeoColors.ink,
                       fontSize: 18,
                       fontWeight: FontWeight.w900,

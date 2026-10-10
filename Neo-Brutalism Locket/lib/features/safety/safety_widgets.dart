@@ -71,6 +71,7 @@ class _ReportSheetState extends State<_ReportSheet> {
               Text(
                 l10n.reportTitle,
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,

@@ -58,6 +58,7 @@ class ArchiveScreen extends StatelessWidget {
                     Text(
                       AppLocalizations.of(context).printArchive,
                       style: const TextStyle(
+                        fontFamily: NeoFont.display,
                         color: NeoColors.ink,
                         fontSize: 25,
                         height: 1,
@@ -189,6 +190,7 @@ class ArchiveScreen extends StatelessWidget {
             'NOTHING\nPRINTED YET',
             textAlign: TextAlign.center,
             style: TextStyle(
+              fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 24,
               height: 0.98,

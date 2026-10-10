@@ -96,6 +96,7 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
               Text(
                 AppLocalizations.of(context).homeLaptop,
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,

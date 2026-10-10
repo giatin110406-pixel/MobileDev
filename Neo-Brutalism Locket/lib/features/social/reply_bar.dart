@@ -104,7 +104,10 @@ class _ReplyBarState extends State<ReplyBar> {
                         child: Center(
                           child: Text(
                             emoji,
-                            style: const TextStyle(fontSize: 26),
+                            style: const TextStyle(
+                              fontFamily: NeoFont.display,
+                              fontSize: 26,
+                            ),
                           ),
                         ),
                       ),
@@ -173,7 +176,13 @@ class _ReplyBarState extends State<ReplyBar> {
                   radius: 20,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                    child: Text(
+                      emoji,
+                      style: const TextStyle(
+                        fontFamily: NeoFont.display,
+                        fontSize: 22,
+                      ),
+                    ),
                   ),
                 ),
               ),

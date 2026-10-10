@@ -67,6 +67,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
+                        fontFamily: NeoFont.display,
                         color: NeoColors.ink,
                         fontSize: 20,
                         fontWeight: FontWeight.w900,

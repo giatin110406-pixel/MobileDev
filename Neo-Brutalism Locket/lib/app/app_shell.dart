@@ -795,7 +795,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _messages = snapshot.messages;
       });
       _notify(
-        AppLocalizations.of(context).friendAddedLocally(draft.name.toUpperCase()),
+        AppLocalizations.of(
+          context,
+        ).friendAddedLocally(draft.name.toUpperCase()),
       );
     } on FormatException catch (error) {
       _notify(error.message.toUpperCase());
@@ -1729,8 +1731,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                   label,
                   style: const TextStyle(
                     color: NeoColors.ink,
+                    fontFamily: NeoFont.display,
                     fontSize: 9,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],

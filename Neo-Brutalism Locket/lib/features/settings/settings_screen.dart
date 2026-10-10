@@ -65,6 +65,7 @@ class SettingsScreen extends StatelessWidget {
                     Text(
                       l10n.settingsTitle,
                       style: const TextStyle(
+                        fontFamily: NeoFont.display,
                         color: NeoColors.ink,
                         fontSize: 26,
                         height: 1,
@@ -597,6 +598,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               Text(
                 l10n.editProfileTitle,
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -664,6 +666,7 @@ class LegalScreen extends StatelessWidget {
                   child: Text(
                     title,
                     style: const TextStyle(
+                      fontFamily: NeoFont.display,
                       color: NeoColors.ink,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,

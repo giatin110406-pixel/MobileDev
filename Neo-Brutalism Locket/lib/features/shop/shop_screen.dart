@@ -369,6 +369,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               Text(
                 item.name,
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 22,
                   height: 1.1,

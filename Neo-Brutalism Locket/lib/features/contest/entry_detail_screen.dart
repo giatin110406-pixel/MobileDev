@@ -157,6 +157,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
+                    fontFamily: NeoFont.display,
                     color: NeoColors.ink,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,

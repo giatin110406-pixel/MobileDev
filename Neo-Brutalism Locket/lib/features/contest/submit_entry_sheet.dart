@@ -106,6 +106,7 @@ class _SubmitSheetState extends State<_SubmitSheet> {
               Text(
                 'NỘP BÀI: ${widget.group.name}',
                 style: const TextStyle(
+                  fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,

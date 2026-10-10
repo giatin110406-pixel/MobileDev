@@ -138,6 +138,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     Text(
                       _signUp ? l10n.signUpTitle : l10n.signInTitle,
                       style: const TextStyle(
+                        fontFamily: NeoFont.display,
                         color: NeoColors.ink,
                         fontSize: 30,
                         height: 1,
