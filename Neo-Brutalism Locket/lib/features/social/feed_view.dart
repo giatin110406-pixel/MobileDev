@@ -14,6 +14,7 @@ import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
+import 'package:neo_brutalism_locket/features/social/double_tap_heart.dart';
 import 'package:neo_brutalism_locket/features/social/reply_bar.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
@@ -326,7 +327,9 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GestureDetector(
+            DoubleTapHeart(
+              emoji: quickReactions.first,
+              onDoubleTap: _quickReact(entry, post, friend),
               onLongPress: entry.remote != null && widget.onPostMenu != null
                   ? () => widget.onPostMenu!(entry.remote!)
                   : null,
@@ -368,6 +371,28 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  /// What a double tap on the photo does: send the first quick reaction, but
+  /// only where the reply bar below would let the person react too.
+  VoidCallback? _quickReact(
+    FeedEntry entry,
+    FriendPost? post,
+    PocketFriend? friend,
+  ) {
+    if (friend == null || !widget.allowReplies) return null;
+    final emoji = quickReactions.first;
+    final remote = entry.remote;
+    if (remote != null) {
+      if (remote.authorId == widget.self.userId ||
+          widget.onReplyRemote == null ||
+          widget.onReactRemote == null) {
+        return null;
+      }
+      return () => unawaited(widget.onReactRemote!(remote, emoji));
+    }
+    if (post != null) return () => unawaited(widget.onReact(post, emoji));
+    return null;
   }
 
   /// Height of everything under the photo: gaps + name row + reply bar.

@@ -375,5 +375,55 @@ void main() {
       expect(find.byType(ReplyBar), findsNothing);
       expect(find.text('OPEN PRINT'), findsOneWidget);
     });
+
+    testWidgets('a double tap on a friend post sends the heart', (
+      tester,
+    ) async {
+      final sent = await pumpFeed(tester, [FeedEntry.post(post)]);
+      expect(find.text('💛'), findsOneWidget, reason: 'only the reply bar');
+      await tester.tapAt(tester.getCenter(find.text('☀️')));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(tester.getCenter(find.text('☀️')));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(sent, ['p1:💛']);
+      expect(find.text('💛'), findsNWidgets(2), reason: 'the heart pops up');
+      await tester.pumpAndSettle();
+      expect(find.text('💛'), findsOneWidget, reason: 'and floats away');
+    });
+
+    testWidgets('a single tap does nothing', (tester) async {
+      final sent = await pumpFeed(tester, [FeedEntry.post(post)]);
+      await tester.tapAt(tester.getCenter(find.text('☀️')));
+      await tester.pumpAndSettle();
+      expect(sent, isEmpty);
+      expect(find.text('💛'), findsOneWidget);
+    });
+
+    testWidgets('your own print ignores a double tap', (tester) async {
+      final sent = await pumpFeed(tester, [FeedEntry.print(print)]);
+      final photo = tester.getCenter(find.byType(Image).first);
+      await tester.tapAt(photo);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(photo);
+      await tester.pumpAndSettle();
+      expect(sent, isEmpty);
+    });
+
+    testWidgets('with reduced motion the reaction is sent, no heart flies', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final sent = await pumpFeed(tester, [FeedEntry.post(post)]);
+      await tester.tapAt(tester.getCenter(find.text('☀️')));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(tester.getCenter(find.text('☀️')));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(sent, ['p1:💛']);
+      expect(find.text('💛'), findsOneWidget);
+    });
   });
 }
