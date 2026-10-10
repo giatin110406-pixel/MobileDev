@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 const _reactions = ['🔥', '😍', '👏', '🎨', '😮'];
 
@@ -93,7 +94,9 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     if (!mounted) return;
     showNeoSnack(
       context,
-      ok ? AppLocalizations.of(context).entrySavedSnack : AppLocalizations.of(context).entrySaveFailed,
+      ok
+          ? AppLocalizations.of(context).entrySavedSnack
+          : AppLocalizations.of(context).entrySaveFailed,
     );
   }
 
@@ -389,7 +392,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                   label: l10n.rateStars(star),
                   child: IconButton(
                     tooltip: l10n.rateStars(star),
-                    onPressed: canRate ? () => _rate(star) : null,
+                    onPressed: Haptics.tap(canRate ? () => _rate(star) : null),
                     icon: Icon(
                       (entry.myScore ?? 0) >= star
                           ? Icons.star
@@ -424,7 +427,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
       children: [
         for (final emoji in _reactions)
           GestureDetector(
-            onTap: _store.canComment ? () => _react(emoji) : null,
+            onTap: Haptics.tap(_store.canComment ? () => _react(emoji) : null),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -484,7 +487,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         if (!comment.mine)
           IconButton(
             tooltip: AppLocalizations.of(context).reportCommentTooltip,
-            onPressed: () => _reportComment(comment),
+            onPressed: Haptics.tap(() => _reportComment(comment)),
             icon: const Icon(Icons.flag_outlined, size: 20),
           ),
       ],

@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/features/groups/group_chat_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// The group's chat: messages with the newest at the bottom.
 class GroupChatView extends StatefulWidget {
@@ -221,7 +222,7 @@ class _Bubble extends StatelessWidget {
             children: [
               if (name != null)
                 GestureDetector(
-                  onTap: onTapName,
+                  onTap: Haptics.tap(onTapName),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 3, left: 2),
                     child: Text(

@@ -21,6 +21,7 @@ import 'package:neo_brutalism_locket/features/social/feed_view.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Banner with the avatar overlapping its bottom-left corner.
 class ProfileHeader extends StatelessWidget {
@@ -46,7 +47,10 @@ class ProfileHeader extends StatelessWidget {
         Positioned(
           left: 14,
           bottom: 0,
-          child: GestureDetector(onTap: onAvatarTap, child: avatar),
+          child: GestureDetector(
+            onTap: Haptics.tap(onAvatarTap),
+            child: avatar,
+          ),
         ),
       ],
     ),
@@ -383,10 +387,10 @@ class FriendProfileScreen extends StatelessWidget {
                             Icons.more_vert,
                             color: NeoColors.ink,
                           ),
-                          onSelected: (value) {
+                          onSelected: Haptics.tapWith((value) {
                             if (value == 'block') onBlock?.call();
                             if (value == 'report') onReport?.call();
-                          },
+                          }),
                           itemBuilder: (context) {
                             final l10n = AppLocalizations.of(context);
                             return [
@@ -511,7 +515,7 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
+    onTap: Haptics.tap(onTap),
     borderRadius: BorderRadius.circular(10),
     child: Container(
       decoration: NeoTheme.panel(color: NeoColors.surface, radius: 10),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Quick reactions shown in the bar, like Locket.
 const quickReactions = ['💛', '🔥', '😍'];
@@ -102,7 +103,9 @@ class _ReplyBarState extends State<ReplyBar> {
                   children: [
                     for (final emoji in [...quickReactions, ...moreReactions])
                       InkResponse(
-                        onTap: () => Navigator.of(context).pop(emoji),
+                        onTap: Haptics.tap(
+                          () => Navigator.of(context).pop(emoji),
+                        ),
                         child: Center(
                           child: Text(
                             emoji,
@@ -166,7 +169,7 @@ class _ReplyBarState extends State<ReplyBar> {
           if (_hasText)
             IconButton(
               tooltip: AppLocalizations.of(context).sendReplyTooltip,
-              onPressed: _busy ? null : _send,
+              onPressed: Haptics.tap(_busy ? null : _send),
               icon: const Icon(Icons.send_rounded, color: NeoColors.ink),
             )
           else ...[
@@ -175,7 +178,7 @@ class _ReplyBarState extends State<ReplyBar> {
                 button: true,
                 label: AppLocalizations.of(context).reactSemantics(emoji),
                 child: InkResponse(
-                  onTap: _busy ? null : () => _react(emoji),
+                  onTap: Haptics.tap(_busy ? null : () => _react(emoji)),
                   radius: 20,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -191,7 +194,7 @@ class _ReplyBarState extends State<ReplyBar> {
               ),
             IconButton(
               tooltip: AppLocalizations.of(context).moreEmojiTooltip,
-              onPressed: _busy ? null : _openPicker,
+              onPressed: Haptics.tap(_busy ? null : _openPicker),
               icon: const Icon(
                 Icons.add_reaction_outlined,
                 color: NeoColors.ink,

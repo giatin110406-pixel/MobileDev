@@ -1652,5 +1652,23 @@
         "type": "int"
       }
     }
-  }
+  },
+  "settingsHapticsDirect": "Rung mạnh (dùng thẳng động cơ rung)",
+  "settingsHapticsDirectHint": "Bật nếu chạm không thấy rung. Cách này bỏ qua cài đặt \"rung khi chạm\" của điện thoại.",
+  "settingsHapticsTest": "Kiểm tra rung",
+  "hcTitle": "KIỂM TRA RUNG",
+  "hcMotor": "Động cơ rung",
+  "hcStrengths": "Nhiều mức rung",
+  "hcPhoneSetting": "Cài đặt máy: rung khi chạm",
+  "hcAndroid": "Phiên bản Android (API)",
+  "hcYes": "CÓ",
+  "hcNo": "KHÔNG",
+  "hcOn": "BẬT",
+  "hcOff": "TẮT",
+  "hcTrySystem": "THỬ RUNG HỆ THỐNG",
+  "hcTryDirect": "THỬ RUNG TRỰC TIẾP",
+  "hcAdviceOff": "Cài đặt \"rung khi chạm\" của máy đang TẮT nên chạm thường sẽ không rung. Hãy bật trong Cài đặt > Âm thanh & rung, hoặc bật \"Rung mạnh\" ở đây.",
+  "hcAdviceNoMotor": "Máy này không có động cơ rung nên không thể rung.",
+  "hcAdviceTry": "Bấm cả hai nút. Nếu thấy rung trực tiếp mà rung hệ thống thì không, máy đang tắt rung hệ thống: hãy dùng \"Rung mạnh\".",
+  "hcUnknown": "Không có thông tin rung trên thiết bị này (chỉ Android cung cấp)."
 }

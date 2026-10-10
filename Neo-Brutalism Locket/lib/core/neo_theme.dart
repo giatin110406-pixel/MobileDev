@@ -285,12 +285,15 @@ class NeoSwitch extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+              // A long label wraps instead of running off the screen.
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: NeoColors.ink,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

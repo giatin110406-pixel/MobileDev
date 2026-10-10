@@ -416,28 +416,29 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     await _openQuestPost(quest, photo, _player.today);
   }
 
-  Future<void> _openFriendProfile(
-    PocketFriend friend,
-  ) => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (context) {
-        final page = FriendProfileScreen(
-          friend: friend,
-          posts: _posts.where((post) => post.friendId == friend.id).toList(),
-          store: _player,
-          onBlock: _online
-              ? () async {
-                  if (await _blockFriend(friend) && context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }
-              : null,
-          onReport: _online ? () => _reportPerson(friend) : null,
-        );
-        return _withScopes(page);
-      },
-    ),
-  );
+  Future<void> _openFriendProfile(PocketFriend friend) =>
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) {
+            final page = FriendProfileScreen(
+              friend: friend,
+              posts: _posts
+                  .where((post) => post.friendId == friend.id)
+                  .toList(),
+              store: _player,
+              onBlock: _online
+                  ? () async {
+                      if (await _blockFriend(friend) && context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    }
+                  : null,
+              onReport: _online ? () => _reportPerson(friend) : null,
+            );
+            return _withScopes(page);
+          },
+        ),
+      );
 
   Future<void> _loadArchive() async {
     try {
@@ -1106,11 +1107,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: Haptics.tap(() => Navigator.pop(context, false)),
             child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: Haptics.tap(() => Navigator.pop(context, true)),
             child: Text(l10n.removeFriendConfirm),
           ),
         ],
@@ -1212,11 +1213,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: Haptics.tap(() => Navigator.pop(context, false)),
               child: Text(l10n.cancel),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: Haptics.tap(() => Navigator.pop(context, true)),
               child: Text(l10n.removeFriendConfirm),
             ),
           ],
@@ -1261,11 +1262,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: Haptics.tap(() => Navigator.pop(context, false)),
             child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: Haptics.tap(() => Navigator.pop(context, true)),
             child: Text(l10n.removeFriendConfirm),
           ),
         ],
@@ -1574,7 +1575,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         button: true,
         selected: selected,
         child: InkWell(
-          onTap: onTap,
+          onTap: Haptics.tap(onTap),
           borderRadius: BorderRadius.circular(8),
           child: Container(
             height: 36,

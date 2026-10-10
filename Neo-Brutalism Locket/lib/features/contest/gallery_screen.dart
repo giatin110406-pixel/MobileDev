@@ -10,6 +10,7 @@ import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_store.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// The Gallery Room: a long exhibition corridor with the entries framed on both
 /// walls. Walk down it, tap a picture to look closer, rate and comment. A grid
@@ -286,7 +287,7 @@ class GalleryGrid extends StatelessWidget {
             context,
           ).galleryEntrySemantics(entry.seq, entry.groupName),
           child: GestureDetector(
-            onTap: () => onOpen(entry),
+            onTap: Haptics.tap(() => onOpen(entry)),
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(

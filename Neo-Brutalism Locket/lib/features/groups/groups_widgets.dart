@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// What went wrong with a group action, in words.
 String groupFailureText(AppLocalizations l10n, GroupFailure failure) =>
@@ -202,7 +203,7 @@ class _Segment extends StatelessWidget {
       selected: selected,
       label: label,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: Haptics.tap(onTap),
         child: Container(
           height: 44,
           decoration: BoxDecoration(

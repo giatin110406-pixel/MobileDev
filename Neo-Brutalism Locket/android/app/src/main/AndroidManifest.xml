@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Buzz on taps (the "strong buzz" option and the vibration check) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Showing push notifications (asked at run time on Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Place label on posts: town-level location only -->

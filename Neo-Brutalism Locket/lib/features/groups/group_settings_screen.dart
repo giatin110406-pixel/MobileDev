@@ -9,6 +9,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Everything about one group. The owner can edit it, invite, remove people,
 /// hand it over, start a new canvas or close the group. Members see the rules
@@ -103,11 +104,11 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
         content: Text(body, style: const TextStyle(color: NeoColors.ink)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: Haptics.tap(() => Navigator.pop(context, false)),
             child: Text(AppLocalizations.of(context).cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: Haptics.tap(() => Navigator.pop(context, true)),
             child: Text(action),
           ),
         ],
@@ -446,9 +447,11 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
             ),
             IconButton(
               tooltip: AppLocalizations.of(context).decrease,
-              onPressed: _max > summary.members.length && _max > 2
-                  ? () => setState(() => _max--)
-                  : null,
+              onPressed: Haptics.tap(
+                _max > summary.members.length && _max > 2
+                    ? () => setState(() => _max--)
+                    : null,
+              ),
               icon: const Icon(Icons.remove_circle_outline),
             ),
             Text(
@@ -462,7 +465,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
             ),
             IconButton(
               tooltip: AppLocalizations.of(context).increase,
-              onPressed: _max < 12 ? () => setState(() => _max++) : null,
+              onPressed: Haptics.tap(
+                _max < 12 ? () => setState(() => _max++) : null,
+              ),
               icon: const Icon(Icons.add_circle_outline),
             ),
           ],
@@ -483,14 +488,16 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        onTap: me
-            ? null
-            : () => showPersonCard(
-                context,
-                person: member.person,
-                friends: widget.friends,
-                safety: widget.safety,
-              ),
+        onTap: Haptics.tap(
+          me
+              ? null
+              : () => showPersonCard(
+                  context,
+                  person: member.person,
+                  friends: widget.friends,
+                  safety: widget.safety,
+                ),
+        ),
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: NeoTheme.panel(),
@@ -533,7 +540,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                 PopupMenuButton<String>(
                   tooltip: AppLocalizations.of(context).optionsTooltip,
                   icon: const Icon(Icons.more_vert, color: NeoColors.ink),
-                  onSelected: (value) {
+                  onSelected: Haptics.tapWith((value) {
                     switch (value) {
                       case 'transfer':
                         _transfer(summary, member.person);
@@ -542,7 +549,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                       case 'kick':
                         _kick(summary, member.person);
                     }
-                  },
+                  }),
                   itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'transfer',
@@ -648,7 +655,9 @@ class _FriendPicker extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                       subtitle: Text(person.handle),
-                      onTap: () => Navigator.of(context).pop(person),
+                      onTap: Haptics.tap(
+                        () => Navigator.of(context).pop(person),
+                      ),
                     ),
                 ],
               ),
@@ -700,7 +709,9 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
                 ChoiceChip(
                   label: Text('$size×$size'),
                   selected: _size == size,
-                  onSelected: (_) => setState(() => _size = size),
+                  onSelected: Haptics.tapWith(
+                    (_) => setState(() => _size = size),
+                  ),
                 ),
             ],
           ),
@@ -715,12 +726,16 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
               ChoiceChip(
                 label: const Text('8-bit'),
                 selected: _palette == 'eightbit',
-                onSelected: (_) => setState(() => _palette = 'eightbit'),
+                onSelected: Haptics.tapWith(
+                  (_) => setState(() => _palette = 'eightbit'),
+                ),
               ),
               ChoiceChip(
                 label: const Text('Van Gogh'),
                 selected: _palette == 'vangogh',
-                onSelected: (_) => setState(() => _palette = 'vangogh'),
+                onSelected: Haptics.tapWith(
+                  (_) => setState(() => _palette = 'vangogh'),
+                ),
               ),
             ],
           ),
@@ -728,12 +743,13 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: Haptics.tap(() => Navigator.pop(context)),
           child: Text(AppLocalizations.of(context).cancel),
         ),
         TextButton(
-          onPressed: () =>
-              Navigator.pop(context, (size: _size, palette: _palette)),
+          onPressed: Haptics.tap(
+            () => Navigator.pop(context, (size: _size, palette: _palette)),
+          ),
           child: Text(AppLocalizations.of(context).continueButton),
         ),
       ],
