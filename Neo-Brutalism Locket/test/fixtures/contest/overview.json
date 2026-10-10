@@ -9,7 +9,7 @@
  },
  "contest": {
   "id": "1ca7219a-cd50-47ef-894d-ad18fc3b4660",
-  "phase": "upcoming",
+  "phase": "open",
   "ends_at": "2026-10-11T17:00:00+00:00",
   "opens_at": "2026-10-09T17:00:00+00:00",
   "week_key": "2026-W41",
@@ -21,11 +21,11 @@
  "my_entry": null,
  "my_votes": 0,
  "previous": null,
- "server_now": "2026-10-09T13:04:34.309576+00:00",
+ "server_now": "2026-10-10T04:06:31.854433+00:00",
  "participant": false,
  "owner_groups": [
   {
-   "id": "d17cd784-8969-491a-9519-19fe1647f3b0",
+   "id": "969aa084-9fe2-462d-b2bf-38c0295b7b28",
    "name": "E2E Team A",
    "submitted": false
   }

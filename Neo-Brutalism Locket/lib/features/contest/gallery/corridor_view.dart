@@ -20,6 +20,10 @@ class CorridorView extends StatefulWidget {
     required this.onOpen,
     this.onNearEnd,
     this.initialCameraZ = 0,
+    this.layout,
+    this.style = CorridorStyle.gallery,
+    this.decorOf,
+    this.label = 'Hành lang triển lãm',
     super.key,
   });
 
@@ -30,6 +34,14 @@ class CorridorView extends StatefulWidget {
   /// Called when the visitor is close to the end of what is loaded.
   final VoidCallback? onNearEnd;
   final double initialCameraZ;
+
+  /// Where the frames hang (the Gallery's salon wall by default).
+  final List<FrameSlot> Function(List<GalleryEntry> entries)? layout;
+  final CorridorStyle style;
+  final FrameDecor Function(GalleryEntry entry)? decorOf;
+
+  /// What a screen reader calls this place.
+  final String label;
 
   @override
   State<CorridorView> createState() => _CorridorViewState();
@@ -43,11 +55,14 @@ class _CorridorViewState extends State<CorridorView>
   late final AnimationController _motion = AnimationController.unbounded(
     vsync: this,
   )..addListener(_onMotion);
-  late List<FrameSlot> _slots = layoutFrames(_ids);
+  late List<FrameSlot> _slots = _layOut();
   bool _lite = false;
   final List<int> _frameMicros = [];
 
   List<String> get _ids => [for (final entry in widget.entries) entry.id];
+
+  List<FrameSlot> _layOut() =>
+      widget.layout?.call(widget.entries) ?? layoutFrames(_ids);
 
   @override
   void initState() {
@@ -61,7 +76,7 @@ class _CorridorViewState extends State<CorridorView>
     final changed =
         old.entries.length != widget.entries.length ||
         !_sameIds(old.entries, widget.entries);
-    if (changed) _slots = layoutFrames(_ids);
+    if (changed) _slots = _layOut();
   }
 
   bool _sameIds(List<GalleryEntry> a, List<GalleryEntry> b) {
@@ -129,7 +144,7 @@ class _CorridorViewState extends State<CorridorView>
     return Semantics(
       container: true,
       label:
-          'Hành lang triển lãm với ${widget.entries.length} bức tranh. '
+          '${widget.label} với ${widget.entries.length} bức tranh. '
           'Vuốt lên để đi tới, chạm một bức để xem. '
           'Dùng nút Xem dạng lưới để duyệt bằng danh sách.',
       child: LayoutBuilder(
@@ -169,6 +184,8 @@ class _CorridorViewState extends State<CorridorView>
                         slots: _slots,
                         cache: widget.cache,
                         lite: _lite,
+                        style: widget.style,
+                        decorOf: widget.decorOf,
                       ),
                     ),
                   ),

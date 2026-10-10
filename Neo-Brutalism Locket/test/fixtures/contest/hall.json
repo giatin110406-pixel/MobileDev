@@ -1,6 +1,6 @@
 [
  {
-  "id": "43467090-a5b8-450a-8bb7-235ccc74e850",
+  "id": "9b77299f-76a2-4294-ab02-645b8fdaf9a7",
   "seq": 1,
   "mine": false,
   "rank": 1,
@@ -30,14 +30,14 @@
   "my_score": null,
   "title_en": "The Starry Night",
   "title_vi": "Đêm đầy sao",
-  "week_key": "E2E-one-28f0f2",
-  "contest_id": "1bab8026-2c76-4d24-860c-86dc6ef1d08a",
+  "week_key": "E2E-one-758391",
+  "contest_id": "e6ac0e33-a8f1-4f91-936b-b3ac5a9124d2",
   "group_name": "E2E Team A",
   "vote_count": 4,
-  "submitted_at": "2026-10-09T13:04:41.867781+00:00"
+  "submitted_at": "2026-10-10T04:06:39.467267+00:00"
  },
  {
-  "id": "71597087-5084-4806-8285-7a37802f400d",
+  "id": "260546fa-3c94-45aa-98fa-374e7537146d",
   "seq": 2,
   "mine": false,
   "rank": 2,
@@ -67,14 +67,14 @@
   "my_score": null,
   "title_en": "The Starry Night",
   "title_vi": "Đêm đầy sao",
-  "week_key": "E2E-one-28f0f2",
-  "contest_id": "1bab8026-2c76-4d24-860c-86dc6ef1d08a",
+  "week_key": "E2E-one-758391",
+  "contest_id": "e6ac0e33-a8f1-4f91-936b-b3ac5a9124d2",
   "group_name": "E2E Team B",
   "vote_count": 4,
-  "submitted_at": "2026-10-09T13:04:42.781415+00:00"
+  "submitted_at": "2026-10-10T04:06:47.002459+00:00"
  },
  {
-  "id": "a860a5be-f683-4115-b208-e8e704be95d7",
+  "id": "37ea63b3-3b7f-4bdc-b6f3-aac4d418d55f",
   "seq": 3,
   "mine": false,
   "rank": 3,
@@ -104,10 +104,10 @@
   "my_score": null,
   "title_en": "The Starry Night",
   "title_vi": "Đêm đầy sao",
-  "week_key": "E2E-one-28f0f2",
-  "contest_id": "1bab8026-2c76-4d24-860c-86dc6ef1d08a",
+  "week_key": "E2E-one-758391",
+  "contest_id": "e6ac0e33-a8f1-4f91-936b-b3ac5a9124d2",
   "group_name": "E2E Team C",
   "vote_count": 4,
-  "submitted_at": "2026-10-09T13:04:43.655339+00:00"
+  "submitted_at": "2026-10-10T04:06:47.43923+00:00"
  }
 ]

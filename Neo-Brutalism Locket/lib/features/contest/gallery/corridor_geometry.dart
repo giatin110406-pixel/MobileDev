@@ -143,6 +143,31 @@ List<FrameSlot> layoutFrames(List<String> entryIds) {
   return slots;
 }
 
+/// The Hall of Fame: every painting has a bay of its own and is twice as big as an
+/// ordinary frame. They alternate left and right, in the order given (newest week
+/// first), with room around each one for a spot light and a name plate.
+List<FrameSlot> layoutHall(int count) {
+  const size = 2.0;
+  const step = size + 1.5;
+  const centre = -0.2;
+  final slots = <FrameSlot>[];
+  for (var i = 0; i < count; i++) {
+    final z =
+        Corridor.startZ + 0.5 + (i ~/ 2) * step + (i.isOdd ? step / 2 : 0);
+    slots.add(
+      FrameSlot(
+        index: i,
+        side: i.isEven ? -1 : 1,
+        z0: z,
+        z1: z + size,
+        yTop: centre - size / 2,
+        yBottom: centre + size / 2,
+      ),
+    );
+  }
+  return slots;
+}
+
 /// How far the corridor reaches (the end of the last frame).
 double corridorLength(List<FrameSlot> slots) =>
     slots.fold(Corridor.startZ, (end, slot) => math.max(end, slot.z1));

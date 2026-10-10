@@ -10,6 +10,7 @@ import 'package:neo_brutalism_locket/features/contest/entry_store.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_store.dart';
+import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 
 final t0 = DateTime.utc(2026, 10, 10, 12); // a Saturday, noon UTC
 
@@ -34,6 +35,34 @@ GalleryEntry entryOf(
   rank: rank,
   score: score,
   voteCount: rank == null ? null : 4,
+);
+
+GalleryShopItem shopItemOf(
+  int rank, {
+  bool owned = false,
+  int? stock = 100,
+  int sold = 0,
+}) => GalleryShopItem(
+  id: 'contest_e$rank',
+  title: 'Group $rank',
+  rarity: rank == 1 ? Rarity.legendary : Rarity.rare,
+  theme: CosmeticTheme.vanGogh,
+  price: const [300, 220, 150][rank - 1],
+  rank: rank,
+  weekKey: '2026-W40',
+  titleVi: 'Hoa hướng dương',
+  titleEn: 'Sunflowers',
+  owned: owned,
+  stock: stock,
+  sold: sold,
+);
+
+BannerArt bannerArtOf() => BannerArt(
+  width: 2,
+  height: 2,
+  palette: const [0xFF000000, 0xFFFF0000],
+  pixels: Uint8List.fromList([0, 1, 1, 0]),
+  groupName: 'Painters',
 );
 
 ContestInfo contestInfo({
@@ -96,6 +125,11 @@ class FakeContest implements ContestRepository {
   ContestFailure? failOverview;
   EntryDetail? detail;
   ContestResults? resultsOf;
+  final List<GalleryEntry> hall = [];
+  final List<GalleryShopItem> shop = [];
+  final Map<String, BannerArt> art = {};
+  int shopLoads = 0;
+  int artLoads = 0;
   final _changes = StreamController<void>.broadcast();
   int pageLoads = 0;
 
@@ -221,8 +255,25 @@ class FakeContest implements ContestRepository {
       );
 
   @override
-  Future<List<GalleryEntry>> hallOfFame({int offset = 0, int limit = 12}) async =>
-      const [];
+  Future<List<GalleryEntry>> hallOfFame({int offset = 0, int limit = 12}) async {
+    _maybeFail();
+    return hall.skip(offset).take(limit).toList();
+  }
+
+  @override
+  Future<List<GalleryShopItem>> shopItems() async {
+    shopLoads++;
+    _maybeFail();
+    return List.of(shop);
+  }
+
+  @override
+  Future<BannerArt> bannerArt(String itemId) async {
+    artLoads++;
+    final found = art[itemId];
+    if (found == null) throw const ContestFailure(ContestFailureKind.notFound);
+    return found;
+  }
 }
 
 void main() {

@@ -9,6 +9,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_painter.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.dart';
+import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 
 const _palette = [
   0xFFF3E9D2, 0xFF1D2B53, 0xFF2F4B8F, 0xFF4D7FC4, //
@@ -45,7 +46,94 @@ GalleryEntry sample(int seq) {
   );
 }
 
+/// A winning painting for the Hall of Fame pictures.
+GalleryEntry winnerSample(int n) {
+  final base = sample(n);
+  return GalleryEntry(
+    id: base.id,
+    contestId: 'c',
+    seq: 1,
+    groupName: 'Nhóm Hướng Dương $n',
+    width: base.width,
+    height: base.height,
+    palette: base.palette,
+    pixels: base.pixels,
+    submittedAt: base.submittedAt,
+    rank: (n - 1) % 3 + 1,
+    score: 4.2 - n * 0.1,
+    voteCount: 12,
+    weekKey: '2026-W${41 - n}',
+    titleVi: 'Đêm đầy sao',
+    titleEn: 'The Starry Night',
+  );
+}
+
 void main() {
+  Future<void> shootHall(
+    WidgetTester tester, {
+    required double cameraZ,
+    String? writeTo,
+  }) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final entries = [for (var i = 1; i <= 12; i++) winnerSample(i)];
+    final slots = layoutHall(entries.length);
+    final cache = EntryImageCache();
+    await tester.runAsync(() async {
+      for (final slot in visibleSlots(slots, cameraZ)) {
+        await cache.load(entries[slot.index]);
+      }
+    });
+    final camera = ValueNotifier<double>(cameraZ);
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: RepaintBoundary(
+          child: SizedBox.expand(
+            child: CustomPaint(
+              painter: CorridorPainter(
+                camera: camera,
+                entries: entries,
+                slots: slots,
+                cache: cache,
+                style: CorridorStyle.hall,
+                decorOf: (e) => hallDecor(e, vietnamese: true),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    if (writeTo != null) {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byType(RepaintBoundary).first,
+      );
+      final image = await tester.runAsync(() => boundary.toImage());
+      final bytes = await tester.runAsync(
+        () => image!.toByteData(format: ui.ImageByteFormat.png),
+      );
+      File(writeTo).writeAsBytesSync(bytes!.buffer.asUint8List());
+    }
+    await tester.pumpWidget(const SizedBox());
+    camera.dispose();
+    cache.dispose();
+  }
+
+  testWidgets('the Hall of Fame room at the entrance', (tester) async {
+    const path = String.fromEnvironment('HALL_PNG');
+    await shootHall(
+      tester,
+      cameraZ: const int.fromEnvironment('HALL_Z_TENTHS') / 10,
+      writeTo: path.isEmpty ? null : path,
+    );
+  });
+
+  testWidgets('the Hall of Fame room further in', (tester) async {
+    await shootHall(tester, cameraZ: 9);
+  });
+
   Future<void> shoot(
     WidgetTester tester, {
     required double cameraZ,
@@ -88,8 +176,9 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(CustomPaint), findsWidgets);
     if (writeTo != null) {
-      final boundary =
-          tester.renderObject<RenderRepaintBoundary>(find.byType(RepaintBoundary).first);
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byType(RepaintBoundary).first,
+      );
       final image = await tester.runAsync(() => boundary.toImage());
       final bytes = await tester.runAsync(
         () => image!.toByteData(format: ui.ImageByteFormat.png),

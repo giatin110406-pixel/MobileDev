@@ -220,6 +220,7 @@ PlayerException playerFailureFor(String code, {PlayerState? known}) {
       'Nhiệm vụ đã hết hạn lúc 00:00. Hôm nay có nhiệm vụ mới!',
     ),
     'already_owned' => const PlayerException('Bạn đã sở hữu món này.'),
+    'sold_out' => const PlayerException('Món này đã hết bản. Hẹn bạn tuần sau!'),
     'not_owned' => const PlayerException('Hãy mua món này trước.'),
     'not_found' => const PlayerException('Không tìm thấy món này.'),
     'insufficient_funds' => const NotEnoughSunbit(1),

@@ -6,6 +6,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_screen.dart';
+import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/results_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/submit_entry_sheet.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
@@ -53,6 +54,15 @@ class _ContestScreenState extends State<ContestScreen> {
             widget.store.theme?.title(vietnamese: isVietnamese(context)) ??
             'Gallery',
         contestId: widget.store.contest?.id,
+      ),
+    ),
+  );
+
+  void _openHall() => Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      builder: (_) => HallOfFameScreen(
+        repository: widget.store.repository,
+        safety: widget.safety,
       ),
     ),
   );
@@ -217,16 +227,24 @@ class _ContestScreenState extends State<ContestScreen> {
           _statusCard(contest, phase, left, milestone),
           const SizedBox(height: 14),
           ..._entryCards(overview, phase),
-          if (contest.acceptedCount > 0) ...[
-            const SizedBox(height: 4),
-            NeoButton(
-              label: 'VÀO GALLERY (${contest.acceptedCount} BÀI)',
-              icon: Icons.museum_outlined,
-              expand: true,
-              variant: NeoButtonVariant.secondary,
-              onPressed: _openGallery,
-            ),
-          ],
+          const SizedBox(height: 4),
+          NeoButton(
+            label: contest.acceptedCount > 0
+                ? 'VÀO GALLERY (${contest.acceptedCount} BÀI)'
+                : 'VÀO GALLERY',
+            icon: Icons.museum_outlined,
+            expand: true,
+            variant: NeoButtonVariant.secondary,
+            onPressed: _openGallery,
+          ),
+          const SizedBox(height: 10),
+          NeoButton(
+            label: 'HALL OF FAME',
+            icon: Icons.emoji_events_outlined,
+            expand: true,
+            variant: NeoButtonVariant.accent,
+            onPressed: _openHall,
+          ),
           if (phase == ContestPhase.finalized) ...[
             const SizedBox(height: 10),
             NeoButton(

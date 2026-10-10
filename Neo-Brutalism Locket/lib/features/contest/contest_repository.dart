@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart'
     show parseHexColor;
+import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 enum ContestPhase { upcoming, open, judging, closed, finalized }
@@ -444,6 +445,105 @@ class ContestResults {
   );
 }
 
+/// A winning painting for sale in the shop, as a profile banner.
+class GalleryShopItem {
+  const GalleryShopItem({
+    required this.id,
+    required this.title,
+    required this.rarity,
+    required this.theme,
+    required this.price,
+    required this.rank,
+    required this.weekKey,
+    required this.titleVi,
+    required this.titleEn,
+    required this.owned,
+    this.stock,
+    this.sold = 0,
+  });
+
+  final String id;
+
+  /// The name of the group that painted it.
+  final String title;
+  final Rarity rarity;
+  final CosmeticTheme theme;
+  final int price;
+  final int rank;
+  final String weekKey;
+  final String titleVi;
+  final String titleEn;
+  final bool owned;
+
+  /// Null = no limit.
+  final int? stock;
+  final int sold;
+
+  int? get left => stock == null ? null : stock! - sold;
+  bool get soldOut => left != null && left! <= 0;
+
+  /// The same thing as the fixed shop's items, so the buy / equip logic is shared.
+  ShopItem toShopItem() => ShopItem(
+    id: id,
+    name: title,
+    kind: CosmeticKind.banner,
+    rarity: rarity,
+    theme: theme,
+    price: price,
+  );
+
+  factory GalleryShopItem.fromJson(Map<String, dynamic> json) =>
+      GalleryShopItem(
+        id: json['id'] as String,
+        title: json['title'] as String? ?? '?',
+        rarity: switch (json['rarity']) {
+          'legendary' => Rarity.legendary,
+          'rare' => Rarity.rare,
+          _ => Rarity.common,
+        },
+        theme: json['theme'] == 'vanGogh'
+            ? CosmeticTheme.vanGogh
+            : CosmeticTheme.pixel,
+        price: json['price'] as int,
+        rank: json['rank'] as int? ?? 3,
+        weekKey: json['week_key'] as String? ?? '',
+        titleVi: json['title_vi'] as String? ?? '',
+        titleEn: json['title_en'] as String? ?? '',
+        owned: json['owned'] as bool? ?? false,
+        stock: json['stock'] as int?,
+        sold: json['sold'] as int? ?? 0,
+      );
+}
+
+/// The picture behind a painting-banner.
+class BannerArt {
+  const BannerArt({
+    required this.width,
+    required this.height,
+    required this.palette,
+    required this.pixels,
+    required this.groupName,
+  });
+
+  final int width;
+  final int height;
+  final List<int> palette;
+  final Uint8List pixels;
+  final String groupName;
+
+  factory BannerArt.fromJson(Map<String, dynamic> json) => BannerArt(
+    width: json['width'] as int,
+    height: json['height'] as int,
+    palette: [
+      for (final hex in json['palette'] as List<dynamic>) parseHexColor('$hex'),
+    ],
+    pixels: base64Decode(
+      (json['pixels'] as String).replaceAll(RegExp(r'\s'), ''),
+    ),
+    groupName: json['group_name'] as String? ?? '',
+  );
+}
+
 enum ReportReasonKind { spam, inappropriate, harassment, other }
 
 enum ContestFailureKind {
@@ -512,6 +612,12 @@ abstract interface class ContestRepository {
   Future<ContestResults> results(String contestId);
 
   Future<List<GalleryEntry>> hallOfFame({int offset = 0, int limit = 12});
+
+  /// The winning paintings on sale in the shop.
+  Future<List<GalleryShopItem>> shopItems();
+
+  /// The picture of a painting-banner (for drawing it on a profile).
+  Future<BannerArt> bannerArt(String itemId);
 
   /// Fires when the contest row changes (a new entry, a new phase).
   Stream<void> get changes;
@@ -652,6 +758,21 @@ class SupabaseContestRepository implements ContestRepository {
             GalleryEntry.fromJson(row as Map<String, dynamic>),
         ];
       });
+
+  @override
+  Future<List<GalleryShopItem>> shopItems() => _guard(() async {
+    final rows = await _db.rpc('get_contest_shop');
+    return [
+      for (final row in rows as List<dynamic>)
+        GalleryShopItem.fromJson(row as Map<String, dynamic>),
+    ];
+  });
+
+  @override
+  Future<BannerArt> bannerArt(String itemId) => _guard(() async {
+    final json = await _db.rpc('get_banner_art', params: {'p_item': itemId});
+    return BannerArt.fromJson(json as Map<String, dynamic>);
+  });
 
   Future<T> _guard<T>(Future<T> Function() call) async {
     try {

@@ -6,6 +6,7 @@ import 'package:neo_brutalism_locket/features/contest/entry_detail_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_view.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
+import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_store.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 
@@ -111,6 +112,20 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     ),
                   ),
                   NeoIconButton(
+                    icon: Icons.emoji_events_outlined,
+                    tooltip: 'Hall of Fame',
+                    fill: NeoColors.orange,
+                    onPressed: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => HallOfFameScreen(
+                          repository: widget.repository,
+                          safety: widget.safety,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  NeoIconButton(
                     icon: _grid ? Icons.museum_outlined : Icons.grid_view,
                     tooltip: _grid ? 'Xem dạng hành lang' : 'Xem dạng lưới',
                     fill: NeoColors.yellow,
@@ -155,7 +170,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     return Stack(
       children: [
         if (_grid)
-          _GridView(entries: _store.entries, onOpen: _open)
+          GalleryGrid(entries: _store.entries, onOpen: _open)
         else
           CorridorView(
             entries: _store.entries,
@@ -219,8 +234,9 @@ class _Notice extends StatelessWidget {
   }
 }
 
-class _GridView extends StatelessWidget {
-  const _GridView({required this.entries, required this.onOpen});
+/// The same entries as a grid of framed pictures.
+class GalleryGrid extends StatelessWidget {
+  const GalleryGrid({required this.entries, required this.onOpen, super.key});
 
   final List<GalleryEntry> entries;
   final ValueChanged<GalleryEntry> onOpen;
