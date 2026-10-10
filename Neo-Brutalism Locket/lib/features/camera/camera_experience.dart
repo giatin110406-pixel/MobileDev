@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
+import 'package:neo_brutalism_locket/core/neo_progress.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
@@ -17,6 +18,7 @@ import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
@@ -93,7 +95,6 @@ class CameraTabState extends State<CameraTab> {
   bool _processing = false;
   bool _showOriginal = false;
   bool _showPrint = false;
-  String _progressStage = '';
   double _progress = 0;
 
   // Zoom: the lens limits, the current level, and the level a pinch began at.
@@ -555,7 +556,6 @@ class CameraTabState extends State<CameraTab> {
       final engine = widget.styleEngineFactory.create(styleType);
       if (mounted) {
         setState(() {
-          _progressStage = 'starting';
           _progress = 0;
         });
       }
@@ -565,7 +565,6 @@ class CameraTabState extends State<CameraTab> {
         onProgress: (stage, fraction) {
           if (!mounted) return;
           setState(() {
-            _progressStage = stage;
             _progress = fraction;
           });
         },
@@ -1353,21 +1352,13 @@ class CameraTabState extends State<CameraTab> {
           const SizedBox(height: 10),
           _buildStylePill(photo: photo),
           if (_processing && photo.status == ProcessingStatus.pending) ...[
-            const SizedBox(height: 10),
-            Text(
-              'WORKING · ${_progressStage.toUpperCase()}',
-              style: const TextStyle(
-                color: NeoColors.ink,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 6),
-            LinearProgressIndicator(
+            const SizedBox(height: 12),
+            NeoProgress(
               value: _progress <= 0 ? null : _progress,
-              color: NeoColors.teal,
-              backgroundColor: NeoColors.surface,
-              minHeight: 6,
+              label: styleWorkingLabel(
+                AppLocalizations.of(context),
+                photo.styleType,
+              ),
             ),
           ],
           const SizedBox(height: 16),

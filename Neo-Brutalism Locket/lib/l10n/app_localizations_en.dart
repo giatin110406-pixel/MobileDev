@@ -1007,4 +1007,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holdToFilm => 'HOLD TO FILM';
+
+  @override
+  String get styleWorking8bit => 'GRINDING PIXELS…';
+
+  @override
+  String get styleWorkingVanGogh => 'SWIRLING VAN GOGH COLOURS…';
+
+  @override
+  String get styleWorking => 'WORKING…';
 }

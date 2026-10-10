@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/ort_image_encoder.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/quest_preprocess.dart';

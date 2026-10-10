@@ -538,5 +538,8 @@
   "settingsFeedback": "CẢM GIÁC",
   "settingsHaptics": "Rung khi chạm",
   "holdToCompare": "GIỮ ĐỂ SO SÁNH",
-  "holdToFilm": "GIỮ ĐỂ QUAY"
+  "holdToFilm": "GIỮ ĐỂ QUAY",
+  "styleWorking8bit": "ĐANG MÀI PIXEL…",
+  "styleWorkingVanGogh": "ĐANG QUÉT MÀU VAN GOGH…",
+  "styleWorking": "ĐANG XỬ LÝ…"
 }

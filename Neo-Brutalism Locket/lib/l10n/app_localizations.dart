@@ -1897,6 +1897,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'GIỮ ĐỂ QUAY'**
   String get holdToFilm;
+
+  /// No description provided for @styleWorking8bit.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG MÀI PIXEL…'**
+  String get styleWorking8bit;
+
+  /// No description provided for @styleWorkingVanGogh.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG QUÉT MÀU VAN GOGH…'**
+  String get styleWorkingVanGogh;
+
+  /// No description provided for @styleWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG XỬ LÝ…'**
+  String get styleWorking;
 }
 
 class _AppLocalizationsDelegate
