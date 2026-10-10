@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The Sunbit balance pill. It bounces and floats "+N" whenever the balance
 /// goes up.
@@ -125,7 +126,7 @@ class StreakChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: onTap != null,
-      label: 'Streak $streak ngày',
+      label: AppLocalizations.of(context).streakSemantics(streak),
       child: GestureDetector(
         onTap: onTap,
         child: Container(

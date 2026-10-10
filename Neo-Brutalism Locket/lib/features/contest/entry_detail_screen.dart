@@ -6,6 +6,7 @@ import 'package:neo_brutalism_locket/features/contest/entry_store.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 const _reactions = ['🔥', '😍', '👏', '🎨', '😮'];
 
@@ -49,8 +50,8 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     showNeoSnack(
       context,
       error is ContestFailure
-          ? contestFailureText(error)
-          : 'Có lỗi xảy ra. Thử lại nhé.',
+          ? contestFailureText(AppLocalizations.of(context), error)
+          : AppLocalizations.of(context).cfUnknown,
     );
   }
 
@@ -90,7 +91,8 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     if (draft == null || !mounted) return;
     try {
       await _store.reportEntry(_kind(draft.reason), details: draft.details);
-      if (mounted) showNeoSnack(context, 'Đã gửi báo cáo. Cảm ơn bạn.');
+      if (!mounted) return;
+      showNeoSnack(context, AppLocalizations.of(context).reportSent);
     } on ContestFailure catch (failure) {
       _tell(failure);
     }
@@ -105,7 +107,8 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         _kind(draft.reason),
         details: draft.details,
       );
-      if (mounted) showNeoSnack(context, 'Đã gửi báo cáo. Cảm ơn bạn.');
+      if (!mounted) return;
+      showNeoSnack(context, AppLocalizations.of(context).reportSent);
     } on ContestFailure catch (failure) {
       _tell(failure);
     }
@@ -144,7 +147,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         children: [
           NeoIconButton(
             icon: Icons.arrow_back,
-            tooltip: 'Quay lại',
+            tooltip: AppLocalizations.of(context).backTooltip,
             onPressed: () => Navigator.of(context).pop(_store.entry),
           ),
           const SizedBox(width: 12),
@@ -164,7 +167,10 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                   ),
                 ),
                 Text(
-                  'Bài số ${entry.seq} · nộp ${formatMoment(entry.submittedAt)}',
+                  AppLocalizations.of(context).entryHeader(
+                    entry.seq,
+                    formatMoment(context, entry.submittedAt),
+                  ),
                   style: const TextStyle(
                     color: NeoColors.muted,
                     fontSize: 11,
@@ -177,7 +183,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
           if (!entry.mine)
             NeoIconButton(
               icon: Icons.flag_outlined,
-              tooltip: 'Báo cáo bài này',
+              tooltip: AppLocalizations.of(context).reportEntryTooltip,
               onPressed: _reportEntry,
             ),
         ],
@@ -211,8 +217,9 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                 height: entry.height,
                 palette: entry.palette,
                 pixels: entry.pixels,
-                semanticLabel:
-                    'Tranh của nhóm ${entry.groupName}, bài số ${entry.seq}',
+                semanticLabel: AppLocalizations.of(
+                  context,
+                ).entryArtSemantics(entry.groupName, entry.seq),
               ),
             ),
           ),
@@ -224,7 +231,11 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         _reactionsRow(),
         const SizedBox(height: 18),
         Text(
-          'BÌNH LUẬN${_store.isLoaded ? ' (${_store.comments.length})' : ''}',
+          _store.isLoaded
+              ? AppLocalizations.of(
+                  context,
+                ).commentsTitleCount(_store.comments.length)
+              : AppLocalizations.of(context).commentsTitle,
           style: const TextStyle(
             color: NeoColors.muted,
             fontSize: 10,
@@ -239,15 +250,23 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                 )
               : Column(
                   children: [
-                    Text(contestFailureText(_store.error!)),
+                    Text(
+                      contestFailureText(
+                        AppLocalizations.of(context),
+                        _store.error!,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    NeoButton(label: 'THỬ LẠI', onPressed: _store.load),
+                    NeoButton(
+                      label: AppLocalizations.of(context).retry,
+                      onPressed: _store.load,
+                    ),
                   ],
                 )
         else if (_store.comments.isEmpty)
-          const Text(
-            'Chưa có bình luận.',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).noComments,
+            style: const TextStyle(
               color: NeoColors.muted,
               fontWeight: FontWeight.w700,
             ),
@@ -259,7 +278,8 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
   }
 
   Widget _rankCard(GalleryEntry entry) {
-    const medals = {1: 'HẠNG NHẤT', 2: 'HẠNG NHÌ', 3: 'HẠNG BA'};
+    final l10n = AppLocalizations.of(context);
+    final medals = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -270,9 +290,11 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              '${medals[entry.rank] ?? 'TOP 3'}  ·  '
-              '${entry.score?.toStringAsFixed(2) ?? '?'} điểm '
-              '(${entry.voteCount ?? 0} phiếu)',
+              l10n.rankScoreLine(
+                medals[entry.rank] ?? l10n.rankTop3,
+                entry.score?.toStringAsFixed(2) ?? '?',
+                entry.voteCount ?? 0,
+              ),
               style: const TextStyle(
                 color: NeoColors.ink,
                 fontWeight: FontWeight.w900,
@@ -288,21 +310,22 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     final entry = _store.entry;
     final detail = _store.detail;
     final canRate = _store.canRate;
+    final l10n = AppLocalizations.of(context);
     String note;
     if (detail == null) {
-      note = 'Đang tải…';
+      note = l10n.ratingLoading;
     } else if (entry.mine) {
-      note = 'Đây là bài của nhóm bạn. Bạn không tự chấm được.';
+      note = l10n.ratingOwnGroup;
     } else if (!detail.participant) {
-      note = 'Chỉ thành viên các nhóm có bài dự thi mới chấm điểm được.';
+      note = l10n.ratingNotParticipant;
     } else if (detail.phase != ContestPhase.judging) {
       note = detail.phase == ContestPhase.finalized
-          ? 'Cuộc thi đã kết thúc.'
-          : 'Chưa đến giờ chấm điểm.';
+          ? l10n.ratingContestOver
+          : l10n.ratingNotYet;
     } else {
       note = entry.myScore == null
-          ? 'Chạm vào ngôi sao để chấm. Bạn sửa được đến hết cuộc thi.'
-          : 'Bạn chấm ${entry.myScore} sao. Chạm để đổi.';
+          ? l10n.ratingTapStar
+          : l10n.ratingYouGave(entry.myScore!);
     }
     return Container(
       padding: const EdgeInsets.all(14),
@@ -315,9 +338,9 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
               for (var star = 1; star <= 5; star++)
                 Semantics(
                   button: canRate,
-                  label: 'Chấm $star sao',
+                  label: l10n.rateStars(star),
                   child: IconButton(
-                    tooltip: 'Chấm $star sao',
+                    tooltip: l10n.rateStars(star),
                     onPressed: canRate ? () => _rate(star) : null,
                     icon: Icon(
                       (entry.myScore ?? 0) >= star
@@ -388,7 +411,9 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                comment.mine ? 'Bạn' : comment.authorName,
+                comment.mine
+                    ? AppLocalizations.of(context).commentYou
+                    : comment.authorName,
                 style: const TextStyle(
                   color: NeoColors.muted,
                   fontSize: 11,
@@ -410,7 +435,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         ),
         if (!comment.mine)
           IconButton(
-            tooltip: 'Báo cáo bình luận',
+            tooltip: AppLocalizations.of(context).reportCommentTooltip,
             onPressed: () => _reportComment(comment),
             icon: const Icon(Icons.flag_outlined, size: 20),
           ),
@@ -430,9 +455,9 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
             minLines: 1,
             maxLines: 2,
             onSubmitted: (_) => _send(),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               counterText: '',
-              hintText: 'Viết bình luận…',
+              hintText: AppLocalizations.of(context).writeCommentHint,
               isDense: true,
               border: OutlineInputBorder(),
             ),
@@ -441,7 +466,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         const SizedBox(width: 8),
         NeoIconButton(
           icon: Icons.send,
-          tooltip: 'Gửi',
+          tooltip: AppLocalizations.of(context).sendTooltip,
           fill: NeoColors.yellow,
           onPressed: _store.sending ? null : _send,
         ),

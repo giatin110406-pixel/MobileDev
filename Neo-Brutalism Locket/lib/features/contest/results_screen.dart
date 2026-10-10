@@ -4,6 +4,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/quest/confetti.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The winners of one contest: first, second and third, on a podium.
 class ResultsScreen extends StatefulWidget {
@@ -55,15 +56,17 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 children: [
                   NeoIconButton(
                     icon: Icons.arrow_back,
-                    tooltip: 'Quay lại',
+                    tooltip: AppLocalizations.of(context).backTooltip,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       results == null
-                          ? 'Kết quả'
-                          : 'Kết quả: ${vi ? results.titleVi : results.titleEn}',
+                          ? AppLocalizations.of(context).resultsTitle
+                          : AppLocalizations.of(context).resultsTitleWeek(
+                              vi ? results.titleVi : results.titleEn,
+                            ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -92,21 +95,29 @@ class _ResultsScreenState extends State<ResultsScreen> {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(contestFailureText(_error!)),
+                  Text(
+                    contestFailureText(AppLocalizations.of(context), _error!),
+                  ),
                   const SizedBox(height: 10),
-                  NeoButton(label: 'THỬ LẠI', onPressed: _load),
+                  NeoButton(
+                    label: AppLocalizations.of(context).retry,
+                    onPressed: _load,
+                  ),
                 ],
               ),
       );
     }
     if (results.phase != ContestPhase.finalized) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text(
-            'Kết quả sẽ có lúc 23:59 Chủ nhật (giờ Việt Nam).',
+            AppLocalizations.of(context).resultsLater,
             textAlign: TextAlign.center,
-            style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       );
@@ -117,9 +128,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
           padding: const EdgeInsets.all(24),
           child: Text(
             results.entryCount == 0
-                ? 'Tuần này chưa có bài dự thi nào.'
-                : 'Chưa có bài nào đủ số phiếu hợp lệ để xếp hạng '
-                      '(cần ít nhất 3 phiếu).',
+                ? AppLocalizations.of(context).resultsNoEntries
+                : AppLocalizations.of(context).resultsNoRanked,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: NeoColors.ink,
@@ -135,7 +145,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
           children: [
             Text(
-              '${results.entryCount} bài dự thi · ${results.weekKey}',
+              AppLocalizations.of(
+                context,
+              ).resultsEntryCount(results.entryCount, results.weekKey),
               style: const TextStyle(
                 color: NeoColors.muted,
                 fontSize: 12,
@@ -152,7 +164,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   Widget _winner(GalleryEntry entry) {
-    const names = {1: 'HẠNG NHẤT', 2: 'HẠNG NHÌ', 3: 'HẠNG BA'};
+    final l10n = AppLocalizations.of(context);
+    final names = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
     const colors = {
       1: NeoColors.yellow,
       2: NeoColors.teal,
@@ -172,7 +185,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  names[rank] ?? 'TOP 3',
+                  names[rank] ?? l10n.rankTop3,
                   style: TextStyle(
                     color: NeoColors.ink,
                     fontSize: rank == 1 ? 20 : 16,
@@ -181,7 +194,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ),
               ),
               NeoLabel(
-                '${entry.score?.toStringAsFixed(2) ?? '?'} · ${entry.voteCount ?? 0} phiếu',
+                l10n.resultsScoreVotes(
+                  entry.score?.toStringAsFixed(2) ?? '?',
+                  entry.voteCount ?? 0,
+                ),
                 color: NeoColors.surface,
               ),
             ],

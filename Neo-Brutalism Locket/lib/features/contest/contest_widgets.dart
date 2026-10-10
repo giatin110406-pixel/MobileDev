@@ -2,43 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 bool isVietnamese(BuildContext context) =>
     Localizations.localeOf(context).languageCode != 'en';
 
 /// What went wrong with a contest action, in words.
-String contestFailureText(ContestFailure failure) => switch (failure.kind) {
-  ContestFailureKind.notFound => 'Không tìm thấy bài dự thi.',
-  ContestFailureKind.notOwner => 'Chỉ trưởng nhóm mới nộp bài được.',
-  ContestFailureKind.notOpen => 'Chưa đến giờ nộp bài, hoặc đã hết giờ nộp.',
-  ContestFailureKind.notJudging => 'Hiện chưa phải lúc chấm điểm.',
-  ContestFailureKind.alreadySubmitted => 'Nhóm này đã nộp bài tuần này rồi.',
-  ContestFailureKind.contestFull =>
-    'Gallery tuần này đã đủ 100 bài. Hẹn bạn tuần sau!',
-  ContestFailureKind.canvasTooEmpty =>
-    'Canvas còn quá trống. Hãy vẽ thêm rồi nộp nhé.',
-  ContestFailureKind.groupTooSmall => 'Nhóm cần ít nhất 2 người để dự thi.',
-  ContestFailureKind.noCanvas => 'Nhóm chưa có canvas.',
-  ContestFailureKind.notParticipant =>
-    'Chỉ thành viên các nhóm có bài dự thi mới chấm và bình luận được.',
-  ContestFailureKind.ownEntry => 'Bạn không chấm được bài của nhóm mình.',
-  ContestFailureKind.badScore => 'Điểm phải từ 1 đến 5 sao.',
-  ContestFailureKind.empty => 'Hãy nhập nội dung.',
-  ContestFailureKind.tooLong => 'Bình luận tối đa 200 ký tự.',
-  ContestFailureKind.tooFast => 'Chậm lại một chút rồi bình luận tiếp nhé.',
-  ContestFailureKind.tooMany => 'Bạn đã bình luận đủ số lần cho tuần này.',
-  ContestFailureKind.blockedWord => 'Bình luận có từ không phù hợp.',
-  ContestFailureKind.tooManyReports => 'Hôm nay bạn đã báo cáo quá nhiều.',
-  ContestFailureKind.network => 'Không kết nối được. Thử lại nhé.',
-  ContestFailureKind.unknown => 'Có lỗi xảy ra. Thử lại nhé.',
-};
+String contestFailureText(AppLocalizations l10n, ContestFailure failure) =>
+    switch (failure.kind) {
+      ContestFailureKind.notFound => l10n.cfNotFound,
+      ContestFailureKind.notOwner => l10n.cfNotOwner,
+      ContestFailureKind.notOpen => l10n.cfNotOpen,
+      ContestFailureKind.notJudging => l10n.cfNotJudging,
+      ContestFailureKind.alreadySubmitted => l10n.cfAlreadySubmitted,
+      ContestFailureKind.contestFull => l10n.cfContestFull,
+      ContestFailureKind.canvasTooEmpty => l10n.cfCanvasTooEmpty,
+      ContestFailureKind.groupTooSmall => l10n.cfGroupTooSmall,
+      ContestFailureKind.noCanvas => l10n.cfNoCanvas,
+      ContestFailureKind.notParticipant => l10n.cfNotParticipant,
+      ContestFailureKind.ownEntry => l10n.cfOwnEntry,
+      ContestFailureKind.badScore => l10n.cfBadScore,
+      ContestFailureKind.empty => l10n.cfEmpty,
+      ContestFailureKind.tooLong => l10n.cfTooLong,
+      ContestFailureKind.tooFast => l10n.cfTooFast,
+      ContestFailureKind.tooMany => l10n.cfTooMany,
+      ContestFailureKind.blockedWord => l10n.cfBlockedWord,
+      ContestFailureKind.tooManyReports => l10n.cfTooManyReports,
+      ContestFailureKind.network => l10n.cfNetwork,
+      ContestFailureKind.unknown => l10n.cfUnknown,
+    };
 
-String phaseLabel(ContestPhase phase) => switch (phase) {
-  ContestPhase.upcoming => 'SẮP DIỄN RA',
-  ContestPhase.open => 'ĐANG NHẬN BÀI',
-  ContestPhase.judging => 'ĐANG CHẤM ĐIỂM',
-  ContestPhase.closed => 'ĐANG TỔNG KẾT',
-  ContestPhase.finalized => 'ĐÃ CÓ KẾT QUẢ',
+String phaseLabel(AppLocalizations l10n, ContestPhase phase) => switch (phase) {
+  ContestPhase.upcoming => l10n.phaseUpcoming,
+  ContestPhase.open => l10n.phaseOpen,
+  ContestPhase.judging => l10n.phaseJudging,
+  ContestPhase.closed => l10n.phaseClosed,
+  ContestPhase.finalized => l10n.phaseFinalized,
 };
 
 Color phaseColor(ContestPhase phase) => switch (phase) {
@@ -49,27 +48,37 @@ Color phaseColor(ContestPhase phase) => switch (phase) {
   ContestPhase.finalized => NeoColors.purple,
 };
 
-/// "1 ngày 03:12:09" or "03:12:09".
-String formatCountdown(Duration left) {
+/// "1d 03:12:09" or "03:12:09".
+String formatCountdown(AppLocalizations l10n, Duration left) {
   String two(int n) => n.toString().padLeft(2, '0');
   final days = left.inDays;
   final hours = left.inHours % 24;
   final clock =
       '${two(hours)}:${two(left.inMinutes % 60)}:${two(left.inSeconds % 60)}';
-  return days > 0 ? '$days ngày $clock' : clock;
+  return days > 0 ? l10n.countdownDays(days, clock) : clock;
 }
 
-String _milestoneText(ContestPhase next) => switch (next) {
-  ContestPhase.open => 'đến giờ nhận bài',
-  ContestPhase.judging => 'hết giờ nhận bài, bắt đầu chấm',
-  ContestPhase.closed => 'chốt kết quả',
-  _ => '',
-};
+String _milestoneText(AppLocalizations l10n, ContestPhase next) =>
+    switch (next) {
+      ContestPhase.open => l10n.milestoneOpen,
+      ContestPhase.judging => l10n.milestoneJudging,
+      ContestPhase.closed => l10n.milestoneClosed,
+      _ => '',
+    };
 
-/// A moment in the phone's time zone, e.g. "Th 7 10/10 00:00".
-String formatMoment(DateTime time) {
+/// A moment in the phone's time zone, e.g. "Sat 10/10 00:00".
+String formatMoment(BuildContext context, DateTime time) {
+  final l10n = AppLocalizations.of(context);
   final local = time.toLocal();
-  const days = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
+  final days = [
+    l10n.weekdayMon,
+    l10n.weekdayTue,
+    l10n.weekdayWed,
+    l10n.weekdayThu,
+    l10n.weekdayFri,
+    l10n.weekdaySat,
+    l10n.weekdaySun,
+  ];
   String two(int n) => n.toString().padLeft(2, '0');
   return '${days[local.weekday - 1]} ${local.day}/${local.month} '
       '${two(local.hour)}:${two(local.minute)}';
@@ -99,9 +108,11 @@ class ContestBanner extends StatelessWidget {
         final vi = isVietnamese(context);
         return Semantics(
           button: true,
-          label:
-              'Cuộc thi tuần ${contest.weekKey}: ${theme.title(vietnamese: vi)}. '
-              '${phaseLabel(phase)}',
+          label: AppLocalizations.of(context).contestBannerSemantics(
+            contest.weekKey,
+            theme.title(vietnamese: vi),
+            phaseLabel(AppLocalizations.of(context), phase),
+          ),
           child: GestureDetector(
             onTap: onTap,
             child: Container(
@@ -116,7 +127,9 @@ class ContestBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CUỘC THI TUẦN · ${phaseLabel(phase)}',
+                          AppLocalizations.of(context).contestBannerTitle(
+                            phaseLabel(AppLocalizations.of(context), phase),
+                          ),
                           style: const TextStyle(
                             color: NeoColors.ink,
                             fontSize: 10,
@@ -136,7 +149,16 @@ class ContestBanner extends StatelessWidget {
                         ),
                         if (left != null && milestone != null)
                           Text(
-                            'Còn ${formatCountdown(left)} ${_milestoneText(milestone.phase)}',
+                            AppLocalizations.of(context).contestTimeLeft(
+                              formatCountdown(
+                                AppLocalizations.of(context),
+                                left,
+                              ),
+                              _milestoneText(
+                                AppLocalizations.of(context),
+                                milestone.phase,
+                              ),
+                            ),
                             style: const TextStyle(
                               color: NeoColors.ink,
                               fontSize: 11,

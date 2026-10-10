@@ -121,7 +121,7 @@ void main() {
     testWidgets('everyday posts have no music', (tester) async {
       final music = await pumpFeed(tester, [FeedEntry.post(plainPost)]);
       expect(music.log, isEmpty);
-      expect(find.byTooltip('Tắt nhạc'), findsNothing);
+      expect(find.byTooltip('Turn music off'), findsNothing);
     });
 
     testWidgets('muted: nothing plays; the button asks to unmute', (
@@ -135,7 +135,7 @@ void main() {
         onMute: (value) => asked = value,
       );
       expect(music.playing, isNull);
-      await tester.tap(find.byTooltip('Bật nhạc'));
+      await tester.tap(find.byTooltip('Turn music on'));
       expect(asked, isFalse);
     });
 
@@ -219,10 +219,10 @@ void main() {
       tester,
     ) async {
       await pumpSheet(tester, shopItemById('frame_pixel')!);
-      expect(find.text('CÒN THIẾU 50 SUNBIT'), findsOneWidget);
+      expect(find.text('50 SUNBIT SHORT'), findsOneWidget);
     });
 
-    testWidgets('buying turns the button into TRANG BỊ, then THÁO RA', (
+    testWidgets('buying turns the button into EQUIP, then REMOVE', (
       tester,
     ) async {
       final item = shopItemById('frame_pixel')!;
@@ -250,23 +250,23 @@ void main() {
       });
       expect(store.balance, 50);
       await pumpSheet(tester, item);
-      expect(find.text('MUA · 50 SUNBIT'), findsOneWidget);
+      expect(find.text('BUY · 50 SUNBIT'), findsOneWidget);
 
       await tester.runAsync(() async {
-        await tester.tap(find.text('MUA · 50 SUNBIT'));
+        await tester.tap(find.text('BUY · 50 SUNBIT'));
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await tester.pumpAndSettle();
       expect(store.balance, 0);
-      expect(find.text('TRANG BỊ'), findsOneWidget);
+      expect(find.text('EQUIP'), findsOneWidget);
 
       await tester.runAsync(() async {
-        await tester.tap(find.text('TRANG BỊ'));
+        await tester.tap(find.text('EQUIP'));
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await tester.pumpAndSettle();
       expect(store.state!.equippedFrame, item.id);
-      expect(find.text('THÁO RA'), findsOneWidget);
+      expect(find.text('REMOVE'), findsOneWidget);
     });
   });
 
@@ -292,7 +292,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('Chụp ${store.todayQuest!.subject}'), findsOneWidget);
+      expect(find.text('Shoot ${store.todayQuest!.subject}'), findsOneWidget);
       expect(tester.widget<AttemptDots>(find.byType(AttemptDots)).left, 3);
 
       await tester.runAsync(() async {
@@ -302,7 +302,7 @@ void main() {
       });
       await tester.pump();
       expect(questStatusOf(store), QuestStatus.outOfTries);
-      expect(find.text('HẾT LƯỢT'), findsOneWidget);
+      expect(find.text('NO TRIES'), findsOneWidget);
     });
   });
 

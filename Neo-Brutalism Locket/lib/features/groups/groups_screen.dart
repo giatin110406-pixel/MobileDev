@@ -117,9 +117,9 @@ class GroupsScreen extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         if (store.incoming.isNotEmpty) ...[
-          const Text(
-            'LỜI MỜI VÀO NHÓM',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).groupsInvitesTitle,
+            style: const TextStyle(
               color: NeoColors.muted,
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -165,8 +165,8 @@ class _ErrorNote extends StatelessWidget {
           Expanded(
             child: Text(
               stale
-                  ? 'Không cập nhật được. Đang hiện dữ liệu cũ.'
-                  : 'Không tải được danh sách nhóm.',
+                  ? AppLocalizations.of(context).groupsStale
+                  : AppLocalizations.of(context).groupsLoadFailed,
               style: const TextStyle(
                 color: NeoColors.ink,
                 fontWeight: FontWeight.w700,
@@ -174,7 +174,10 @@ class _ErrorNote extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          NeoButton(label: 'THỬ LẠI', onPressed: onRetry),
+          NeoButton(
+            label: AppLocalizations.of(context).retry,
+            onPressed: onRetry,
+          ),
         ],
       ),
     );
@@ -189,23 +192,22 @@ class _EmptyGroups extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: NeoTheme.panel(color: NeoColors.surface),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Chưa có nhóm nào',
-            style: TextStyle(
+            AppLocalizations.of(context).groupsEmptyTitle,
+            style: const TextStyle(
               fontFamily: NeoFont.display,
               color: NeoColors.ink,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Tạo nhóm với bạn bè để cùng nhắn tin và cùng vẽ một canvas pixel. '
-            'Mỗi nhiệm vụ hằng ngày cho bạn 10 mực, mỗi ô vẽ tốn 1 mực.',
-            style: TextStyle(
+            AppLocalizations.of(context).groupsEmptyBody,
+            style: const TextStyle(
               color: NeoColors.ink,
               fontSize: 13,
               height: 1.35,
@@ -227,16 +229,24 @@ class _GroupTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final last = summary.lastMessage;
+    final l10n = AppLocalizations.of(context);
     final preview = last == null
-        ? 'Chưa có tin nhắn'
+        ? l10n.groupPreviewNone
         : last.kind == GroupMessageKind.system
-        ? 'Hoạt động mới trong nhóm'
+        ? l10n.groupPreviewActivity
         : last.body;
     return Semantics(
       button: true,
-      label:
-          'Nhóm ${summary.group.name}, ${summary.members.length} thành viên'
-          '${summary.unread > 0 ? ', ${summary.unread} tin chưa đọc' : ''}',
+      label: summary.unread > 0
+          ? l10n.groupTileSemanticsUnread(
+              summary.group.name,
+              l10n.memberCount(summary.members.length),
+              summary.unread,
+            )
+          : l10n.groupTileSemantics(
+              summary.group.name,
+              l10n.memberCount(summary.members.length),
+            ),
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -262,8 +272,15 @@ class _GroupTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${summary.members.length}/${summary.group.maxMembers} '
-                      'thành viên${summary.iAmOwner ? ' · trưởng nhóm' : ''}',
+                      summary.iAmOwner
+                          ? l10n.groupMembersLineOwner(
+                              summary.members.length,
+                              summary.group.maxMembers,
+                            )
+                          : l10n.groupMembersLine(
+                              summary.members.length,
+                              summary.group.maxMembers,
+                            ),
                       style: const TextStyle(
                         color: NeoColors.muted,
                         fontSize: 11,
@@ -312,10 +329,20 @@ class _InviteTileState extends State<_InviteTile> {
     try {
       await widget.store.respond(widget.invite, accept: accept);
       if (mounted && accept) {
-        showNeoSnack(context, 'Đã vào nhóm ${widget.invite.groupName}.');
+        showNeoSnack(
+          context,
+          AppLocalizations.of(
+            context,
+          ).groupJoinedSnack(widget.invite.groupName),
+        );
       }
     } on GroupFailure catch (failure) {
-      if (mounted) showNeoSnack(context, groupFailureText(failure));
+      if (mounted) {
+        showNeoSnack(
+          context,
+          groupFailureText(AppLocalizations.of(context), failure),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -349,7 +376,9 @@ class _InviteTileState extends State<_InviteTile> {
                       ),
                     ),
                     Text(
-                      '${invite.person.displayName} mời bạn vào nhóm',
+                      AppLocalizations.of(
+                        context,
+                      ).groupInviteFrom(invite.person.displayName),
                       style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 12,
@@ -366,7 +395,7 @@ class _InviteTileState extends State<_InviteTile> {
             children: [
               Expanded(
                 child: NeoButton(
-                  label: 'TỪ CHỐI',
+                  label: AppLocalizations.of(context).friendsDecline,
                   variant: NeoButtonVariant.outline,
                   expand: true,
                   onPressed: _busy ? null : () => _answer(false),
@@ -375,7 +404,7 @@ class _InviteTileState extends State<_InviteTile> {
               const SizedBox(width: 10),
               Expanded(
                 child: NeoButton(
-                  label: 'THAM GIA',
+                  label: AppLocalizations.of(context).groupJoin,
                   expand: true,
                   onPressed: _busy ? null : () => _answer(true),
                 ),
@@ -441,7 +470,7 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
     } on GroupFailure catch (failure) {
       if (mounted) {
         setState(() {
-          _error = groupFailureText(failure);
+          _error = groupFailureText(AppLocalizations.of(context), failure);
           _busy = false;
         });
       }
@@ -461,9 +490,9 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'TẠO NHÓM MỚI',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).groupCreateTitle,
+                style: const TextStyle(
                   fontFamily: NeoFont.display,
                   color: NeoColors.ink,
                   fontSize: 18,
@@ -475,8 +504,8 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                 controller: _name,
                 maxLength: 40,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Tên nhóm',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).groupNameLabel,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -485,25 +514,25 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                 controller: _rules,
                 maxLength: 500,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Quy tắc (không bắt buộc)',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).groupRulesOptional,
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Số thành viên tối đa',
-                      style: TextStyle(
+                      AppLocalizations.of(context).groupMaxMembers,
+                      style: const TextStyle(
                         color: NeoColors.ink,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Giảm',
+                    tooltip: AppLocalizations.of(context).decrease,
                     onPressed: _max > 2 ? () => setState(() => _max--) : null,
                     icon: const Icon(Icons.remove_circle_outline),
                   ),
@@ -517,7 +546,7 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Tăng',
+                    tooltip: AppLocalizations.of(context).increase,
                     onPressed: _max < 12 ? () => setState(() => _max++) : null,
                     icon: const Icon(Icons.add_circle_outline),
                   ),
@@ -535,7 +564,9 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
               ],
               const SizedBox(height: 12),
               NeoButton(
-                label: _busy ? 'ĐANG TẠO…' : 'TẠO NHÓM',
+                label: _busy
+                    ? AppLocalizations.of(context).groupCreating
+                    : AppLocalizations.of(context).groupCreate,
                 icon: Icons.check,
                 expand: true,
                 onPressed: _busy ? null : _create,

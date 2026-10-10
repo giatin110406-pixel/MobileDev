@@ -6,6 +6,7 @@ import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
+import 'package:neo_brutalism_locket/features/shop/shop_labels.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
@@ -54,7 +55,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     children: [
                       NeoIconButton(
                         icon: Icons.arrow_back,
-                        tooltip: 'Quay lại',
+                        tooltip: AppLocalizations.of(context).backTooltip,
                         fill: NeoColors.yellow,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
@@ -73,8 +74,8 @@ class _ShopScreenState extends State<ShopScreen> {
                             ),
                             SizedBox(height: 3),
                             Text(
-                              'TRANG TRÍ TRANG CÁ NHÂN',
-                              style: TextStyle(
+                              AppLocalizations.of(context).shopDecorate,
+                              style: const TextStyle(
                                 color: NeoColors.muted,
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
@@ -145,7 +146,7 @@ class _ShopScreenState extends State<ShopScreen> {
             color: selected ? NeoColors.teal : NeoColors.surface,
           ),
           child: Text(
-            kind.label,
+            AppLocalizations.of(context).shopKindLabel(kind),
             style: const TextStyle(
               color: NeoColors.ink,
               fontSize: 11,
@@ -182,7 +183,7 @@ class _ShopScreenState extends State<ShopScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              item.name,
+              AppLocalizations.of(context).shopItemName(item),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -204,8 +205,12 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
                 const SizedBox(width: 6),
                 switch (action) {
-                  ShopAction.unequip => const _StatusText('ĐANG DÙNG'),
-                  ShopAction.equip => const _StatusText('ĐÃ CÓ'),
+                  ShopAction.unequip => _StatusText(
+                    AppLocalizations.of(context).shopInUse,
+                  ),
+                  ShopAction.equip => _StatusText(
+                    AppLocalizations.of(context).shopOwned,
+                  ),
                   _ => PriceTag(price: item.price),
                 },
               ],
@@ -247,7 +252,7 @@ class RarityChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
     ),
     child: Text(
-      rarity.label,
+      AppLocalizations.of(context).shopRarityLabel(rarity),
       style: const TextStyle(
         color: NeoColors.ink,
         fontSize: 8,
@@ -367,7 +372,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               _preview(state),
               const SizedBox(height: 16),
               Text(
-                item.name,
+                AppLocalizations.of(context).shopItemName(item),
                 style: const TextStyle(
                   fontFamily: NeoFont.display,
                   color: NeoColors.ink,
@@ -380,7 +385,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               Row(
                 children: [
                   Text(
-                    '${item.kind.label} · ',
+                    '${AppLocalizations.of(context).shopKindLabel(item.kind)} · ',
                     style: const TextStyle(
                       color: NeoColors.muted,
                       fontSize: 11,
@@ -394,11 +399,16 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               NeoButton(
                 expand: true,
                 label: switch (action) {
-                  ShopAction.buy => 'MUA · ${item.price} SUNBIT',
-                  ShopAction.locked =>
-                    'CÒN THIẾU ${item.price - state.balance} SUNBIT',
-                  ShopAction.equip => 'TRANG BỊ',
-                  ShopAction.unequip => 'THÁO RA',
+                  ShopAction.buy => AppLocalizations.of(
+                    context,
+                  ).shopBuy(item.price),
+                  ShopAction.locked => AppLocalizations.of(
+                    context,
+                  ).shopShort(item.price - state.balance),
+                  ShopAction.equip => AppLocalizations.of(context).shopEquip,
+                  ShopAction.unequip => AppLocalizations.of(
+                    context,
+                  ).shopUnequip,
                 },
                 icon: switch (action) {
                   ShopAction.buy => Icons.shopping_bag_outlined,
@@ -420,12 +430,18 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               Text(
                 _error ??
                     switch (action) {
-                      ShopAction.buy => 'Mua một lần, dùng mãi mãi.',
-                      ShopAction.locked =>
-                        'Hoàn thành nhiệm vụ hằng ngày để kiếm thêm Sunbit.',
-                      ShopAction.equip =>
-                        'Bạn đã sở hữu món này. Đổi món miễn phí.',
-                      ShopAction.unequip => 'Bạn đang dùng món này.',
+                      ShopAction.buy => AppLocalizations.of(
+                        context,
+                      ).shopHintBuy,
+                      ShopAction.locked => AppLocalizations.of(
+                        context,
+                      ).shopHintLocked,
+                      ShopAction.equip => AppLocalizations.of(
+                        context,
+                      ).shopHintEquip,
+                      ShopAction.unequip => AppLocalizations.of(
+                        context,
+                      ).shopHintUnequip,
                     },
                 textAlign: TextAlign.center,
                 style: TextStyle(

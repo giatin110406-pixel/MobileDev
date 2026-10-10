@@ -7,7 +7,6 @@ import 'package:neo_brutalism_locket/features/profile/profile_screen.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
-import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_screen.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -58,10 +57,10 @@ void main() {
     await tester.tap(find.text('BANNER'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.tap(find.text(shopItemById('banner_space')!.name));
+    await tester.tap(find.text('Pixel space banner'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('CÒN THIẾU 100 SUNBIT'), findsOneWidget);
+    expect(find.text('100 SUNBIT SHORT'), findsOneWidget);
   });
 
   testWidgets('quest sheet', (tester) async {
@@ -79,7 +78,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('BẮT ĐẦU CHỤP'), findsOneWidget);
+    expect(find.text('START SHOOTING'), findsOneWidget);
     expect(find.text(store.todayQuest!.storyTitle), findsOneWidget);
   });
 
@@ -102,13 +101,13 @@ void main() {
     await tester.tap(find.byType(QuestStrip));
     await tester.pumpAndSettle();
     // The story is long: on a small phone the button is below the fold.
-    await tester.ensureVisible(find.text('BẮT ĐẦU CHỤP'));
+    await tester.ensureVisible(find.text('START SHOOTING'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('BẮT ĐẦU CHỤP'));
+    await tester.tap(find.text('START SHOOTING'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byTooltip('Upload a photo from this device'), findsNothing);
-    expect(find.text('CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP'), findsOneWidget);
+    expect(find.text('QUEST MODE · LIVE CAMERA ONLY'), findsOneWidget);
 
     // The profile tab.
     await tester.tap(find.text('ME'));

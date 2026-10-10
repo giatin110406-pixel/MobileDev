@@ -7,58 +7,58 @@ import 'package:neo_brutalism_locket/features/friends/friends_widgets.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// What went wrong with a group action, in words.
-String groupFailureText(GroupFailure failure) => switch (failure.kind) {
-  GroupFailureKind.notFound => 'Không tìm thấy nhóm hoặc người này.',
-  GroupFailureKind.notOwner => 'Chỉ trưởng nhóm mới làm được việc này.',
-  GroupFailureKind.notMember => 'Bạn không còn ở trong nhóm này.',
-  GroupFailureKind.self => 'Không thể làm việc này với chính mình.',
-  GroupFailureKind.empty => 'Hãy nhập nội dung.',
-  GroupFailureKind.tooLong => 'Nội dung quá dài.',
-  GroupFailureKind.blockedWord =>
-    'Có từ không phù hợp. Hãy dùng ngôn từ lịch sự để mọi người cùng vui nhé.',
-  GroupFailureKind.badName => 'Tên nhóm cần từ 1 đến 40 ký tự.',
-  GroupFailureKind.badSize =>
-    'Số thành viên tối đa phải từ 2 đến 12 và không nhỏ hơn số người hiện có.',
-  GroupFailureKind.groupLimit =>
-    'Bạn chỉ được ở tối đa 5 nhóm và làm trưởng tối đa 3 nhóm.',
-  GroupFailureKind.memberLimit => 'Nhóm đã đủ người (kể cả lời mời đang chờ).',
-  GroupFailureKind.theirGroupLimit => 'Bạn đang ở quá nhiều nhóm (tối đa 5).',
-  GroupFailureKind.alreadyMember => 'Người này đã ở trong nhóm.',
-  GroupFailureKind.alreadyInvited => 'Đã mời người này rồi.',
-  GroupFailureKind.expired => 'Lời mời đã hết hạn.',
-  GroupFailureKind.ownerMustTransfer =>
-    'Hãy chuyển quyền trưởng nhóm cho người khác trước khi rời.',
-  GroupFailureKind.network => 'Không kết nối được. Thử lại nhé.',
-  GroupFailureKind.unknown => 'Có lỗi xảy ra. Thử lại nhé.',
-};
+String groupFailureText(AppLocalizations l10n, GroupFailure failure) =>
+    switch (failure.kind) {
+      GroupFailureKind.notFound => l10n.gfNotFound,
+      GroupFailureKind.notOwner => l10n.gfNotOwner,
+      GroupFailureKind.notMember => l10n.gfNotMember,
+      GroupFailureKind.self => l10n.gfSelf,
+      GroupFailureKind.empty => l10n.gfEmpty,
+      GroupFailureKind.tooLong => l10n.gfTooLong,
+      GroupFailureKind.blockedWord => l10n.gfBlockedWord,
+      GroupFailureKind.badName => l10n.gfBadName,
+      GroupFailureKind.badSize => l10n.gfBadSize,
+      GroupFailureKind.groupLimit => l10n.gfGroupLimit,
+      GroupFailureKind.memberLimit => l10n.gfMemberLimit,
+      GroupFailureKind.theirGroupLimit => l10n.gfTheirGroupLimit,
+      GroupFailureKind.alreadyMember => l10n.gfAlreadyMember,
+      GroupFailureKind.alreadyInvited => l10n.gfAlreadyInvited,
+      GroupFailureKind.expired => l10n.gfExpired,
+      GroupFailureKind.ownerMustTransfer => l10n.gfOwnerMustTransfer,
+      GroupFailureKind.network => l10n.gfNetwork,
+      GroupFailureKind.unknown => l10n.gfUnknown,
+    };
 
-String canvasFailureText(CanvasFailureKind kind) => switch (kind) {
-  CanvasFailureKind.insufficientInk =>
-    'Hết mực. Hoàn thành nhiệm vụ hằng ngày để nhận thêm 10 mực.',
-  CanvasFailureKind.rateLimited => 'Vẽ chậm lại một chút (tối đa 30 ô/phút).',
-  CanvasFailureKind.canvasLocked => 'Canvas này đã được lưu trữ.',
-  CanvasFailureKind.notFound => 'Không tìm thấy canvas.',
-  CanvasFailureKind.notOwner => 'Chỉ trưởng nhóm mới làm được việc này.',
-  CanvasFailureKind.badPixel ||
-  CanvasFailureKind.tooManyPixels => 'Ô vẽ không hợp lệ.',
-  CanvasFailureKind.badSize => 'Kích thước hoặc bảng màu không hợp lệ.',
-  CanvasFailureKind.network =>
-    'Mất kết nối. Canvas chuyển sang chế độ chỉ xem.',
-  CanvasFailureKind.unknown => 'Có lỗi xảy ra. Thử lại nhé.',
-};
+String canvasFailureText(AppLocalizations l10n, CanvasFailureKind kind) =>
+    switch (kind) {
+      CanvasFailureKind.insufficientInk => l10n.kfInsufficientInk,
+      CanvasFailureKind.rateLimited => l10n.kfRateLimited,
+      CanvasFailureKind.canvasLocked => l10n.kfCanvasLocked,
+      CanvasFailureKind.notFound => l10n.kfNotFound,
+      CanvasFailureKind.notOwner => l10n.kfNotOwner,
+      CanvasFailureKind.badPixel ||
+      CanvasFailureKind.tooManyPixels => l10n.kfBadPixel,
+      CanvasFailureKind.badSize => l10n.kfBadSize,
+      CanvasFailureKind.network => l10n.kfNetwork,
+      CanvasFailureKind.unknown => l10n.gfUnknown,
+    };
 
 /// A system line in the chat ("Nam joined").
-String systemMessageText(GroupMessage message, String name) =>
-    switch (message.body) {
-      'joined' => '$name đã tham gia nhóm',
-      'left' => '$name đã rời nhóm',
-      'kicked' => '$name đã bị mời ra khỏi nhóm',
-      'owner_changed' => '$name là trưởng nhóm mới',
-      'entry_submitted' => 'Nhóm đã nộp bài dự thi tuần này',
-      _ => name,
-    };
+String systemMessageText(
+  AppLocalizations l10n,
+  GroupMessage message,
+  String name,
+) => switch (message.body) {
+  'joined' => l10n.sysJoined(name),
+  'left' => l10n.sysLeft(name),
+  'kicked' => l10n.sysKicked(name),
+  'owner_changed' => l10n.sysOwnerChanged(name),
+  'entry_submitted' => l10n.sysEntrySubmitted,
+  _ => name,
+};
 
 const _badgeColors = [
   NeoColors.pink,
@@ -159,7 +159,7 @@ class FriendsGroupsSwitch extends StatelessWidget {
       children: [
         Expanded(
           child: _Segment(
-            label: 'BẠN BÈ',
+            label: AppLocalizations.of(context).tabFriends,
             icon: Icons.people_alt_outlined,
             selected: !showGroups,
             onTap: () => onChanged(false),
@@ -168,7 +168,7 @@ class FriendsGroupsSwitch extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _Segment(
-            label: 'NHÓM',
+            label: AppLocalizations.of(context).segmentGroups,
             icon: Icons.groups_2_outlined,
             selected: showGroups,
             badge: groupUnread,
@@ -319,9 +319,8 @@ class _PersonCard extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   isFriend
-                      ? 'Hai bạn là bạn bè: ảnh mới của nhau hiện trong feed.'
-                      : 'Ở chung nhóm chưa phải là bạn bè. Chỉ khi kết bạn, '
-                            'hai người mới xem được ảnh của nhau.',
+                      ? AppLocalizations.of(context).personFriendsNote
+                      : AppLocalizations.of(context).personNotFriendsNote,
                   style: const TextStyle(
                     color: NeoColors.ink,
                     fontSize: 13,
@@ -332,10 +331,10 @@ class _PersonCard extends StatelessWidget {
                 const SizedBox(height: 14),
                 NeoButton(
                   label: isFriend
-                      ? 'ĐÃ LÀ BẠN BÈ'
+                      ? AppLocalizations.of(context).personAlreadyFriends
                       : asked
-                      ? 'ĐÃ GỬI LỜI MỜI'
-                      : 'KẾT BẠN',
+                      ? AppLocalizations.of(context).personRequestSent
+                      : AppLocalizations.of(context).personBefriend,
                   icon: isFriend ? Icons.check : Icons.person_add_alt_1,
                   expand: true,
                   onPressed: isFriend || asked
@@ -352,7 +351,7 @@ class _PersonCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: NeoButton(
-                          label: 'BÁO CÁO',
+                          label: AppLocalizations.of(context).reportTitle,
                           icon: Icons.flag_outlined,
                           variant: NeoButtonVariant.outline,
                           expand: true,
@@ -362,7 +361,7 @@ class _PersonCard extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: NeoButton(
-                          label: 'CHẶN',
+                          label: AppLocalizations.of(context).blockPerson,
                           icon: Icons.block,
                           variant: NeoButtonVariant.outline,
                           expand: true,
@@ -389,10 +388,12 @@ class _PersonCard extends StatelessWidget {
         reason: draft.reason,
         details: draft.details,
       );
-      if (context.mounted) showNeoSnack(context, 'Đã gửi báo cáo. Cảm ơn bạn.');
+      if (context.mounted) {
+        showNeoSnack(context, AppLocalizations.of(context).reportSent);
+      }
     } on SafetyFailure {
       if (context.mounted) {
-        showNeoSnack(context, 'Không gửi được báo cáo. Thử lại nhé.');
+        showNeoSnack(context, AppLocalizations.of(context).reportFailed);
       }
     }
   }
@@ -406,11 +407,14 @@ class _PersonCard extends StatelessWidget {
       await friends.refresh();
       if (context.mounted) {
         Navigator.of(context).pop();
-        showNeoSnack(context, 'Đã chặn ${person.displayName}.');
+        showNeoSnack(
+          context,
+          AppLocalizations.of(context).blockedDone(person.displayName),
+        );
       }
     } on SafetyFailure {
       if (context.mounted) {
-        showNeoSnack(context, 'Không chặn được. Thử lại nhé.');
+        showNeoSnack(context, AppLocalizations.of(context).blockFailed);
       }
     }
   }

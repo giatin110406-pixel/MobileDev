@@ -274,7 +274,9 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   icon: widget.musicMuted
                       ? Icons.volume_off_rounded
                       : Icons.volume_up_rounded,
-                  tooltip: widget.musicMuted ? 'Bật nhạc' : 'Tắt nhạc',
+                  tooltip: widget.musicMuted
+                      ? AppLocalizations.of(context).musicOn
+                      : AppLocalizations.of(context).musicOff,
                   fill: widget.musicMuted
                       ? NeoColors.switchOff
                       : NeoColors.teal,
