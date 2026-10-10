@@ -2366,4 +2366,73 @@ class AppLocalizationsVi extends AppLocalizations {
   String printListTitle(String n) {
     return 'ẢNH $n';
   }
+
+  @override
+  String get peSoldOut => 'Món này đã hết bản. Hẹn bạn tuần sau!';
+
+  @override
+  String get contestEnterGalleryEmpty => 'VÀO GALLERY';
+
+  @override
+  String get hallOfFameButton => 'HALL OF FAME';
+
+  @override
+  String get hallOfFameTitle => 'Hall of Fame';
+
+  @override
+  String get hallViewRoom => 'Xem dạng phòng';
+
+  @override
+  String get hallEmpty =>
+      'Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.';
+
+  @override
+  String hallSemantics(int count) {
+    return 'Phòng Hall of Fame với $count bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.';
+  }
+
+  @override
+  String get entrySavePhoto => 'LƯU ẢNH';
+
+  @override
+  String get entrySavedSnack => 'Đã lưu tranh vào thư viện ảnh.';
+
+  @override
+  String get entrySaveFailed => 'Không lưu được tranh. Thử lại nhé.';
+
+  @override
+  String get entryShareFailed => 'Không chia sẻ được tranh. Thử lại nhé.';
+
+  @override
+  String entryShareText(String group) {
+    return 'Tranh của nhóm $group trong Gallery Room';
+  }
+
+  @override
+  String bannerArtSemantics(String group) {
+    return 'Banner tranh của nhóm $group';
+  }
+
+  @override
+  String get shopPaintingsTab => 'TRANH';
+
+  @override
+  String get shopPaintingsFailed => 'Không tải được tranh đoạt giải.';
+
+  @override
+  String get shopPaintingsEmpty =>
+      'Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.';
+
+  @override
+  String shopCopiesLeft(int count) {
+    return 'CÒN $count BẢN';
+  }
+
+  @override
+  String get shopSoldOut => 'HẾT BẢN';
+
+  @override
+  String shopLimitedNote(int left, int total) {
+    return 'Bản giới hạn: còn $left / $total. 20% tiền bán chia đều cho nhóm đã vẽ.';
+  }
 }

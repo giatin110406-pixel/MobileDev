@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/contest/banner_art.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/profile/player_avatar.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
@@ -20,14 +22,26 @@ ShopAction shopActionFor(PlayerState state, ShopItem item) {
   return state.balance >= item.price ? ShopAction.buy : ShopAction.locked;
 }
 
-Future<void> openShop(BuildContext context, PlayerStore store) => Navigator.of(
-  context,
-).push(MaterialPageRoute<void>(builder: (context) => ShopScreen(store: store)));
+Future<void> openShop(BuildContext context, PlayerStore store) {
+  // The shop is a new page, not below the shell: carry the paintings over.
+  final art = ContestArtScope.maybeOf(context);
+  return Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (context) {
+        final shop = ShopScreen(store: store, contest: art?.repository);
+        return art == null ? shop : ContestArtScope(cache: art, child: shop);
+      },
+    ),
+  );
+}
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({super.key, required this.store});
+  const ShopScreen({super.key, required this.store, this.contest});
 
   final PlayerStore store;
+
+  /// Where the winning paintings come from (null: no "Tranh" shelf).
+  final ContestRepository? contest;
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -35,6 +49,28 @@ class ShopScreen extends StatefulWidget {
 
 class _ShopScreenState extends State<ShopScreen> {
   CosmeticKind _kind = CosmeticKind.frame;
+
+  /// The "Tranh" shelf (winning paintings) instead of frames and banners.
+  bool _paintings = false;
+  List<GalleryShopItem>? _paintingItems;
+  bool _paintingsFailed = false;
+
+  Future<void> _loadPaintings() async {
+    final contest = widget.contest;
+    if (contest == null) return;
+    setState(() => _paintingsFailed = false);
+    try {
+      final items = await contest.shopItems();
+      if (mounted) setState(() => _paintingItems = items);
+    } on ContestFailure {
+      if (mounted) setState(() => _paintingsFailed = true);
+    }
+  }
+
+  void _showPaintings() {
+    setState(() => _paintings = true);
+    _loadPaintings();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,14 +129,19 @@ class _ShopScreenState extends State<ShopScreen> {
                     children: [
                       for (final kind in CosmeticKind.values) ...[
                         Expanded(child: _kindTab(kind)),
-                        if (kind != CosmeticKind.values.last)
+                        if (kind != CosmeticKind.values.last ||
+                            widget.contest != null)
                           const SizedBox(width: 10),
                       ],
+                      if (widget.contest != null)
+                        Expanded(child: _paintingsTab()),
                     ],
                   ),
                   const SizedBox(height: 14),
                   Expanded(
-                    child: state == null
+                    child: _paintings
+                        ? _paintingShelf(state)
+                        : state == null
                         ? const Center(
                             child: CircularProgressIndicator(
                               color: NeoColors.ink,
@@ -133,12 +174,15 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _kindTab(CosmeticKind kind) {
-    final selected = kind == _kind;
+    final selected = !_paintings && kind == _kind;
     return Semantics(
       button: true,
       selected: selected,
       child: InkWell(
-        onTap: () => setState(() => _kind = kind),
+        onTap: () => setState(() {
+          _kind = kind;
+          _paintings = false;
+        }),
         borderRadius: BorderRadius.circular(8),
         child: Container(
           height: 40,
@@ -157,6 +201,161 @@ class _ShopScreenState extends State<ShopScreen> {
         ),
       ),
     );
+  }
+
+  Widget _paintingsTab() => Semantics(
+    button: true,
+    selected: _paintings,
+    child: InkWell(
+      onTap: _showPaintings,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 40,
+        alignment: Alignment.center,
+        decoration: NeoTheme.panel(
+          color: _paintings ? NeoColors.teal : NeoColors.surface,
+        ),
+        child: Text(
+          AppLocalizations.of(context).shopPaintingsTab,
+          style: TextStyle(
+            color: NeoColors.ink,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  /// The winning paintings of the weekly contest, as banners.
+  Widget _paintingShelf(PlayerState? state) {
+    final items = _paintingItems;
+    if (state == null || (items == null && !_paintingsFailed)) {
+      return const Center(
+        child: CircularProgressIndicator(color: NeoColors.ink),
+      );
+    }
+    if (items == null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              AppLocalizations.of(context).shopPaintingsFailed,
+              style: TextStyle(
+                color: NeoColors.ink,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            NeoButton(label: AppLocalizations.of(context).retry, onPressed: _loadPaintings),
+          ],
+        ),
+      );
+    }
+    if (items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            AppLocalizations.of(context).shopPaintingsEmpty,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              height: 1.4,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 20, right: 4),
+      itemCount: items.length,
+      separatorBuilder: (context, _) => const SizedBox(height: 14),
+      itemBuilder: (context, index) => _paintingCard(state, items[index]),
+    );
+  }
+
+  Widget _paintingCard(PlayerState state, GalleryShopItem item) {
+    final shopItem = item.toShopItem();
+    final action = shopActionFor(state, shopItem);
+    final vi = Localizations.localeOf(context).languageCode != 'en';
+    final l10n = AppLocalizations.of(context);
+    final medals = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
+    return InkWell(
+      onTap: () => _openPainting(item),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: NeoTheme.panel(color: NeoColors.surface),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ProfileBanner(bannerId: item.id, height: 84),
+            const SizedBox(height: 8),
+            Text(
+              item.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            Text(
+              '${medals[item.rank] ?? 'TOP 3'} · ${vi ? item.titleVi : item.titleEn}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                RarityChip(rarity: item.rarity),
+                const SizedBox(width: 8),
+                if (item.left != null)
+                  Text(
+                    item.soldOut
+                        ? l10n.shopSoldOut
+                        : l10n.shopCopiesLeft(item.left!),
+                    style: TextStyle(
+                      color: item.soldOut ? NeoColors.pink : NeoColors.muted,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                const Spacer(),
+                switch (action) {
+                  ShopAction.unequip => _StatusText(l10n.shopInUse),
+                  ShopAction.equip => _StatusText(l10n.shopOwned),
+                  _ => PriceTag(price: item.price),
+                },
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openPainting(GalleryShopItem item) async {
+    await showShopItemSheet(
+      context,
+      widget.store,
+      item.toShopItem(),
+      note: item.left == null
+          ? null
+          : AppLocalizations.of(context).shopLimitedNote(item.left!, item.stock!),
+      soldOut: item.soldOut,
+    );
+    // The copies left may have changed (also because of this purchase).
+    if (mounted) _loadPaintings();
   }
 
   Widget _itemCard(PlayerState state, ShopItem item) {
@@ -292,19 +491,42 @@ class PriceTag extends StatelessWidget {
 Future<void> showShopItemSheet(
   BuildContext context,
   PlayerStore store,
-  ShopItem item,
-) => showModalBottomSheet<void>(
-  context: context,
-  isScrollControlled: true,
-  backgroundColor: Colors.transparent,
-  builder: (context) => _ShopItemSheet(store: store, item: item),
-);
+  ShopItem item, {
+  String? note,
+  bool soldOut = false,
+}) {
+  // A sheet is a new page, not below this screen: carry the paintings over.
+  final art = ContestArtScope.maybeOf(context);
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      final sheet = _ShopItemSheet(
+        store: store,
+        item: item,
+        note: note,
+        soldOut: soldOut,
+      );
+      return art == null ? sheet : ContestArtScope(cache: art, child: sheet);
+    },
+  );
+}
 
 class _ShopItemSheet extends StatefulWidget {
-  const _ShopItemSheet({required this.store, required this.item});
+  const _ShopItemSheet({
+    required this.store,
+    required this.item,
+    this.note,
+    this.soldOut = false,
+  });
 
   final PlayerStore store;
   final ShopItem item;
+  final String? note;
+
+  /// A limited item with no copies left (only matters if you do not own it).
+  final bool soldOut;
 
   @override
   State<_ShopItemSheet> createState() => _ShopItemSheetState();
@@ -398,10 +620,24 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                   PriceTag(price: item.price),
                 ],
               ),
+              if (widget.note != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  widget.note!,
+                  style: const TextStyle(
+                    color: NeoColors.muted,
+                    fontSize: 11,
+                    height: 1.3,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               NeoButton(
                 expand: true,
                 label: switch (action) {
+                  ShopAction.buy when widget.soldOut =>
+                    AppLocalizations.of(context).shopSoldOut,
                   ShopAction.buy => AppLocalizations.of(
                     context,
                   ).shopBuy(item.price),
@@ -425,7 +661,10 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                   ShopAction.equip => NeoButtonVariant.accent,
                   ShopAction.unequip => NeoButtonVariant.outline,
                 },
-                onPressed: action == ShopAction.locked || _busy
+                onPressed:
+                    action == ShopAction.locked ||
+                        _busy ||
+                        (widget.soldOut && action == ShopAction.buy)
                     ? null
                     : () => _act(action),
               ),

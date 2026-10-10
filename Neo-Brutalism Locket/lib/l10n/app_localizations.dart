@@ -4213,6 +4213,120 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'ẢNH {n}'**
   String printListTitle(String n);
+
+  /// No description provided for @peSoldOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Món này đã hết bản. Hẹn bạn tuần sau!'**
+  String get peSoldOut;
+
+  /// No description provided for @contestEnterGalleryEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'VÀO GALLERY'**
+  String get contestEnterGalleryEmpty;
+
+  /// No description provided for @hallOfFameButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'HALL OF FAME'**
+  String get hallOfFameButton;
+
+  /// No description provided for @hallOfFameTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hall of Fame'**
+  String get hallOfFameTitle;
+
+  /// No description provided for @hallViewRoom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem dạng phòng'**
+  String get hallViewRoom;
+
+  /// No description provided for @hallEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.'**
+  String get hallEmpty;
+
+  /// No description provided for @hallSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng Hall of Fame với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.'**
+  String hallSemantics(int count);
+
+  /// No description provided for @entrySavePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'LƯU ẢNH'**
+  String get entrySavePhoto;
+
+  /// No description provided for @entrySavedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu tranh vào thư viện ảnh.'**
+  String get entrySavedSnack;
+
+  /// No description provided for @entrySaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lưu được tranh. Thử lại nhé.'**
+  String get entrySaveFailed;
+
+  /// No description provided for @entryShareFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không chia sẻ được tranh. Thử lại nhé.'**
+  String get entryShareFailed;
+
+  /// No description provided for @entryShareText.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tranh của nhóm {group} trong Gallery Room'**
+  String entryShareText(String group);
+
+  /// No description provided for @bannerArtSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Banner tranh của nhóm {group}'**
+  String bannerArtSemantics(String group);
+
+  /// No description provided for @shopPaintingsTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRANH'**
+  String get shopPaintingsTab;
+
+  /// No description provided for @shopPaintingsFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được tranh đoạt giải.'**
+  String get shopPaintingsFailed;
+
+  /// No description provided for @shopPaintingsEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.'**
+  String get shopPaintingsEmpty;
+
+  /// No description provided for @shopCopiesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÒN {count} BẢN'**
+  String shopCopiesLeft(int count);
+
+  /// No description provided for @shopSoldOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'HẾT BẢN'**
+  String get shopSoldOut;
+
+  /// No description provided for @shopLimitedNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.'**
+  String shopLimitedNote(int left, int total);
 }
 
 class _AppLocalizationsDelegate

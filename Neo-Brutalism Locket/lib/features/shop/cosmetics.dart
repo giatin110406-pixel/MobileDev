@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/contest/banner_art.dart';
 
 /// Draws pixel art from rows of characters; each character is a cell colour
 /// from [palette] (a space is transparent).
@@ -455,11 +456,16 @@ class ProfileBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final factory = bannerPainters[bannerId] ?? () => const _PlainBanner();
+    final plain = CustomPaint(painter: factory(), size: Size.infinite);
     return Container(
       height: height,
       decoration: NeoTheme.panel(color: NeoColors.surface, radius: 12),
       clipBehavior: Clip.antiAlias,
-      child: CustomPaint(painter: factory(), size: Size.infinite),
+      // A painting that won a contest: drawn from its pixels (plain stripes while
+      // it loads, or if it cannot be loaded).
+      child: isContestBanner(bannerId)
+          ? ContestBannerView(itemId: bannerId!, fallback: plain)
+          : plain,
     );
   }
 }

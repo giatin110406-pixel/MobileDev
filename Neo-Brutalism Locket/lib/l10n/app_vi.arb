@@ -1595,5 +1595,62 @@
         "type": "String"
       }
     }
+  },
+  "peSoldOut": "Món này đã hết bản. Hẹn bạn tuần sau!",
+  "contestEnterGalleryEmpty": "VÀO GALLERY",
+  "hallOfFameButton": "HALL OF FAME",
+  "hallOfFameTitle": "Hall of Fame",
+  "hallViewRoom": "Xem dạng phòng",
+  "hallEmpty": "Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.",
+  "hallSemantics": "Phòng Hall of Fame với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.",
+  "@hallSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "entrySavePhoto": "LƯU ẢNH",
+  "entrySavedSnack": "Đã lưu tranh vào thư viện ảnh.",
+  "entrySaveFailed": "Không lưu được tranh. Thử lại nhé.",
+  "entryShareFailed": "Không chia sẻ được tranh. Thử lại nhé.",
+  "entryShareText": "Tranh của nhóm {group} trong Gallery Room",
+  "@entryShareText": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerArtSemantics": "Banner tranh của nhóm {group}",
+  "@bannerArtSemantics": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "shopPaintingsTab": "TRANH",
+  "shopPaintingsFailed": "Không tải được tranh đoạt giải.",
+  "shopPaintingsEmpty": "Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.",
+  "shopCopiesLeft": "CÒN {count} BẢN",
+  "@shopCopiesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopSoldOut": "HẾT BẢN",
+  "shopLimitedNote": "Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.",
+  "@shopLimitedNote": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   }
 }

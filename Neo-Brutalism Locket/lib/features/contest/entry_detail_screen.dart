@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
+import 'package:neo_brutalism_locket/features/contest/entry_export.dart';
 import 'package:neo_brutalism_locket/features/contest/entry_store.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
@@ -17,12 +18,16 @@ class EntryDetailScreen extends StatefulWidget {
     required this.repository,
     required this.entry,
     this.safety,
+    this.exporter = const DeviceEntryExporter(),
     super.key,
   });
 
   final ContestRepository repository;
   final GalleryEntry entry;
   final SafetyRepository? safety;
+
+  /// Saves or shares the picture (the phone's by default).
+  final EntryExporter exporter;
 
   @override
   State<EntryDetailScreen> createState() => _EntryDetailScreenState();
@@ -81,6 +86,25 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
       if (mounted) _input.text = text;
       _tell(failure);
     }
+  }
+
+  Future<void> _save() async {
+    final ok = await widget.exporter.save(_store.entry);
+    if (!mounted) return;
+    showNeoSnack(
+      context,
+      ok ? AppLocalizations.of(context).entrySavedSnack : AppLocalizations.of(context).entrySaveFailed,
+    );
+  }
+
+  Future<void> _share() async {
+    final entry = _store.entry;
+    final ok = await widget.exporter.share(
+      entry,
+      text: AppLocalizations.of(context).entryShareText(entry.groupName),
+    );
+    if (!mounted || ok) return;
+    showNeoSnack(context, AppLocalizations.of(context).entryShareFailed);
   }
 
   ReportReasonKind _kind(ReportReason reason) =>
@@ -223,6 +247,30 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
               ),
             ),
           ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: NeoButton(
+                label: AppLocalizations.of(context).entrySavePhoto,
+                icon: Icons.download_outlined,
+                variant: NeoButtonVariant.outline,
+                expand: true,
+                onPressed: _save,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: NeoButton(
+                label: AppLocalizations.of(context).postMenuShare,
+                icon: Icons.ios_share,
+                variant: NeoButtonVariant.outline,
+                expand: true,
+                onPressed: _share,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         if (entry.rank != null) _rankCard(entry),

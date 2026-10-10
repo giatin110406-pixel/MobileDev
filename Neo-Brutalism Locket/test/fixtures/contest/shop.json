@@ -1,0 +1,44 @@
+[
+ {
+  "id": "contest_9b77299f-76a2-4294-ab02-645b8fdaf9a7",
+  "rank": 1,
+  "sold": 0,
+  "owned": false,
+  "price": 300,
+  "stock": 100,
+  "theme": "vanGogh",
+  "title": "E2E Team A",
+  "rarity": "legendary",
+  "title_en": "The Starry Night",
+  "title_vi": "Đêm đầy sao",
+  "week_key": "E2E-one-758391"
+ },
+ {
+  "id": "contest_260546fa-3c94-45aa-98fa-374e7537146d",
+  "rank": 2,
+  "sold": 0,
+  "owned": false,
+  "price": 220,
+  "stock": 100,
+  "theme": "vanGogh",
+  "title": "E2E Team B",
+  "rarity": "rare",
+  "title_en": "The Starry Night",
+  "title_vi": "Đêm đầy sao",
+  "week_key": "E2E-one-758391"
+ },
+ {
+  "id": "contest_37ea63b3-3b7f-4bdc-b6f3-aac4d418d55f",
+  "rank": 3,
+  "sold": 0,
+  "owned": false,
+  "price": 150,
+  "stock": 100,
+  "theme": "vanGogh",
+  "title": "E2E Team C",
+  "rarity": "rare",
+  "title_en": "The Starry Night",
+  "title_vi": "Đêm đầy sao",
+  "week_key": "E2E-one-758391"
+ }
+]

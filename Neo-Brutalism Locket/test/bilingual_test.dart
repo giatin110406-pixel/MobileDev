@@ -53,6 +53,9 @@ void main() {
         'menuTooltip',
         'rankTop3',
         'kindBanner',
+        // The name of the room is the same in both languages.
+        'hallOfFameButton',
+        'hallOfFameTitle',
       };
       for (final key in _messages(en)) {
         if (sameInBoth.contains(key)) continue;

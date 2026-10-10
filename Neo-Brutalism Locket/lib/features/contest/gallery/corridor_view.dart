@@ -21,6 +21,10 @@ class CorridorView extends StatefulWidget {
     required this.onOpen,
     this.onNearEnd,
     this.initialCameraZ = 0,
+    this.layout,
+    this.style = CorridorStyle.gallery,
+    this.decorOf,
+    this.label,
     super.key,
   });
 
@@ -31,6 +35,14 @@ class CorridorView extends StatefulWidget {
   /// Called when the visitor is close to the end of what is loaded.
   final VoidCallback? onNearEnd;
   final double initialCameraZ;
+
+  /// Where the frames hang (the Gallery's salon wall by default).
+  final List<FrameSlot> Function(List<GalleryEntry> entries)? layout;
+  final CorridorStyle style;
+  final FrameDecor Function(GalleryEntry entry)? decorOf;
+
+  /// What a screen reader calls this place.
+  final String? label;
 
   @override
   State<CorridorView> createState() => _CorridorViewState();
@@ -44,11 +56,15 @@ class _CorridorViewState extends State<CorridorView>
   late final AnimationController _motion = AnimationController.unbounded(
     vsync: this,
   )..addListener(_onMotion);
-  late List<FrameSlot> _slots = layoutFrames(_ids);
+  late List<FrameSlot> _slots = _layOut();
   bool _lite = false;
   final List<int> _frameMicros = [];
 
-  List<String> get _ids => [for (final entry in widget.entries) entry.id];
+  /// The walls: a salon wall of frames (blank canvases) with the entries hung on
+  /// the ones that suit a painting, unless the caller lays the room out itself.
+  List<FrameSlot> _layOut() =>
+      widget.layout?.call(widget.entries) ??
+      layoutGallery(widget.entries.length);
 
   @override
   void initState() {
@@ -59,17 +75,8 @@ class _CorridorViewState extends State<CorridorView>
   @override
   void didUpdateWidget(CorridorView old) {
     super.didUpdateWidget(old);
-    final changed =
-        old.entries.length != widget.entries.length ||
-        !_sameIds(old.entries, widget.entries);
-    if (changed) _slots = layoutFrames(_ids);
-  }
-
-  bool _sameIds(List<GalleryEntry> a, List<GalleryEntry> b) {
-    for (var i = 0; i < a.length; i++) {
-      if (a[i].id != b[i].id) return false;
-    }
-    return true;
+    // The walls only depend on how many entries there are.
+    if (old.entries.length != widget.entries.length) _slots = _layOut();
   }
 
   @override
@@ -98,7 +105,11 @@ class _CorridorViewState extends State<CorridorView>
     }
   }
 
-  double get _max => math.max(0, corridorLength(_slots) - 4);
+  /// Where the corridor ends (the end wall with the door).
+  double get _end => corridorLength(_slots) + 1;
+
+  /// The visitor stops a few metres before the end wall.
+  double get _max => math.max(0, _end - 5);
 
   void _set(double z) {
     final clamped = z.clamp(0.0, _max);
@@ -129,9 +140,9 @@ class _CorridorViewState extends State<CorridorView>
   Widget build(BuildContext context) {
     return Semantics(
       container: true,
-      label: AppLocalizations.of(
-        context,
-      ).corridorSemantics(widget.entries.length),
+      label:
+          widget.label ??
+          AppLocalizations.of(context).corridorSemantics(widget.entries.length),
       child: LayoutBuilder(
         builder: (context, box) {
           final size = box.biggest;
@@ -169,6 +180,9 @@ class _CorridorViewState extends State<CorridorView>
                         slots: _slots,
                         cache: widget.cache,
                         lite: _lite,
+                        style: widget.style,
+                        decorOf: widget.decorOf,
+                        endZ: _end,
                       ),
                     ),
                   ),
@@ -194,18 +208,19 @@ class _CorridorViewState extends State<CorridorView>
                   ],
                 ),
               ),
-              Positioned(
-                left: 12,
-                bottom: 16,
-                child: ValueListenableBuilder<double>(
-                  valueListenable: _camera,
-                  builder: (context, z, _) => NeoLabel(
-                    _position(z),
-                    color: NeoColors.yellow,
-                    icon: Icons.directions_walk,
+              if (widget.entries.isNotEmpty)
+                Positioned(
+                  left: 12,
+                  bottom: 16,
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _camera,
+                    builder: (context, z, _) => NeoLabel(
+                      _position(z),
+                      color: NeoColors.yellow,
+                      icon: Icons.directions_walk,
+                    ),
                   ),
                 ),
-              ),
             ],
           );
         },
@@ -215,14 +230,15 @@ class _CorridorViewState extends State<CorridorView>
 
   /// "Tranh 12 / 87": the frame nearest ahead of the visitor.
   String _position(double z) {
-    if (_slots.isEmpty) return '0 / 0';
+    // The nearest entry ahead (blank canvases do not count).
     FrameSlot? ahead;
     for (final slot in _slots) {
+      if (slot.isBlank) continue;
       if (slot.z1 > z + 0.5 && (ahead == null || slot.z0 < ahead.z0)) {
         ahead = slot;
       }
     }
-    final index = (ahead?.index ?? _slots.length - 1) + 1;
+    final index = (ahead?.index ?? widget.entries.length - 1) + 1;
     // A "+" while more pages are still to be loaded.
     final more = widget.onNearEnd != null ? '+' : '';
     return '$index / ${widget.entries.length}$more';

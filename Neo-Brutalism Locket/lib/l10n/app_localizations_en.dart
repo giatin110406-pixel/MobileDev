@@ -2385,4 +2385,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String printListTitle(String n) {
     return 'PRINT $n';
   }
+
+  @override
+  String get peSoldOut => 'Sold out. See you next week!';
+
+  @override
+  String get contestEnterGalleryEmpty => 'ENTER GALLERY';
+
+  @override
+  String get hallOfFameButton => 'HALL OF FAME';
+
+  @override
+  String get hallOfFameTitle => 'Hall of Fame';
+
+  @override
+  String get hallViewRoom => 'Switch to room view';
+
+  @override
+  String get hallEmpty =>
+      'Nothing has been honoured yet. The top three of every week hang here for good.';
+
+  @override
+  String hallSemantics(int count) {
+    return 'Hall of Fame room with $count paintings. Swipe up to walk forward and tap one to look closer. Use the grid button to browse as a list.';
+  }
+
+  @override
+  String get entrySavePhoto => 'SAVE PHOTO';
+
+  @override
+  String get entrySavedSnack => 'Saved to your photo library.';
+
+  @override
+  String get entrySaveFailed =>
+      'Could not save the painting. Please try again.';
+
+  @override
+  String get entryShareFailed =>
+      'Could not share the painting. Please try again.';
+
+  @override
+  String entryShareText(String group) {
+    return '$group\'s painting in the Gallery Room';
+  }
+
+  @override
+  String bannerArtSemantics(String group) {
+    return 'Painting banner of the group $group';
+  }
+
+  @override
+  String get shopPaintingsTab => 'PAINTINGS';
+
+  @override
+  String get shopPaintingsFailed => 'Could not load the winning paintings.';
+
+  @override
+  String get shopPaintingsEmpty =>
+      'No painting has won yet. The top three entries of every week are sold here as banners for your profile.';
+
+  @override
+  String shopCopiesLeft(int count) {
+    return '$count LEFT';
+  }
+
+  @override
+  String get shopSoldOut => 'SOLD OUT';
+
+  @override
+  String shopLimitedNote(int left, int total) {
+    return 'Limited edition: $left of $total left. 20% of every sale is shared by the group that painted it.';
+  }
 }

@@ -269,17 +269,32 @@ void main() {
       await open(tester, 6);
       final topLeft = tester.getTopLeft(corridor);
       final size = tester.getSize(corridor);
-      final slots = layoutFrames([for (var i = 1; i <= 6; i++) 'e$i']);
-      final first = slots.firstWhere((s) => s.index == 0);
-      final quad = Projection(size, 0).wallQuad(first)!;
-      final centre = Offset(
-        quad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
-        quad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
-      );
-      await tester.tapAt(topLeft + centre);
+      final slots = layoutGallery(6);
+      final view = Projection(size, 0);
+      // The first entry whose frame can be seen in full at the entrance.
+      Offset? centre;
+      var wanted = 0;
+      for (final slot in slots.where((s) => !s.isBlank)) {
+        final quad = view.wallQuad(slot)!;
+        final c = Offset(
+          quad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
+          quad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
+        );
+        final onScreen = quad.every(
+          (p) =>
+              p.dx > 0 && p.dx < size.width && p.dy > 0 && p.dy < size.height,
+        );
+        if (onScreen) {
+          centre = c;
+          wanted = slot.index;
+          break;
+        }
+      }
+      expect(centre, isNotNull);
+      await tester.tapAt(topLeft + centre!);
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsOneWidget);
-      expect(find.text('Group 1'), findsWidgets);
+      expect(find.text('Group ${wanted + 1}'), findsWidgets);
       await tester.tap(find.byTooltip('Back').last);
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsNothing);

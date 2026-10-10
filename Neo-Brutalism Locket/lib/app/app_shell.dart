@@ -7,6 +7,7 @@ import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
+import 'package:neo_brutalism_locket/features/contest/banner_art.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
@@ -181,6 +182,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   GroupsStore? _groupsStore;
   CanvasRepository? _canvasRepository;
   ContestStore? _contestStore;
+  ContestArtCache? _artCache;
 
   /// Which list the FRIENDS tab shows: friends (false) or groups (true).
   bool _showGroups = false;
@@ -235,6 +237,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         // No listener here: the banner and the contest screen listen themselves,
         // and the countdown must not rebuild the whole shell every second.
         _contestStore = ContestStore(contestRepository)..refresh();
+        _artCache = ContestArtCache(contestRepository);
       }
       final posts = PostsStore(
         widget.postsRepository ??
@@ -431,8 +434,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               : null,
           onReport: _online ? () => _reportPerson(friend) : null,
         );
-        final urls = _mediaUrls;
-        return urls == null ? page : MediaUrlsScope(urls: urls, child: page);
+        return _withScopes(page);
       },
     ),
   );
@@ -1005,8 +1007,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                 widget.notificationPrefs ??
                 SupabaseNotificationPrefsRepository(userId: session.user.id),
           );
-          final urls = _mediaUrls;
-          return urls == null ? page : MediaUrlsScope(urls: urls, child: page);
+          return _withScopes(page);
         },
       ),
     );
@@ -1441,10 +1442,18 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ),
       bottomNavigationBar: _buildTabs(),
     );
+    return _withScopes(scaffold);
+  }
+
+  /// What every page of the app needs below it: where pictures come from, and the
+  /// paintings of the contest (a painting-banner is drawn from them).
+  Widget _withScopes(Widget page) {
+    var wrapped = page;
+    final art = _artCache;
+    if (art != null) wrapped = ContestArtScope(cache: art, child: wrapped);
     final urls = _mediaUrls;
-    return urls == null
-        ? scaffold
-        : MediaUrlsScope(urls: urls, child: scaffold);
+    if (urls != null) wrapped = MediaUrlsScope(urls: urls, child: wrapped);
+    return wrapped;
   }
 
   Widget _buildFriends() {

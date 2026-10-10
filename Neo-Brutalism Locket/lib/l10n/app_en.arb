@@ -1589,5 +1589,62 @@
         "type": "String"
       }
     }
+  },
+  "peSoldOut": "Sold out. See you next week!",
+  "contestEnterGalleryEmpty": "ENTER GALLERY",
+  "hallOfFameButton": "HALL OF FAME",
+  "hallOfFameTitle": "Hall of Fame",
+  "hallViewRoom": "Switch to room view",
+  "hallEmpty": "Nothing has been honoured yet. The top three of every week hang here for good.",
+  "hallSemantics": "Hall of Fame room with {count} paintings. Swipe up to walk forward and tap one to look closer. Use the grid button to browse as a list.",
+  "@hallSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "entrySavePhoto": "SAVE PHOTO",
+  "entrySavedSnack": "Saved to your photo library.",
+  "entrySaveFailed": "Could not save the painting. Please try again.",
+  "entryShareFailed": "Could not share the painting. Please try again.",
+  "entryShareText": "{group}'s painting in the Gallery Room",
+  "@entryShareText": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerArtSemantics": "Painting banner of the group {group}",
+  "@bannerArtSemantics": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "shopPaintingsTab": "PAINTINGS",
+  "shopPaintingsFailed": "Could not load the winning paintings.",
+  "shopPaintingsEmpty": "No painting has won yet. The top three entries of every week are sold here as banners for your profile.",
+  "shopCopiesLeft": "{count} LEFT",
+  "@shopCopiesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopSoldOut": "SOLD OUT",
+  "shopLimitedNote": "Limited edition: {left} of {total} left. 20% of every sale is shared by the group that painted it.",
+  "@shopLimitedNote": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   }
 }

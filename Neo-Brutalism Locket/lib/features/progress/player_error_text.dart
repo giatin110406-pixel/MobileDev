@@ -12,6 +12,7 @@ String playerErrorText(AppLocalizations l10n, PlayerException error) =>
       PlayerError.alreadyOwned => l10n.peAlreadyOwned,
       PlayerError.notOwned => l10n.peNotOwned,
       PlayerError.itemNotFound => l10n.peItemNotFound,
+      PlayerError.soldOut => l10n.peSoldOut,
       PlayerError.needsNetwork => l10n.peNeedsNetwork,
       PlayerError.notEnoughSunbit => l10n.peNotEnoughSunbit(error.value),
       PlayerError.unknown => l10n.peUnknown,
