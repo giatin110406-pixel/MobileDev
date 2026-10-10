@@ -96,7 +96,7 @@ void main() {
     expect(find.text('ON DEVICE'), findsNothing);
     expect(find.textContaining(' PRINTS'), findsNothing);
     expect(find.byType(StreakChip), findsOneWidget);
-    expect(find.text('TÔI'), findsOneWidget);
+    expect(find.text('ME'), findsOneWidget);
     // Quest mode: camera only, so the gallery button is gone.
     expect(find.byTooltip('Upload a photo from this device'), findsOneWidget);
     await tester.tap(find.byType(QuestStrip));
@@ -111,7 +111,7 @@ void main() {
     expect(find.text('CHẾ ĐỘ NHIỆM VỤ · CHỈ CHỤP TRỰC TIẾP'), findsOneWidget);
 
     // The profile tab.
-    await tester.tap(find.text('TÔI'));
+    await tester.tap(find.text('ME'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(ProfileScreen), findsOneWidget);

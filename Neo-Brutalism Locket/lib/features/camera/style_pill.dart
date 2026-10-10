@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// Background colour of the pill for each mode.
 Color stylePillColor(StyleType style) => switch (style) {
@@ -69,7 +70,7 @@ class _StylePillState extends State<StylePill> {
     final values = StyleType.values;
     return Semantics(
       slider: true,
-      label: 'Style. Swipe to change',
+      label: AppLocalizations.of(context).styleSliderSemantics,
       value: style.label,
       increasedValue: _hasNext ? values[style.index + 1].label : style.label,
       decreasedValue: _hasPrevious

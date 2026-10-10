@@ -334,7 +334,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       await _player.load();
       _shownDay = _player.today;
     } catch (_) {
-      _notify('QUEST DATA COULD NOT BE READ');
+      if (mounted) _notify(AppLocalizations.of(context).questDataUnreadable);
     }
   }
 
@@ -439,7 +439,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       final photos = await _repository.loadPhotos();
       if (mounted) setState(() => _photos = photos);
     } catch (_) {
-      _notify('ARCHIVE COULD NOT BE READ');
+      if (mounted) _notify(AppLocalizations.of(context).archiveUnreadable);
     }
   }
 
@@ -686,7 +686,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       });
       _refreshWidget(); // friends are known now: the widget can name the sender
     } catch (_) {
-      _notify('FRIENDS COULD NOT BE LOADED');
+      _notify(AppLocalizations.of(context).friendsLoadFailed);
     }
   }
 
@@ -767,7 +767,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _posts = snapshot.posts;
       });
     } catch (_) {
-      _notify('FRIENDS COULD NOT BE LOADED');
+      _notify(AppLocalizations.of(context).friendsLoadFailed);
     }
   }
 
@@ -794,7 +794,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _friends = snapshot.friends;
         _messages = snapshot.messages;
       });
-      _notify('${draft.name.toUpperCase()} ADDED LOCALLY');
+      _notify(
+        AppLocalizations.of(context).friendAddedLocally(draft.name.toUpperCase()),
+      );
     } on FormatException catch (error) {
       _notify(error.message.toUpperCase());
     }
@@ -1129,8 +1131,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           .where((friend) => friend.id == post.friendId)
           .map((friend) => friend.name.split(' ').first)
           .firstOrNull;
+      final l10n = AppLocalizations.of(context);
+      final what = reaction ?? l10n.replyWord;
       _notify(
-        '${reaction ?? 'REPLY'} SENT${name == null ? '' : ' TO ${name.toUpperCase()}'}',
+        name == null
+            ? l10n.sentNotice(what)
+            : l10n.sentNoticeTo(what, name.toUpperCase()),
       );
     } on FormatException catch (error) {
       _notify(error.message.toUpperCase());
@@ -1148,7 +1154,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final friend = _activeFriend;
     if (friend == null) return;
     if (_photos.isEmpty) {
-      _notify('TAKE A PRINT BEFORE SHARING');
+      _notify(AppLocalizations.of(context).shareNeedsPrint);
       return;
     }
     final photo = _photos.first;
@@ -1161,31 +1167,37 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (_online) return _removeOnlineFriend(friend);
     final remove = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: NeoColors.surface,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(color: NeoColors.ink, width: 2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: const Text(
-          'REMOVE FRIEND?',
-          style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w800),
-        ),
-        content: Text(
-          'Remove ${friend.name} and this local thread from this device?',
-          style: const TextStyle(color: NeoColors.ink),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCEL'),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          backgroundColor: NeoColors.surface,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: NeoColors.ink, width: 2),
+            borderRadius: BorderRadius.circular(8),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('REMOVE'),
+          title: Text(
+            l10n.removeFriendTitle,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ],
-      ),
+          content: Text(
+            l10n.removeLocalFriendBody(friend.name),
+            style: const TextStyle(color: NeoColors.ink),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.removeFriendConfirm),
+            ),
+          ],
+        );
+      },
     );
     if (remove != true) return;
     final snapshot = await _socialRepository.removeFriend(friend.id);
@@ -1635,6 +1647,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   }
 
   Widget _buildTabs() {
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
       child: Padding(
@@ -1655,21 +1668,31 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           ),
           child: Row(
             children: [
-              _tab(index: 0, icon: Icons.photo_camera_outlined, label: 'SHOOT'),
+              _tab(
+                index: 0,
+                icon: Icons.photo_camera_outlined,
+                label: l10n.tabShoot,
+              ),
               Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 1, icon: Icons.people_alt_outlined, label: 'FRIENDS'),
+              _tab(
+                index: 1,
+                icon: Icons.people_alt_outlined,
+                label: l10n.tabFriends,
+              ),
               Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 2, icon: Icons.chat_bubble_outline, label: 'INBOX'),
+              _tab(
+                index: 2,
+                icon: Icons.chat_bubble_outline,
+                label: l10n.tabInbox,
+              ),
               Container(width: 1.5, height: 30, color: NeoColors.ink),
               _tab(
                 index: 3,
                 icon: Icons.grid_view_rounded,
-                label: _online
-                    ? AppLocalizations.of(context).historyTab
-                    : 'PRINTS',
+                label: _online ? l10n.historyTab : l10n.tabPrints,
               ),
               Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 4, icon: Icons.person_outline, label: 'TÔI'),
+              _tab(index: 4, icon: Icons.person_outline, label: l10n.tabMe),
             ],
           ),
         ),

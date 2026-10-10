@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fakes_backend.dart';
 import 'friends_test.dart' show FakePostsRepository;
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// A chat server that answers only when told to.
 class SlowChat extends FakeChat {
@@ -133,6 +134,9 @@ void main() {
 
   group('pictures that are slow or fail', () {
     Widget host(MediaUrls urls, {double size = 300}) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
       home: MediaUrlsScope(
         urls: urls,
         child: Center(

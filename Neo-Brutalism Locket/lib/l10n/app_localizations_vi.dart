@@ -623,4 +623,373 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get notifyFriendRequests => 'Lời mời kết bạn';
+
+  @override
+  String get tabShoot => 'CHỤP';
+
+  @override
+  String get tabFriends => 'BẠN BÈ';
+
+  @override
+  String get tabInbox => 'HỘP THƯ';
+
+  @override
+  String get tabPrints => 'TỦ ẢNH';
+
+  @override
+  String get tabMe => 'TÔI';
+
+  @override
+  String get laptopSettingsTooltip => 'Cài đặt laptop ở nhà';
+
+  @override
+  String get cameraAccessHint => 'BẬT QUYỀN CAMERA ĐỂ BẮT ĐẦU CHỤP';
+
+  @override
+  String get originalLabel => 'ẢNH GỐC';
+
+  @override
+  String get imageNotFound => 'KHÔNG TÌM THẤY ẢNH';
+
+  @override
+  String get groupsKicker => 'NHÓM CỦA BẠN';
+
+  @override
+  String get groupsTitle => 'Nhóm';
+
+  @override
+  String groupsCount(int count) {
+    return '$count NHÓM';
+  }
+
+  @override
+  String get groupCreate => 'TẠO NHÓM';
+
+  @override
+  String get questDataUnreadable => 'KHÔNG ĐỌC ĐƯỢC DỮ LIỆU NHIỆM VỤ';
+
+  @override
+  String get archiveUnreadable => 'KHÔNG ĐỌC ĐƯỢC TỦ ẢNH';
+
+  @override
+  String get friendsLoadFailed => 'KHÔNG TẢI ĐƯỢC DANH SÁCH BẠN BÈ';
+
+  @override
+  String friendAddedLocally(String name) {
+    return 'ĐÃ THÊM $name TRÊN MÁY';
+  }
+
+  @override
+  String get shareNeedsPrint => 'HÃY CHỤP MỘT TẤM TRƯỚC KHI CHIA SẺ';
+
+  @override
+  String get replyWord => 'TIN NHẮN';
+
+  @override
+  String sentNotice(String what) {
+    return 'ĐÃ GỬI $what';
+  }
+
+  @override
+  String sentNoticeTo(String what, String name) {
+    return 'ĐÃ GỬI $what CHO $name';
+  }
+
+  @override
+  String removeLocalFriendBody(String name) {
+    return 'Xóa $name và cuộc trò chuyện này khỏi máy?';
+  }
+
+  @override
+  String get photoNotSaved => 'ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.';
+
+  @override
+  String get photoOpenFailed => 'KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.';
+
+  @override
+  String fallbackUsed(String note) {
+    return 'ĐÃ DÙNG PHƯƠNG ÁN DỰ PHÒNG: $note';
+  }
+
+  @override
+  String get styleFailedOriginalSafe =>
+      'TẠO TRANH THẤT BẠI. ẢNH GỐC VẪN AN TOÀN.';
+
+  @override
+  String get flashUnavailable => 'MÁY KHÔNG CÓ ĐÈN FLASH';
+
+  @override
+  String get flashTooltip => 'Đổi chế độ flash';
+
+  @override
+  String get openFeedLabel => 'Mở bảng tin';
+
+  @override
+  String get feedLabel => 'BẢNG TIN';
+
+  @override
+  String zoomSemantics(String level) {
+    return 'Thu phóng $level';
+  }
+
+  @override
+  String get uploadPhotoTooltip => 'Tải ảnh lên từ máy';
+
+  @override
+  String get takePhotoLabel => 'Chụp ảnh';
+
+  @override
+  String get switchCameraTooltip => 'Đổi camera';
+
+  @override
+  String get openArchiveLabel => 'Mở tủ ảnh';
+
+  @override
+  String get retryShort => 'THỬ LẠI';
+
+  @override
+  String get newShot => 'CHỤP MỚI';
+
+  @override
+  String get statusInking => 'ĐANG VẼ';
+
+  @override
+  String get statusReady => 'XONG';
+
+  @override
+  String get statusOriginalSafe => 'ĐÃ GIỮ ẢNH GỐC';
+
+  @override
+  String get cameraAccessOff => 'CAMERA ĐANG BỊ TẮT QUYỀN';
+
+  @override
+  String get cameraUnavailable => 'KHÔNG DÙNG ĐƯỢC CAMERA';
+
+  @override
+  String get findingCamera => 'ĐANG TÌM CAMERA';
+
+  @override
+  String get cameraReady => 'CAMERA SẴN SÀNG';
+
+  @override
+  String originalPlusStyle(String style) {
+    return 'ẢNH GỐC + $style';
+  }
+
+  @override
+  String get legacyEdit => 'BẢN CHỈNH CŨ';
+
+  @override
+  String get editLabel => 'ĐÃ CHỈNH';
+
+  @override
+  String get styleSliderSemantics => 'Phong cách. Vuốt để đổi';
+
+  @override
+  String get retryTooltip => 'Thử lại';
+
+  @override
+  String get backToCameraTooltip => 'Về camera';
+
+  @override
+  String get noPostsYet => 'CHƯA CÓ BÀI NÀO';
+
+  @override
+  String replyHint(String name) {
+    return 'Trả lời $name...';
+  }
+
+  @override
+  String get openPrint => 'XEM ẢNH';
+
+  @override
+  String get reactWith => 'THẢ CẢM XÚC';
+
+  @override
+  String get sendReplyTooltip => 'Gửi trả lời';
+
+  @override
+  String reactSemantics(String emoji) {
+    return 'Thả $emoji';
+  }
+
+  @override
+  String get moreEmojiTooltip => 'Thêm emoji';
+
+  @override
+  String get localCollection => 'BỘ SƯU TẬP TRÊN MÁY';
+
+  @override
+  String get printArchive => 'Tủ ảnh';
+
+  @override
+  String itemsCount(int count) {
+    return '$count ẢNH';
+  }
+
+  @override
+  String get archiveEmptyBody =>
+      'ẢNH CỦA BẠN CHỈ NẰM TRONG TỦ ẢNH TRÊN MÁY NÀY.';
+
+  @override
+  String get openCamera => 'MỞ CAMERA';
+
+  @override
+  String get printReady => 'TRANH ĐÃ XONG';
+
+  @override
+  String get originalSaved => 'ĐÃ LƯU ẢNH GỐC';
+
+  @override
+  String get serverTesting => 'ĐANG KIỂM TRA…';
+
+  @override
+  String serverConnected(String gpu) {
+    return 'ĐÃ KẾT NỐI · $gpu';
+  }
+
+  @override
+  String get serverModelsLoading => 'ĐÃ KẾT NỐI · MÔ HÌNH ĐANG TẢI';
+
+  @override
+  String get serverInvalidAddress => 'ĐỊA CHỈ KHÔNG HỢP LỆ';
+
+  @override
+  String get homeLaptop => 'LAPTOP Ở NHÀ';
+
+  @override
+  String get vanGoghOnLaptop => 'TRANH VAN GOGH CHẠY TRÊN LAPTOP CỦA BẠN';
+
+  @override
+  String get serverAddressLabel => 'ĐỊA CHỈ (IP:CỔNG)';
+
+  @override
+  String get serverTokenLabel => 'MÃ TOKEN';
+
+  @override
+  String get serverTokenHint => 'in ra khi máy chủ khởi động';
+
+  @override
+  String get serverTestButton => 'KIỂM TRA';
+
+  @override
+  String get shopLabel => 'CỬA HÀNG';
+
+  @override
+  String get sunbitShop => 'CỬA HÀNG SUNBIT';
+
+  @override
+  String get sampleLabel => 'MẪU';
+
+  @override
+  String get menuTooltip => 'Menu';
+
+  @override
+  String get yourPeople => 'BẠN BÈ CỦA BẠN';
+
+  @override
+  String get friendsTitle => 'Bạn bè';
+
+  @override
+  String peopleCount(int count) {
+    return '$count NGƯỜI';
+  }
+
+  @override
+  String get localMode => 'CHẾ ĐỘ TRÊN MÁY';
+
+  @override
+  String get noFriendsOnDevice => 'CHƯA CÓ BẠN\nTRÊN MÁY NÀY';
+
+  @override
+  String get noFriendsOnDeviceBody =>
+      'THÊM MỘT HỒ SƠ TRÊN MÁY ĐỂ BẮT ĐẦU CUỘC TRÒ CHUYỆN MẪU.';
+
+  @override
+  String get privateThreads => 'TIN NHẮN RIÊNG';
+
+  @override
+  String get inboxTitle => 'Hộp thư';
+
+  @override
+  String get deviceOnly => 'CHỈ TRÊN MÁY';
+
+  @override
+  String get addFriendToStart => 'THÊM BẠN ĐỂ BẮT ĐẦU TRÒ CHUYỆN';
+
+  @override
+  String get backToInboxTooltip => 'Về hộp thư';
+
+  @override
+  String get openProfileLabel => 'Mở hồ sơ';
+
+  @override
+  String get removeFriendTooltip => 'Xóa bạn';
+
+  @override
+  String get localThread => 'TRÒ CHUYỆN TRÊN MÁY';
+
+  @override
+  String get sendLatestPrintTooltip => 'Gửi ảnh mới nhất';
+
+  @override
+  String get writeMessageHint => 'Viết tin nhắn...';
+
+  @override
+  String get sendMessageTooltip => 'Gửi tin nhắn';
+
+  @override
+  String whosePost(String name) {
+    return 'BÀI CỦA $name';
+  }
+
+  @override
+  String get yourPost => 'BÀI CỦA BẠN';
+
+  @override
+  String get previewStart => 'BẮT ĐẦU TRÒ CHUYỆN';
+
+  @override
+  String previewReacted(String who, String emoji) {
+    return '$who ĐÃ THẢ $emoji';
+  }
+
+  @override
+  String get previewYou => 'BẠN';
+
+  @override
+  String previewYouReplied(String text) {
+    return 'BẠN ĐÃ TRẢ LỜI: $text';
+  }
+
+  @override
+  String previewReplied(String text) {
+    return 'ĐÃ TRẢ LỜI: $text';
+  }
+
+  @override
+  String get previewSentPrint => 'ĐÃ GỬI MỘT ẢNH';
+
+  @override
+  String previewYouText(String text) {
+    return 'BẠN: $text';
+  }
+
+  @override
+  String get localLabel => 'TRÊN MÁY';
+
+  @override
+  String get addAFriend => 'THÊM BẠN';
+
+  @override
+  String get localProfileOnly => 'CHỈ LƯU TRÊN MÁY';
+
+  @override
+  String get handleLabel => 'TÊN NGƯỜI DÙNG';
+
+  @override
+  String get friendNameHint => 'Tên của bạn bè';
+
+  @override
+  String get addToFriends => 'THÊM VÀO BẠN BÈ';
 }

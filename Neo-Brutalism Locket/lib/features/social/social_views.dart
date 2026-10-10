@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The frame and banner a friend shows. Friends are local-only for now, so
 /// only the sample friends wear anything.
@@ -78,22 +79,22 @@ class FriendsScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'YOUR PEOPLE',
-                      style: TextStyle(
+                      AppLocalizations.of(context).yourPeople,
+                      style: const TextStyle(
                         color: NeoColors.muted,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Friends',
-                      style: TextStyle(
+                      AppLocalizations.of(context).friendsTitle,
+                      style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 26,
                         height: 1,
@@ -103,7 +104,10 @@ class FriendsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              NeoLabel('${friends.length} PEOPLE', color: NeoColors.yellow),
+              NeoLabel(
+                AppLocalizations.of(context).peopleCount(friends.length),
+                color: NeoColors.yellow,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -111,7 +115,7 @@ class FriendsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: NeoButton(
-                  label: addLabel ?? 'ADD FRIEND',
+                  label: addLabel ?? AppLocalizations.of(context).friendsAdd,
                   icon: Icons.person_add_alt_1,
                   variant: NeoButtonVariant.primary,
                   expand: true,
@@ -120,27 +124,30 @@ class FriendsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               NeoLabel(
-                online ? (onlineLabel ?? 'ONLINE') : 'LOCAL MODE',
+                online
+                    ? (onlineLabel ??
+                          AppLocalizations.of(context).friendsOnline)
+                    : AppLocalizations.of(context).localMode,
                 color: NeoColors.teal,
                 icon: online ? Icons.cloud_done_outlined : Icons.lock_outline,
               ),
             ],
           ),
           const SizedBox(height: 18),
-          Expanded(child: _list()),
+          Expanded(child: _list(context)),
         ],
       ),
     );
   }
 
-  Widget _list() {
+  Widget _list(BuildContext context) {
     final list = ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 8, right: 4),
       children: [
         ?requests,
         if (friends.isEmpty)
-          _emptyFriends()
+          _emptyFriends(context)
         else
           for (final friend in friends)
             Padding(
@@ -174,7 +181,7 @@ class FriendsScreen extends StatelessWidget {
       )
       .length;
 
-  Widget _emptyFriends() => Container(
+  Widget _emptyFriends(BuildContext context) => Container(
     decoration: NeoTheme.panel(color: NeoColors.blue),
     padding: const EdgeInsets.all(24),
     child: Column(
@@ -183,7 +190,7 @@ class FriendsScreen extends StatelessWidget {
         const Icon(Icons.group_add_outlined, size: 42, color: NeoColors.ink),
         const SizedBox(height: 16),
         Text(
-          emptyTitle ?? 'NO FRIENDS\nON THIS DEVICE',
+          emptyTitle ?? AppLocalizations.of(context).noFriendsOnDevice,
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: NeoColors.ink,
@@ -194,7 +201,7 @@ class FriendsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          emptyBody ?? 'ADD A LOCAL PROFILE TO START A SAMPLE THREAD.',
+          emptyBody ?? AppLocalizations.of(context).noFriendsOnDeviceBody,
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: NeoColors.ink,
@@ -205,7 +212,7 @@ class FriendsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         NeoButton(
-          label: addLabel ?? 'ADD FRIEND',
+          label: addLabel ?? AppLocalizations.of(context).friendsAdd,
           icon: Icons.person_add_alt_1,
           variant: NeoButtonVariant.primary,
           onPressed: onAddFriend,
@@ -248,22 +255,22 @@ class InboxScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PRIVATE THREADS',
-                      style: TextStyle(
+                      AppLocalizations.of(context).privateThreads,
+                      style: const TextStyle(
                         color: NeoColors.muted,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Inbox',
-                      style: TextStyle(
+                      AppLocalizations.of(context).inboxTitle,
+                      style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 26,
                         height: 1,
@@ -273,15 +280,18 @@ class InboxScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const NeoLabel('DEVICE ONLY', color: NeoColors.pink),
+              NeoLabel(
+                AppLocalizations.of(context).deviceOnly,
+                color: NeoColors.pink,
+              ),
             ],
           ),
           const SizedBox(height: 18),
           Expanded(
             child: orderedFriends.isEmpty
-                ? const Center(
+                ? Center(
                     child: NeoLabel(
-                      'ADD A FRIEND TO START A THREAD',
+                      AppLocalizations.of(context).addFriendToStart,
                       color: NeoColors.yellow,
                     ),
                   )
@@ -407,7 +417,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
             children: [
               NeoIconButton(
                 icon: Icons.arrow_back,
-                tooltip: 'Back to inbox',
+                tooltip: AppLocalizations.of(context).backToInboxTooltip,
                 fill: NeoColors.yellow,
                 onPressed: widget.onBack,
               ),
@@ -415,7 +425,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               Expanded(
                 child: Semantics(
                   button: widget.onOpenProfile != null,
-                  label: 'Open profile',
+                  label: AppLocalizations.of(context).openProfileLabel,
                   child: InkWell(
                     onTap: widget.onOpenProfile,
                     borderRadius: BorderRadius.circular(8),
@@ -460,23 +470,30 @@ class _ConversationScreenState extends State<ConversationScreen> {
               ),
               NeoIconButton(
                 icon: Icons.person_remove_alt_1,
-                tooltip: 'Remove friend',
+                tooltip: AppLocalizations.of(context).removeFriendTooltip,
                 fill: NeoColors.pink,
                 onPressed: widget.onRemoveFriend,
               ),
             ],
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 18),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Row(
             children: [
-              Expanded(child: Divider(color: NeoColors.ink, thickness: 1.5)),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: NeoLabel('LOCAL THREAD', color: NeoColors.teal),
+              const Expanded(
+                child: Divider(color: NeoColors.ink, thickness: 1.5),
               ),
-              Expanded(child: Divider(color: NeoColors.ink, thickness: 1.5)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: NeoLabel(
+                  AppLocalizations.of(context).localThread,
+                  color: NeoColors.teal,
+                ),
+              ),
+              const Expanded(
+                child: Divider(color: NeoColors.ink, thickness: 1.5),
+              ),
             ],
           ),
         ),
@@ -525,7 +542,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
             if (widget.allowPhoto) ...[
               NeoIconButton(
                 icon: Icons.add_photo_alternate_outlined,
-                tooltip: 'Send latest print',
+                tooltip: AppLocalizations.of(context).sendLatestPrintTooltip,
                 fill: NeoColors.purple,
                 onPressed: widget.onSendLatestPhoto,
               ),
@@ -555,10 +572,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: 'Write a message...',
-                    hintStyle: TextStyle(color: NeoColors.muted, fontSize: 12),
-                    contentPadding: EdgeInsets.symmetric(
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context).writeMessageHint,
+                    hintStyle: const TextStyle(
+                      color: NeoColors.muted,
+                      fontSize: 12,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 12,
                     ),
@@ -571,7 +591,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
             const SizedBox(width: 10),
             NeoIconButton(
               icon: Icons.send_rounded,
-              tooltip: 'Send message',
+              tooltip: AppLocalizations.of(context).sendMessageTooltip,
               fill: NeoColors.teal,
               onPressed: _sending ? null : _send,
             ),
@@ -687,9 +707,10 @@ class _PostQuote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final whose = message.isMine
-        ? "${friend.name.split(' ').first.toUpperCase()}'S POST"
-        : 'YOUR POST';
+        ? l10n.whosePost(friend.name.split(' ').first.toUpperCase())
+        : l10n.yourPost;
     final caption = post?.caption ?? message.replyPreview ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -809,15 +830,25 @@ class _FriendTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final preview = latestMessage == null
-        ? 'START A LOCAL THREAD'
+        ? l10n.previewStart
         : latestMessage!.reaction != null
-        ? '${latestMessage!.isMine ? 'YOU' : friend.name.split(' ').first} REACTED ${latestMessage!.reaction}'
+        ? l10n.previewReacted(
+            latestMessage!.isMine
+                ? l10n.previewYou
+                : friend.name.split(' ').first,
+            latestMessage!.reaction!,
+          )
         : latestMessage!.isPostReply
-        ? '${latestMessage!.isMine ? 'YOU REPLIED: ' : 'REPLIED: '}${latestMessage!.text}'
+        ? (latestMessage!.isMine
+              ? l10n.previewYouReplied(latestMessage!.text)
+              : l10n.previewReplied(latestMessage!.text))
         : latestMessage!.photoPath != null
-        ? 'SENT A PRINT'
-        : '${latestMessage!.isMine ? 'YOU: ' : ''}${latestMessage!.text}';
+        ? l10n.previewSentPrint
+        : (latestMessage!.isMine
+              ? l10n.previewYouText(latestMessage!.text)
+              : latestMessage!.text);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -852,9 +883,12 @@ class _FriendTile extends StatelessWidget {
                           ),
                         ),
                         if (friend.isSample)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 6),
-                            child: NeoLabel('SAMPLE', color: NeoColors.pink),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: NeoLabel(
+                              AppLocalizations.of(context).sampleLabel,
+                              color: NeoColors.pink,
+                            ),
                           ),
                       ],
                     ),
@@ -948,9 +982,9 @@ class _SocialMasthead extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        SizedBox(
+        const SizedBox(
           width: 42,
           height: 42,
           child: DecoratedBox(
@@ -993,7 +1027,11 @@ class _SocialMasthead extends StatelessWidget {
             ],
           ),
         ),
-        NeoLabel('LOCAL', color: NeoColors.teal, icon: Icons.lock_outline),
+        NeoLabel(
+          AppLocalizations.of(context).localLabel,
+          color: NeoColors.teal,
+          icon: Icons.lock_outline,
+        ),
       ],
     );
   }
@@ -1053,27 +1091,33 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
                 ),
               ),
               const SizedBox(height: 22),
-              const Text(
-                'ADD A FRIEND',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).addAFriend,
+                style: const TextStyle(
                   color: NeoColors.ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 5),
-              const NeoLabel('LOCAL PROFILE ONLY', color: NeoColors.yellow),
+              NeoLabel(
+                AppLocalizations.of(context).localProfileOnly,
+                color: NeoColors.yellow,
+              ),
               const SizedBox(height: 20),
-              _fieldLabel('DISPLAY NAME'),
+              _fieldLabel(AppLocalizations.of(context).displayNameLabel),
               const SizedBox(height: 6),
-              _input(_nameController, 'A friend name'),
+              _input(
+                _nameController,
+                AppLocalizations.of(context).friendNameHint,
+              ),
               const SizedBox(height: 14),
-              _fieldLabel('HANDLE'),
+              _fieldLabel(AppLocalizations.of(context).handleLabel),
               const SizedBox(height: 6),
               _input(_handleController, '@friend.handle'),
               const SizedBox(height: 20),
               NeoButton(
-                label: 'ADD TO FRIENDS',
+                label: AppLocalizations.of(context).addToFriends,
                 icon: Icons.person_add_alt_1,
                 variant: NeoButtonVariant.primary,
                 expand: true,

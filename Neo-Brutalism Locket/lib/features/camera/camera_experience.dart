@@ -312,7 +312,7 @@ class CameraTabState extends State<CameraTab> {
       if (mounted) setState(() => _questModeQuest = null);
       _notify(error.message.toUpperCase());
     } catch (_) {
-      _notify('PHOTO DID NOT SAVE. TRY AGAIN.');
+      if (mounted) _notify(AppLocalizations.of(context).photoNotSaved);
     } finally {
       if (mounted) {
         setState(() {
@@ -368,14 +368,14 @@ class CameraTabState extends State<CameraTab> {
       setState(() {
         _cameraLoading = false;
         _cameraMessage = error.code == 'CameraAccessDenied'
-            ? 'CAMERA ACCESS IS OFF'
-            : 'CAMERA IS NOT AVAILABLE';
+            ? AppLocalizations.of(context).cameraAccessOff
+            : AppLocalizations.of(context).cameraUnavailable;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _cameraLoading = false;
-        _cameraMessage = 'CAMERA IS NOT AVAILABLE';
+        _cameraMessage = AppLocalizations.of(context).cameraUnavailable;
       });
     }
   }
@@ -492,7 +492,7 @@ class CameraTabState extends State<CameraTab> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _processing = false);
-      _notify('PHOTO DID NOT SAVE. TRY AGAIN.');
+      _notify(AppLocalizations.of(context).photoNotSaved);
     }
   }
 
@@ -512,7 +512,7 @@ class CameraTabState extends State<CameraTab> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _processing = false);
-      _notify('COULD NOT OPEN THAT PHOTO. TRY ANOTHER.');
+      _notify(AppLocalizations.of(context).photoOpenFailed);
     }
   }
 
@@ -567,8 +567,8 @@ class CameraTabState extends State<CameraTab> {
         status: ProcessingStatus.done,
         clearFailureReason: true,
       );
-      if (output.note != null) {
-        _notify('FALLBACK USED: ${output.note}');
+      if (output.note != null && mounted) {
+        _notify(AppLocalizations.of(context).fallbackUsed(output.note!));
       }
       await widget.repository.upsert(complete);
       widget.onPhotoChanged(complete);
@@ -592,7 +592,7 @@ class CameraTabState extends State<CameraTab> {
         _showOriginal = true;
         _processing = false;
       });
-      _notify('STYLE PASS FAILED. ORIGINAL IS SAFE.');
+      _notify(AppLocalizations.of(context).styleFailedOriginalSafe);
     }
   }
 
@@ -648,7 +648,7 @@ class CameraTabState extends State<CameraTab> {
       await camera.setFlashMode(mode);
       if (mounted) setState(() => _flashMode = mode);
     } catch (_) {
-      _notify('FLASH IS NOT AVAILABLE');
+      if (mounted) _notify(AppLocalizations.of(context).flashUnavailable);
     }
   }
 
@@ -679,7 +679,7 @@ class CameraTabState extends State<CameraTab> {
             actions: [
               NeoIconButton(
                 icon: Icons.dns_outlined,
-                tooltip: 'Home laptop settings',
+                tooltip: AppLocalizations.of(context).laptopSettingsTooltip,
                 fill: NeoColors.teal,
                 onPressed: () => showServerSettingsSheet(context),
               ),
@@ -687,7 +687,7 @@ class CameraTabState extends State<CameraTab> {
                 icon: _flashMode == FlashMode.off
                     ? Icons.flash_off
                     : Icons.flash_on,
-                tooltip: 'Change flash mode',
+                tooltip: AppLocalizations.of(context).flashTooltip,
                 fill: NeoColors.yellow,
                 onPressed: _toggleFlash,
               ),
@@ -740,24 +740,27 @@ class CameraTabState extends State<CameraTab> {
           Center(
             child: Semantics(
               button: true,
-              label: 'Open feed',
+              label: AppLocalizations.of(context).openFeedLabel,
               child: InkWell(
                 onTap: widget.onOpenFeed,
                 borderRadius: BorderRadius.circular(12),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.keyboard_arrow_up,
                         size: 18,
                         color: NeoColors.ink,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'FEED',
-                        style: TextStyle(
+                        AppLocalizations.of(context).feedLabel,
+                        style: const TextStyle(
                           color: NeoColors.ink,
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
@@ -946,7 +949,7 @@ class CameraTabState extends State<CameraTab> {
             Semantics(
               button: true,
               selected: level == nearest,
-              label: 'Zoom ${zoomLabel(level)}',
+              label: AppLocalizations.of(context).zoomSemantics(zoomLabel(level)),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _setZoom(level),
@@ -1030,8 +1033,8 @@ class CameraTabState extends State<CameraTab> {
                 const SizedBox(height: 22),
                 Text(
                   _cameraLoading
-                      ? 'FINDING CAMERA'
-                      : _cameraMessage ?? 'CAMERA READY',
+                      ? AppLocalizations.of(context).findingCamera
+                      : _cameraMessage ?? AppLocalizations.of(context).cameraReady,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: NeoColors.ink,
@@ -1040,10 +1043,10 @@ class CameraTabState extends State<CameraTab> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'ENABLE CAMERA ACCESS TO START SHOOTING',
+                Text(
+                  AppLocalizations.of(context).cameraAccessHint,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: NeoColors.ink,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -1052,7 +1055,7 @@ class CameraTabState extends State<CameraTab> {
                 if (!_cameraLoading) ...[
                   const SizedBox(height: 18),
                   NeoButton(
-                    label: 'TRY AGAIN',
+                    label: AppLocalizations.of(context).retry,
                     icon: Icons.refresh,
                     variant: NeoButtonVariant.outline,
                     onPressed: _initializeCamera,
@@ -1082,7 +1085,7 @@ class CameraTabState extends State<CameraTab> {
                   const SizedBox(width: 10),
                   NeoIconButton(
                     icon: Icons.add_photo_alternate_outlined,
-                    tooltip: 'Upload a photo from this device',
+                    tooltip: AppLocalizations.of(context).uploadPhotoTooltip,
                     onPressed: _processing ? null : _uploadFromGallery,
                     fill: NeoColors.pink,
                   ),
@@ -1093,7 +1096,7 @@ class CameraTabState extends State<CameraTab> {
         ),
         Semantics(
           button: true,
-          label: 'Take photo',
+          label: AppLocalizations.of(context).takePhotoLabel,
           hint: widget.onVideoRecorded == null
               ? null
               : AppLocalizations.of(context).holdForVideo,
@@ -1159,7 +1162,7 @@ class CameraTabState extends State<CameraTab> {
             alignment: Alignment.centerRight,
             child: NeoIconButton(
               icon: Icons.flip_camera_ios_outlined,
-              tooltip: 'Switch camera',
+              tooltip: AppLocalizations.of(context).switchCameraTooltip,
               onPressed: _flipCamera,
               fill: NeoColors.purple,
             ),
@@ -1173,7 +1176,7 @@ class CameraTabState extends State<CameraTab> {
     final photo = widget.photos.isEmpty ? null : widget.photos.first;
     return Semantics(
       button: true,
-      label: 'Open archive',
+      label: AppLocalizations.of(context).openArchiveLabel,
       child: GestureDetector(
         onTap: widget.onOpenArchive,
         child: Container(
@@ -1240,8 +1243,14 @@ class CameraTabState extends State<CameraTab> {
                     ),
                     SizedBox(height: 3),
                     Text(
-                      'ORIGINAL + ${photo.styleType?.label ?? 'LEGACY EDIT'}'
-                      '${photo.status == ProcessingStatus.done && photo.styleSource != null ? ' · ${photo.styleSource!.label}' : ''}',
+                      AppLocalizations.of(context).originalPlusStyle(
+                            photo.styleType?.label ??
+                                AppLocalizations.of(context).legacyEdit,
+                          ) +
+                          (photo.status == ProcessingStatus.done &&
+                                  photo.styleSource != null
+                              ? ' · ${photo.styleSource!.label}'
+                              : ''),
                       style: TextStyle(
                         color: NeoColors.muted,
                         fontSize: 9,
@@ -1270,7 +1279,7 @@ class CameraTabState extends State<CameraTab> {
                     key: ValueKey('before-after-${photo.id}'),
                     originalPath: photo.originalPath,
                     styledPath: styledPath,
-                    styleLabel: photo.styleType?.label ?? 'EDIT',
+                    styleLabel: photo.styleType?.label ?? AppLocalizations.of(context).editLabel,
                     showStyled: !_showOriginal,
                     onChanged: (styled) =>
                         setState(() => _showOriginal = !styled),
@@ -1337,7 +1346,7 @@ class CameraTabState extends State<CameraTab> {
                   children: [
                     if (photo.status == ProcessingStatus.failed)
                       NeoButton(
-                        label: 'RETRY',
+                        label: AppLocalizations.of(context).retryShort,
                         icon: Icons.refresh,
                         variant: NeoButtonVariant.primary,
                         onPressed: _processing ? null : _retryProcessing,
@@ -1372,7 +1381,7 @@ class CameraTabState extends State<CameraTab> {
                               : () => widget.onSendPrint!(photo),
                         ),
                       NeoButton(
-                        label: 'NEW SHOT',
+                        label: AppLocalizations.of(context).newShot,
                         icon: Icons.photo_camera_outlined,
                         variant: NeoButtonVariant.accent,
                         onPressed: () => setState(() => _showPrint = false),
@@ -1389,18 +1398,18 @@ class CameraTabState extends State<CameraTab> {
   }
 
   Widget _statusBadge(NeoPhoto photo) => switch (photo.status) {
-    ProcessingStatus.pending => const NeoLabel(
-      'INKING',
+    ProcessingStatus.pending => NeoLabel(
+      AppLocalizations.of(context).statusInking,
       color: NeoColors.yellow,
       icon: Icons.hourglass_top,
     ),
-    ProcessingStatus.done => const NeoLabel(
-      'READY',
+    ProcessingStatus.done => NeoLabel(
+      AppLocalizations.of(context).statusReady,
       color: NeoColors.teal,
       icon: Icons.check,
     ),
-    ProcessingStatus.failed => const NeoLabel(
-      'ORIGINAL SAFE',
+    ProcessingStatus.failed => NeoLabel(
+      AppLocalizations.of(context).statusOriginalSafe,
       color: NeoColors.pink,
       icon: Icons.warning_amber_rounded,
     ),

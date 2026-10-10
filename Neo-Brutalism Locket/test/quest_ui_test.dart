@@ -14,6 +14,7 @@ import 'package:neo_brutalism_locket/features/social/feed_view.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 class FakeMusic implements MusicPlayer {
   final log = <String>[];
@@ -73,6 +74,9 @@ void main() {
       final music = FakeMusic();
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: Scaffold(
             body: FeedScreen(
               entries: entries,
@@ -192,6 +196,9 @@ void main() {
     Future<void> pumpSheet(WidgetTester tester, ShopItem item) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: Builder(
             builder: (context) => Scaffold(
               body: Center(
@@ -274,6 +281,9 @@ void main() {
       await tester.runAsync(store.load);
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: Scaffold(
             body: ListenableBuilder(
               listenable: store,
@@ -300,6 +310,9 @@ void main() {
     tester,
   ) async {
     Widget badge(int balance) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
       home: Scaffold(
         body: Center(child: SunbitBadge(balance: balance)),
       ),

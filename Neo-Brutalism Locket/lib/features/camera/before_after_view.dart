@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// A shot before and after its style: swipe left on the picture for the
 /// styled print, right for the original (a tap switches too). Until the
@@ -68,10 +69,13 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
     File(path),
     key: ValueKey(path),
     fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) => const Center(
+    errorBuilder: (context, error, stackTrace) => Center(
       child: Text(
-        'IMAGE NOT FOUND',
-        style: TextStyle(color: NeoColors.ink, fontWeight: FontWeight.w700),
+        AppLocalizations.of(context).imageNotFound,
+        style: const TextStyle(
+          color: NeoColors.ink,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     ),
   );
@@ -103,7 +107,9 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
             left: 12,
             child: IgnorePointer(
               child: NeoLabel(
-                onStyled ? widget.styleLabel : 'ORIGINAL',
+                onStyled
+                    ? widget.styleLabel
+                    : AppLocalizations.of(context).originalLabel,
                 color: onStyled ? NeoColors.teal : NeoColors.surface,
               ),
             ),

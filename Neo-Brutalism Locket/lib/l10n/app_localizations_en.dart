@@ -627,4 +627,372 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifyFriendRequests => 'Friend requests';
+
+  @override
+  String get tabShoot => 'SHOOT';
+
+  @override
+  String get tabFriends => 'FRIENDS';
+
+  @override
+  String get tabInbox => 'INBOX';
+
+  @override
+  String get tabPrints => 'PRINTS';
+
+  @override
+  String get tabMe => 'ME';
+
+  @override
+  String get laptopSettingsTooltip => 'Home laptop settings';
+
+  @override
+  String get cameraAccessHint => 'ENABLE CAMERA ACCESS TO START SHOOTING';
+
+  @override
+  String get originalLabel => 'ORIGINAL';
+
+  @override
+  String get imageNotFound => 'IMAGE NOT FOUND';
+
+  @override
+  String get groupsKicker => 'YOUR CIRCLES';
+
+  @override
+  String get groupsTitle => 'Groups';
+
+  @override
+  String groupsCount(int count) {
+    return '$count GROUPS';
+  }
+
+  @override
+  String get groupCreate => 'NEW GROUP';
+
+  @override
+  String get questDataUnreadable => 'QUEST DATA COULD NOT BE READ';
+
+  @override
+  String get archiveUnreadable => 'ARCHIVE COULD NOT BE READ';
+
+  @override
+  String get friendsLoadFailed => 'FRIENDS COULD NOT BE LOADED';
+
+  @override
+  String friendAddedLocally(String name) {
+    return '$name ADDED LOCALLY';
+  }
+
+  @override
+  String get shareNeedsPrint => 'TAKE A PRINT BEFORE SHARING';
+
+  @override
+  String get replyWord => 'REPLY';
+
+  @override
+  String sentNotice(String what) {
+    return '$what SENT';
+  }
+
+  @override
+  String sentNoticeTo(String what, String name) {
+    return '$what SENT TO $name';
+  }
+
+  @override
+  String removeLocalFriendBody(String name) {
+    return 'Remove $name and this local thread from this device?';
+  }
+
+  @override
+  String get photoNotSaved => 'PHOTO DID NOT SAVE. TRY AGAIN.';
+
+  @override
+  String get photoOpenFailed => 'COULD NOT OPEN THAT PHOTO. TRY ANOTHER.';
+
+  @override
+  String fallbackUsed(String note) {
+    return 'FALLBACK USED: $note';
+  }
+
+  @override
+  String get styleFailedOriginalSafe => 'STYLE PASS FAILED. ORIGINAL IS SAFE.';
+
+  @override
+  String get flashUnavailable => 'FLASH IS NOT AVAILABLE';
+
+  @override
+  String get flashTooltip => 'Change flash mode';
+
+  @override
+  String get openFeedLabel => 'Open feed';
+
+  @override
+  String get feedLabel => 'FEED';
+
+  @override
+  String zoomSemantics(String level) {
+    return 'Zoom $level';
+  }
+
+  @override
+  String get uploadPhotoTooltip => 'Upload a photo from this device';
+
+  @override
+  String get takePhotoLabel => 'Take photo';
+
+  @override
+  String get switchCameraTooltip => 'Switch camera';
+
+  @override
+  String get openArchiveLabel => 'Open archive';
+
+  @override
+  String get retryShort => 'RETRY';
+
+  @override
+  String get newShot => 'NEW SHOT';
+
+  @override
+  String get statusInking => 'INKING';
+
+  @override
+  String get statusReady => 'READY';
+
+  @override
+  String get statusOriginalSafe => 'ORIGINAL SAFE';
+
+  @override
+  String get cameraAccessOff => 'CAMERA ACCESS IS OFF';
+
+  @override
+  String get cameraUnavailable => 'CAMERA IS NOT AVAILABLE';
+
+  @override
+  String get findingCamera => 'FINDING CAMERA';
+
+  @override
+  String get cameraReady => 'CAMERA READY';
+
+  @override
+  String originalPlusStyle(String style) {
+    return 'ORIGINAL + $style';
+  }
+
+  @override
+  String get legacyEdit => 'LEGACY EDIT';
+
+  @override
+  String get editLabel => 'EDIT';
+
+  @override
+  String get styleSliderSemantics => 'Style. Swipe to change';
+
+  @override
+  String get retryTooltip => 'Retry';
+
+  @override
+  String get backToCameraTooltip => 'Back to camera';
+
+  @override
+  String get noPostsYet => 'NO POSTS YET';
+
+  @override
+  String replyHint(String name) {
+    return 'Reply to $name...';
+  }
+
+  @override
+  String get openPrint => 'OPEN PRINT';
+
+  @override
+  String get reactWith => 'REACT WITH';
+
+  @override
+  String get sendReplyTooltip => 'Send reply';
+
+  @override
+  String reactSemantics(String emoji) {
+    return 'React $emoji';
+  }
+
+  @override
+  String get moreEmojiTooltip => 'More emoji';
+
+  @override
+  String get localCollection => 'LOCAL COLLECTION';
+
+  @override
+  String get printArchive => 'Print archive';
+
+  @override
+  String itemsCount(int count) {
+    return '$count ITEMS';
+  }
+
+  @override
+  String get archiveEmptyBody =>
+      'YOUR PHOTOS STAY IN THIS DEVICE-ONLY ARCHIVE.';
+
+  @override
+  String get openCamera => 'OPEN CAMERA';
+
+  @override
+  String get printReady => 'NEO PRINT READY';
+
+  @override
+  String get originalSaved => 'ORIGINAL SAVED';
+
+  @override
+  String get serverTesting => 'TESTING…';
+
+  @override
+  String serverConnected(String gpu) {
+    return 'CONNECTED · $gpu';
+  }
+
+  @override
+  String get serverModelsLoading => 'CONNECTED · MODELS STILL LOADING';
+
+  @override
+  String get serverInvalidAddress => 'INVALID ADDRESS';
+
+  @override
+  String get homeLaptop => 'HOME LAPTOP';
+
+  @override
+  String get vanGoghOnLaptop => 'VAN GOGH RUNS ON YOUR LAPTOP';
+
+  @override
+  String get serverAddressLabel => 'ADDRESS (IP:PORT)';
+
+  @override
+  String get serverTokenLabel => 'TOKEN';
+
+  @override
+  String get serverTokenHint => 'printed when the server starts';
+
+  @override
+  String get serverTestButton => 'TEST';
+
+  @override
+  String get shopLabel => 'SHOP';
+
+  @override
+  String get sunbitShop => 'SUNBIT SHOP';
+
+  @override
+  String get sampleLabel => 'SAMPLE';
+
+  @override
+  String get menuTooltip => 'Menu';
+
+  @override
+  String get yourPeople => 'YOUR PEOPLE';
+
+  @override
+  String get friendsTitle => 'Friends';
+
+  @override
+  String peopleCount(int count) {
+    return '$count PEOPLE';
+  }
+
+  @override
+  String get localMode => 'LOCAL MODE';
+
+  @override
+  String get noFriendsOnDevice => 'NO FRIENDS\nON THIS DEVICE';
+
+  @override
+  String get noFriendsOnDeviceBody =>
+      'ADD A LOCAL PROFILE TO START A SAMPLE THREAD.';
+
+  @override
+  String get privateThreads => 'PRIVATE THREADS';
+
+  @override
+  String get inboxTitle => 'Inbox';
+
+  @override
+  String get deviceOnly => 'DEVICE ONLY';
+
+  @override
+  String get addFriendToStart => 'ADD A FRIEND TO START A THREAD';
+
+  @override
+  String get backToInboxTooltip => 'Back to inbox';
+
+  @override
+  String get openProfileLabel => 'Open profile';
+
+  @override
+  String get removeFriendTooltip => 'Remove friend';
+
+  @override
+  String get localThread => 'LOCAL THREAD';
+
+  @override
+  String get sendLatestPrintTooltip => 'Send latest print';
+
+  @override
+  String get writeMessageHint => 'Write a message...';
+
+  @override
+  String get sendMessageTooltip => 'Send message';
+
+  @override
+  String whosePost(String name) {
+    return '$name\'S POST';
+  }
+
+  @override
+  String get yourPost => 'YOUR POST';
+
+  @override
+  String get previewStart => 'START A LOCAL THREAD';
+
+  @override
+  String previewReacted(String who, String emoji) {
+    return '$who REACTED $emoji';
+  }
+
+  @override
+  String get previewYou => 'YOU';
+
+  @override
+  String previewYouReplied(String text) {
+    return 'YOU REPLIED: $text';
+  }
+
+  @override
+  String previewReplied(String text) {
+    return 'REPLIED: $text';
+  }
+
+  @override
+  String get previewSentPrint => 'SENT A PRINT';
+
+  @override
+  String previewYouText(String text) {
+    return 'YOU: $text';
+  }
+
+  @override
+  String get localLabel => 'LOCAL';
+
+  @override
+  String get addAFriend => 'ADD A FRIEND';
+
+  @override
+  String get localProfileOnly => 'LOCAL PROFILE ONLY';
+
+  @override
+  String get handleLabel => 'HANDLE';
+
+  @override
+  String get friendNameHint => 'A friend name';
+
+  @override
+  String get addToFriends => 'ADD TO FRIENDS';
 }

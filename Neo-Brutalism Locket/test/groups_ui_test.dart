@@ -42,7 +42,7 @@ void main() {
         app(GroupsScreen(store: store, onOpenGroup: (_) {})),
       );
       expect(find.text('Chưa có nhóm nào'), findsOneWidget);
-      expect(find.text('TẠO NHÓM'), findsOneWidget);
+      expect(find.text('NEW GROUP'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       store.dispose();
     });

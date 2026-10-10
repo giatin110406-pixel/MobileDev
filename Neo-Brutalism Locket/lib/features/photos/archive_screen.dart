@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// "MM.DD  h:mm AM" for print timestamps.
 String formatPrintDate(DateTime date) {
@@ -28,9 +29,9 @@ class ArchiveScreen extends StatelessWidget {
   final VoidCallback onOpenCamera;
 
   @override
-  Widget build(BuildContext context) => _buildArchive();
+  Widget build(BuildContext context) => _buildArchive(context);
 
-  Widget _buildArchive() {
+  Widget _buildArchive(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
       child: Column(
@@ -41,22 +42,22 @@ class ArchiveScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LOCAL COLLECTION',
-                      style: TextStyle(
+                      AppLocalizations.of(context).localCollection,
+                      style: const TextStyle(
                         color: NeoColors.muted,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Print archive',
-                      style: TextStyle(
+                      AppLocalizations.of(context).printArchive,
+                      style: const TextStyle(
                         color: NeoColors.ink,
                         fontSize: 25,
                         height: 1,
@@ -66,20 +67,23 @@ class ArchiveScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              NeoLabel('${photos.length} ITEMS', color: NeoColors.purple),
+              NeoLabel(
+                AppLocalizations.of(context).itemsCount(photos.length),
+                color: NeoColors.purple,
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Expanded(
             child: photos.isEmpty
-                ? _buildEmptyArchive()
+                ? _buildEmptyArchive(context)
                 : ListView.separated(
                     padding: const EdgeInsets.only(bottom: 8, right: 4),
                     itemCount: photos.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 12),
                     itemBuilder: (context, index) =>
-                        _buildArchiveRow(photos[index], index),
+                        _buildArchiveRow(context, photos[index], index),
                   ),
           ),
         ],
@@ -87,7 +91,7 @@ class ArchiveScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildArchiveRow(NeoPhoto photo, int index) {
+  Widget _buildArchiveRow(BuildContext context, NeoPhoto photo, int index) {
     final thumbnail = photo.processedPath ?? photo.originalPath;
     return InkWell(
       onTap: () => onOpenPhoto(photo),
@@ -138,7 +142,7 @@ class ArchiveScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${formatPrintDate(photo.createdAt)}  /  ${_statusText(photo.status)}',
+                    '${formatPrintDate(photo.createdAt)}  /  ${_statusText(AppLocalizations.of(context), photo.status)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -158,7 +162,7 @@ class ArchiveScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyArchive() {
+  Widget _buildEmptyArchive(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: NeoTheme.panel(color: NeoColors.blue, borderWidth: 2),
@@ -192,10 +196,10 @@ class ArchiveScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'YOUR PHOTOS STAY IN THIS DEVICE-ONLY ARCHIVE.',
+          Text(
+            AppLocalizations.of(context).archiveEmptyBody,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: NeoColors.ink,
               fontSize: 10,
               height: 1.35,
@@ -204,7 +208,7 @@ class ArchiveScreen extends StatelessWidget {
           ),
           const SizedBox(height: 22),
           NeoButton(
-            label: 'OPEN CAMERA',
+            label: AppLocalizations.of(context).openCamera,
             icon: Icons.photo_camera_outlined,
             variant: NeoButtonVariant.primary,
             onPressed: onOpenCamera,
@@ -214,9 +218,10 @@ class ArchiveScreen extends StatelessWidget {
     );
   }
 
-  String _statusText(ProcessingStatus status) => switch (status) {
-    ProcessingStatus.pending => 'INKING',
-    ProcessingStatus.done => 'NEO PRINT READY',
-    ProcessingStatus.failed => 'ORIGINAL SAVED',
-  };
+  String _statusText(AppLocalizations l10n, ProcessingStatus status) =>
+      switch (status) {
+        ProcessingStatus.pending => l10n.statusInking,
+        ProcessingStatus.done => l10n.printReady,
+        ProcessingStatus.failed => l10n.originalSaved,
+      };
 }

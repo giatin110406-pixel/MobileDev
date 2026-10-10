@@ -9,6 +9,7 @@ import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
+import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 Future<List<StyleType>> pumpPill(
   WidgetTester tester, {
@@ -18,6 +19,9 @@ Future<List<StyleType>> pumpPill(
   final changes = <StyleType>[];
   await tester.pumpWidget(
     MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
       home: Scaffold(
         body: Center(
           child: StylePill(

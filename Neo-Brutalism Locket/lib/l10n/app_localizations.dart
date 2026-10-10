@@ -1213,6 +1213,666 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Lời mời kết bạn'**
   String get notifyFriendRequests;
+
+  /// No description provided for @tabShoot.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP'**
+  String get tabShoot;
+
+  /// No description provided for @tabFriends.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN BÈ'**
+  String get tabFriends;
+
+  /// No description provided for @tabInbox.
+  ///
+  /// In vi, this message translates to:
+  /// **'HỘP THƯ'**
+  String get tabInbox;
+
+  /// No description provided for @tabPrints.
+  ///
+  /// In vi, this message translates to:
+  /// **'TỦ ẢNH'**
+  String get tabPrints;
+
+  /// No description provided for @tabMe.
+  ///
+  /// In vi, this message translates to:
+  /// **'TÔI'**
+  String get tabMe;
+
+  /// No description provided for @laptopSettingsTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt laptop ở nhà'**
+  String get laptopSettingsTooltip;
+
+  /// No description provided for @cameraAccessHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẬT QUYỀN CAMERA ĐỂ BẮT ĐẦU CHỤP'**
+  String get cameraAccessHint;
+
+  /// No description provided for @originalLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH GỐC'**
+  String get originalLabel;
+
+  /// No description provided for @imageNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG TÌM THẤY ẢNH'**
+  String get imageNotFound;
+
+  /// No description provided for @groupsKicker.
+  ///
+  /// In vi, this message translates to:
+  /// **'NHÓM CỦA BẠN'**
+  String get groupsKicker;
+
+  /// No description provided for @groupsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm'**
+  String get groupsTitle;
+
+  /// No description provided for @groupsCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} NHÓM'**
+  String groupsCount(int count);
+
+  /// No description provided for @groupCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠO NHÓM'**
+  String get groupCreate;
+
+  /// No description provided for @questDataUnreadable.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG ĐỌC ĐƯỢC DỮ LIỆU NHIỆM VỤ'**
+  String get questDataUnreadable;
+
+  /// No description provided for @archiveUnreadable.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG ĐỌC ĐƯỢC TỦ ẢNH'**
+  String get archiveUnreadable;
+
+  /// No description provided for @friendsLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG TẢI ĐƯỢC DANH SÁCH BẠN BÈ'**
+  String get friendsLoadFailed;
+
+  /// No description provided for @friendAddedLocally.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ THÊM {name} TRÊN MÁY'**
+  String friendAddedLocally(String name);
+
+  /// No description provided for @shareNeedsPrint.
+  ///
+  /// In vi, this message translates to:
+  /// **'HÃY CHỤP MỘT TẤM TRƯỚC KHI CHIA SẺ'**
+  String get shareNeedsPrint;
+
+  /// No description provided for @replyWord.
+  ///
+  /// In vi, this message translates to:
+  /// **'TIN NHẮN'**
+  String get replyWord;
+
+  /// No description provided for @sentNotice.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ GỬI {what}'**
+  String sentNotice(String what);
+
+  /// No description provided for @sentNoticeTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ GỬI {what} CHO {name}'**
+  String sentNoticeTo(String what, String name);
+
+  /// No description provided for @removeLocalFriendBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa {name} và cuộc trò chuyện này khỏi máy?'**
+  String removeLocalFriendBody(String name);
+
+  /// No description provided for @photoNotSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.'**
+  String get photoNotSaved;
+
+  /// No description provided for @photoOpenFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.'**
+  String get photoOpenFailed;
+
+  /// No description provided for @fallbackUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ DÙNG PHƯƠNG ÁN DỰ PHÒNG: {note}'**
+  String fallbackUsed(String note);
+
+  /// No description provided for @styleFailedOriginalSafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠO TRANH THẤT BẠI. ẢNH GỐC VẪN AN TOÀN.'**
+  String get styleFailedOriginalSafe;
+
+  /// No description provided for @flashUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'MÁY KHÔNG CÓ ĐÈN FLASH'**
+  String get flashUnavailable;
+
+  /// No description provided for @flashTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi chế độ flash'**
+  String get flashTooltip;
+
+  /// No description provided for @openFeedLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở bảng tin'**
+  String get openFeedLabel;
+
+  /// No description provided for @feedLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẢNG TIN'**
+  String get feedLabel;
+
+  /// No description provided for @zoomSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu phóng {level}'**
+  String zoomSemantics(String level);
+
+  /// No description provided for @uploadPhotoTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải ảnh lên từ máy'**
+  String get uploadPhotoTooltip;
+
+  /// No description provided for @takePhotoLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh'**
+  String get takePhotoLabel;
+
+  /// No description provided for @switchCameraTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi camera'**
+  String get switchCameraTooltip;
+
+  /// No description provided for @openArchiveLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở tủ ảnh'**
+  String get openArchiveLabel;
+
+  /// No description provided for @retryShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'THỬ LẠI'**
+  String get retryShort;
+
+  /// No description provided for @newShot.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP MỚI'**
+  String get newShot;
+
+  /// No description provided for @statusInking.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG VẼ'**
+  String get statusInking;
+
+  /// No description provided for @statusReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'XONG'**
+  String get statusReady;
+
+  /// No description provided for @statusOriginalSafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ GIỮ ẢNH GỐC'**
+  String get statusOriginalSafe;
+
+  /// No description provided for @cameraAccessOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'CAMERA ĐANG BỊ TẮT QUYỀN'**
+  String get cameraAccessOff;
+
+  /// No description provided for @cameraUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG DÙNG ĐƯỢC CAMERA'**
+  String get cameraUnavailable;
+
+  /// No description provided for @findingCamera.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG TÌM CAMERA'**
+  String get findingCamera;
+
+  /// No description provided for @cameraReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'CAMERA SẴN SÀNG'**
+  String get cameraReady;
+
+  /// No description provided for @originalPlusStyle.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH GỐC + {style}'**
+  String originalPlusStyle(String style);
+
+  /// No description provided for @legacyEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẢN CHỈNH CŨ'**
+  String get legacyEdit;
+
+  /// No description provided for @editLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ CHỈNH'**
+  String get editLabel;
+
+  /// No description provided for @styleSliderSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phong cách. Vuốt để đổi'**
+  String get styleSliderSemantics;
+
+  /// No description provided for @retryTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại'**
+  String get retryTooltip;
+
+  /// No description provided for @backToCameraTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Về camera'**
+  String get backToCameraTooltip;
+
+  /// No description provided for @noPostsYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHƯA CÓ BÀI NÀO'**
+  String get noPostsYet;
+
+  /// No description provided for @replyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lời {name}...'**
+  String replyHint(String name);
+
+  /// No description provided for @openPrint.
+  ///
+  /// In vi, this message translates to:
+  /// **'XEM ẢNH'**
+  String get openPrint;
+
+  /// No description provided for @reactWith.
+  ///
+  /// In vi, this message translates to:
+  /// **'THẢ CẢM XÚC'**
+  String get reactWith;
+
+  /// No description provided for @sendReplyTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi trả lời'**
+  String get sendReplyTooltip;
+
+  /// No description provided for @reactSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thả {emoji}'**
+  String reactSemantics(String emoji);
+
+  /// No description provided for @moreEmojiTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm emoji'**
+  String get moreEmojiTooltip;
+
+  /// No description provided for @localCollection.
+  ///
+  /// In vi, this message translates to:
+  /// **'BỘ SƯU TẬP TRÊN MÁY'**
+  String get localCollection;
+
+  /// No description provided for @printArchive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ ảnh'**
+  String get printArchive;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ẢNH'**
+  String itemsCount(int count);
+
+  /// No description provided for @archiveEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH CỦA BẠN CHỈ NẰM TRONG TỦ ẢNH TRÊN MÁY NÀY.'**
+  String get archiveEmptyBody;
+
+  /// No description provided for @openCamera.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỞ CAMERA'**
+  String get openCamera;
+
+  /// No description provided for @printReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRANH ĐÃ XONG'**
+  String get printReady;
+
+  /// No description provided for @originalSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ LƯU ẢNH GỐC'**
+  String get originalSaved;
+
+  /// No description provided for @serverTesting.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG KIỂM TRA…'**
+  String get serverTesting;
+
+  /// No description provided for @serverConnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ KẾT NỐI · {gpu}'**
+  String serverConnected(String gpu);
+
+  /// No description provided for @serverModelsLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ KẾT NỐI · MÔ HÌNH ĐANG TẢI'**
+  String get serverModelsLoading;
+
+  /// No description provided for @serverInvalidAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐỊA CHỈ KHÔNG HỢP LỆ'**
+  String get serverInvalidAddress;
+
+  /// No description provided for @homeLaptop.
+  ///
+  /// In vi, this message translates to:
+  /// **'LAPTOP Ở NHÀ'**
+  String get homeLaptop;
+
+  /// No description provided for @vanGoghOnLaptop.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRANH VAN GOGH CHẠY TRÊN LAPTOP CỦA BẠN'**
+  String get vanGoghOnLaptop;
+
+  /// No description provided for @serverAddressLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐỊA CHỈ (IP:CỔNG)'**
+  String get serverAddressLabel;
+
+  /// No description provided for @serverTokenLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'MÃ TOKEN'**
+  String get serverTokenLabel;
+
+  /// No description provided for @serverTokenHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'in ra khi máy chủ khởi động'**
+  String get serverTokenHint;
+
+  /// No description provided for @serverTestButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'KIỂM TRA'**
+  String get serverTestButton;
+
+  /// No description provided for @shopLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'CỬA HÀNG'**
+  String get shopLabel;
+
+  /// No description provided for @sunbitShop.
+  ///
+  /// In vi, this message translates to:
+  /// **'CỬA HÀNG SUNBIT'**
+  String get sunbitShop;
+
+  /// No description provided for @sampleLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'MẪU'**
+  String get sampleLabel;
+
+  /// No description provided for @menuTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Menu'**
+  String get menuTooltip;
+
+  /// No description provided for @yourPeople.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN BÈ CỦA BẠN'**
+  String get yourPeople;
+
+  /// No description provided for @friendsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn bè'**
+  String get friendsTitle;
+
+  /// No description provided for @peopleCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} NGƯỜI'**
+  String peopleCount(int count);
+
+  /// No description provided for @localMode.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHẾ ĐỘ TRÊN MÁY'**
+  String get localMode;
+
+  /// No description provided for @noFriendsOnDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHƯA CÓ BẠN\nTRÊN MÁY NÀY'**
+  String get noFriendsOnDevice;
+
+  /// No description provided for @noFriendsOnDeviceBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM MỘT HỒ SƠ TRÊN MÁY ĐỂ BẮT ĐẦU CUỘC TRÒ CHUYỆN MẪU.'**
+  String get noFriendsOnDeviceBody;
+
+  /// No description provided for @privateThreads.
+  ///
+  /// In vi, this message translates to:
+  /// **'TIN NHẮN RIÊNG'**
+  String get privateThreads;
+
+  /// No description provided for @inboxTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hộp thư'**
+  String get inboxTitle;
+
+  /// No description provided for @deviceOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỈ TRÊN MÁY'**
+  String get deviceOnly;
+
+  /// No description provided for @addFriendToStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM BẠN ĐỂ BẮT ĐẦU TRÒ CHUYỆN'**
+  String get addFriendToStart;
+
+  /// No description provided for @backToInboxTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Về hộp thư'**
+  String get backToInboxTooltip;
+
+  /// No description provided for @openProfileLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở hồ sơ'**
+  String get openProfileLabel;
+
+  /// No description provided for @removeFriendTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa bạn'**
+  String get removeFriendTooltip;
+
+  /// No description provided for @localThread.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRÒ CHUYỆN TRÊN MÁY'**
+  String get localThread;
+
+  /// No description provided for @sendLatestPrintTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi ảnh mới nhất'**
+  String get sendLatestPrintTooltip;
+
+  /// No description provided for @writeMessageHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Viết tin nhắn...'**
+  String get writeMessageHint;
+
+  /// No description provided for @sendMessageTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi tin nhắn'**
+  String get sendMessageTooltip;
+
+  /// No description provided for @whosePost.
+  ///
+  /// In vi, this message translates to:
+  /// **'BÀI CỦA {name}'**
+  String whosePost(String name);
+
+  /// No description provided for @yourPost.
+  ///
+  /// In vi, this message translates to:
+  /// **'BÀI CỦA BẠN'**
+  String get yourPost;
+
+  /// No description provided for @previewStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẮT ĐẦU TRÒ CHUYỆN'**
+  String get previewStart;
+
+  /// No description provided for @previewReacted.
+  ///
+  /// In vi, this message translates to:
+  /// **'{who} ĐÃ THẢ {emoji}'**
+  String previewReacted(String who, String emoji);
+
+  /// No description provided for @previewYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN'**
+  String get previewYou;
+
+  /// No description provided for @previewYouReplied.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN ĐÃ TRẢ LỜI: {text}'**
+  String previewYouReplied(String text);
+
+  /// No description provided for @previewReplied.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ TRẢ LỜI: {text}'**
+  String previewReplied(String text);
+
+  /// No description provided for @previewSentPrint.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ GỬI MỘT ẢNH'**
+  String get previewSentPrint;
+
+  /// No description provided for @previewYouText.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẠN: {text}'**
+  String previewYouText(String text);
+
+  /// No description provided for @localLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRÊN MÁY'**
+  String get localLabel;
+
+  /// No description provided for @addAFriend.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM BẠN'**
+  String get addAFriend;
+
+  /// No description provided for @localProfileOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỈ LƯU TRÊN MÁY'**
+  String get localProfileOnly;
+
+  /// No description provided for @handleLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'TÊN NGƯỜI DÙNG'**
+  String get handleLabel;
+
+  /// No description provided for @friendNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên của bạn bè'**
+  String get friendNameHint;
+
+  /// No description provided for @addToFriends.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM VÀO BẠN BÈ'**
+  String get addToFriends;
 }
 
 class _AppLocalizationsDelegate
