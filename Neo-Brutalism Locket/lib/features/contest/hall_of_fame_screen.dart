@@ -15,9 +15,9 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The wood of a winner's frame: gold, silver or bronze.
 Color hallFrameColor(int? rank) => switch (rank) {
-  1 => const Color(0xFFD4A82E), // gold
-  2 => const Color(0xFFB9BEC7), // silver
-  _ => const Color(0xFFB0703A), // bronze
+  1 => const Color(0xFFFFE66D), // gold
+  2 => const Color(0xFF45B7D1), // silver
+  _ => const Color(0xFFF7A072), // bronze
 };
 
 /// How a winning painting is shown in the Hall of Fame: a metal frame by rank, a
@@ -27,7 +27,7 @@ FrameDecor hallDecor(GalleryEntry entry, {required bool vietnamese}) {
   final theme = vietnamese ? entry.titleVi : entry.titleEn;
   return FrameDecor(
     frame: hallFrameColor(entry.rank),
-    mat: const Color(0xFFEFE7D2),
+    mat: const Color(0xFFFDF2E9),
     spot: true,
     plaque: [
       entry.groupName,

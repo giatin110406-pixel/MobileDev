@@ -115,10 +115,10 @@ void main() {
       expect(corridorLength(layoutHall(3)), greaterThan(Corridor.startZ + 4));
     });
 
-    test('the frames are gold, silver and bronze by rank', () {
-      expect(hallFrameColor(1), const Color(0xFFD4A82E));
-      expect(hallFrameColor(2), const Color(0xFFB9BEC7));
-      expect(hallFrameColor(3), const Color(0xFFB0703A));
+    test('the frames are yellow, blue and orange by rank', () {
+      expect(hallFrameColor(1), const Color(0xFFFFE66D));
+      expect(hallFrameColor(2), const Color(0xFF45B7D1));
+      expect(hallFrameColor(3), const Color(0xFFF7A072));
       expect(hallFrameColor(null), hallFrameColor(3));
     });
 

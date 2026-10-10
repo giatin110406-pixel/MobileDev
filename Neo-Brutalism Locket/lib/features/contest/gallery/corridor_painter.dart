@@ -3,26 +3,33 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/widgets.dart';
+import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.dart';
 
-/// The colours of the exhibition hall.
+/// The colours of the exhibition hall: the app's own palette, flat, with black
+/// outlines.
 abstract final class CorridorColors {
-  static const wall = Color(0xFF53656F); // grey-blue
-  static const wallFar = Color(0xFF7B8D97);
-  static const trim = Color(0xFFEDEAE0); // skirting and crown moulding
-  static const ceiling = Color(0xFFE6E3DA);
-  static const floor = Color(0xFF1D1410); // dark polished wood
-  static const plank = Color(0x33000000);
-  static const runner = Color(0xFFDCCBA3); // a pale runner with a dark border
-  static const runnerBorder = Color(0xFF5B4630);
-  static const runnerMotif = Color(0xFFC2A56E);
-  static const blankCanvas = Color(0xFFF1EEE6);
-  static const frame = Color(0xFF17110E);
-  static const mat = Color(0xFFF5F2E9);
-  static const light = Color(0xFFFFF6D6);
+  static const ink = Color(0xFF1A1A1A);
+  static const wall = Color(0xFF4ECDC4); // teal
+  static const wallFar = Color(0xFF3DAFA7);
+  static const trim = Color(0xFFFFE66D); // skirting and crown moulding
+  static const ceiling = Color(0xFFFDF2E9);
+  static const floor = Color(0xFFECE6C2); // paper
+  static const floorAlt = Color(0xFFD9D2A6);
+  static const runner = Color(0xFFFF6B6B);
+  static const runnerBorder = Color(0xFF1A1A1A);
+  static const runnerMotif = Color(0xFFFFE66D);
+  static const blankCanvas = Color(0xFFFDF2E9);
+  static const frame = Color(0xFF1A1A1A);
+  static const mat = Color(0xFFFDF2E9);
+  static const light = Color(0xFFFFE66D);
 }
+
+/// How big one "pixel" of the corridor is, in logical pixels. The room is drawn
+/// this much smaller and blown up without smoothing.
+const corridorPixel = 4.0;
 
 /// The colours of one hall: the Gallery and the Hall of Fame look different.
 class CorridorStyle {
@@ -35,21 +42,27 @@ class CorridorStyle {
     required this.runner,
     required this.runnerBorder,
     required this.runnerMotif,
+    this.trim = CorridorColors.trim,
     this.ceilingLights = true,
     this.roundMotif = false,
     this.doorway = false,
   });
 
   final Color wall;
+
+  /// The wall in the distance, one step darker.
   final Color wallFar;
   final Color ceiling;
   final Color floor;
+
+  /// The other colour of the chequered floor.
   final Color floorFar;
   final Color runner;
   final Color runnerBorder;
   final Color runnerMotif;
+  final Color trim;
 
-  /// The recessed ceiling lights (the Hall of Fame has spot lights instead).
+  /// The ceiling lamps (the Hall of Fame has spot lights instead).
   final bool ceilingLights;
 
   /// Circles on the runner instead of diamonds.
@@ -58,13 +71,13 @@ class CorridorStyle {
   /// A bright doorway at the far end of the corridor.
   final bool doorway;
 
-  /// The exhibition corridor: grey-blue walls, dark wood, a pale runner.
+  /// The exhibition corridor: teal walls, a paper floor, a pink runner.
   static const gallery = CorridorStyle(
     wall: CorridorColors.wall,
     wallFar: CorridorColors.wallFar,
     ceiling: CorridorColors.ceiling,
     floor: CorridorColors.floor,
-    floorFar: Color(0xFF3B2A20),
+    floorFar: CorridorColors.floorAlt,
     runner: CorridorColors.runner,
     runnerBorder: CorridorColors.runnerBorder,
     runnerMotif: CorridorColors.runnerMotif,
@@ -72,16 +85,17 @@ class CorridorStyle {
     doorway: true,
   );
 
-  /// The Hall of Fame: deep night-blue walls, black floor, a royal runner.
+  /// The Hall of Fame: purple walls, a black and grey floor, a yellow runner.
   static const hall = CorridorStyle(
-    wall: Color(0xFF1B2433),
-    wallFar: Color(0xFF2E3A4F),
-    ceiling: Color(0xFF12161F),
-    floor: Color(0xFF0E0B0A),
-    floorFar: Color(0xFF241A14),
-    runner: Color(0xFF3B1450),
-    runnerBorder: Color(0xFFE2B84A),
-    runnerMotif: Color(0xFF5B2A78),
+    wall: Color(0xFFA388EE),
+    wallFar: Color(0xFF8268D0),
+    ceiling: Color(0xFF1A1A1A),
+    floor: Color(0xFF2B2B2B),
+    floorFar: Color(0xFF1A1A1A),
+    runner: Color(0xFFFFE66D),
+    runnerBorder: Color(0xFF1A1A1A),
+    runnerMotif: Color(0xFFF7A072),
+    trim: Color(0xFFFF6B6B),
     ceilingLights: false,
   );
 }
@@ -104,14 +118,14 @@ class FrameDecor {
 }
 
 const _frameLooks = [
-  FrameDecor(frame: Color(0xFF2B1D14), mat: Color(0xFFF3EFE4)), // walnut
-  FrameDecor(frame: Color(0xFF131313), mat: Color(0xFFF8F6F0)), // black
-  FrameDecor(frame: Color(0xFFEFECE4), mat: Color(0xFFFAF8F3)), // white
-  FrameDecor(frame: Color(0xFF45301F), mat: Color(0xFFEDE6D4)), // espresso
-  FrameDecor(frame: Color(0xFF9B7A3C), mat: Color(0xFFF1EBDA)), // antique gold
+  FrameDecor(frame: Color(0xFF1A1A1A)), // ink
+  FrameDecor(frame: Color(0xFFFFE66D)), // yellow
+  FrameDecor(frame: Color(0xFFFF6B6B)), // pink
+  FrameDecor(frame: Color(0xFFA388EE)), // purple
+  FrameDecor(frame: Color(0xFFF7A072)), // orange
 ];
 
-/// The wood and mat of a Gallery frame, from the number the layout gave it.
+/// The colour and mat of a Gallery frame, from the number the layout gave it.
 FrameDecor galleryFrameLook(int style) =>
     _frameLooks[style % _frameLooks.length];
 
@@ -119,7 +133,12 @@ FrameDecor galleryFrameLook(int style) =>
 /// pictures on the frames in real perspective. It repaints when the camera
 /// moves or a picture finishes decoding; nothing is rebuilt per frame.
 ///
-/// [lite] drops gradients, floor planks and light pools for slow phones.
+/// The room is drawn [corridorPixel] times smaller than the screen, in flat
+/// colours with black outlines, then blown up without smoothing, so it looks
+/// like pixel art. The paintings and the name plates are drawn afterwards at the
+/// full resolution (they are pixel art already).
+///
+/// [lite] drops the chequered floor, shadows and distance shading for slow phones.
 class CorridorPainter extends CustomPainter {
   CorridorPainter({
     required this.camera,
@@ -151,20 +170,61 @@ class CorridorPainter extends CustomPainter {
   Color _average(GalleryEntry entry) =>
       _averages[entry.id] ??= Color(averageArgb(entry));
 
+  static Paint _fill(Color color) => Paint()
+    ..color = color
+    ..isAntiAlias = false;
+
+  static Paint _outline(Color color) => Paint()
+    ..color = color
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1
+    ..isAntiAlias = false;
+
   @override
   void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
     final cameraZ = camera.value;
-    final view = Projection(size, cameraZ);
-    canvas.clipRect(Offset.zero & size);
+    final width = math.max(1, (size.width / corridorPixel).ceil());
+    final height = math.max(1, (size.height / corridorPixel).ceil());
+    final small = Size(width.toDouble(), height.toDouble());
+    final view = Projection(small, cameraZ);
 
-    _hall(canvas, size, view);
-    _end(canvas, view);
-    _runner(canvas, view);
-    _lights(canvas, view);
+    // The room, small.
+    final recorder = ui.PictureRecorder();
+    final low = Canvas(recorder);
+    low.clipRect(Offset.zero & small);
+    final overlay = <void Function(Canvas)>[];
+    _hall(low, small, view);
+    _end(low, view);
+    _runner(low, view);
+    _lights(low, view);
     for (final slot in visibleSlots(slots, cameraZ)) {
-      _frame(canvas, view, slot);
+      _frame(low, view, slot, overlay);
     }
-    _haze(canvas, size, view);
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(width, height);
+    picture.dispose();
+
+    // ...blown up without smoothing.
+    canvas.clipRect(Offset.zero & size);
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, small.width, small.height),
+      Offset.zero & size,
+      Paint()
+        ..filterQuality = FilterQuality.none
+        ..isAntiAlias = false,
+    );
+    image.dispose();
+
+    // The paintings and plates, sharp, in the room's own coordinates.
+    if (overlay.isEmpty) return;
+    canvas.save();
+    canvas.scale(size.width / small.width, size.height / small.height);
+    for (final draw in overlay) {
+      draw(canvas);
+    }
+    canvas.restore();
   }
 
   // The hall -----------------------------------------------------------------
@@ -190,67 +250,64 @@ class CorridorPainter extends CustomPainter {
     const wx = Corridor.wallX;
     const top = Corridor.ceilingY;
     const bottom = Corridor.floorY;
-    final vp = view.vanishingPoint;
+    const ink = CorridorColors.ink;
 
     Offset p(double x, double y, double z) => view.point(x, y, z)!;
 
+    // The four surfaces between depths [a] and [b].
+    Path surface(int kind, double a, double b) => switch (kind) {
+      0 => _poly([p(-wx, top, a), p(wx, top, a), p(wx, top, b), p(-wx, top, b)]),
+      1 => _poly([
+        p(-wx, bottom, a),
+        p(wx, bottom, a),
+        p(wx, bottom, b),
+        p(-wx, bottom, b),
+      ]),
+      2 => _poly([
+        p(-wx, top, a),
+        p(-wx, bottom, a),
+        p(-wx, bottom, b),
+        p(-wx, top, b),
+      ]),
+      _ => _poly([
+        p(wx, top, a),
+        p(wx, bottom, a),
+        p(wx, bottom, b),
+        p(wx, top, b),
+      ]),
+    };
+
     // Behind everything: the dark end of the corridor.
-    canvas.drawRect(Offset.zero & size, Paint()..color = style.wallFar);
+    canvas.drawRect(Offset.zero & size, _fill(style.wallFar));
 
-    // Ceiling, floor and the two walls.
-    final ceiling = _poly([
-      p(-wx, top, z0),
-      p(wx, top, z0),
-      p(wx, top, z1),
-      p(-wx, top, z1),
-    ]);
-    final floor = _poly([
-      p(-wx, bottom, z0),
-      p(wx, bottom, z0),
-      p(wx, bottom, z1),
-      p(-wx, bottom, z1),
-    ]);
-    final leftWall = _poly([
-      p(-wx, top, z0),
-      p(-wx, bottom, z0),
-      p(-wx, bottom, z1),
-      p(-wx, top, z1),
-    ]);
-    final rightWall = _poly([
-      p(wx, top, z0),
-      p(wx, bottom, z0),
-      p(wx, bottom, z1),
-      p(wx, top, z1),
-    ]);
+    final colours = [style.ceiling, style.floor, style.wall, style.wall];
+    for (var k = 0; k < 4; k++) {
+      canvas.drawPath(surface(k, z0, z1), _fill(colours[k]));
+    }
 
-    Paint shaded(Color near, Color far, Offset from) => Paint()
-      ..shader = lite ? null : ui.Gradient.linear(from, vp, [near, far])
-      ..color = near;
+    // A chequered floor.
+    if (!lite) {
+      final dark = _fill(style.floorFar);
+      final first = z0.floorToDouble();
+      for (var z = first; z < z1; z += 1) {
+        final a = math.max(z, z0);
+        for (var c = -2; c < 2; c++) {
+          if ((z.round() + c).isOdd) continue;
+          canvas.drawPath(
+            _poly([
+              p(c * 0.8, bottom, a),
+              p((c + 1) * 0.8, bottom, a),
+              p((c + 1) * 0.8, bottom, z + 1),
+              p(c * 0.8, bottom, z + 1),
+            ]),
+            dark,
+          );
+        }
+      }
+    }
 
-    canvas.drawPath(
-      ceiling,
-      // The ceiling stays pale and warm; it only dims a little toward the far end.
-      shaded(
-        style.ceiling,
-        Color.lerp(style.ceiling, style.wallFar, 0.3)!,
-        Offset(size.width / 2, 0),
-      ),
-    );
-    canvas.drawPath(
-      floor,
-      shaded(style.floor, style.floorFar, Offset(size.width / 2, size.height)),
-    );
-    canvas.drawPath(
-      leftWall,
-      shaded(style.wall, style.wallFar, Offset(0, vp.dy)),
-    );
-    canvas.drawPath(
-      rightWall,
-      shaded(style.wall, style.wallFar, Offset(size.width, vp.dy)),
-    );
-
-    // Skirting boards and crown moulding, white.
-    final trim = Paint()..color = CorridorColors.trim;
+    // Skirting boards and crown moulding, flat colour between black lines.
+    final trim = _fill(style.trim);
     for (final side in const [-1.0, 1.0]) {
       final x = side * wx;
       canvas.drawPath(
@@ -271,53 +328,32 @@ class CorridorPainter extends CustomPainter {
         ]),
         trim,
       );
-      // The shadow under the moulding and a step in the skirting.
-      canvas.drawPath(
-        _poly([
-          p(x, top + 0.25, z0),
-          p(x, top + 0.31, z0),
-          p(x, top + 0.31, z1),
-          p(x, top + 0.25, z1),
-        ]),
-        Paint()..color = const Color(0x26000000),
-      );
-      canvas.drawPath(
-        _poly([
-          p(x, bottom - 0.3, z0),
-          p(x, bottom - 0.27, z0),
-          p(x, bottom - 0.27, z1),
-          p(x, bottom - 0.3, z1),
-        ]),
-        Paint()..color = const Color(0x22000000),
-      );
     }
 
-    if (lite) return;
+    // Stepped shading toward the far end: two darker bands.
+    if (!lite) {
+      final bands = [
+        (from: view.cameraZ + 14, to: view.cameraZ + 24, alpha: 0x26),
+        (from: view.cameraZ + 24, to: z1, alpha: 0x4D),
+      ];
+      for (final band in bands) {
+        for (var k = 0; k < 4; k++) {
+          canvas.drawPath(
+            surface(k, band.from, band.to),
+            _fill(ink.withAlpha(band.alpha)),
+          );
+        }
+      }
+    }
 
-    // Floor: planks along the corridor and a seam every metre.
-    final lines = Paint()
-      ..color = CorridorColors.plank
-      ..strokeWidth = 1;
-    for (var k = -4; k <= 4; k++) {
-      final x = k * 0.4;
-      canvas.drawLine(p(x, bottom, z0), p(x, bottom, z1), lines);
+    // The black outlines where wall, floor and ceiling meet, and round the trim.
+    final line = _outline(ink);
+    for (final side in const [-1.0, 1.0]) {
+      final x = side * wx;
+      for (final y in [top, top + 0.25, bottom - 0.3, bottom]) {
+        canvas.drawLine(p(x, y, z0), p(x, y, z1), line);
+      }
     }
-    final firstSeam = (view.cameraZ).floorToDouble() + 1;
-    for (var z = firstSeam; z < view.cameraZ + 24; z += 1) {
-      final a = view.point(-wx, bottom, z);
-      final b = view.point(wx, bottom, z);
-      if (a != null && b != null) canvas.drawLine(a, b, lines);
-    }
-    // A soft shine in the middle of the floor.
-    canvas.drawPath(
-      floor,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          Offset(size.width / 2, vp.dy + (size.height - vp.dy) * 0.55),
-          size.width * 0.55,
-          const [Color(0x22FFFFFF), Color(0x00FFFFFF)],
-        ),
-    );
   }
 
   void _runner(Canvas canvas, Projection view) {
@@ -329,66 +365,50 @@ class CorridorPainter extends CustomPainter {
 
     canvas.drawPath(
       _poly([p(-half, z0), p(half, z0), p(half, z1), p(-half, z1)]),
-      Paint()..color = style.runner,
+      _fill(style.runner),
     );
-    // A border along both edges: a wide band and a thin line inside it.
-    final border = Paint()..color = style.runnerBorder;
+    // A thick black border along both edges.
+    final border = _fill(style.runnerBorder);
     for (final side in const [-1.0, 1.0]) {
       final outer = side * half;
-      final inner = side * (half - 0.09);
+      final inner = side * (half - 0.12);
       canvas.drawPath(
         _poly([p(inner, z0), p(outer, z0), p(outer, z1), p(inner, z1)]),
         border,
       );
-      final lineOuter = side * (half - 0.14);
-      final lineInner = side * (half - 0.16);
-      canvas.drawPath(
-        _poly([
-          p(lineInner, z0),
-          p(lineOuter, z0),
-          p(lineOuter, z1),
-          p(lineInner, z1),
-        ]),
-        border,
-      );
     }
     if (lite) return;
-    // A motif in the middle of every metre, and a row of small ones in the border.
-    final motif = Paint()..color = style.runnerMotif;
+    // A motif in the middle of every metre.
+    final motif = _fill(style.runnerMotif);
+    final outline = _outline(style.runnerBorder);
     final first = view.cameraZ.floorToDouble() + 1;
     for (var z = first; z < view.cameraZ + 22; z += 1) {
       final centre = z + 0.5;
       if (centre - view.cameraZ < Corridor.near) continue;
+      final Path shape;
       if (style.roundMotif) {
-        canvas.drawPath(_circleOnFloor(view, 0, centre, 0.3), motif);
-        for (final side in const [-1.0, 1.0]) {
-          canvas.drawPath(
-            _circleOnFloor(view, side * (half - 0.045), centre, 0.03),
-            Paint()..color = style.runner,
-          );
-        }
+        shape = _circleOnFloor(view, 0, centre, 0.3);
       } else {
-        canvas.drawPath(
-          _poly([
-            view.point(0, bottom, centre - 0.32),
-            view.point(0.32, bottom, centre),
-            view.point(0, bottom, centre + 0.32),
-            view.point(-0.32, bottom, centre),
-          ]),
-          motif,
-        );
+        shape = _poly([
+          view.point(0, bottom, centre - 0.32),
+          view.point(0.32, bottom, centre),
+          view.point(0, bottom, centre + 0.32),
+          view.point(-0.32, bottom, centre),
+        ]);
       }
+      canvas.drawPath(shape, motif);
+      canvas.drawPath(shape, outline);
     }
   }
 
   /// A circle lying on the floor, as the visitor sees it (an ellipse).
   Path _circleOnFloor(Projection view, double x, double z, double radius) {
     final points = <Offset?>[
-      for (var i = 0; i < 32; i++)
+      for (var i = 0; i < 16; i++)
         view.point(
-          x + radius * math.cos(i * math.pi * 2 / 32),
+          x + radius * math.cos(i * math.pi * 2 / 16),
           Corridor.floorY,
-          z + radius * math.sin(i * math.pi * 2 / 32),
+          z + radius * math.sin(i * math.pi * 2 / 16),
         ),
     ];
     return _poly(points);
@@ -401,40 +421,22 @@ class CorridorPainter extends CustomPainter {
     final first = (view.cameraZ / spacing).floor() * spacing + spacing;
     for (var z = first; z < view.cameraZ + Corridor.far; z += spacing) {
       if (z - view.cameraZ < 0.8) continue;
-      // The lamp: a small round hole in the ceiling with a bright disc in it.
+      // The lamp: a small square in the ceiling, yellow with a black edge.
       final lamp = <Offset?>[
-        for (var i = 0; i < 12; i++)
-          view.point(
-            0.11 * math.cos(i * math.pi * 2 / 12),
-            top,
-            z + 0.11 * math.sin(i * math.pi * 2 / 12),
-          ),
+        view.point(-0.2, top, z - 0.2),
+        view.point(0.2, top, z - 0.2),
+        view.point(0.2, top, z + 0.2),
+        view.point(-0.2, top, z + 0.2),
       ];
       if (lamp.any((c) => c == null)) continue;
-      canvas.drawPath(_poly(lamp), Paint()..color = CorridorColors.light);
-      if (lite) continue;
-      // A pool of light on the floor below.
-      final pool = view.point(0, Corridor.floorY, z);
-      if (pool == null) continue;
-      final radius = view.focal * 0.9 / (z - view.cameraZ);
-      canvas.save();
-      canvas.translate(pool.dx, pool.dy);
-      canvas.scale(1, 0.28);
-      canvas.drawCircle(
-        Offset.zero,
-        radius,
-        Paint()
-          ..shader = ui.Gradient.radial(Offset.zero, radius, const [
-            Color(0x38FFF6D6),
-            Color(0x00FFF6D6),
-          ]),
-      );
-      canvas.restore();
+      final shape = _poly(lamp);
+      canvas.drawPath(shape, _fill(CorridorColors.light));
+      canvas.drawPath(shape, _outline(CorridorColors.ink));
     }
   }
 
   /// The far end: a wall with a bright doorway (like the opening at the end of a
-  /// real gallery hall). Far away it is only a glow at the vanishing point.
+  /// real gallery hall). Far away it is only a dot at the vanishing point.
   void _end(Canvas canvas, Projection view) {
     final end = endZ;
     if (end == null) return;
@@ -451,7 +453,8 @@ class CorridorPainter extends CustomPainter {
         at(-wx, Corridor.floorY, end),
       ];
       if (corners.any((c) => c == null)) return;
-      canvas.drawPath(_poly(corners), Paint()..color = style.wall);
+      canvas.drawPath(_poly(corners), _fill(style.wall));
+      canvas.drawPath(_poly(corners), _outline(CorridorColors.ink));
     }
     if (!style.doorway) return;
     // Seen from afar the door sits just inside the fog.
@@ -463,58 +466,24 @@ class CorridorPainter extends CustomPainter {
       at(-0.95, Corridor.floorY, z),
     ];
     final door = [
-      at(-0.82, -1.0, z),
-      at(0.82, -1.0, z),
-      at(0.82, Corridor.floorY, z),
-      at(-0.82, Corridor.floorY, z),
+      at(-0.8, -1.0, z),
+      at(0.8, -1.0, z),
+      at(0.8, Corridor.floorY, z),
+      at(-0.8, Corridor.floorY, z),
     ];
     if (casing.any((c) => c == null) || door.any((c) => c == null)) return;
-    canvas.drawPath(_poly(casing), Paint()..color = CorridorColors.trim);
-    canvas.drawPath(
-      _poly(door),
-      Paint()
-        ..shader = lite
-            ? null
-            : ui.Gradient.linear(door[0]!, door[3]!, const [
-                Color(0xFFFFF6DE),
-                Color(0xFFEBD8AE),
-              ])
-        ..color = const Color(0xFFFFF0CC),
-    );
-    if (lite) return;
-    // A glow around it.
-    final centre = Offset(
-      (door[0]!.dx + door[1]!.dx) / 2,
-      (door[0]!.dy + door[3]!.dy) / 2,
-    );
-    final radius = (door[1]!.dx - door[0]!.dx) * 1.6;
-    canvas.drawCircle(
-      centre,
-      radius,
-      Paint()
-        ..shader = ui.Gradient.radial(centre, radius, const [
-          Color(0x40FFF3D0),
-          Color(0x00FFF3D0),
-        ]),
-    );
-  }
-
-  void _haze(Canvas canvas, Size size, Projection view) {
-    if (lite) return;
-    final vp = view.vanishingPoint;
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()
-        ..shader = ui.Gradient.radial(vp, size.width * 0.5, [
-          style.wallFar.withAlpha(0x55),
-          style.wallFar.withAlpha(0),
-        ]),
-    );
+    canvas.drawPath(_poly(casing), _fill(CorridorColors.ink));
+    canvas.drawPath(_poly(door), _fill(CorridorColors.light));
   }
 
   // Frames --------------------------------------------------------------------
 
-  void _frame(Canvas canvas, Projection view, FrameSlot slot) {
+  void _frame(
+    Canvas canvas,
+    Projection view,
+    FrameSlot slot,
+    List<void Function(Canvas)> overlay,
+  ) {
     final outer = view.wallQuad(slot);
     if (outer == null) return;
     final depth = slot.z0 - view.cameraZ;
@@ -522,6 +491,7 @@ class CorridorPainter extends CustomPainter {
         ? 1.0
         : (1 - (depth - 18) / (Corridor.far - 18)).clamp(0.0, 1.0);
     final alpha = (fade * 255).round();
+    const ink = CorridorColors.ink;
 
     final entry = !slot.isBlank && slot.index < entries.length
         ? entries[slot.index]
@@ -531,32 +501,29 @@ class CorridorPainter extends CustomPainter {
         : galleryFrameLook(slot.style);
     if (entry != null && decor.spot && !lite) _spot(canvas, view, slot, alpha);
 
-    // A soft shadow on the wall, down and a little behind the frame.
+    // A hard black shadow, down and a little behind the frame.
     if (!lite) {
       final shadow = view.wallQuad(
         FrameSlot(
           index: -1,
           side: slot.side,
-          z0: slot.z0 + 0.03,
-          z1: slot.z1 + 0.03,
-          yTop: slot.yTop + 0.07,
-          yBottom: slot.yBottom + 0.07,
+          z0: slot.z0 + 0.05,
+          z1: slot.z1 + 0.05,
+          yTop: slot.yTop + 0.08,
+          yBottom: slot.yBottom + 0.08,
         ),
       );
       if (shadow != null) {
-        canvas.drawPath(
-          _poly(shadow),
-          Paint()..color = Color.fromARGB((60 * fade).round(), 0, 0, 0),
-        );
+        canvas.drawPath(_poly(shadow), _fill(ink.withAlpha(alpha)));
       }
     }
-    canvas.drawPath(
-      _poly(outer),
-      Paint()..color = decor.frame.withAlpha(alpha),
-    );
+    final frame = _poly(outer);
+    canvas.drawPath(frame, _fill(decor.frame.withAlpha(alpha)));
+    canvas.drawPath(frame, _outline(ink.withAlpha(alpha)));
     final mat = view.wallQuad(slot, inset: 0.06);
     if (mat == null) return;
-    canvas.drawPath(_poly(mat), Paint()..color = decor.mat.withAlpha(alpha));
+    canvas.drawPath(_poly(mat), _fill(decor.mat.withAlpha(alpha)));
+    canvas.drawPath(_poly(mat), _outline(ink.withAlpha(alpha)));
 
     if (entry == null) {
       // A blank canvas, waiting for a painting.
@@ -564,16 +531,10 @@ class CorridorPainter extends CustomPainter {
       if (canvasQuad == null) return;
       canvas.drawPath(
         _poly(canvasQuad),
-        Paint()..color = CorridorColors.blankCanvas.withAlpha(alpha),
+        _fill(CorridorColors.blankCanvas.withAlpha(alpha)),
       );
       if (!lite) {
-        canvas.drawPath(
-          _poly(canvasQuad),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1
-            ..color = Color.fromARGB((46 * fade).round(), 0, 0, 0),
-        );
+        canvas.drawPath(_poly(canvasQuad), _outline(ink.withAlpha(alpha)));
       }
       return;
     }
@@ -581,36 +542,41 @@ class CorridorPainter extends CustomPainter {
     final picture = view.artQuad(slot);
     if (picture == null) return;
     if (decor.plaque.isNotEmpty && depth < 9) {
-      _plate(canvas, view, slot, entry, decor.plaque);
+      overlay.add((c) => _plate(c, view, slot, entry, decor.plaque));
     }
 
     final onScreenWidth = (picture[1] - picture[0]).distance;
-    final image = onScreenWidth < 6 ? null : cache.peek(entry.id);
-    if (onScreenWidth >= 6 && image == null) {
+    final image = onScreenWidth < 3 ? null : cache.peek(entry.id);
+    if (onScreenWidth >= 3 && image == null) {
       cache.load(entry); // starts decoding; the cache repaints when it is done
     }
     if (image == null) {
       // Too far to see the detail, or not decoded yet: its average colour.
       canvas.drawPath(
         _poly(picture),
-        Paint()..color = _average(entry).withAlpha(alpha),
+        _fill(_average(entry).withAlpha(alpha)),
       );
+      canvas.drawPath(_poly(picture), _outline(ink.withAlpha(alpha)));
       return;
     }
-    canvas.save();
-    canvas.transform(unitSquareToQuad(picture).storage);
-    canvas.drawImageRect(
-      image,
-      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-      const Rect.fromLTWH(0, 0, 1, 1),
-      Paint()
-        ..filterQuality = FilterQuality.none
-        ..color = Color.fromARGB(alpha, 255, 255, 255),
-    );
-    canvas.restore();
+    overlay.add((c) {
+      c.save();
+      c.transform(unitSquareToQuad(picture).storage);
+      c.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        const Rect.fromLTWH(0, 0, 1, 1),
+        Paint()
+          ..filterQuality = FilterQuality.none
+          ..isAntiAlias = false
+          ..color = Color.fromARGB(alpha, 255, 255, 255),
+      );
+      c.restore();
+      c.drawPath(_poly(picture), _outline(ink.withAlpha(alpha)));
+    });
   }
 
-  /// A cone of light from the ceiling onto the painting.
+  /// A beam of light from the ceiling onto the painting, flat and see-through.
   void _spot(Canvas canvas, Projection view, FrameSlot slot, int alpha) {
     final x = slot.side * Corridor.wallX;
     final mid = (slot.z0 + slot.z1) / 2;
@@ -624,15 +590,11 @@ class CorridorPainter extends CustomPainter {
     if (corners.any((c) => c == null)) return;
     canvas.drawPath(
       _poly(corners),
-      Paint()
-        ..shader = ui.Gradient.linear(corners[0]!, corners[3]!, [
-          Color.fromARGB((90 * alpha / 255).round(), 255, 244, 214),
-          const Color(0x00FFF4D6),
-        ]),
+      _fill(Color.fromARGB((70 * alpha / 255).round(), 255, 230, 109)),
     );
   }
 
-  /// A brass plate under the frame, with the week, the theme and the group.
+  /// A plate under the frame, with the group, the week and the theme.
   void _plate(
     Canvas canvas,
     Projection view,
@@ -664,7 +626,8 @@ class CorridorPainter extends CustomPainter {
               TextSpan(
                 text: i == 0 ? lines[i] : '\n${lines[i]}',
                 style: TextStyle(
-                  color: const Color(0xFF2A1E0A),
+                  color: CorridorColors.ink,
+                  fontFamily: NeoFont.display,
                   fontSize: i == 0 ? 26 : 20,
                   fontWeight: i == 0 ? FontWeight.w900 : FontWeight.w700,
                   height: 1.15,
@@ -683,14 +646,14 @@ class CorridorPainter extends CustomPainter {
     canvas.transform(unitSquareToQuad(quad).storage);
     canvas.drawRect(
       const Rect.fromLTWH(0, 0, 1, 1),
-      Paint()..color = const Color(0xFFD9B35B),
+      _fill(CorridorColors.light),
     );
     canvas.drawRect(
       const Rect.fromLTWH(0.01, 0.03, 0.98, 0.94),
       Paint()
-        ..color = const Color(0xFF8A6A22)
+        ..color = CorridorColors.ink
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.02,
+        ..strokeWidth = 0.03,
     );
     // The text was laid out in pixels. One scale for both directions keeps the
     // letters undistorted; the plate is plateWidth x plateHeight metres, and the
