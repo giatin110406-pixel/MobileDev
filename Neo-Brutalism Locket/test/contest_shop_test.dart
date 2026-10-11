@@ -17,7 +17,8 @@ import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'contest_test.dart';
 import 'server_player_test.dart' show doc;
 
-/// A server for the player's Sunbit and shop that sells the winning paintings.
+/// A server for the player's Sunbit and shop that sells the winning paintings for a
+/// limited time.
 class FakeShopServer {
   FakeShopServer({int balance = 500, List<String> owned = const []})
     : state = doc(balance: balance, owned: owned);
@@ -84,12 +85,16 @@ Widget app(Widget child, {FakeContest? contest}) => MaterialApp(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  group('the Tranh shelf in the shop', () {
+  group('the limited-time banners in the shop', () {
+    final start = DateTime.utc(2026, 10, 1, 5);
+
     Future<(FakeContest, FakeShopServer, PlayerStore)> open(
       WidgetTester tester, {
       List<GalleryShopItem>? items,
       int balance = 500,
       List<String> owned = const [],
+      DateTime Function()? clock,
+      bool showBanners = true,
     }) async {
       tester.view.physicalSize = const Size(400, 900);
       tester.view.devicePixelRatio = 1;
@@ -103,73 +108,152 @@ void main() {
       final store = (await tester.runAsync(() => storeFor(server)))!;
       await tester.pumpWidget(
         app(
-          ShopScreen(store: store, contest: contest),
+          ShopScreen(
+            store: store,
+            contest: contest,
+            clock: clock ?? () => start,
+          ),
           contest: contest,
         ),
       );
       await tester.pump();
+      await tester.pump();
+      if (showBanners) {
+        await tester.tap(find.text('BANNER'));
+        await tester.pumpAndSettle();
+      }
       return (contest, server, store);
     }
 
-    testWidgets('has no Tranh tab without a contest', (tester) async {
+    testWidgets('there is no paintings shelf any more', (tester) async {
+      await open(tester);
+      expect(find.text('PAINTINGS'), findsNothing);
+      expect(find.text('AVATAR FRAME'), findsOneWidget);
+      expect(find.text('BANNER'), findsOneWidget);
+    });
+
+    testWidgets('has no offers without a contest', (tester) async {
       tester.view.physicalSize = const Size(400, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final store = (await tester.runAsync(() => storeFor(FakeShopServer())))!;
       await tester.pumpWidget(app(ShopScreen(store: store)));
       await tester.pump();
-      expect(find.text('PAINTINGS'), findsNothing);
+      await tester.tap(find.text('BANNER'));
+      await tester.pumpAndSettle();
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
     });
 
-    testWidgets('lists the winning paintings with price and copies left', (
+    testWidgets('the winners are a limited time offer with a countdown', (
       tester,
     ) async {
       final (contest, _, _) = await open(tester);
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
       expect(contest.shopLoads, 1);
+      expect(find.text('LIMITED TIME OFFER'), findsOneWidget);
       expect(find.text('Group 1'), findsOneWidget);
       expect(find.text('Group 3'), findsOneWidget);
-      expect(find.text('100 LEFT'), findsNWidgets(3));
+      expect(find.text('Ends in 2d 05:03:09'), findsNWidgets(3));
       expect(find.text('300'), findsOneWidget);
       expect(find.text('150'), findsOneWidget);
       expect(find.textContaining('1ST PLACE'), findsOneWidget);
       expect(find.textContaining('Sunflowers'), findsWidgets);
     });
 
-    testWidgets('an empty shelf explains where the paintings come from', (
+    testWidgets('offers only show on the banner tab', (tester) async {
+      await open(tester, showBanners: false);
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
+      await tester.tap(find.text('BANNER'));
+      await tester.pumpAndSettle();
+      expect(find.text('LIMITED TIME OFFER'), findsOneWidget);
+      await tester.tap(find.text('AVATAR FRAME'));
+      await tester.pumpAndSettle();
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
+    });
+
+    testWidgets('a painting banner has the shape of a profile banner', (
+      tester,
+    ) async {
+      await open(tester);
+      final banner = find.byWidgetPredicate(
+        (w) => w is ProfileBanner && w.bannerId == 'contest_e1',
+      );
+      final size = tester.getSize(banner);
+      expect(size.width / size.height, closeTo(profileBannerAspect, 0.01));
+    });
+
+    testWidgets('with nothing on offer the shop is just the shop', (
       tester,
     ) async {
       await open(tester, items: []);
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('No painting has won yet'), findsOneWidget);
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
     });
 
-    testWidgets('a shelf that cannot load offers a retry', (tester) async {
-      final (contest, _, _) = await open(tester);
-      contest.failNext = const ContestFailure(ContestFailureKind.network);
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('Could not load the winning paintings.'),
-        findsOneWidget,
+    testWidgets('an offer that is already over is not shown', (tester) async {
+      await open(
+        tester,
+        items: [
+          shopItemOf(1, endsAt: start.subtract(const Duration(hours: 1))),
+        ],
       );
-      await tester.tap(find.text('TRY AGAIN'));
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
+      expect(find.text('Group 1'), findsNothing);
+    });
+
+    testWidgets('offers that cannot load are left out, the shop still works', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final contest = FakeContest()
+        ..failNext = const ContestFailure(ContestFailureKind.network);
+      final store = (await tester.runAsync(() => storeFor(FakeShopServer())))!;
+      await tester.pumpWidget(
+        app(
+          ShopScreen(store: store, contest: contest, clock: () => start),
+          contest: contest,
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.tap(find.text('BANNER'));
       await tester.pumpAndSettle();
-      expect(find.text('Group 1'), findsOneWidget);
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the countdown ticks, and the offer vanishes when it ends', (
+      tester,
+    ) async {
+      var now = start;
+      final end = start.add(const Duration(seconds: 3));
+      await open(
+        tester,
+        items: [shopItemOf(1, endsAt: end)],
+        clock: () => now,
+      );
+      expect(find.text('Ends in 00:00:03'), findsOneWidget);
+      now = start.add(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Ends in 00:00:02'), findsOneWidget);
+      now = end.add(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      expect(find.text('LIMITED TIME OFFER'), findsNothing);
+      expect(find.text('Group 1'), findsNothing);
     });
 
     testWidgets('buying: the server is asked and the item becomes mine', (
       tester,
     ) async {
       final (_, server, store) = await open(tester);
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Group 1'));
       await tester.pumpAndSettle();
       expect(find.text('BUY · 300 SUNBIT'), findsOneWidget);
-      expect(find.textContaining('100 of 100 left'), findsOneWidget);
+      // The sheet says it is a limited offer and when it ends.
+      expect(find.text('LIMITED TIME OFFER'), findsWidgets);
+      expect(find.text('Ends in 2d 05:03:09'), findsWidgets);
+      expect(find.textContaining('20% of every sale'), findsOneWidget);
       await tester.tap(find.text('BUY · 300 SUNBIT'));
       await tester.pumpAndSettle();
       expect(server.calls, contains('buy_item:contest_e1'));
@@ -188,8 +272,6 @@ void main() {
       tester,
     ) async {
       final (_, server, _) = await open(tester, balance: 100);
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Group 2'));
       await tester.pumpAndSettle();
       expect(find.text('120 SUNBIT SHORT'), findsOneWidget);
@@ -198,41 +280,41 @@ void main() {
       expect(server.calls.where((c) => c.startsWith('buy_item')), isEmpty);
     });
 
-    testWidgets('a sold-out painting says so and cannot be bought', (
-      tester,
-    ) async {
-      final (_, server, _) = await open(
-        tester,
-        items: [shopItemOf(1, stock: 100, sold: 100)],
-      );
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
-      expect(find.text('SOLD OUT'), findsOneWidget);
-      await tester.tap(find.text('Group 1'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('SOLD OUT'),
-        findsNWidgets(2),
-      ); // the card and the button
-      await tester.tap(find.text('SOLD OUT').last);
-      await tester.pump();
-      expect(server.calls.where((c) => c.startsWith('buy_item')), isEmpty);
-    });
-
-    testWidgets('a copy that sold out while the sheet was open is refused', (
+    testWidgets('an offer that ended while the sheet was open is refused', (
       tester,
     ) async {
       final (_, server, store) = await open(tester);
-      server.failBuy = PostgrestException(message: 'sold_out');
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
+      server.failBuy = PostgrestException(message: 'offer_ended');
       await tester.tap(find.text('Group 1'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('BUY · 300 SUNBIT'));
       await tester.pumpAndSettle();
       expect(store.state!.owns('contest_e1'), isFalse);
       expect(store.balance, 500);
-      expect(find.textContaining('Sold out'), findsOneWidget);
+      expect(find.text('This offer has ended.'), findsOneWidget);
+    });
+
+    testWidgets('the buy button turns off when the time runs out', (
+      tester,
+    ) async {
+      var now = start;
+      final end = start.add(const Duration(seconds: 5));
+      final (_, server, _) = await open(
+        tester,
+        items: [shopItemOf(1, endsAt: end)],
+        clock: () => now,
+      );
+      await tester.tap(find.text('Group 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('BUY · 300 SUNBIT'), findsOneWidget);
+      now = end;
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      expect(find.text('OFFER ENDED'), findsWidgets);
+      expect(find.text('BUY · 300 SUNBIT'), findsNothing);
+      await tester.tap(find.text('OFFER ENDED').last);
+      await tester.pump();
+      expect(server.calls.where((c) => c.startsWith('buy_item')), isEmpty);
     });
 
     testWidgets('a painting a winner already owns shows as owned', (
@@ -243,18 +325,7 @@ void main() {
         items: [shopItemOf(1, owned: true)],
         owned: const ['contest_e1'],
       );
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
       expect(find.text('OWNED'), findsOneWidget);
-    });
-
-    testWidgets('going back to frames leaves the shelf', (tester) async {
-      await open(tester);
-      await tester.tap(find.text('PAINTINGS'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('BANNER'));
-      await tester.pumpAndSettle();
-      expect(find.text('Group 1'), findsNothing);
     });
   });
 

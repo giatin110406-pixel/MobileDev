@@ -4214,11 +4214,11 @@ abstract class AppLocalizations {
   /// **'ẢNH {n}'**
   String printListTitle(String n);
 
-  /// No description provided for @peSoldOut.
+  /// No description provided for @peOfferEnded.
   ///
   /// In vi, this message translates to:
-  /// **'Món này đã hết bản. Hẹn bạn tuần sau!'**
-  String get peSoldOut;
+  /// **'Ưu đãi này đã kết thúc.'**
+  String get peOfferEnded;
 
   /// No description provided for @contestEnterGalleryEmpty.
   ///
@@ -4304,41 +4304,29 @@ abstract class AppLocalizations {
   /// **'Banner tranh của nhóm {group}'**
   String bannerArtSemantics(String group);
 
-  /// No description provided for @shopPaintingsTab.
+  /// No description provided for @shopLimitedOffer.
   ///
   /// In vi, this message translates to:
-  /// **'TRANH'**
-  String get shopPaintingsTab;
+  /// **'ƯU ĐÃI CÓ HẠN'**
+  String get shopLimitedOffer;
 
-  /// No description provided for @shopPaintingsFailed.
+  /// No description provided for @shopEndsIn.
   ///
   /// In vi, this message translates to:
-  /// **'Không tải được tranh đoạt giải.'**
-  String get shopPaintingsFailed;
+  /// **'Còn {time}'**
+  String shopEndsIn(String time);
 
-  /// No description provided for @shopPaintingsEmpty.
+  /// No description provided for @shopOfferEnded.
   ///
   /// In vi, this message translates to:
-  /// **'Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.'**
-  String get shopPaintingsEmpty;
+  /// **'ĐÃ HẾT HẠN'**
+  String get shopOfferEnded;
 
-  /// No description provided for @shopCopiesLeft.
+  /// No description provided for @shopRoyaltyNote.
   ///
   /// In vi, this message translates to:
-  /// **'CÒN {count} BẢN'**
-  String shopCopiesLeft(int count);
-
-  /// No description provided for @shopSoldOut.
-  ///
-  /// In vi, this message translates to:
-  /// **'HẾT BẢN'**
-  String get shopSoldOut;
-
-  /// No description provided for @shopLimitedNote.
-  ///
-  /// In vi, this message translates to:
-  /// **'Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.'**
-  String shopLimitedNote(int left, int total);
+  /// **'Bài đoạt giải của cuộc thi tuần. 20% tiền bán chia đều cho nhóm đã vẽ.'**
+  String get shopRoyaltyNote;
 
   /// No description provided for @settingsHapticsDirect.
   ///

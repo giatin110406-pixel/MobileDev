@@ -445,7 +445,8 @@ class ContestResults {
   );
 }
 
-/// A winning painting for sale in the shop, as a profile banner.
+/// A winning painting for sale in the shop, as a profile banner, for a limited
+/// time.
 class GalleryShopItem {
   const GalleryShopItem({
     required this.id,
@@ -458,8 +459,7 @@ class GalleryShopItem {
     required this.titleVi,
     required this.titleEn,
     required this.owned,
-    this.stock,
-    this.sold = 0,
+    required this.endsAt,
   });
 
   final String id;
@@ -475,12 +475,9 @@ class GalleryShopItem {
   final String titleEn;
   final bool owned;
 
-  /// Null = no limit.
-  final int? stock;
-  final int sold;
-
-  int? get left => stock == null ? null : stock! - sold;
-  bool get soldOut => left != null && left! <= 0;
+  /// When the offer ends: after that the banner is gone from the shop (people who
+  /// bought it keep it).
+  final DateTime endsAt;
 
   /// The same thing as the fixed shop's items, so the buy / equip logic is shared.
   ShopItem toShopItem() => ShopItem(
@@ -510,8 +507,7 @@ class GalleryShopItem {
         titleVi: json['title_vi'] as String? ?? '',
         titleEn: json['title_en'] as String? ?? '',
         owned: json['owned'] as bool? ?? false,
-        stock: json['stock'] as int?,
-        sold: json['sold'] as int? ?? 0,
+        endsAt: DateTime.parse(json['ends_at'] as String),
       );
 }
 

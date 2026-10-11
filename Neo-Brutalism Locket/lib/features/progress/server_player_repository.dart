@@ -213,7 +213,7 @@ PlayerException playerFailureFor(String code, {PlayerState? known}) {
     'not_passed' => const PlayerException(PlayerError.notPassed),
     'expired' => const PlayerException(PlayerError.questExpired),
     'already_owned' => const PlayerException(PlayerError.alreadyOwned),
-    'sold_out' => const PlayerException(PlayerError.soldOut),
+    'offer_ended' => const PlayerException(PlayerError.offerEnded),
     'not_owned' => const PlayerException(PlayerError.notOwned),
     'not_found' => const PlayerException(PlayerError.itemNotFound),
     'insufficient_funds' => const NotEnoughSunbit(1),

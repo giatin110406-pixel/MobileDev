@@ -38,25 +38,21 @@ GalleryEntry entryOf(
   voteCount: rank == null ? null : 4,
 );
 
-GalleryShopItem shopItemOf(
-  int rank, {
-  bool owned = false,
-  int? stock = 100,
-  int sold = 0,
-}) => GalleryShopItem(
-  id: 'contest_e$rank',
-  title: 'Group $rank',
-  rarity: rank == 1 ? Rarity.legendary : Rarity.rare,
-  theme: CosmeticTheme.vanGogh,
-  price: const [300, 220, 150][rank - 1],
-  rank: rank,
-  weekKey: '2026-W40',
-  titleVi: 'Hoa hướng dương',
-  titleEn: 'Sunflowers',
-  owned: owned,
-  stock: stock,
-  sold: sold,
-);
+GalleryShopItem shopItemOf(int rank, {bool owned = false, DateTime? endsAt}) =>
+    GalleryShopItem(
+      id: 'contest_e$rank',
+      title: 'Group $rank',
+      rarity: rank == 1 ? Rarity.legendary : Rarity.rare,
+      theme: CosmeticTheme.vanGogh,
+      price: const [300, 220, 150][rank - 1],
+      rank: rank,
+      weekKey: '2026-W40',
+      titleVi: 'Hoa hướng dương',
+      titleEn: 'Sunflowers',
+      owned: owned,
+      // Two days and a bit after the shop tests' clock (2026-10-01 05:00 UTC).
+      endsAt: endsAt ?? DateTime.utc(2026, 10, 3, 10, 3, 9),
+    );
 
 BannerArt bannerArtOf() => BannerArt(
   width: 2,

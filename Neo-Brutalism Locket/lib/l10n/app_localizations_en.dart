@@ -2387,7 +2387,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get peSoldOut => 'Sold out. See you next week!';
+  String get peOfferEnded => 'This offer has ended.';
 
   @override
   String get contestEnterGalleryEmpty => 'ENTER GALLERY';
@@ -2441,27 +2441,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shopPaintingsTab => 'PAINTINGS';
+  String get shopLimitedOffer => 'LIMITED TIME OFFER';
 
   @override
-  String get shopPaintingsFailed => 'Could not load the winning paintings.';
-
-  @override
-  String get shopPaintingsEmpty =>
-      'No painting has won yet. The top three entries of every week are sold here as banners for your profile.';
-
-  @override
-  String shopCopiesLeft(int count) {
-    return '$count LEFT';
+  String shopEndsIn(String time) {
+    return 'Ends in $time';
   }
 
   @override
-  String get shopSoldOut => 'SOLD OUT';
+  String get shopOfferEnded => 'OFFER ENDED';
 
   @override
-  String shopLimitedNote(int left, int total) {
-    return 'Limited edition: $left of $total left. 20% of every sale is shared by the group that painted it.';
-  }
+  String get shopRoyaltyNote =>
+      'A winning painting from the weekly contest. 20% of every sale is shared by the group that painted it.';
 
   @override
   String get settingsHapticsDirect =>

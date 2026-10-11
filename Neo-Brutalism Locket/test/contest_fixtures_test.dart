@@ -111,10 +111,9 @@ void main() {
     ].where((item) => item.weekKey.startsWith('E2E-')).toList();
     expect(items.map((i) => i.rank), [1, 2, 3]);
     expect(items.map((i) => i.price), [300, 220, 150]);
-    expect(items.every((i) => i.stock == 100 && i.sold == 0), isTrue);
+    // On sale for two days from the moment the contest was finalized.
+    expect(items.every((i) => i.endsAt.year >= 2026), isTrue);
     expect(items.every((i) => i.id.startsWith('contest_')), isTrue);
-    expect(items.first.left, 100);
-    expect(items.first.soldOut, isFalse);
     expect(items.first.toShopItem().kind.name, 'banner');
     expect(items.first.owned, isFalse);
   });

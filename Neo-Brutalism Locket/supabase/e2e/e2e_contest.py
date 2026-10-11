@@ -22,9 +22,9 @@ import json
 import os
 import secrets
 import subprocess
-import threading
 import sys
 import time
+from datetime import datetime, timedelta, timezone
 
 import e2e_check as h
 
@@ -301,8 +301,12 @@ def main() -> int:
         h.check("the three winners are in the shop, best first, at 300 / 220 / 150 Sunbit",
                 status == 200 and [(s["rank"], s["price"]) for s in mine] == [(1, 300), (2, 220), (3, 150)],
                 str(mine))
-        h.check("100 copies each, none sold, none owned by an outsider",
-                all(s["stock"] == 100 and s["sold"] == 0 and s["owned"] is False for s in mine), str(mine))
+        soon = datetime.now(timezone.utc)
+        ends = [datetime.fromisoformat(s["ends_at"]) for s in mine]
+        h.check("each is a limited-time offer that ends in about 48 hours",
+                all(timedelta(hours=47) < e - soon < timedelta(hours=49) for e in ends), str(ends))
+        h.check("nobody outside the winning group owns one, and there is no copy limit",
+                all(s["owned"] is False and "stock" not in s for s in mine), str(mine))
         h.check("the theme and week are shown with the item",
                 all(s["week_key"].startswith("E2E-") and s["title_en"] for s in mine))
         status, state_a2 = h.rpc(a2["token"], "get_player_state")
@@ -333,40 +337,31 @@ def main() -> int:
         h.check("20% of the sale (60) is shared by the winning group: 30 each",
                 (state["balance"], state2["balance"]) == (180, 180), f"{state['balance']} {state2['balance']}")
         status, shelf = h.rpc(x["token"], "get_contest_shop")
-        sold = {s["id"]: (s["sold"], s["owned"]) for s in shelf}
-        h.check("one copy is counted as sold, and X sees it as theirs",
-                sold[item_a] == (1, True) and sold[item_b] == (0, False), str(sold))
+        owned = {s["id"]: s["owned"] for s in shelf}
+        h.check("X sees the banner as theirs, the others as not",
+                owned[item_a] is True and owned[item_b] is False, str(owned))
         h.rpc_ok(x["token"], "equip_item", {"p_item": item_a}, "X puts the painting on their profile")
         status, rows = h.select(x["token"], "profiles", f"select=banner_id&id=eq.{x['id']}")
         h.check("and the profile now points at it", rows == [{"banner_id": item_a}], str(rows))
         h.rpc_refused(x["token"], "buy_item", {"p_item": "contest_00000000-0000-0000-0000-000000000000"},
                       "not_found", "an unknown painting is not found")
 
-        # One copy left, two buyers at the same moment: exactly one gets it.
-        sql(f"update public.shop_items set stock = 2 where id = '{item_a}'")
-        outcome = {}
-
-        def buy(user):
-            outcome[user["label"]] = h.rpc(user["token"], "buy_item", {"p_item": item_a})
-
-        threads = [threading.Thread(target=buy, args=(b1,)), threading.Thread(target=buy, args=(c1,))]
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
-        wins = [label for label, (status, _) in outcome.items() if status == 200]
-        losses = [(label, h.error_text(payload)) for label, (status, payload) in outcome.items() if status != 200]
-        h.check("two people buy the last copy at once: one gets it, the other hears it is sold out",
-                len(wins) == 1 and len(losses) == 1 and losses[0][1] == "sold_out", str(outcome)[:300])
+        # The offer ends: the banner leaves the shop and cannot be bought, but the
+        # people who have it keep it and it still draws on their profile.
+        sql(f"update public.shop_items set available_until = now() - interval '1 minute' where id = '{item_c}'")
         status, shelf = h.rpc(x["token"], "get_contest_shop")
-        h.check("and the count is exactly 2 of 2", {s["id"]: s["sold"] for s in shelf}[item_a] == 2)
-        loser = b1 if losses and losses[0][0] == b1["label"] else c1
-        status, state_loser = h.rpc(loser["token"], "get_player_state")
-        h.check("whoever lost was not charged", state_loser["balance"] == 1000, str(state_loser["balance"]))
-        # The group's total from three sales (300 + 300 + 300): 3 x 60 shared by 2 people.
-        status, state = h.rpc(a1["token"], "get_player_state")
-        h.check("the royalty comes with each sale (30 + 30 for one more sale)", state["balance"] == 210,
-                str(state["balance"]))
+        ids = {s["id"] for s in shelf}
+        h.check("an offer that has ended is gone from the shop",
+                item_c not in ids and {item_a, item_b} <= ids, str(sorted(ids)))
+        h.rpc_refused(x["token"], "buy_item", {"p_item": item_c}, "offer_ended",
+                      "and it cannot be bought any more")
+        status, state_x = h.rpc(x["token"], "get_player_state")
+        h.check("nobody was charged for the refused purchase", state_x["balance"] == 700, str(state_x["balance"]))
+        status, art = h.rpc(x["token"], "get_banner_art", {"p_item": item_c})
+        h.check("the picture is still available for the profiles that show it",
+                status == 200 and art["width"] == 32, str(status))
+        status, state_c1 = h.rpc(c1["token"], "get_player_state")
+        h.check("the winners keep their free copy", item_c in state_c1["owned"], str(state_c1["owned"]))
 
         h.section("A smaller contest: two entries, too few ratings to rank")
         c2id = new_contest("two", 100, "now() - interval '1 hour'", "now() + interval '1 hour'",

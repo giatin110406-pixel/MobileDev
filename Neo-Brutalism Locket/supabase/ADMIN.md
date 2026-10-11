@@ -98,7 +98,7 @@ update public.contest_config set value = '8' where key = 'min_votes';
 canvas that must be painted), `min_votes` (10, how many entries a rater must rate for
 their ratings to count), `min_votes_for_rank` (3), `min_account_age_days` (7),
 `bayes_c` (5), `comment_cooldown_seconds` (15), `max_comments` (30 per contest),
-`report_hide_at` (3). A change applies to contests that have not been finalized yet;
+`report_hide_at` (3), `banner_offer_hours` (48). A change applies to contests that have not been finalized yet;
 `max_entries` is copied into a contest when it is created.
 
 ## Results and the shop
@@ -110,17 +110,23 @@ join public.contests c on c.id = cr.contest_id
 join public.contest_entries e on e.id = cr.entry_id
 order by c.starts_at desc, cr.rank;
 
--- The winning paintings on sale, and how many were sold
-select id, title, price, sold, stock from public.shop_items
-where source_entry_id is not null order by sold desc;
+-- The winning paintings (banners) and when each offer ends
+select id, title, price, available_until from public.shop_items
+where source_entry_id is not null order by available_until desc;
 
--- Stop selling one (people who bought it keep it)
-update public.shop_items set stock = sold where id = 'contest_<entry id>';
+-- Stop selling one now (people who bought it keep it)
+update public.shop_items set available_until = now() where id = 'contest_<entry id>';
+
+-- Give an offer more time
+update public.shop_items set available_until = now() + interval '1 day'
+where id = 'contest_<entry id>';
 ```
 
 Prizes (150 / 100 / 50 Sunbit and 30 / 20 / 10 Ink per person of a winning group) are
 paid once, when the contest is finalized. Each winner also gets a free copy of their
-painting's banner, and 20% of each sale is shared by the group that painted it.
+painting's banner, and 20% of each sale is shared by the group that painted it. The
+three banners are a limited-time offer in the banner shop: they are on sale for
+`banner_offer_hours` (48) after the contest is finalized, then they leave the shop.
 
 ## If a week did not finalize
 

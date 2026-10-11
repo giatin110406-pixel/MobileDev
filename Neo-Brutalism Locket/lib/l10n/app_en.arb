@@ -1590,7 +1590,7 @@
       }
     }
   },
-  "peSoldOut": "Sold out. See you next week!",
+  "peOfferEnded": "This offer has ended.",
   "contestEnterGalleryEmpty": "ENTER GALLERY",
   "hallOfFameButton": "HALL OF FAME",
   "hallOfFameTitle": "Hall of Fame",
@@ -1626,29 +1626,17 @@
       }
     }
   },
-  "shopPaintingsTab": "PAINTINGS",
-  "shopPaintingsFailed": "Could not load the winning paintings.",
-  "shopPaintingsEmpty": "No painting has won yet. The top three entries of every week are sold here as banners for your profile.",
-  "shopCopiesLeft": "{count} LEFT",
-  "@shopCopiesLeft": {
+  "shopLimitedOffer": "LIMITED TIME OFFER",
+  "shopEndsIn": "Ends in {time}",
+  "@shopEndsIn": {
     "placeholders": {
-      "count": {
-        "type": "int"
+      "time": {
+        "type": "String"
       }
     }
   },
-  "shopSoldOut": "SOLD OUT",
-  "shopLimitedNote": "Limited edition: {left} of {total} left. 20% of every sale is shared by the group that painted it.",
-  "@shopLimitedNote": {
-    "placeholders": {
-      "left": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
+  "shopOfferEnded": "OFFER ENDED",
+  "shopRoyaltyNote": "A winning painting from the weekly contest. 20% of every sale is shared by the group that painted it.",
   "settingsHapticsDirect": "Strong buzz (drive the vibration motor directly)",
   "settingsHapticsDirectHint": "Turn this on if taps do not vibrate. It ignores the phone's \"touch vibration\" setting.",
   "settingsHapticsTest": "Vibration check",
