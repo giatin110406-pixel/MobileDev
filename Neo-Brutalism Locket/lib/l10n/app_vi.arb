@@ -1596,7 +1596,7 @@
       }
     }
   },
-  "peSoldOut": "Món này đã hết bản. Hẹn bạn tuần sau!",
+  "peOfferEnded": "Ưu đãi này đã kết thúc.",
   "contestEnterGalleryEmpty": "VÀO GALLERY",
   "hallOfFameButton": "HALL OF FAME",
   "hallOfFameTitle": "Hall of Fame",
@@ -1632,29 +1632,17 @@
       }
     }
   },
-  "shopPaintingsTab": "TRANH",
-  "shopPaintingsFailed": "Không tải được tranh đoạt giải.",
-  "shopPaintingsEmpty": "Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.",
-  "shopCopiesLeft": "CÒN {count} BẢN",
-  "@shopCopiesLeft": {
+  "shopLimitedOffer": "ƯU ĐÃI CÓ HẠN",
+  "shopEndsIn": "Còn {time}",
+  "@shopEndsIn": {
     "placeholders": {
-      "count": {
-        "type": "int"
+      "time": {
+        "type": "String"
       }
     }
   },
-  "shopSoldOut": "HẾT BẢN",
-  "shopLimitedNote": "Bản giới hạn: còn {left} / {total}. 20% tiền bán chia đều cho nhóm đã vẽ.",
-  "@shopLimitedNote": {
-    "placeholders": {
-      "left": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
+  "shopOfferEnded": "ĐÃ HẾT HẠN",
+  "shopRoyaltyNote": "Bài đoạt giải của cuộc thi tuần. 20% tiền bán chia đều cho nhóm đã vẽ.",
   "settingsHapticsDirect": "Rung mạnh (dùng thẳng động cơ rung)",
   "settingsHapticsDirectHint": "Bật nếu chạm không thấy rung. Cách này bỏ qua cài đặt \"rung khi chạm\" của điện thoại.",
   "settingsHapticsTest": "Kiểm tra rung",

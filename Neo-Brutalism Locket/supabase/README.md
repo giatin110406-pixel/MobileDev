@@ -57,6 +57,7 @@ Desktop. With it, `npx supabase test db` runs the pgTAP tests in `supabase/tests
 | `20261010000001_family_friendly.sql` | A list of refused words (Vietnamese with and without accents, English), matched as whole words only, in `contest_banned_words`; `contains_banned_word()`. Applied to contest comments, group chat messages, and group names and rules. Edit the table in the dashboard to add or remove words |
 | `20261011000001_contest_shop.sql` | The three winners of a contest are sold as profile banners: `shop_items` gets `source_entry_id`, `title`, `stock`, `sold`, `royalty_percent`; `contest_make_shop_items()` (called when a contest is finalized, also gives each winner a free copy); `buy_item` now handles limited copies (`sold_out`) and shares 20% of a sale among the winning group (everybody involved is locked in the same order, so no deadlocks); RPCs `get_contest_shop` and `get_banner_art` |
 | `20261012000001_white_canvas.sql` | An empty canvas is white: palette index 0 becomes `#FFFFFF` (8-bit swaps its near-black into index 3, Van Gogh drops its cream) |
+| `20261013000001_limited_banners.sql` | The winning paintings are a limited-time offer in the banner shop: `shop_items.available_until` (two days after the contest is finalized, config `banner_offer_hours`), no copy limit; `buy_item` refuses an ended offer (`offer_ended`); `get_contest_shop` lists only offers still on sale and returns `ends_at` |
 
 ## Password-reset link
 

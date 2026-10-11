@@ -21,7 +21,7 @@ enum PlayerError {
   alreadyOwned,
   notOwned,
   itemNotFound,
-  soldOut,
+  offerEnded,
   needsNetwork,
   notEnoughSunbit,
   unknown,

@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
+import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
@@ -96,37 +97,39 @@ class _ContestScreenState extends State<ContestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NeoColors.paper,
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: widget.store,
-          builder: (context, _) => Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                child: Row(
-                  children: [
-                    NeoIconButton(
-                      icon: Icons.arrow_back,
-                      tooltip: AppLocalizations.of(context).backTooltip,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        AppLocalizations.of(context).contestTitle,
-                        style: TextStyle(
-                          fontFamily: NeoFont.display,
-                          color: NeoColors.ink,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
+      body: StarryNight(
+        child: SafeArea(
+          child: ListenableBuilder(
+            listenable: widget.store,
+            builder: (context, _) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                  child: Row(
+                    children: [
+                      NeoIconButton(
+                        icon: Icons.arrow_back,
+                        tooltip: AppLocalizations.of(context).backTooltip,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context).contestTitle,
+                          style: TextStyle(
+                            fontFamily: NeoFont.display,
+                            color: NeoColors.ink,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(child: _body(context)),
-            ],
+                Expanded(child: _body(context)),
+              ],
+            ),
           ),
         ),
       ),
@@ -558,7 +561,7 @@ class _Rules extends StatelessWidget {
         Text(
           AppLocalizations.of(context).contestRulesTitle,
           style: TextStyle(
-            color: NeoColors.muted,
+            color: NeoColors.ink,
             fontSize: 10,
             fontWeight: FontWeight.w800,
           ),

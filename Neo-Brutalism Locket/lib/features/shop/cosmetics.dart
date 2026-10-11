@@ -447,6 +447,10 @@ class _SpriteRingFrame extends CustomPainter {
 // -- Banners ---------------------------------------------------------------------
 
 /// A profile banner: the equipped shop banner, or plain stripes.
+/// The width of a profile banner for every unit of its height. The shop shows the
+/// banners at this shape, so a banner looks the same there as on a profile.
+const profileBannerAspect = 2.5;
+
 class ProfileBanner extends StatelessWidget {
   const ProfileBanner({super.key, this.bannerId, this.height = 120});
 

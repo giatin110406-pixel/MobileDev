@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/banner_art.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/profile/player_avatar.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
@@ -37,12 +40,21 @@ Future<void> openShop(BuildContext context, PlayerStore store) {
 }
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({super.key, required this.store, this.contest});
+  const ShopScreen({
+    super.key,
+    required this.store,
+    this.contest,
+    this.clock = DateTime.now,
+  });
 
   final PlayerStore store;
 
-  /// Where the winning paintings come from (null: no "Tranh" shelf).
+  /// Where the limited-time banners (the winning paintings) come from (null: the
+  /// shop has none).
   final ContestRepository? contest;
+
+  /// What time it is (tests set it).
+  final DateTime Function() clock;
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -51,26 +63,35 @@ class ShopScreen extends StatefulWidget {
 class _ShopScreenState extends State<ShopScreen> {
   CosmeticKind _kind = CosmeticKind.frame;
 
-  /// The "Tranh" shelf (winning paintings) instead of frames and banners.
-  bool _paintings = false;
-  List<GalleryShopItem>? _paintingItems;
-  bool _paintingsFailed = false;
+  /// The winning paintings that are on sale right now, as banners.
+  List<GalleryShopItem> _offers = const [];
 
-  Future<void> _loadPaintings() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadOffers();
+  }
+
+  Future<void> _loadOffers() async {
     final contest = widget.contest;
     if (contest == null) return;
-    setState(() => _paintingsFailed = false);
     try {
       final items = await contest.shopItems();
-      if (mounted) setState(() => _paintingItems = items);
+      if (mounted) setState(() => _offers = _stillOn(items));
     } on ContestFailure {
-      if (mounted) setState(() => _paintingsFailed = true);
+      // The ordinary shop is still there; the offers are just not shown.
     }
   }
 
-  void _showPaintings() {
-    setState(() => _paintings = true);
-    _loadPaintings();
+  List<GalleryShopItem> _stillOn(List<GalleryShopItem> items) => [
+    for (final item in items)
+      if (item.endsAt.isAfter(widget.clock())) item,
+  ];
+
+  /// An offer's time ran out while the shop was open: it disappears.
+  void _offersEnded() {
+    if (mounted) setState(() => _offers = _stillOn(_offers));
+    _loadOffers();
   }
 
   @override
@@ -130,39 +151,45 @@ class _ShopScreenState extends State<ShopScreen> {
                     children: [
                       for (final kind in CosmeticKind.values) ...[
                         Expanded(child: _kindTab(kind)),
-                        if (kind != CosmeticKind.values.last ||
-                            widget.contest != null)
+                        if (kind != CosmeticKind.values.last)
                           const SizedBox(width: 10),
                       ],
-                      if (widget.contest != null)
-                        Expanded(child: _paintingsTab()),
                     ],
                   ),
                   const SizedBox(height: 14),
                   Expanded(
-                    child: _paintings
-                        ? _paintingShelf(state)
-                        : state == null
+                    child: state == null
                         ? const Center(
                             child: CircularProgressIndicator(
                               color: NeoColors.ink,
                             ),
                           )
-                        : GridView.builder(
-                            padding: const EdgeInsets.only(
-                              bottom: 20,
-                              right: 4,
-                            ),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 14,
-                                  crossAxisSpacing: 14,
-                                  childAspectRatio: 0.72,
+                        : CustomScrollView(
+                            slivers: [
+                              if (_kind == CosmeticKind.banner &&
+                                  _offers.isNotEmpty)
+                                SliverToBoxAdapter(child: _offerSection(state)),
+                              SliverPadding(
+                                padding: const EdgeInsets.only(
+                                  bottom: 20,
+                                  right: 4,
                                 ),
-                            itemCount: items.length,
-                            itemBuilder: (context, index) =>
-                                _itemCard(state, items[index]),
+                                sliver: SliverGrid(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 14,
+                                        crossAxisSpacing: 14,
+                                        childAspectRatio: 0.72,
+                                      ),
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) =>
+                                        _itemCard(state, items[index]),
+                                    childCount: items.length,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                   ),
                 ],
@@ -175,17 +202,12 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _kindTab(CosmeticKind kind) {
-    final selected = !_paintings && kind == _kind;
+    final selected = kind == _kind;
     return Semantics(
       button: true,
       selected: selected,
       child: InkWell(
-        onTap: Haptics.tap(
-          () => setState(() {
-            _kind = kind;
-            _paintings = false;
-          }),
-        ),
+        onTap: Haptics.tap(() => setState(() => _kind = kind)),
         borderRadius: BorderRadius.circular(8),
         child: Container(
           height: 40,
@@ -206,91 +228,39 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  Widget _paintingsTab() => Semantics(
-    button: true,
-    selected: _paintings,
-    child: InkWell(
-      onTap: Haptics.tap(_showPaintings),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        height: 40,
-        alignment: Alignment.center,
-        decoration: NeoTheme.panel(
-          color: _paintings ? NeoColors.teal : NeoColors.surface,
-        ),
-        child: Text(
-          AppLocalizations.of(context).shopPaintingsTab,
-          style: TextStyle(
-            color: NeoColors.ink,
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
+  /// The winning paintings, on sale for a few days: banners in the proportions of a
+  /// profile banner, with the time that is left.
+  Widget _offerSection(PlayerState state) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18, right: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: NeoLabel(
+              AppLocalizations.of(context).shopLimitedOffer,
+              color: NeoColors.pink,
+              icon: Icons.timer_outlined,
+            ),
           ),
-        ),
-      ),
-    ),
-  );
-
-  /// The winning paintings of the weekly contest, as banners.
-  Widget _paintingShelf(PlayerState? state) {
-    final items = _paintingItems;
-    if (state == null || (items == null && !_paintingsFailed)) {
-      return const Center(
-        child: CircularProgressIndicator(color: NeoColors.ink),
-      );
-    }
-    if (items == null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              AppLocalizations.of(context).shopPaintingsFailed,
-              style: TextStyle(
-                color: NeoColors.ink,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
-            NeoButton(
-              label: AppLocalizations.of(context).retry,
-              onPressed: _loadPaintings,
-            ),
+          const SizedBox(height: 10),
+          for (final offer in _offers) ...[
+            _offerCard(state, offer),
+            const SizedBox(height: 14),
           ],
-        ),
-      );
-    }
-    if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            AppLocalizations.of(context).shopPaintingsEmpty,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: NeoColors.ink,
-              height: 1.4,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      );
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 20, right: 4),
-      itemCount: items.length,
-      separatorBuilder: (context, _) => const SizedBox(height: 14),
-      itemBuilder: (context, index) => _paintingCard(state, items[index]),
+        ],
+      ),
     );
   }
 
-  Widget _paintingCard(PlayerState state, GalleryShopItem item) {
-    final shopItem = item.toShopItem();
-    final action = shopActionFor(state, shopItem);
+  Widget _offerCard(PlayerState state, GalleryShopItem item) {
+    final action = shopActionFor(state, item.toShopItem());
     final vi = Localizations.localeOf(context).languageCode != 'en';
     final l10n = AppLocalizations.of(context);
     final medals = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
     return InkWell(
-      onTap: Haptics.tap(() => _openPainting(item)),
+      onTap: Haptics.tap(() => _openOffer(item)),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -298,7 +268,10 @@ class _ShopScreenState extends State<ShopScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ProfileBanner(bannerId: item.id, height: 84),
+            AspectRatio(
+              aspectRatio: profileBannerAspect,
+              child: ProfileBanner(bannerId: item.id, height: double.infinity),
+            ),
             const SizedBox(height: 8),
             Text(
               item.title,
@@ -323,19 +296,11 @@ class _ShopScreenState extends State<ShopScreen> {
             const SizedBox(height: 6),
             Row(
               children: [
-                RarityChip(rarity: item.rarity),
-                const SizedBox(width: 8),
-                if (item.left != null)
-                  Text(
-                    item.soldOut
-                        ? l10n.shopSoldOut
-                        : l10n.shopCopiesLeft(item.left!),
-                    style: TextStyle(
-                      color: item.soldOut ? NeoColors.pink : NeoColors.muted,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                _OfferCountdown(
+                  endsAt: item.endsAt,
+                  clock: widget.clock,
+                  onEnded: _offersEnded,
+                ),
                 const Spacer(),
                 switch (action) {
                   ShopAction.unequip => _StatusText(l10n.shopInUse),
@@ -350,20 +315,16 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  Future<void> _openPainting(GalleryShopItem item) async {
+  Future<void> _openOffer(GalleryShopItem item) async {
     await showShopItemSheet(
       context,
       widget.store,
       item.toShopItem(),
-      note: item.left == null
-          ? null
-          : AppLocalizations.of(
-              context,
-            ).shopLimitedNote(item.left!, item.stock!),
-      soldOut: item.soldOut,
+      note: AppLocalizations.of(context).shopRoyaltyNote,
+      endsAt: item.endsAt,
+      clock: widget.clock,
     );
-    // The copies left may have changed (also because of this purchase).
-    if (mounted) _loadPaintings();
+    if (mounted) _loadOffers();
   }
 
   Widget _itemCard(PlayerState state, ShopItem item) {
@@ -426,6 +387,78 @@ class _ShopScreenState extends State<ShopScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "LIMITED TIME OFFER · ends in 1d 05:03:09", counting down every second. It says
+/// [onEnded] once when the time is up.
+class _OfferCountdown extends StatefulWidget {
+  const _OfferCountdown({
+    required this.endsAt,
+    required this.clock,
+    this.onEnded,
+  });
+
+  final DateTime endsAt;
+  final DateTime Function() clock;
+  final VoidCallback? onEnded;
+
+  @override
+  State<_OfferCountdown> createState() => _OfferCountdownState();
+}
+
+class _OfferCountdownState extends State<_OfferCountdown> {
+  Timer? _timer;
+  int _seconds = 0;
+  bool _ended = false;
+
+  Duration get _left => widget.endsAt.difference(widget.clock());
+
+  @override
+  void initState() {
+    super.initState();
+    _seconds = _left.inSeconds;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  void _tick() {
+    if (!mounted) return;
+    final seconds = _left.inSeconds;
+    if (seconds <= 0 && !_ended) {
+      _ended = true;
+      widget.onEnded?.call();
+    }
+    // Only when the shown number changes (a stopped clock stays quiet).
+    if (seconds != _seconds && mounted) setState(() => _seconds = seconds);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final left = _left;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.timer_outlined, size: 14, color: NeoColors.pink),
+        const SizedBox(width: 4),
+        Text(
+          left <= Duration.zero
+              ? l10n.shopOfferEnded
+              : l10n.shopEndsIn(formatCountdown(l10n, left)),
+          style: const TextStyle(
+            color: NeoColors.ink,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -501,7 +534,8 @@ Future<void> showShopItemSheet(
   PlayerStore store,
   ShopItem item, {
   String? note,
-  bool soldOut = false,
+  DateTime? endsAt,
+  DateTime Function() clock = DateTime.now,
 }) {
   // A sheet is a new page, not below this screen: carry the paintings over.
   final art = ContestArtScope.maybeOf(context);
@@ -514,7 +548,8 @@ Future<void> showShopItemSheet(
         store: store,
         item: item,
         note: note,
-        soldOut: soldOut,
+        endsAt: endsAt,
+        clock: clock,
       );
       return art == null ? sheet : ContestArtScope(cache: art, child: sheet);
     },
@@ -526,15 +561,17 @@ class _ShopItemSheet extends StatefulWidget {
     required this.store,
     required this.item,
     this.note,
-    this.soldOut = false,
+    this.endsAt,
+    this.clock = DateTime.now,
   });
 
   final PlayerStore store;
   final ShopItem item;
   final String? note;
 
-  /// A limited item with no copies left (only matters if you do not own it).
-  final bool soldOut;
+  /// When a limited-time offer ends (null: always on sale).
+  final DateTime? endsAt;
+  final DateTime Function() clock;
 
   @override
   State<_ShopItemSheet> createState() => _ShopItemSheetState();
@@ -579,6 +616,8 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
         final state = widget.store.state;
         if (state == null) return const SizedBox.shrink();
         final action = shopActionFor(state, item);
+        final endsAt = widget.endsAt;
+        final ended = endsAt != null && !widget.clock().isBefore(endsAt);
         return Container(
           margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           padding: EdgeInsets.fromLTRB(
@@ -628,6 +667,27 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                   PriceTag(price: item.price),
                 ],
               ),
+              if (endsAt != null) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    NeoLabel(
+                      AppLocalizations.of(context).shopLimitedOffer,
+                      color: NeoColors.pink,
+                    ),
+                    _OfferCountdown(
+                      endsAt: endsAt,
+                      clock: widget.clock,
+                      onEnded: () {
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ],
               if (widget.note != null) ...[
                 const SizedBox(height: 6),
                 Text(
@@ -644,9 +704,9 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
               NeoButton(
                 expand: true,
                 label: switch (action) {
-                  ShopAction.buy when widget.soldOut => AppLocalizations.of(
+                  ShopAction.buy when ended => AppLocalizations.of(
                     context,
-                  ).shopSoldOut,
+                  ).shopOfferEnded,
                   ShopAction.buy => AppLocalizations.of(
                     context,
                   ).shopBuy(item.price),
@@ -673,7 +733,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                 onPressed:
                     action == ShopAction.locked ||
                         _busy ||
-                        (widget.soldOut && action == ShopAction.buy)
+                        (ended && action == ShopAction.buy)
                     ? null
                     : () => _act(action),
               ),

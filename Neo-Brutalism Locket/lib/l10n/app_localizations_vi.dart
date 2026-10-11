@@ -2368,7 +2368,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get peSoldOut => 'Món này đã hết bản. Hẹn bạn tuần sau!';
+  String get peOfferEnded => 'Ưu đãi này đã kết thúc.';
 
   @override
   String get contestEnterGalleryEmpty => 'VÀO GALLERY';
@@ -2420,27 +2420,19 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get shopPaintingsTab => 'TRANH';
+  String get shopLimitedOffer => 'ƯU ĐÃI CÓ HẠN';
 
   @override
-  String get shopPaintingsFailed => 'Không tải được tranh đoạt giải.';
-
-  @override
-  String get shopPaintingsEmpty =>
-      'Chưa có tranh nào đoạt giải. Ba bài đứng đầu mỗi tuần sẽ được bán ở đây, làm banner cho trang cá nhân.';
-
-  @override
-  String shopCopiesLeft(int count) {
-    return 'CÒN $count BẢN';
+  String shopEndsIn(String time) {
+    return 'Còn $time';
   }
 
   @override
-  String get shopSoldOut => 'HẾT BẢN';
+  String get shopOfferEnded => 'ĐÃ HẾT HẠN';
 
   @override
-  String shopLimitedNote(int left, int total) {
-    return 'Bản giới hạn: còn $left / $total. 20% tiền bán chia đều cho nhóm đã vẽ.';
-  }
+  String get shopRoyaltyNote =>
+      'Bài đoạt giải của cuộc thi tuần. 20% tiền bán chia đều cho nhóm đã vẽ.';
 
   @override
   String get settingsHapticsDirect => 'Rung mạnh (dùng thẳng động cơ rung)';

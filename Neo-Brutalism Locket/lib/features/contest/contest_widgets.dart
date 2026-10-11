@@ -3,6 +3,7 @@ import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
+import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 
@@ -115,65 +116,95 @@ class ContestBanner extends StatelessWidget {
           child: GestureDetector(
             onTap: Haptics.tap(onTap),
             child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: NeoTheme.panel(color: phaseColor(phase)),
-              child: Row(
-                children: [
-                  const Icon(Icons.emoji_events_outlined, size: 30),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).contestBannerTitle(
-                            phaseLabel(AppLocalizations.of(context), phase),
-                          ),
-                          style: const TextStyle(
-                            color: NeoColors.ink,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          theme.title(vietnamese: vi),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: NeoColors.ink,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        if (left != null && milestone != null)
-                          Text(
-                            AppLocalizations.of(context).contestTimeLeft(
-                              formatCountdown(
-                                AppLocalizations.of(context),
-                                left,
-                              ),
-                              _milestoneText(
-                                AppLocalizations.of(context),
-                                milestone.phase,
-                              ),
-                            ),
-                            style: const TextStyle(
+              decoration: NeoTheme.panel(color: NeoColors.surface),
+              clipBehavior: Clip.antiAlias,
+              // Van Gogh's sky behind the card, under a veil so the text reads.
+              child: StarryNight(
+                veil: 0.62,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: phaseColor(phase),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: NeoColors.ink, width: 2.5),
+                          boxShadow: const [
+                            BoxShadow(
                               color: NeoColors.ink,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                              offset: Offset(2, 2),
+                              blurRadius: 0,
                             ),
-                          ),
-                      ],
-                    ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.emoji_events_outlined,
+                          size: 26,
+                          color: NeoColors.ink,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: NeoLabel(
+                                AppLocalizations.of(context).contestBannerTitle(
+                                  phaseLabel(
+                                    AppLocalizations.of(context),
+                                    phase,
+                                  ),
+                                ),
+                                color: phaseColor(phase),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              theme.title(vietnamese: vi),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: NeoColors.ink,
+                                fontFamily: NeoFont.display,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            if (left != null && milestone != null)
+                              Text(
+                                AppLocalizations.of(context).contestTimeLeft(
+                                  formatCountdown(
+                                    AppLocalizations.of(context),
+                                    left,
+                                  ),
+                                  _milestoneText(
+                                    AppLocalizations.of(context),
+                                    milestone.phase,
+                                  ),
+                                ),
+                                style: const TextStyle(
+                                  color: NeoColors.ink,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (phase == ContestPhase.open ||
+                          phase == ContestPhase.judging)
+                        NeoLabel(
+                          '${contest.acceptedCount}/${contest.maxEntries}',
+                          color: NeoColors.surface,
+                        ),
+                    ],
                   ),
-                  if (phase == ContestPhase.open ||
-                      phase == ContestPhase.judging)
-                    NeoLabel(
-                      '${contest.acceptedCount}/${contest.maxEntries}',
-                      color: NeoColors.surface,
-                    ),
-                ],
+                ),
               ),
             ),
           ),
