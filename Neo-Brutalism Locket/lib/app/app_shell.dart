@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
+import 'package:neo_brutalism_locket/app/neo_bottom_nav.dart';
+import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
@@ -1326,6 +1328,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cameraVisible = _tabIndex == 0 && !_showFeed;
     final page = switch (_tabIndex) {
       0 when _showFeed => _feedScreen(
@@ -1399,49 +1402,94 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           children: [
             _buildStatusStrip(),
             Expanded(
-              child: Stack(
-                // Fill the area even while the camera is off-stage (size 0).
-                fit: StackFit.expand,
-                children: [
-                  // Always mounted, so the camera does not restart per tab.
-                  Offstage(
-                    offstage: !cameraVisible,
-                    child: TickerMode(
-                      enabled: cameraVisible,
-                      child: CameraTab(
-                        key: _cameraKey,
-                        player: _player,
-                        photos: _photos,
-                        repository: _repository,
-                        styleEngineFactory: _styleEngineFactory,
-                        questVerifier: _questVerifier,
-                        onPhotoChanged: _onPhotoChanged,
-                        onOpenFeed: _openFeed,
-                        onOpenArchive: () => _selectTab(3),
-                        onOpenQuestSheet: _openQuestSheet,
-                        onQuestPassed: _openQuestPost,
-                        onSendPrint: _online ? _sendPrint : null,
-                        onPhotoRemoved: _onPhotoRemoved,
-                        onVideoRecorded: _online ? _sendVideo : null,
+              child: TabSwipeDetector(
+                tabCount: 5,
+                currentIndex: _tabIndex,
+                onSwipe: _selectTab,
+                child: Stack(
+                  // Fill the area even while the camera is off-stage (size 0).
+                  fit: StackFit.expand,
+                  children: [
+                    // Always mounted, so the camera does not restart per tab.
+                    Offstage(
+                      offstage: !cameraVisible,
+                      child: TickerMode(
+                        enabled: cameraVisible,
+                        child: CameraTab(
+                          key: _cameraKey,
+                          player: _player,
+                          photos: _photos,
+                          repository: _repository,
+                          styleEngineFactory: _styleEngineFactory,
+                          questVerifier: _questVerifier,
+                          onPhotoChanged: _onPhotoChanged,
+                          onOpenFeed: _openFeed,
+                          onOpenArchive: () => _selectTab(3),
+                          onOpenQuestSheet: _openQuestSheet,
+                          onQuestPassed: _openQuestPost,
+                          onSendPrint: _online ? _sendPrint : null,
+                          onPhotoRemoved: _onPhotoRemoved,
+                          onVideoRecorded: _online ? _sendVideo : null,
+                        ),
                       ),
                     ),
-                  ),
-                  if (!cameraVisible)
-                    Positioned.fill(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 140),
-                        switchInCurve: Curves.easeOut,
-                        switchOutCurve: Curves.easeIn,
-                        child: page,
+                    if (!cameraVisible)
+                      Positioned.fill(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 140),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          child: page,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: _buildTabs(),
+      bottomNavigationBar: TabSwipeDetector(
+        tabCount: 5,
+        currentIndex: _tabIndex,
+        onSwipe: _selectTab,
+        child: NeoBottomNav(
+          selectedIndex: _tabIndex,
+          onSelected: _selectTab,
+          tabs: [
+            NeoBottomNavTab(
+              label: l10n.tabShoot,
+              outlineIcon: Icons.photo_camera_outlined,
+              filledIcon: Icons.photo_camera,
+              activeColor: NeoColors.teal,
+            ),
+            NeoBottomNavTab(
+              label: l10n.tabFriends,
+              outlineIcon: Icons.people_alt_outlined,
+              filledIcon: Icons.people_alt,
+              activeColor: NeoColors.purple,
+            ),
+            NeoBottomNavTab(
+              label: l10n.tabInbox,
+              outlineIcon: Icons.chat_bubble_outline,
+              filledIcon: Icons.chat_bubble,
+              activeColor: NeoColors.blue,
+            ),
+            NeoBottomNavTab(
+              label: _online ? l10n.historyTab : l10n.tabPrints,
+              outlineIcon: Icons.grid_view_outlined,
+              filledIcon: Icons.grid_view_rounded,
+              activeColor: NeoColors.orange,
+            ),
+            NeoBottomNavTab(
+              label: l10n.tabMe,
+              outlineIcon: Icons.person_outline,
+              filledIcon: Icons.person,
+              activeColor: NeoColors.pink,
+            ),
+          ],
+        ),
+      ),
     );
     return _withScopes(scaffold);
   }
@@ -1676,102 +1724,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             onTap: () => openShop(context, _player),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTabs() {
-    final l10n = AppLocalizations.of(context);
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 8, 22, 12),
-        child: Container(
-          height: 52,
-          decoration: BoxDecoration(
-            color: NeoColors.surface,
-            border: Border.all(color: NeoColors.ink, width: 2),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: const [
-              BoxShadow(
-                color: NeoColors.ink,
-                offset: Offset(4, 4),
-                blurRadius: 0,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              _tab(
-                index: 0,
-                icon: Icons.photo_camera_outlined,
-                label: l10n.tabShoot,
-              ),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(
-                index: 1,
-                icon: Icons.people_alt_outlined,
-                label: l10n.tabFriends,
-              ),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(
-                index: 2,
-                icon: Icons.chat_bubble_outline,
-                label: l10n.tabInbox,
-              ),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(
-                index: 3,
-                icon: Icons.grid_view_rounded,
-                label: _online ? l10n.historyTab : l10n.tabPrints,
-              ),
-              Container(width: 1.5, height: 30, color: NeoColors.ink),
-              _tab(index: 4, icon: Icons.person_outline, label: l10n.tabMe),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tab({
-    required int index,
-    required IconData icon,
-    required String label,
-  }) {
-    final selected = _tabIndex == index;
-    return Expanded(
-      child: Semantics(
-        button: true,
-        selected: selected,
-        child: InkWell(
-          onTap: () => _selectTab(index),
-          borderRadius: BorderRadius.circular(6),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            height: double.infinity,
-            decoration: BoxDecoration(
-              color: selected ? NeoColors.teal : NeoColors.surface,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: NeoColors.ink, size: 18),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: NeoColors.ink,
-                    fontFamily: NeoFont.display,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

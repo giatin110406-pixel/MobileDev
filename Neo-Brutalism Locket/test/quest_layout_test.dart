@@ -98,7 +98,7 @@ void main() {
     expect(find.text('ON DEVICE'), findsNothing);
     expect(find.textContaining(' PRINTS'), findsNothing);
     expect(find.byType(StreakChip), findsOneWidget);
-    expect(find.text('ME'), findsOneWidget);
+    expect(find.byTooltip('ME'), findsOneWidget);
     // Quest mode: camera only, so the gallery button is gone.
     expect(find.byTooltip('Upload a photo from this device'), findsOneWidget);
     await tester.tap(find.byType(QuestStrip));
@@ -113,7 +113,7 @@ void main() {
     expect(find.text('QUEST MODE · LIVE CAMERA ONLY'), findsOneWidget);
 
     // The profile tab.
-    await tester.tap(find.text('ME'));
+    await tester.tap(find.byTooltip('ME'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(ProfileScreen), findsOneWidget);
@@ -124,7 +124,7 @@ void main() {
     expect(find.text('SHOP'), findsOneWidget);
 
     for (final tab in ['FRIENDS', 'INBOX', 'PRINTS']) {
-      await tester.tap(find.text(tab));
+      await tester.tap(find.byTooltip(tab));
       await tester.pumpAndSettle();
       final area = tester.getSize(
         find

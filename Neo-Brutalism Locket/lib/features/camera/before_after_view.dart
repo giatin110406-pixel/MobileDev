@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -103,86 +104,90 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
     final styled = widget.styledPath;
     // What is on screen: the other side while a finger holds the picture.
     final onStyled = _hasStyled && (widget.showStyled != _peeking);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        GestureDetector(
-          onTap: _toggle,
-          onLongPressStart: _hasStyled ? (_) => _setPeeking(true) : null,
-          onLongPressEnd: (_) => _setPeeking(false),
-          onLongPressCancel: () => _setPeeking(false),
-          child: PageView(
-            controller: _pages,
-            physics: _hasStyled
-                ? const PageScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
-            onPageChanged: (page) {
-              Haptics.select();
-              widget.onChanged(page == 1);
-            },
-            children: [
-              _picture(widget.originalPath),
-              if (styled != null) _picture(styled),
-            ],
-          ),
-        ),
-        if (_peeking && styled != null)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: _picture(widget.showStyled ? widget.originalPath : styled),
+    return TabSwipeExclusion(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          GestureDetector(
+            onTap: _toggle,
+            onLongPressStart: _hasStyled ? (_) => _setPeeking(true) : null,
+            onLongPressEnd: (_) => _setPeeking(false),
+            onLongPressCancel: () => _setPeeking(false),
+            child: PageView(
+              controller: _pages,
+              physics: _hasStyled
+                  ? const PageScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
+              onPageChanged: (page) {
+                Haptics.select();
+                widget.onChanged(page == 1);
+              },
+              children: [
+                _picture(widget.originalPath),
+                if (styled != null) _picture(styled),
+              ],
             ),
           ),
-        if (_hasStyled) ...[
-          if (!_hasPeeked)
-            Positioned(
-              top: 12,
-              right: 12,
+          if (_peeking && styled != null)
+            Positioned.fill(
               child: IgnorePointer(
-                child: NeoLabel(
-                  AppLocalizations.of(context).holdToCompare,
-                  color: NeoColors.yellow,
-                  icon: Icons.touch_app_outlined,
+                child: _picture(
+                  widget.showStyled ? widget.originalPath : styled,
                 ),
               ),
             ),
-          Positioned(
-            top: 12,
-            left: 12,
-            child: IgnorePointer(
-              child: NeoLabel(
-                onStyled
-                    ? widget.styleLabel
-                    : AppLocalizations.of(context).originalLabel,
-                color: onStyled ? NeoColors.teal : NeoColors.surface,
+          if (_hasStyled) ...[
+            if (!_hasPeeked)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: IgnorePointer(
+                  child: NeoLabel(
+                    AppLocalizations.of(context).holdToCompare,
+                    color: NeoColors.yellow,
+                    icon: Icons.touch_app_outlined,
+                  ),
+                ),
+              ),
+            Positioned(
+              top: 12,
+              left: 12,
+              child: IgnorePointer(
+                child: NeoLabel(
+                  onStyled
+                      ? widget.styleLabel
+                      : AppLocalizations.of(context).originalLabel,
+                  color: onStyled ? NeoColors.teal : NeoColors.surface,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 12,
-            child: IgnorePointer(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (final active in [!onStyled, onStyled])
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 160),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: active ? 18 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: active ? NeoColors.ink : NeoColors.surface,
-                        border: Border.all(color: NeoColors.ink, width: 1.5),
-                        borderRadius: BorderRadius.circular(99),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 12,
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (final active in [!onStyled, onStyled])
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 160),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: active ? 18 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: active ? NeoColors.ink : NeoColors.surface,
+                          border: Border.all(color: NeoColors.ink, width: 1.5),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

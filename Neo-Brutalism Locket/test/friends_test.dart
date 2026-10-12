@@ -362,7 +362,7 @@ void main() {
     }
 
     Future<void> openFriendsTab(WidgetTester tester) async {
-      await tester.tap(find.text('FRIENDS'));
+      await tester.tap(find.byTooltip('FRIENDS'));
       await tester.pumpAndSettle();
     }
 
@@ -699,7 +699,7 @@ void main() {
         createdAt: DateTime(2026, 1, 1),
       );
       await pumpShell(tester, FakeFriends(friends: [bo]), feed: [newer, older]);
-      await tester.tap(find.text('HISTORY'));
+      await tester.tap(find.byTooltip('HISTORY'));
       await tester.pumpAndSettle();
       expect(find.byType(RemoteImage), findsNWidgets(2));
       expect(find.text('JANUARY 2026'), findsOneWidget);
@@ -779,7 +779,7 @@ void main() {
 
     testWidgets('the profile tab opens the settings', (tester) async {
       await pumpShell(tester, FakeFriends());
-      await tester.tap(find.text('ME'));
+      await tester.tap(find.byTooltip('ME'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.text('Settings'),

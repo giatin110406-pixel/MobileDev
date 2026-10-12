@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
@@ -72,115 +73,117 @@ class _StylePillState extends State<StylePill> {
     final style = widget.value;
     final values = StyleType.values;
     final l10n = AppLocalizations.of(context);
-    return Semantics(
-      slider: true,
-      label: l10n.styleSliderSemantics,
-      value: styleName(l10n, style),
-      increasedValue: styleName(
-        l10n,
-        _hasNext ? values[style.index + 1] : style,
-      ),
-      decreasedValue: styleName(
-        l10n,
-        _hasPrevious ? values[style.index - 1] : style,
-      ),
-      onIncrease: widget.enabled && _hasNext ? () => _step(1) : null,
-      onDecrease: widget.enabled && _hasPrevious ? () => _step(-1) : null,
-      child: Opacity(
-        opacity: widget.enabled ? 1 : 0.55,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragUpdate: widget.enabled
-              ? (details) => setState(
-                  () => _drag = (_drag + details.delta.dx).clamp(-60.0, 60.0),
-                )
-              : null,
-          onHorizontalDragEnd: widget.enabled ? _endDrag : null,
-          onHorizontalDragCancel: widget.enabled
-              ? () => setState(() => _drag = 0)
-              : null,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: stylePillColor(style),
-              borderRadius: BorderRadius.circular(height / 2),
-              border: Border.all(color: NeoColors.ink, width: 2),
-              boxShadow: const [
-                BoxShadow(
-                  color: NeoColors.ink,
-                  offset: Offset(3, 3),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                _chevron(Icons.chevron_left, visible: _hasPrevious),
-                Expanded(
-                  child: ClipRect(
-                    child: Transform.translate(
-                      offset: Offset(_drag * 0.5, 0),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        transitionBuilder: (child, animation) {
-                          final incoming = child.key == ValueKey(style);
-                          final from = incoming ? _direction * 0.6 : 0.0;
-                          return SlideTransition(
-                            position: Tween(
-                              begin: Offset(from, 0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Column(
-                          key: ValueKey(style),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              styleName(l10n, style),
-                              maxLines: 1,
-                              style: const TextStyle(
-                                color: NeoColors.ink,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
+    return TabSwipeExclusion(
+      child: Semantics(
+        slider: true,
+        label: l10n.styleSliderSemantics,
+        value: styleName(l10n, style),
+        increasedValue: styleName(
+          l10n,
+          _hasNext ? values[style.index + 1] : style,
+        ),
+        decreasedValue: styleName(
+          l10n,
+          _hasPrevious ? values[style.index - 1] : style,
+        ),
+        onIncrease: widget.enabled && _hasNext ? () => _step(1) : null,
+        onDecrease: widget.enabled && _hasPrevious ? () => _step(-1) : null,
+        child: Opacity(
+          opacity: widget.enabled ? 1 : 0.55,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragUpdate: widget.enabled
+                ? (details) => setState(
+                    () => _drag = (_drag + details.delta.dx).clamp(-60.0, 60.0),
+                  )
+                : null,
+            onHorizontalDragEnd: widget.enabled ? _endDrag : null,
+            onHorizontalDragCancel: widget.enabled
+                ? () => setState(() => _drag = 0)
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                color: stylePillColor(style),
+                borderRadius: BorderRadius.circular(height / 2),
+                border: Border.all(color: NeoColors.ink, width: 2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: NeoColors.ink,
+                    offset: Offset(3, 3),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  _chevron(Icons.chevron_left, visible: _hasPrevious),
+                  Expanded(
+                    child: ClipRect(
+                      child: Transform.translate(
+                        offset: Offset(_drag * 0.5, 0),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          transitionBuilder: (child, animation) {
+                            final incoming = child.key == ValueKey(style);
+                            final from = incoming ? _direction * 0.6 : 0.0;
+                            return SlideTransition(
+                              position: Tween(
+                                begin: Offset(from, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                for (final dot in values)
-                                  Container(
-                                    width: dot == style ? 12 : 5,
-                                    height: 5,
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 2,
+                            );
+                          },
+                          child: Column(
+                            key: ValueKey(style),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                styleName(l10n, style),
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  color: NeoColors.ink,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (final dot in values)
+                                    Container(
+                                      width: dot == style ? 12 : 5,
+                                      height: 5,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: dot == style
+                                            ? NeoColors.ink
+                                            : NeoColors.ink.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: dot == style
-                                          ? NeoColors.ink
-                                          : NeoColors.ink.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                _chevron(Icons.chevron_right, visible: _hasNext),
-              ],
+                  _chevron(Icons.chevron_right, visible: _hasNext),
+                ],
+              ),
             ),
           ),
         ),
