@@ -320,7 +320,7 @@ void main() {
       final push = await pumpShell(tester);
       push.tap(const PushTap(type: 'message', fromId: 'id-unknown'));
       await tester.pumpAndSettle();
-      expect(find.text('INBOX'), findsWidgets);
+      expect(find.byTooltip('INBOX'), findsOneWidget);
       expect(find.byTooltip('Send message'), findsNothing);
     });
 

@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
@@ -885,76 +886,78 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildViewfinder() {
     final camera = _camera;
-    return Container(
-      decoration: NeoTheme.panel(
-        color: NeoColors.surface,
-        borderWidth: 2,
-        radius: _squareRadius,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (camera != null && camera.value.isInitialized)
-            GestureDetector(
-              onScaleStart: (_) => _zoomAtPinchStart = _zoom,
-              onScaleUpdate: (details) {
-                if (details.pointerCount < 2) return;
-                _setZoom(_zoomAtPinchStart * details.scale);
-              },
-              child: _squarePreview(camera),
-            )
-          else
-            _buildCameraFallback(),
-          // Only while something is going on: recording, or checking a quest
-          // photo. The viewfinder is otherwise just the picture.
-          if (_recording || _checkingQuest)
-            Positioned(
-              top: 12,
-              left: 12,
-              child: _recording
-                  ? const NeoLabel(
-                      'REC',
-                      color: NeoColors.pink,
-                      icon: Icons.circle,
-                    )
-                  : NeoLabel(
-                      AppLocalizations.of(context).checkingPhoto,
-                      color: NeoColors.yellow,
-                      icon: Icons.search,
+    return TabSwipeExclusion(
+      child: Container(
+        decoration: NeoTheme.panel(
+          color: NeoColors.surface,
+          borderWidth: 2,
+          radius: _squareRadius,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (camera != null && camera.value.isInitialized)
+              GestureDetector(
+                onScaleStart: (_) => _zoomAtPinchStart = _zoom,
+                onScaleUpdate: (details) {
+                  if (details.pointerCount < 2) return;
+                  _setZoom(_zoomAtPinchStart * details.scale);
+                },
+                child: _squarePreview(camera),
+              )
+            else
+              _buildCameraFallback(),
+            // Only while something is going on: recording, or checking a quest
+            // photo. The viewfinder is otherwise just the picture.
+            if (_recording || _checkingQuest)
+              Positioned(
+                top: 12,
+                left: 12,
+                child: _recording
+                    ? const NeoLabel(
+                        'REC',
+                        color: NeoColors.pink,
+                        icon: Icons.circle,
+                      )
+                    : NeoLabel(
+                        AppLocalizations.of(context).checkingPhoto,
+                        color: NeoColors.yellow,
+                        icon: Icons.search,
+                      ),
+              ),
+            if (camera != null &&
+                camera.value.isInitialized &&
+                zoomPresets(_minZoom, _maxZoom).length > 1)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 8,
+                child: Center(child: _zoomButtons()),
+              ),
+            if (_countdown != null)
+              Center(
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  alignment: Alignment.center,
+                  decoration: NeoTheme.panel(
+                    color: NeoColors.yellow,
+                    radius: 999,
+                  ),
+                  child: Text(
+                    '$_countdown',
+                    style: const TextStyle(
+                      fontFamily: NeoFont.display,
+                      color: NeoColors.ink,
+                      fontSize: 44,
+                      fontWeight: FontWeight.w900,
                     ),
-            ),
-          if (camera != null &&
-              camera.value.isInitialized &&
-              zoomPresets(_minZoom, _maxZoom).length > 1)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 8,
-              child: Center(child: _zoomButtons()),
-            ),
-          if (_countdown != null)
-            Center(
-              child: Container(
-                width: 96,
-                height: 96,
-                alignment: Alignment.center,
-                decoration: NeoTheme.panel(
-                  color: NeoColors.yellow,
-                  radius: 999,
-                ),
-                child: Text(
-                  '$_countdown',
-                  style: const TextStyle(
-                    fontFamily: NeoFont.display,
-                    color: NeoColors.ink,
-                    fontSize: 44,
-                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
