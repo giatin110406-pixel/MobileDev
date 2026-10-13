@@ -8,7 +8,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 /// Describes one tab inside [NeoBottomNav].
 ///
 /// Each tab carries two icon variants (outline for idle, filled for active)
-/// and an [activeColor] used for the icon tint and the selection pill.
+/// and an [activeColor]: the colour of the block behind the selected tab.
 class NeoBottomNavTab {
   const NeoBottomNavTab({
     required this.label,
@@ -26,15 +26,31 @@ class NeoBottomNavTab {
   /// Icon displayed when the tab **is** selected.
   final IconData filledIcon;
 
-  /// Accent colour used for the selected icon tint and pill background blend.
+  /// The colour of the block behind the icon while the tab is selected.
   final Color activeColor;
 }
 
+/// The colours of the bar: an 80s / 90s arcade palette. A deep violet bar, a racing
+/// stripe along the top, and one loud colour for every tab.
+abstract final class NeoNavColors {
+  static const bar = Color(0xFF2B1A5E);
+  static const pink = Color(0xFFFF3D9A);
+  static const orange = Color(0xFFFF8A00);
+  static const yellow = Color(0xFFFFE600);
+  static const mint = Color(0xFF39FF9E);
+  static const cyan = Color(0xFF00E5FF);
+
+  /// The racing stripe along the top of the bar, left to right.
+  static const stripe = [pink, orange, yellow, mint, cyan];
+}
+
 // ---------------------------------------------------------------------------
-// NeoBottomNav – the pill-shaped bottom navigation bar.
+// NeoBottomNav – the chunky bottom navigation bar.
 // ---------------------------------------------------------------------------
 
-/// A neo-brutalism–styled bottom navigation bar rendered as a rounded pill.
+/// A neo-brutalism–styled bottom navigation bar with a retro look: a dark violet
+/// bar with a racing stripe, light icons, and a solid coloured block with a black
+/// outline and a hard shadow behind the selected tab.
 ///
 /// Only one tab may be selected at a time. Selection is driven externally via
 /// [selectedIndex]; tapping a tab calls [onSelected]. The app shell owns haptics.
@@ -64,10 +80,11 @@ class NeoBottomNav extends StatelessWidget {
         padding: const EdgeInsets.only(left: 14, right: 18, top: 4, bottom: 8),
         child: Container(
           height: 52,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: NeoColors.surface,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: NeoColors.ink, width: 2),
+            color: NeoNavColors.bar,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: NeoColors.ink, width: 3),
             boxShadow: const [
               BoxShadow(
                 color: NeoColors.ink,
@@ -76,14 +93,35 @@ class NeoBottomNav extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            children: List.generate(tabs.length, (index) {
-              return _NeoNavItem(
-                tab: tabs[index],
-                selected: index == selectedIndex,
-                onTap: () => onSelected(index),
-              );
-            }),
+          child: Stack(
+            children: [
+              // The racing stripe.
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 5,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final colour in NeoNavColors.stripe)
+                      Expanded(child: ColoredBox(color: colour)),
+                  ],
+                ),
+              ),
+              Positioned.fill(
+                top: 5,
+                child: Row(
+                  children: List.generate(tabs.length, (index) {
+                    return _NeoNavItem(
+                      tab: tabs[index],
+                      selected: index == selectedIndex,
+                      onTap: () => onSelected(index),
+                    );
+                  }),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -95,7 +133,8 @@ class NeoBottomNav extends StatelessWidget {
 // _NeoNavItem – a single tab inside the bar (private).
 // ---------------------------------------------------------------------------
 
-/// An icon-only tab with an accessible name and a coloured selection pill.
+/// An icon-only tab with an accessible name. The selected one sits on a solid
+/// coloured block.
 class _NeoNavItem extends StatelessWidget {
   const _NeoNavItem({
     required this.tab,
@@ -109,9 +148,6 @@ class _NeoNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Pill background: 22 % tab colour blended with 78 % surface.
-    final pillColor = Color.lerp(tab.activeColor, NeoColors.surface, 0.78)!;
-
     return Expanded(
       child: Semantics(
         button: true,
@@ -130,16 +166,29 @@ class _NeoNavItem extends StatelessWidget {
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeInOut,
                   width: 48,
-                  height: 32,
+                  height: 34,
                   decoration: BoxDecoration(
-                    color: selected ? pillColor : Colors.transparent,
-                    borderRadius: BorderRadius.circular(999),
+                    color: selected ? tab.activeColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: selected ? NeoColors.ink : Colors.transparent,
+                      width: 2.5,
+                    ),
+                    boxShadow: selected
+                        ? const [
+                            BoxShadow(
+                              color: NeoColors.ink,
+                              offset: Offset(2, 2),
+                              blurRadius: 0,
+                            ),
+                          ]
+                        : const [],
                   ),
                   child: Center(
                     child: Icon(
                       selected ? tab.filledIcon : tab.outlineIcon,
                       size: 24,
-                      color: selected ? tab.activeColor : NeoColors.ink,
+                      color: selected ? NeoColors.ink : NeoColors.surface,
                     ),
                   ),
                 ),

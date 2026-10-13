@@ -257,14 +257,20 @@ class SettingsScreen extends StatelessWidget {
   Widget _card(List<Widget> children) => Container(
     decoration: NeoTheme.panel(),
     clipBehavior: Clip.antiAlias,
-    child: Column(
-      children: [
-        for (final (i, child) in children.indexed) ...[
-          if (i > 0)
-            const Divider(height: 1, thickness: 1.5, color: NeoColors.ink),
-          child,
+    // The rows are ListTiles and InkWells, which paint their background and touch
+    // effects on the nearest Material. Without one here they would paint behind the
+    // card's own colour and be hidden.
+    child: Material(
+      type: MaterialType.transparency,
+      child: Column(
+        children: [
+          for (final (i, child) in children.indexed) ...[
+            if (i > 0)
+              const Divider(height: 1, thickness: 1.5, color: NeoColors.ink),
+            child,
+          ],
         ],
-      ],
+      ),
     ),
   );
 
