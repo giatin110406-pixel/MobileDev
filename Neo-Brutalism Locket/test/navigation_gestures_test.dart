@@ -334,11 +334,11 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final colors = [
-        NeoNavColors.pink,
-        NeoNavColors.cyan,
-        NeoNavColors.yellow,
-        NeoNavColors.orange,
-        NeoNavColors.mint,
+        NeoColors.teal,
+        NeoColors.purple,
+        NeoColors.blue,
+        NeoColors.orange,
+        NeoColors.pink,
       ];
       for (final labels in [
         ['CHỤP', 'BẠN BÈ', 'HỘP THƯ', 'LỊCH SỬ', 'TÔI'],
@@ -370,7 +370,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
           final icon = tester.widget<Icon>(find.byIcon(Icons.person));
-          // The selected icon is black on its coloured block.
+          // The selected icon is black on its solid pill.
           expect(icon.color, NeoColors.ink);
           expect(icon.size, 24);
           final pills = tester
@@ -382,7 +382,7 @@ void main() {
           );
           for (final pill in pills) {
             expect(pill.constraints!.maxWidth, 48);
-            expect(pill.constraints!.maxHeight, 34);
+            expect(pill.constraints!.maxHeight, 32);
           }
         }
       }
