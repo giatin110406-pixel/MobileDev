@@ -593,7 +593,7 @@ abstract class AppLocalizations {
   /// No description provided for @composerNoFriends.
   ///
   /// In vi, this message translates to:
-  /// **'Hãy kết bạn trước để gửi ảnh cho họ.'**
+  /// **'Chưa có bạn bè. Bài đăng sẽ vào lịch sử của bạn, và bạn vẫn có thể kết bạn bất cứ lúc nào.'**
   String get composerNoFriends;
 
   /// No description provided for @composerPickAtLeastOne.
@@ -1244,6 +1244,18 @@ abstract class AppLocalizations {
   /// **'TÔI'**
   String get tabMe;
 
+  /// No description provided for @tabContest.
+  ///
+  /// In vi, this message translates to:
+  /// **'THI ĐẤU'**
+  String get tabContest;
+
+  /// No description provided for @contestNeedsAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cuộc thi tuần cần có tài khoản. Hãy đăng nhập để tham gia.'**
+  String get contestNeedsAccount;
+
   /// No description provided for @laptopSettingsTooltip.
   ///
   /// In vi, this message translates to:
@@ -1885,6 +1897,42 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Rung khi chạm'**
   String get settingsHaptics;
+
+  /// No description provided for @settingsPrintEffect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu ứng in khi đăng'**
+  String get settingsPrintEffect;
+
+  /// No description provided for @settingsPrintEffectHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng dấu và in ảnh sau khi đăng'**
+  String get settingsPrintEffectHint;
+
+  /// No description provided for @settingsPrintSound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Âm thanh máy in khi đăng'**
+  String get settingsPrintSound;
+
+  /// No description provided for @stampApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ DUYỆT'**
+  String get stampApproved;
+
+  /// No description provided for @stampVerified.
+  ///
+  /// In vi, this message translates to:
+  /// **'XÁC THỰC'**
+  String get stampVerified;
+
+  /// No description provided for @stampTopSecret.
+  ///
+  /// In vi, this message translates to:
+  /// **'TUYỆT MẬT'**
+  String get stampTopSecret;
 
   /// No description provided for @holdToCompare.
   ///

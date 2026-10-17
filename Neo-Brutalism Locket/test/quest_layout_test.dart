@@ -123,7 +123,7 @@ void main() {
     expect(page.height, greaterThan(300));
     expect(find.text('SHOP'), findsOneWidget);
 
-    for (final tab in ['FRIENDS', 'INBOX', 'PRINTS']) {
+    for (final tab in ['FRIENDS', 'INBOX', 'CONTEST']) {
       await tester.tap(find.byTooltip(tab));
       await tester.pumpAndSettle();
       final area = tester.getSize(

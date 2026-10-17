@@ -62,6 +62,32 @@ abstract final class NeoTheme {
   );
 }
 
+/// Clips [child] to the inside of a [NeoTheme.panel] of the same [radius] and
+/// [borderWidth]. Clipping with the panel's own `clipBehavior` cuts at the outer
+/// edge, so the child's square corners cover the inner half of the border and
+/// the black outline looks chewed at the four corners; this clips at the inner
+/// edge instead.
+class NeoPanelClip extends StatelessWidget {
+  const NeoPanelClip({
+    required this.child,
+    this.radius = 8,
+    this.borderWidth = 2,
+    super.key,
+  });
+
+  final Widget child;
+  final double radius;
+  final double borderWidth;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(
+      (radius - borderWidth).clamp(0, double.infinity),
+    ),
+    child: child,
+  );
+}
+
 class NeoLabel extends StatelessWidget {
   const NeoLabel(
     this.text, {

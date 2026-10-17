@@ -336,7 +336,7 @@ void main() {
       final colors = [
         NeoColors.teal,
         NeoColors.purple,
-        NeoColors.blue,
+        NeoColors.yellow,
         NeoColors.orange,
         NeoColors.pink,
       ];
@@ -381,8 +381,8 @@ void main() {
             colors[selected],
           );
           for (final pill in pills) {
-            expect(pill.constraints!.maxWidth, 48);
-            expect(pill.constraints!.maxHeight, 32);
+            expect(pill.constraints!.maxWidth, 52);
+            expect(pill.constraints!.maxHeight, 42);
           }
         }
       }

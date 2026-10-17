@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
+import 'package:neo_brutalism_locket/features/quest/quest_art.dart';
 import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
@@ -210,10 +212,7 @@ class _QuestSheet extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  NeoLabel(
-                    quest.style.label,
-                    color: questStyleColor(quest.style),
-                  ),
+                  StyleChip(style: quest.style, text: quest.style.label),
                   const SizedBox(width: 8),
                   StreakChip(streak: store.streak),
                   const Spacer(),
@@ -242,33 +241,60 @@ class _QuestSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              // The story's own picture sits behind the text under an opaque
+              // cream-to-clear veil (an see-through fill would let the black
+              // shadow show through and turn the card muddy).
               Container(
-                padding: const EdgeInsets.all(14),
-                decoration: NeoTheme.panel(
-                  color: questStyleColor(quest.style).withValues(alpha: 0.45),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      quest.storyTitleFor(vietnamese: isVietnamese(context)),
-                      style: const TextStyle(
-                        color: NeoColors.ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                decoration: NeoTheme.panel(color: NeoColors.surface),
+                child: NeoPanelClip(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: QuestArt(questId: quest.id)),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                NeoColors.surface.withValues(alpha: 0.9),
+                                NeoColors.surface.withValues(alpha: 0.8),
+                                NeoColors.surface.withValues(alpha: 0.62),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      quest.storyFor(vietnamese: isVietnamese(context)),
-                      style: const TextStyle(
-                        color: NeoColors.ink,
-                        fontSize: 14,
-                        height: 1.45,
-                        fontWeight: FontWeight.w500,
+                      Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              quest.storyTitleFor(
+                                vietnamese: isVietnamese(context),
+                              ),
+                              style: const TextStyle(
+                                color: NeoColors.ink,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              quest.storyFor(vietnamese: isVietnamese(context)),
+                              style: const TextStyle(
+                                color: NeoColors.ink,
+                                fontSize: 14,
+                                height: 1.45,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 14),

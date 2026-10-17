@@ -14,6 +14,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
+import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
 import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
@@ -1283,6 +1284,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     }
   }
 
+  /// The archive is a page behind the camera's thumbnail, not a menu tab: it
+  /// sits after the five tabs.
+  static const _archivePage = 5;
+
   void _selectTab(int index) {
     Haptics.select();
     setState(() {
@@ -1293,7 +1298,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (index == 0) _camera?.closePrint();
     if (index != 0) _camera?.leaveQuestMode();
     if (index == 1 || index == 2) _loadSocial();
-    if (index == 3) _loadArchive();
+    if (index == _archivePage) _loadArchive();
+  }
+
+  /// Swiping moves between the five menu tabs; the archive page (opened from the
+  /// camera) is not one of them, so it is left with its back button.
+  void _swipeTab(int index) {
+    if (_tabIndex >= _archivePage) return;
+    _selectTab(index);
   }
 
   void _openPhoto(NeoPhoto photo) {
@@ -1370,13 +1382,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                 onOpenProfile: () => _openFriendProfile(_activeFriend!),
                 allowPhoto: !_online,
               ),
-      3 when _online => _buildHistoryTab(),
-      3 => ArchiveScreen(
-        key: const ValueKey('archive'),
-        photos: _photos,
-        onOpenPhoto: _openPhoto,
-        onOpenCamera: () => _selectTab(0),
-      ),
+      3 => _buildContestTab(),
+      _archivePage => _buildArchivePage(),
       _ => ProfileScreen(
         key: const ValueKey('profile'),
         store: _player,
@@ -1395,8 +1402,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         onOpenRemote: _openHistoryPost,
       ),
     };
+    final isContestTab = _tabIndex == 3;
     final scaffold = Scaffold(
-      backgroundColor: NeoColors.paper,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: [
@@ -1405,7 +1413,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               child: TabSwipeDetector(
                 tabCount: 5,
                 currentIndex: _tabIndex,
-                onSwipe: _selectTab,
+                onSwipe: _swipeTab,
                 child: Stack(
                   // Fill the area even while the camera is off-stage (size 0).
                   fit: StackFit.expand,
@@ -1424,7 +1432,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           questVerifier: _questVerifier,
                           onPhotoChanged: _onPhotoChanged,
                           onOpenFeed: _openFeed,
-                          onOpenArchive: () => _selectTab(3),
+                          onOpenArchive: () => _selectTab(_archivePage),
                           onOpenQuestSheet: _openQuestSheet,
                           onQuestPassed: _openQuestPost,
                           onSendPrint: _online ? _sendPrint : null,
@@ -1452,7 +1460,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       bottomNavigationBar: TabSwipeDetector(
         tabCount: 5,
         currentIndex: _tabIndex,
-        onSwipe: _selectTab,
+        onSwipe: _swipeTab,
         child: NeoBottomNav(
           selectedIndex: _tabIndex,
           onSelected: _selectTab,
@@ -1473,12 +1481,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               label: l10n.tabInbox,
               outlineIcon: Icons.chat_bubble_outline,
               filledIcon: Icons.chat_bubble,
-              activeColor: NeoColors.blue,
+              activeColor: NeoColors.yellow,
             ),
             NeoBottomNavTab(
-              label: _online ? l10n.historyTab : l10n.tabPrints,
-              outlineIcon: Icons.grid_view_outlined,
-              filledIcon: Icons.grid_view_rounded,
+              label: l10n.tabContest,
+              outlineIcon: Icons.emoji_events_outlined,
+              filledIcon: Icons.emoji_events,
               activeColor: NeoColors.orange,
             ),
             NeoBottomNavTab(
@@ -1491,7 +1499,30 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         ),
       ),
     );
-    return _withScopes(scaffold);
+    final body = Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 140),
+            child: isContestTab
+                ? const StarryNight(
+                    key: ValueKey('contest-bg'),
+                    child: SizedBox.expand(),
+                  )
+                // An empty ColoredBox shrinks to nothing inside the switcher's
+                // loose Stack, which left the window's black showing through.
+                : const ColoredBox(
+                    key: ValueKey('paper-bg'),
+                    color: NeoColors.paper,
+                    child: SizedBox.expand(),
+                  ),
+          ),
+        ),
+        scaffold,
+      ],
+    );
+    return _withScopes(body);
   }
 
   /// What every page of the app needs below it: where pictures come from, and the
@@ -1615,6 +1646,79 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   /// Tab 3 with an account: posts sent and received, or the prints kept on
   /// this phone.
+  /// The weekly contest as a menu tab (signed-in only: it lives on the server).
+  Widget _buildContestTab() {
+    final contest = _contestStore;
+    final canvas = _canvasRepository;
+    if (contest == null || canvas == null) {
+      return Center(
+        key: const ValueKey('contest-offline'),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            AppLocalizations.of(context).contestNeedsAccount,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      );
+    }
+    return ContestScreen(
+      key: const ValueKey('contest'),
+      store: contest,
+      canvases: canvas,
+      safety: _safety,
+      showBack: false,
+    );
+  }
+
+  /// The archive (posts and prints on this phone), opened from the camera.
+  Widget _buildArchivePage() {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      key: const ValueKey('archive'),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 10, 22, 0),
+          child: Row(
+            children: [
+              NeoIconButton(
+                icon: Icons.arrow_back,
+                tooltip: l10n.backTooltip,
+                onPressed: () => _selectTab(0),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _online ? l10n.historyTab : l10n.tabPrints,
+                  style: const TextStyle(
+                    fontFamily: NeoFont.display,
+                    color: NeoColors.ink,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _online
+              ? _buildHistoryTab()
+              : ArchiveScreen(
+                  photos: _photos,
+                  onOpenPhoto: _openPhoto,
+                  onOpenCamera: () => _selectTab(0),
+                ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildHistoryTab() {
     final l10n = AppLocalizations.of(context);
     final posts = _postsStore;

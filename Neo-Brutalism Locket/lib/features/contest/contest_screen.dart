@@ -21,9 +21,12 @@ class ContestScreen extends StatefulWidget {
     required this.store,
     required this.canvases,
     this.safety,
+    this.showBack = true,
     super.key,
   });
 
+  /// False when the screen is a menu tab, which has nowhere to go back to.
+  final bool showBack;
   final ContestStore store;
   final CanvasRepository canvases;
   final SafetyRepository? safety;
@@ -95,44 +98,46 @@ class _ContestScreenState extends State<ContestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: NeoColors.paper,
-      body: StarryNight(
-        child: SafeArea(
-          child: ListenableBuilder(
-            listenable: widget.store,
-            builder: (context, _) => Column(
+    final content = ListenableBuilder(
+      listenable: widget.store,
+      builder: (context, _) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+            child: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                  child: Row(
-                    children: [
-                      NeoIconButton(
-                        icon: Icons.arrow_back,
-                        tooltip: AppLocalizations.of(context).backTooltip,
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context).contestTitle,
-                          style: TextStyle(
-                            fontFamily: NeoFont.display,
-                            color: NeoColors.ink,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
+                if (widget.showBack) ...[
+                  NeoIconButton(
+                    icon: Icons.arrow_back,
+                    tooltip: AppLocalizations.of(context).backTooltip,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).contestTitle,
+                    style: const TextStyle(
+                      fontFamily: NeoFont.display,
+                      color: NeoColors.ink,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-                Expanded(child: _body(context)),
               ],
             ),
           ),
-        ),
+          Expanded(child: _body(context)),
+        ],
       ),
+    );
+
+    if (!widget.showBack) return content;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: StarryNight(child: SafeArea(child: content)),
     );
   }
 

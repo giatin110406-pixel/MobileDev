@@ -1,17 +1,11 @@
 import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
-
-/// Background colour of the pill for each mode.
-Color stylePillColor(StyleType style) => switch (style) {
-  StyleType.none => NeoColors.teal,
-  StyleType.pixel8bit => NeoColors.yellow,
-  StyleType.vanGogh => NeoColors.blue,
-};
 
 /// One small pill under the photo showing the current mode. Swipe it left for
 /// the next mode (NO STYLE -> 8-BIT -> VAN GOGH) and right to go back; each mode
@@ -106,7 +100,6 @@ class _StylePillState extends State<StylePill> {
               width: width,
               height: height,
               decoration: BoxDecoration(
-                color: stylePillColor(style),
                 borderRadius: BorderRadius.circular(height / 2),
                 border: Border.all(color: NeoColors.ink, width: 2),
                 boxShadow: const [
@@ -117,72 +110,84 @@ class _StylePillState extends State<StylePill> {
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  _chevron(Icons.chevron_left, visible: _hasPrevious),
-                  Expanded(
-                    child: ClipRect(
-                      child: Transform.translate(
-                        offset: Offset(_drag * 0.5, 0),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 180),
-                          transitionBuilder: (child, animation) {
-                            final incoming = child.key == ValueKey(style);
-                            final from = incoming ? _direction * 0.6 : 0.0;
-                            return SlideTransition(
-                              position: Tween(
-                                begin: Offset(from, 0),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: Column(
-                            key: ValueKey(style),
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                styleName(l10n, style),
-                                maxLines: 1,
-                                style: const TextStyle(
-                                  color: NeoColors.ink,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  for (final dot in values)
-                                    Container(
-                                      width: dot == style ? 12 : 5,
-                                      height: 5,
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: dot == style
-                                            ? NeoColors.ink
-                                            : NeoColors.ink.withValues(
-                                                alpha: 0.3,
-                                              ),
-                                        borderRadius: BorderRadius.circular(3),
+              child: NeoPanelClip(
+                radius: height / 2,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    StyleArt(style: style),
+                    Row(
+                      children: [
+                        _chevron(Icons.chevron_left, visible: _hasPrevious),
+                        Expanded(
+                          child: ClipRect(
+                            child: Transform.translate(
+                              offset: Offset(_drag * 0.5, 0),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 180),
+                                transitionBuilder: (child, animation) {
+                                  final incoming = child.key == ValueKey(style);
+                                  final from = incoming
+                                      ? _direction * 0.6
+                                      : 0.0;
+                                  return SlideTransition(
+                                    position: Tween(
+                                      begin: Offset(from, 0),
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: Column(
+                                  key: ValueKey(style),
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      styleName(l10n, style),
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        color: NeoColors.ink,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
-                                ],
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        for (final dot in values)
+                                          Container(
+                                            width: dot == style ? 12 : 5,
+                                            height: 5,
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: dot == style
+                                                  ? NeoColors.ink
+                                                  : NeoColors.ink.withValues(
+                                                      alpha: 0.3,
+                                                    ),
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                        _chevron(Icons.chevron_right, visible: _hasNext),
+                      ],
                     ),
-                  ),
-                  _chevron(Icons.chevron_right, visible: _hasNext),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

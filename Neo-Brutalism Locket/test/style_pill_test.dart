@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
+import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
 import 'package:neo_brutalism_locket/features/image_engine/original_style_engine.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
@@ -101,9 +102,12 @@ void main() {
     expect(find.text('NO STYLE'), findsNothing);
   });
 
-  test('every mode has its own colour', () {
-    final colours = StyleType.values.map(stylePillColor).toSet();
-    expect(colours.length, StyleType.values.length);
+  testWidgets('every mode has its own background picture', (tester) async {
+    for (final style in StyleType.values) {
+      await pumpPill(tester, value: style);
+      await tester.pumpAndSettle();
+      expect(tester.widget<StyleArt>(find.byType(StyleArt)).style, style);
+    }
   });
 
   test('no-style engine returns the original file untouched', () async {

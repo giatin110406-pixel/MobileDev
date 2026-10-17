@@ -63,7 +63,7 @@ class NeoBottomNav extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(left: 14, right: 18, top: 4, bottom: 8),
         child: Container(
-          height: 52,
+          height: 58,
           decoration: BoxDecoration(
             color: NeoColors.surface,
             borderRadius: BorderRadius.circular(999),
@@ -127,8 +127,8 @@ class _NeoNavItem extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeInOut,
-                  width: 48,
-                  height: 32,
+                  width: 52,
+                  height: 42,
                   decoration: BoxDecoration(
                     color: selected ? tab.activeColor : Colors.transparent,
                     borderRadius: BorderRadius.circular(999),

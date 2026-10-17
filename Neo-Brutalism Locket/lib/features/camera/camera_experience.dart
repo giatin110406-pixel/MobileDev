@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'dart:async';
 import 'dart:io';
@@ -9,10 +10,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_progress.dart';
+import 'package:neo_brutalism_locket/core/print_sound.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
+import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
+import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
 import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
@@ -98,6 +102,10 @@ class CameraTabState extends State<CameraTab> {
   bool _processing = false;
   bool _showOriginal = false;
   bool _showPrint = false;
+
+  /// The stamp the user picked for the post animation; null = the one the
+  /// post earns (see [printStampFor]).
+  PrintStamp? _stampChoice;
   double _progress = 0;
 
   // Zoom: the lens limits, the current level, and the level a pinch began at.
@@ -198,7 +206,16 @@ class CameraTabState extends State<CameraTab> {
     final send = widget.onSendPrint;
     if (send == null) return;
     final posted = await send(photo);
-    if (posted && mounted) _removeShot(photo);
+    if (!posted || !mounted) return;
+    // The post is sent; the stamp and print are only a show over it.
+    await playPrintPost(
+      context,
+      photo: photo,
+      stamp:
+          _stampChoice ??
+          printStampFor(quest: false, streak: widget.player.streak),
+    );
+    if (mounted) _removeShot(photo);
   }
 
   void _removeShot(NeoPhoto photo) {
@@ -488,7 +505,9 @@ class CameraTabState extends State<CameraTab> {
         _notify(l10n.videoTooShort);
         try {
           await File(file.path).delete();
-        } catch (_) {}
+        } catch (e, st) {
+          AppLog.warn('camera_experience', e, st);
+        }
         return;
       }
       await widget.onVideoRecorded?.call(File(file.path));
@@ -548,7 +567,9 @@ class CameraTabState extends State<CameraTab> {
       _draftId = photo.id;
       _showOriginal = true;
       _showPrint = true;
+      _stampChoice = null;
     });
+    PrintSound.warmUp();
     widget.onPhotoChanged(photo);
     _processPhoto(photo);
   }
@@ -575,7 +596,9 @@ class CameraTabState extends State<CameraTab> {
       if (_discarded.contains(photo.id)) {
         try {
           await output.file.delete();
-        } catch (_) {}
+        } catch (e, st) {
+          AppLog.warn('camera_experience', e, st);
+        }
         return;
       }
       final complete = photo.copyWith(
@@ -748,14 +771,14 @@ class CameraTabState extends State<CameraTab> {
           const SizedBox(height: 10),
           _questMode
               ? Center(
-                  child: NeoLabel(
-                    AppLocalizations.of(context).styleBadge(
+                  child: StyleChip(
+                    style: _questModeQuest!.style,
+                    text: AppLocalizations.of(context).styleBadge(
                       styleName(
                         AppLocalizations.of(context),
                         _questModeQuest!.style,
                       ),
                     ),
-                    color: questStyleColor(_questModeQuest!.style),
                     icon: Icons.lock_outline,
                   ),
                 )
@@ -893,70 +916,72 @@ class CameraTabState extends State<CameraTab> {
           borderWidth: 2,
           radius: _squareRadius,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (camera != null && camera.value.isInitialized)
-              GestureDetector(
-                onScaleStart: (_) => _zoomAtPinchStart = _zoom,
-                onScaleUpdate: (details) {
-                  if (details.pointerCount < 2) return;
-                  _setZoom(_zoomAtPinchStart * details.scale);
-                },
-                child: _squarePreview(camera),
-              )
-            else
-              _buildCameraFallback(),
-            // Only while something is going on: recording, or checking a quest
-            // photo. The viewfinder is otherwise just the picture.
-            if (_recording || _checkingQuest)
-              Positioned(
-                top: 12,
-                left: 12,
-                child: _recording
-                    ? const NeoLabel(
-                        'REC',
-                        color: NeoColors.pink,
-                        icon: Icons.circle,
-                      )
-                    : NeoLabel(
-                        AppLocalizations.of(context).checkingPhoto,
-                        color: NeoColors.yellow,
-                        icon: Icons.search,
+        child: NeoPanelClip(
+          radius: _squareRadius,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (camera != null && camera.value.isInitialized)
+                GestureDetector(
+                  onScaleStart: (_) => _zoomAtPinchStart = _zoom,
+                  onScaleUpdate: (details) {
+                    if (details.pointerCount < 2) return;
+                    _setZoom(_zoomAtPinchStart * details.scale);
+                  },
+                  child: _squarePreview(camera),
+                )
+              else
+                _buildCameraFallback(),
+              // Only while something is going on: recording, or checking a quest
+              // photo. The viewfinder is otherwise just the picture.
+              if (_recording || _checkingQuest)
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: _recording
+                      ? const NeoLabel(
+                          'REC',
+                          color: NeoColors.pink,
+                          icon: Icons.circle,
+                        )
+                      : NeoLabel(
+                          AppLocalizations.of(context).checkingPhoto,
+                          color: NeoColors.yellow,
+                          icon: Icons.search,
+                        ),
+                ),
+              if (camera != null &&
+                  camera.value.isInitialized &&
+                  zoomPresets(_minZoom, _maxZoom).length > 1)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 8,
+                  child: Center(child: _zoomButtons()),
+                ),
+              if (_countdown != null)
+                Center(
+                  child: Container(
+                    width: 96,
+                    height: 96,
+                    alignment: Alignment.center,
+                    decoration: NeoTheme.panel(
+                      color: NeoColors.yellow,
+                      radius: 999,
+                    ),
+                    child: Text(
+                      '$_countdown',
+                      style: const TextStyle(
+                        fontFamily: NeoFont.display,
+                        color: NeoColors.ink,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w900,
                       ),
-              ),
-            if (camera != null &&
-                camera.value.isInitialized &&
-                zoomPresets(_minZoom, _maxZoom).length > 1)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 8,
-                child: Center(child: _zoomButtons()),
-              ),
-            if (_countdown != null)
-              Center(
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  alignment: Alignment.center,
-                  decoration: NeoTheme.panel(
-                    color: NeoColors.yellow,
-                    radius: 999,
-                  ),
-                  child: Text(
-                    '$_countdown',
-                    style: const TextStyle(
-                      fontFamily: NeoFont.display,
-                      color: NeoColors.ink,
-                      fontSize: 44,
-                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1225,8 +1250,8 @@ class CameraTabState extends State<CameraTab> {
     ),
   );
 
+  /// The way into the archive: the same four-pane icon the menu used to show.
   Widget _recentThumb() {
-    final photo = widget.photos.isEmpty ? null : widget.photos.first;
     return Semantics(
       button: true,
       label: AppLocalizations.of(context).openArchiveLabel,
@@ -1236,17 +1261,11 @@ class CameraTabState extends State<CameraTab> {
           width: 46,
           height: 46,
           decoration: NeoTheme.panel(color: NeoColors.teal, borderWidth: 2),
-          clipBehavior: Clip.antiAlias,
-          child: photo == null
-              ? const Icon(
-                  Icons.collections_outlined,
-                  color: NeoColors.ink,
-                  size: 22,
-                )
-              : Image.file(
-                  File(photo.processedPath ?? photo.originalPath),
-                  fit: BoxFit.cover,
-                ),
+          child: const Icon(
+            Icons.grid_view_rounded,
+            color: NeoColors.ink,
+            size: 24,
+          ),
         ),
       ),
     );
@@ -1334,22 +1353,24 @@ class CameraTabState extends State<CameraTab> {
                     borderWidth: 2,
                     radius: _squareRadius,
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: BeforeAfterView(
-                    key: ValueKey('before-after-${photo.id}'),
-                    originalPath: photo.originalPath,
-                    styledPath: styledPath,
-                    styleLabel:
-                        (photo.styleType == null
-                            ? null
-                            : styleName(
-                                AppLocalizations.of(context),
-                                photo.styleType!,
-                              )) ??
-                        AppLocalizations.of(context).editLabel,
-                    showStyled: !_showOriginal,
-                    onChanged: (styled) =>
-                        setState(() => _showOriginal = !styled),
+                  child: NeoPanelClip(
+                    radius: _squareRadius,
+                    child: BeforeAfterView(
+                      key: ValueKey('before-after-${photo.id}'),
+                      originalPath: photo.originalPath,
+                      styledPath: styledPath,
+                      styleLabel:
+                          (photo.styleType == null
+                              ? null
+                              : styleName(
+                                  AppLocalizations.of(context),
+                                  photo.styleType!,
+                                )) ??
+                          AppLocalizations.of(context).editLabel,
+                      showStyled: !_showOriginal,
+                      onChanged: (styled) =>
+                          setState(() => _showOriginal = !styled),
+                    ),
                   ),
                 ),
               ),
@@ -1367,7 +1388,11 @@ class CameraTabState extends State<CameraTab> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          if (_draftMode && widget.onSendPrint != null) ...[
+            _stampPicker(),
+            const SizedBox(height: 12),
+          ],
           if (photo.status == ProcessingStatus.failed &&
               photo.failureReason != null) ...[
             Text(
@@ -1458,6 +1483,13 @@ class CameraTabState extends State<CameraTab> {
       ),
     );
   }
+
+  Widget _stampPicker() => StampPicker(
+    selected:
+        _stampChoice ??
+        printStampFor(quest: false, streak: widget.player.streak),
+    onChanged: (stamp) => setState(() => _stampChoice = stamp),
+  );
 
   Widget _statusBadge(NeoPhoto photo) => switch (photo.status) {
     ProcessingStatus.pending => NeoLabel(

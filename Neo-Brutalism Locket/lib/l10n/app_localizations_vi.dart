@@ -272,7 +272,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get composerSend => 'GỬI';
 
   @override
-  String get composerNoFriends => 'Hãy kết bạn trước để gửi ảnh cho họ.';
+  String get composerNoFriends =>
+      'Chưa có bạn bè. Bài đăng sẽ vào lịch sử của bạn, và bạn vẫn có thể kết bạn bất cứ lúc nào.';
 
   @override
   String get composerPickAtLeastOne => 'Chọn ít nhất một người nhận.';
@@ -640,6 +641,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get tabMe => 'TÔI';
 
   @override
+  String get tabContest => 'THI ĐẤU';
+
+  @override
+  String get contestNeedsAccount =>
+      'Cuộc thi tuần cần có tài khoản. Hãy đăng nhập để tham gia.';
+
+  @override
   String get laptopSettingsTooltip => 'Cài đặt laptop ở nhà';
 
   @override
@@ -998,6 +1006,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsHaptics => 'Rung khi chạm';
+
+  @override
+  String get settingsPrintEffect => 'Hiệu ứng in khi đăng';
+
+  @override
+  String get settingsPrintEffectHint => 'Đóng dấu và in ảnh sau khi đăng';
+
+  @override
+  String get settingsPrintSound => 'Âm thanh máy in khi đăng';
+
+  @override
+  String get stampApproved => 'ĐÃ DUYỆT';
+
+  @override
+  String get stampVerified => 'XÁC THỰC';
+
+  @override
+  String get stampTopSecret => 'TUYỆT MẬT';
 
   @override
   String get holdToCompare => 'GIỮ ĐỂ SO SÁNH';

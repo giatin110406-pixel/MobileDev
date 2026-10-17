@@ -22,3 +22,7 @@ https://opengameart.org/content/4-chiptunes-adventure
 | chiptune_stage_1.m4a | 1. Stage 1 |
 | chiptune_stage_2.m4a | 2. Stage 2 |
 | chiptune_stage_select.m4a | 4. Stage Select |
+
+## Print sounds (assets/sfx)
+
+`printer.wav` and `stamp.wav` are synthesised from noise and sine waves by `tools/gen_print_sounds.py`; there is nothing to license.

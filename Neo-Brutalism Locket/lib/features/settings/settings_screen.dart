@@ -144,6 +144,28 @@ class SettingsScreen extends StatelessWidget {
                       horizontal: 14,
                       vertical: 6,
                     ),
+                    child: NeoSwitch(
+                      value: settings.printEffectEnabled,
+                      label: l10n.settingsPrintEffect,
+                      onChanged: settings.setPrintEffect,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    child: NeoSwitch(
+                      value: settings.printSoundEnabled,
+                      label: l10n.settingsPrintSound,
+                      onChanged: settings.setPrintSound,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
