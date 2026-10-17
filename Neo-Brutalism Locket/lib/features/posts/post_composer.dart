@@ -108,7 +108,8 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
   }
 
   void _send() {
-    if (_selected.isEmpty) return;
+    // With no friends yet there is nobody to pick: it is posted to the history.
+    if (widget.friends.isNotEmpty && _selected.isEmpty) return;
     Navigator.of(context).pop(
       ComposerResult(
         caption: _caption.text.trim(),
@@ -270,7 +271,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
                   : l10n.composerSendToSome(_selected.length),
               icon: Icons.send_rounded,
               variant: NeoButtonVariant.primary,
-              onPressed: noFriends || _selected.isEmpty ? null : _send,
+              onPressed: !noFriends && _selected.isEmpty ? null : _send,
             ),
           ],
         ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
+import 'package:neo_brutalism_locket/core/print_sound.dart';
+import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Choices that belong to the phone, not the account: the language and
@@ -10,6 +12,8 @@ class AppSettings extends ChangeNotifier {
   static const _localeKey = 'app_locale';
   static const _hapticsKey = 'haptics_enabled';
   static const _directKey = 'haptics_direct';
+  static const _printEffectKey = 'print_effect';
+  static const _printSoundKey = 'print_sound';
 
   /// The languages the app speaks.
   static const supported = [Locale('vi'), Locale('en')];
@@ -17,6 +21,8 @@ class AppSettings extends ChangeNotifier {
   Locale? _locale;
   bool _haptics = true;
   bool _direct = false;
+  bool _printEffect = true;
+  bool _printSound = true;
 
   /// The chosen language, or null to follow the phone.
   Locale? get locale => _locale;
@@ -28,6 +34,12 @@ class AppSettings extends ChangeNotifier {
   /// "touch vibration" setting says.
   bool get hapticsDirect => _direct;
 
+  /// Whether posting plays the stamp-and-print animation.
+  bool get printEffectEnabled => _printEffect;
+
+  /// Whether the print animation makes its printer and stamp sounds.
+  bool get printSoundEnabled => _printSound;
+
   /// Reads what was saved last time.
   Future<void> load() async {
     try {
@@ -35,11 +47,17 @@ class AppSettings extends ChangeNotifier {
       _locale = parseLocale(preferences.getString(_localeKey));
       _haptics = preferences.getBool(_hapticsKey) ?? true;
       _direct = preferences.getBool(_directKey) ?? false;
+      _printEffect = preferences.getBool(_printEffectKey) ?? true;
+      _printSound = preferences.getBool(_printSoundKey) ?? true;
     } catch (_) {
       _locale = null;
       _haptics = true;
       _direct = false;
+      _printEffect = true;
+      _printSound = true;
     }
+    PrintEffect.enabled = _printEffect;
+    PrintSound.enabled = _printSound;
     Haptics.enabled = _haptics;
     Haptics.direct = _direct;
     notifyListeners();
@@ -68,6 +86,30 @@ class AppSettings extends ChangeNotifier {
     try {
       final preferences = await SharedPreferences.getInstance();
       await preferences.setBool(_hapticsKey, enabled);
+    } catch (_) {
+      // The choice still applies until the app closes.
+    }
+  }
+
+  Future<void> setPrintEffect(bool enabled) async {
+    _printEffect = enabled;
+    PrintEffect.enabled = enabled;
+    notifyListeners();
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setBool(_printEffectKey, enabled);
+    } catch (_) {
+      // The choice still applies until the app closes.
+    }
+  }
+
+  Future<void> setPrintSound(bool enabled) async {
+    _printSound = enabled;
+    PrintSound.enabled = enabled;
+    notifyListeners();
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setBool(_printSoundKey, enabled);
     } catch (_) {
       // The choice still applies until the app closes.
     }

@@ -85,9 +85,12 @@ flutter:
     - assets/models/magenta_style_predict.tflite
     - assets/models/magenta_style_transform.tflite
     - assets/models/blaze_face_short_range.tflite
+    - assets/models/face_landmark.tflite
+    - assets/models/selfie_segmentation.tflite
     - assets/quest_model/
     - assets/styles/van_gogh_starry_night.jpg
     - assets/music/
+    - assets/sfx/
 
   # Heading font (Space Grotesk) and body font (Public Sans), both SIL OFL.
   # Bundled so the app never needs the network to draw its text.

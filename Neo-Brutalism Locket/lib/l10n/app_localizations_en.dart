@@ -275,7 +275,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get composerSend => 'SEND';
 
   @override
-  String get composerNoFriends => 'Add friends first to send them photos.';
+  String get composerNoFriends =>
+      'No friends yet. Your post goes to your history, and you can still add friends any time.';
 
   @override
   String get composerPickAtLeastOne => 'Pick at least one friend.';
@@ -644,6 +645,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabMe => 'ME';
 
   @override
+  String get tabContest => 'CONTEST';
+
+  @override
+  String get contestNeedsAccount =>
+      'The weekly contest needs an account. Sign in to join it.';
+
+  @override
   String get laptopSettingsTooltip => 'Home laptop settings';
 
   @override
@@ -1001,6 +1009,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsHaptics => 'Vibrate on taps';
+
+  @override
+  String get settingsPrintEffect => 'Print effect when posting';
+
+  @override
+  String get settingsPrintEffectHint =>
+      'Stamp and print animation after you post';
+
+  @override
+  String get settingsPrintSound => 'Printer sounds when posting';
+
+  @override
+  String get stampApproved => 'APPROVED';
+
+  @override
+  String get stampVerified => 'VERIFIED';
+
+  @override
+  String get stampTopSecret => 'TOP SECRET';
 
   @override
   String get holdToCompare => 'HOLD TO COMPARE';

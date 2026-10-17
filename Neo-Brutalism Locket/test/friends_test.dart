@@ -679,6 +679,17 @@ void main() {
       expect(interactions.deleted, ['mine-1']);
     });
 
+    testWidgets('every tab sits on the paper colour, edge to edge', (
+      tester,
+    ) async {
+      await pumpShell(tester, FakeFriends(friends: [bo]));
+      await tester.pumpAndSettle();
+      final screen = tester.getSize(find.byType(MaterialApp));
+      final paper = find.byKey(const ValueKey('paper-bg'));
+      expect(paper, findsOneWidget);
+      expect(tester.getSize(paper), screen);
+    });
+
     testWidgets('the history tab opens the tapped post in the viewer', (
       tester,
     ) async {
@@ -699,7 +710,7 @@ void main() {
         createdAt: DateTime(2026, 1, 1),
       );
       await pumpShell(tester, FakeFriends(friends: [bo]), feed: [newer, older]);
-      await tester.tap(find.byTooltip('HISTORY'));
+      await tester.tap(find.bySemanticsLabel('Open archive'));
       await tester.pumpAndSettle();
       expect(find.byType(RemoteImage), findsNWidgets(2));
       expect(find.text('JANUARY 2026'), findsOneWidget);

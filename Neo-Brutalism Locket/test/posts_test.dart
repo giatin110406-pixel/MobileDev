@@ -463,15 +463,14 @@ void main() {
       expect(find.byType(PostComposerScreen), findsOneWidget);
     });
 
-    testWidgets('with no friends there is nobody to send to', (tester) async {
+    testWidgets('with no friends it can still be posted', (tester) async {
       final result = await run(tester, () async {
-        expect(
-          find.text('Add friends first to send them photos.'),
-          findsOneWidget,
-        );
-        await tester.tap(find.byIcon(Icons.send_rounded), warnIfMissed: false);
+        expect(find.textContaining('No friends yet.'), findsOneWidget);
+        await tester.enterText(find.byType(TextField), 'solo');
+        await tester.tap(find.byIcon(Icons.send_rounded));
       }, list: const []);
-      expect(result, isNull);
+      expect(result?.caption, 'solo');
+      expect(result?.recipients, isNull, reason: 'null = everyone, later too');
     });
 
     testWidgets('captions stop at 80 characters', (tester) async {

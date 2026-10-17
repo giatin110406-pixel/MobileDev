@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
@@ -143,6 +144,12 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
         photoId: _photo.id,
         imagePath: _photo.processedPath!,
         caption: _caption.text,
+      );
+      if (!mounted) return;
+      await playPrintPost(
+        context,
+        photo: _photo,
+        stamp: printStampFor(quest: true, streak: widget.store.streak),
       );
       if (!mounted) return;
       await _showReward(reward);
