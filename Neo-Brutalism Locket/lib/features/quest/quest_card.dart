@@ -22,7 +22,7 @@ QuestStatus questStatusOf(PlayerStore store) {
 }
 
 Color questStyleColor(StyleType style) =>
-    style == StyleType.vanGogh ? NeoColors.yellow : NeoColors.teal;
+    style == StyleType.vanGogh ? NeoColors.green : NeoColors.coral;
 
 /// One line on the camera screen: today's subject and how it is going. Tap it
 /// for the story and the start button.
@@ -50,7 +50,7 @@ class QuestStrip extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(6, 6, 10, 6),
           decoration: NeoTheme.panel(
             color: status == QuestStatus.done
-                ? NeoColors.teal
+                ? NeoColors.green
                 : NeoColors.surface,
           ),
           child: Row(
@@ -114,7 +114,7 @@ class QuestStrip extends StatelessWidget {
                 ),
                 QuestStatus.passed => NeoLabel(
                   AppLocalizations.of(context).qsPostNow,
-                  color: NeoColors.pink,
+                  color: NeoColors.coral,
                 ),
                 QuestStatus.outOfTries => NeoLabel(
                   AppLocalizations.of(context).qsOutOfTries,
@@ -148,7 +148,7 @@ class AttemptDots extends StatelessWidget {
             height: 12,
             margin: const EdgeInsets.only(left: 4),
             decoration: BoxDecoration(
-              color: i < left ? NeoColors.pink : NeoColors.switchOff,
+              color: i < left ? NeoColors.coral : NeoColors.switchOff,
               border: Border.all(color: NeoColors.ink, width: 2),
               shape: BoxShape.circle,
             ),

@@ -267,14 +267,14 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      NeoLabel('$count', color: NeoColors.purple),
+                      NeoLabel('$count', color: NeoColors.green),
                     ],
                   ),
                   const SizedBox(height: 12),
                   if (count == 0)
                     Container(
                       padding: const EdgeInsets.all(18),
-                      decoration: NeoTheme.panel(color: NeoColors.blue),
+                      decoration: NeoTheme.panel(color: NeoColors.green),
                       child: Text(
                         AppLocalizations.of(context).questsNoneYet,
                         style: const TextStyle(
@@ -371,14 +371,14 @@ class FriendProfileScreen extends StatelessWidget {
                       NeoIconButton(
                         icon: Icons.arrow_back,
                         tooltip: AppLocalizations.of(context).backTooltip,
-                        fill: NeoColors.yellow,
+                        fill: NeoColors.green,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const Spacer(),
                       if (friend.isSample)
                         NeoLabel(
                           AppLocalizations.of(context).sampleLabel,
-                          color: NeoColors.teal,
+                          color: NeoColors.green,
                         ),
                       if (onBlock != null || onReport != null)
                         PopupMenuButton<String>(
@@ -451,7 +451,7 @@ class FriendProfileScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      NeoLabel('${posts.length}', color: NeoColors.purple),
+                      NeoLabel('${posts.length}', color: NeoColors.green),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -532,8 +532,8 @@ class _Tile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   color: style == StyleType.vanGogh
-                      ? NeoColors.yellow
-                      : NeoColors.teal,
+                      ? NeoColors.green
+                      : NeoColors.green,
                   border: Border.all(color: NeoColors.ink, width: 1.5),
                   borderRadius: BorderRadius.circular(999),
                 ),

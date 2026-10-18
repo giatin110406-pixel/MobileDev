@@ -488,7 +488,7 @@ class _PlainBanner extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = NeoColors.yellow);
-    final stripe = Paint()..color = NeoColors.orange.withValues(alpha: 0.55);
+    final stripe = Paint()..color = NeoColors.coral.withValues(alpha: 0.55);
     for (var x = -size.height; x < size.width; x += 28) {
       canvas.drawPath(
         Path()

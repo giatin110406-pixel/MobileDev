@@ -144,7 +144,7 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
                 child: IgnorePointer(
                   child: NeoLabel(
                     AppLocalizations.of(context).holdToCompare,
-                    color: NeoColors.yellow,
+                    color: NeoColors.green,
                     icon: Icons.touch_app_outlined,
                   ),
                 ),
@@ -157,7 +157,7 @@ class _BeforeAfterViewState extends State<BeforeAfterView> {
                   onStyled
                       ? widget.styleLabel
                       : AppLocalizations.of(context).originalLabel,
-                  color: onStyled ? NeoColors.teal : NeoColors.surface,
+                  color: onStyled ? NeoColors.green : NeoColors.surface,
                 ),
               ),
             ),

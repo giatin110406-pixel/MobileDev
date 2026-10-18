@@ -265,7 +265,7 @@ class _Banner extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       padding: const EdgeInsets.all(10),
-      decoration: NeoTheme.panel(color: NeoColors.orange, borderWidth: 2),
+      decoration: NeoTheme.panel(color: NeoColors.coral, borderWidth: 2),
       child: Row(
         children: [
           Expanded(

@@ -100,7 +100,7 @@ class RequestsSection extends StatelessWidget {
             ),
             NeoLabel(
               '${incoming.length + outgoing.length}',
-              color: NeoColors.pink,
+              color: NeoColors.coral,
             ),
           ],
         ),
@@ -109,7 +109,7 @@ class RequestsSection extends StatelessWidget {
           _RequestTile(
             request: request,
             caption: l10n.friendsIncoming,
-            color: NeoColors.yellow,
+            color: NeoColors.green,
             actions: [
               NeoButton(
                 label: l10n.friendsAccept,

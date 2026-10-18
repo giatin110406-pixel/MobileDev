@@ -122,13 +122,13 @@ class _RemoteImageState extends State<RemoteImage> {
   Widget get _background {
     final preview = widget.previewPath;
     if (preview == null || preview == widget.path) {
-      return const ColoredBox(color: Color(0xFFE8E0D4));
+      return const ColoredBox(color: Color(0xFFE5E5E5));
     }
     return RemoteImage(
       path: preview,
       bucket: widget.bucket,
       fit: widget.fit,
-      placeholder: const ColoredBox(color: Color(0xFFE8E0D4)),
+      placeholder: const ColoredBox(color: Color(0xFFE5E5E5)),
     );
   }
 
@@ -144,7 +144,7 @@ class _RemoteImageState extends State<RemoteImage> {
               height: 28,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                color: Color(0xFF1A1A1A),
+                color: Color(0xFF000000),
               ),
             ),
           ),
@@ -174,9 +174,9 @@ class _RemoteImageState extends State<RemoteImage> {
     tooltip: AppLocalizations.of(context).retryTooltip,
     onPressed: _retry,
     style: IconButton.styleFrom(
-      backgroundColor: const Color(0xFFFDF2E9),
-      foregroundColor: const Color(0xFF1A1A1A),
-      side: const BorderSide(color: Color(0xFF1A1A1A), width: 2),
+      backgroundColor: const Color(0xFFFFFDF5),
+      foregroundColor: const Color(0xFF000000),
+      side: const BorderSide(color: Color(0xFF000000), width: 2),
     ),
     icon: const Icon(Icons.refresh),
   );

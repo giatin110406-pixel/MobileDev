@@ -10,21 +10,21 @@ import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.
 /// The colours of the exhibition hall: the app's own palette, flat, with black
 /// outlines.
 abstract final class CorridorColors {
-  static const ink = Color(0xFF1A1A1A);
-  static const wall = Color(0xFF4ECDC4); // teal
-  static const wallFar = Color(0xFF3DAFA7);
-  static const trim = Color(0xFFFFE66D); // skirting and crown moulding
-  static const ceiling = Color(0xFFFDF2E9);
-  static const floor = Color(0xFFECE6C2); // paper
-  static const floorAlt = Color(0xFFD9D2A6);
+  static const ink = Color(0xFF000000);
+  static const wall = Color(0xFFFFD23F); // yellow
+  static const wallFar = Color(0xFFE5B52E);
+  static const trim = Color(0xFFFF6B6B); // skirting and crown moulding
+  static const ceiling = Color(0xFFFFFDF5);
+  static const floor = Color(0xFFFFFDF5); // paper
+  static const floorAlt = Color(0xFFECE8DA);
   static const runner = Color(0xFFFF6B6B);
-  static const runnerBorder = Color(0xFF1A1A1A);
-  static const runnerMotif = Color(0xFFFFE66D);
-  static const blankCanvas = Color(0xFFFDF2E9);
-  static const frame = Color(0xFF1A1A1A);
-  static const mat = Color(0xFFFDF2E9);
-  static const light = Color(0xFFFFE66D);
-  static const doorLeaf = Color(0xFFF7A072); // orange
+  static const runnerBorder = Color(0xFF000000);
+  static const runnerMotif = Color(0xFFFFD23F);
+  static const blankCanvas = Color(0xFFFFFDF5);
+  static const frame = Color(0xFF000000);
+  static const mat = Color(0xFFFFFDF5);
+  static const light = Color(0xFFFFD23F);
+  static const doorLeaf = Color(0xFFFF6B6B); // coral
 }
 
 /// The colours of one hall: the Gallery and the Hall of Fame look different.
@@ -100,11 +100,11 @@ class FrameDecor {
 }
 
 const _frameLooks = [
-  FrameDecor(frame: Color(0xFF1A1A1A)), // ink
-  FrameDecor(frame: Color(0xFFFFE66D)), // yellow
-  FrameDecor(frame: Color(0xFFFF6B6B)), // pink
-  FrameDecor(frame: Color(0xFFA388EE)), // purple
-  FrameDecor(frame: Color(0xFFF7A072)), // orange
+  FrameDecor(frame: Color(0xFF000000)), // ink
+  FrameDecor(frame: Color(0xFFFFD23F)), // yellow
+  FrameDecor(frame: Color(0xFFFF6B6B)), // coral
+  FrameDecor(frame: Color(0xFFFFFDF5)), // off-white
+  FrameDecor(frame: Color(0xFFFFD23F)), // yellow
 ];
 
 /// The colour and mat of a Gallery frame, from the number the layout gave it.

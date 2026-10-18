@@ -109,7 +109,7 @@ class FriendsScreen extends StatelessWidget {
               ),
               NeoLabel(
                 AppLocalizations.of(context).peopleCount(friends.length),
-                color: NeoColors.yellow,
+                color: NeoColors.green,
               ),
             ],
           ),
@@ -131,7 +131,7 @@ class FriendsScreen extends StatelessWidget {
                     ? (onlineLabel ??
                           AppLocalizations.of(context).friendsOnline)
                     : AppLocalizations.of(context).localMode,
-                color: NeoColors.teal,
+                color: NeoColors.green,
                 icon: online ? Icons.cloud_done_outlined : Icons.lock_outline,
               ),
             ],
@@ -185,7 +185,7 @@ class FriendsScreen extends StatelessWidget {
       .length;
 
   Widget _emptyFriends(BuildContext context) => Container(
-    decoration: NeoTheme.panel(color: NeoColors.blue),
+    decoration: NeoTheme.panel(color: NeoColors.green),
     padding: const EdgeInsets.all(24),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -287,7 +287,7 @@ class InboxScreen extends StatelessWidget {
               ),
               NeoLabel(
                 AppLocalizations.of(context).deviceOnly,
-                color: NeoColors.pink,
+                color: NeoColors.coral,
               ),
             ],
           ),
@@ -297,7 +297,7 @@ class InboxScreen extends StatelessWidget {
                 ? Center(
                     child: NeoLabel(
                       AppLocalizations.of(context).addFriendToStart,
-                      color: NeoColors.yellow,
+                      color: NeoColors.green,
                     ),
                   )
                 : ListView.separated(
@@ -423,7 +423,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               NeoIconButton(
                 icon: Icons.arrow_back,
                 tooltip: AppLocalizations.of(context).backToInboxTooltip,
-                fill: NeoColors.yellow,
+                fill: NeoColors.green,
                 onPressed: widget.onBack,
               ),
               const SizedBox(width: 12),
@@ -476,7 +476,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               NeoIconButton(
                 icon: Icons.person_remove_alt_1,
                 tooltip: AppLocalizations.of(context).removeFriendTooltip,
-                fill: NeoColors.pink,
+                fill: NeoColors.coral,
                 onPressed: widget.onRemoveFriend,
               ),
             ],
@@ -493,7 +493,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: NeoLabel(
                   AppLocalizations.of(context).localThread,
-                  color: NeoColors.teal,
+                  color: NeoColors.green,
                 ),
               ),
               const Expanded(
@@ -512,7 +512,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       AppLocalizations.of(
                         context,
                       ).sayHelloTo(widget.friend.name.toUpperCase()),
-                      color: NeoColors.yellow,
+                      color: NeoColors.green,
                     ),
                   ),
                 )
@@ -550,7 +550,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               NeoIconButton(
                 icon: Icons.add_photo_alternate_outlined,
                 tooltip: AppLocalizations.of(context).sendLatestPrintTooltip,
-                fill: NeoColors.purple,
+                fill: NeoColors.green,
                 onPressed: widget.onSendLatestPhoto,
               ),
               const SizedBox(width: 10),
@@ -599,7 +599,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
             NeoIconButton(
               icon: Icons.send_rounded,
               tooltip: AppLocalizations.of(context).sendMessageTooltip,
-              fill: NeoColors.teal,
+              fill: NeoColors.green,
               onPressed: _sending ? null : _send,
             ),
           ],
@@ -625,7 +625,7 @@ class _MessageBubble extends StatelessWidget {
     final alignment = message.isMine
         ? CrossAxisAlignment.end
         : CrossAxisAlignment.start;
-    final bubbleColor = message.isMine ? NeoColors.teal : NeoColors.surface;
+    final bubbleColor = message.isMine ? NeoColors.green : NeoColors.surface;
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
@@ -875,7 +875,7 @@ class _FriendTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: NeoTheme.panel(
-            color: unreadCount > 0 ? NeoColors.yellow : NeoColors.surface,
+            color: unreadCount > 0 ? NeoColors.green : NeoColors.surface,
             borderWidth: 2,
           ),
           child: Row(
@@ -905,7 +905,7 @@ class _FriendTile extends StatelessWidget {
                             padding: const EdgeInsets.only(left: 6),
                             child: NeoLabel(
                               AppLocalizations.of(context).sampleLabel,
-                              color: NeoColors.pink,
+                              color: NeoColors.coral,
                             ),
                           ),
                       ],
@@ -928,7 +928,7 @@ class _FriendTile extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               if (unreadCount > 0)
-                NeoLabel('$unreadCount', color: NeoColors.teal)
+                NeoLabel('$unreadCount', color: NeoColors.green)
               else
                 const Icon(
                   Icons.photo_camera_outlined,
@@ -1007,7 +1007,7 @@ class _SocialMasthead extends StatelessWidget {
           height: 42,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: NeoColors.pink,
+              color: NeoColors.coral,
               border: Border.fromBorderSide(
                 BorderSide(color: NeoColors.ink, width: 2),
               ),
@@ -1047,7 +1047,7 @@ class _SocialMasthead extends StatelessWidget {
         ),
         NeoLabel(
           AppLocalizations.of(context).localLabel,
-          color: NeoColors.teal,
+          color: NeoColors.green,
           icon: Icons.lock_outline,
         ),
       ],
@@ -1121,7 +1121,7 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
               const SizedBox(height: 5),
               NeoLabel(
                 AppLocalizations.of(context).localProfileOnly,
-                color: NeoColors.yellow,
+                color: NeoColors.green,
               ),
               const SizedBox(height: 20),
               _fieldLabel(AppLocalizations.of(context).displayNameLabel),

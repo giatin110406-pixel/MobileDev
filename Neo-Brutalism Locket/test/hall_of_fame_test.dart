@@ -76,10 +76,10 @@ class FakeExporter implements EntryExporter {
 
 void main() {
   group('the podium colours', () {
-    test('the pedestals are yellow, blue and orange by rank', () {
-      expect(hallFrameColor(1), const Color(0xFFFFE66D));
-      expect(hallFrameColor(2), const Color(0xFF45B7D1));
-      expect(hallFrameColor(3), const Color(0xFFF7A072));
+    test('the pedestals are gold, off-white and coral by rank', () {
+      expect(hallFrameColor(1), const Color(0xFFFFD23F));
+      expect(hallFrameColor(2), const Color(0xFFFFFDF5));
+      expect(hallFrameColor(3), const Color(0xFFFF6B6B));
       expect(hallFrameColor(null), hallFrameColor(3));
     });
   });

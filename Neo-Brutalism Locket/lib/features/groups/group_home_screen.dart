@@ -255,7 +255,7 @@ class _Tab extends StatelessWidget {
         child: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: selected ? NeoColors.teal : NeoColors.surface,
+            color: selected ? NeoColors.green : NeoColors.surface,
             border: Border.all(color: NeoColors.ink, width: 2),
             borderRadius: BorderRadius.circular(8),
           ),

@@ -11,7 +11,7 @@ class NeoProgress extends StatefulWidget {
   const NeoProgress({
     this.value,
     this.label,
-    this.color = NeoColors.teal,
+    this.color = NeoColors.green,
     this.showPercent = true,
     this.height = 16,
     super.key,

@@ -383,7 +383,7 @@ class StampPicker extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: NeoTheme.panel(
                     color: stamp == selected
-                        ? NeoColors.yellow
+                        ? NeoColors.green
                         : NeoColors.surface,
                   ),
                   child: FittedBox(

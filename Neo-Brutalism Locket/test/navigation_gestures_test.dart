@@ -334,11 +334,11 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final colors = [
-        NeoColors.teal,
-        NeoColors.purple,
-        NeoColors.yellow,
-        NeoColors.orange,
-        NeoColors.pink,
+        NeoColors.green,
+        NeoColors.green,
+        NeoColors.green,
+        NeoColors.coral,
+        NeoColors.coral,
       ];
       for (final labels in [
         ['CHỤP', 'BẠN BÈ', 'HỘP THƯ', 'LỊCH SỬ', 'TÔI'],

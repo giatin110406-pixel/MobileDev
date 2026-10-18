@@ -724,7 +724,7 @@ class CameraTabState extends State<CameraTab> {
               NeoIconButton(
                 icon: Icons.dns_outlined,
                 tooltip: AppLocalizations.of(context).laptopSettingsTooltip,
-                fill: NeoColors.teal,
+                fill: NeoColors.green,
                 onPressed: () => showServerSettingsSheet(context),
               ),
               NeoIconButton(
@@ -732,7 +732,7 @@ class CameraTabState extends State<CameraTab> {
                     ? Icons.flash_off
                     : Icons.flash_on,
                 tooltip: AppLocalizations.of(context).flashTooltip,
-                fill: NeoColors.yellow,
+                fill: NeoColors.green,
                 onPressed: _toggleFlash,
               ),
               NeoIconButton(
@@ -748,7 +748,7 @@ class CameraTabState extends State<CameraTab> {
                       ).timerSeconds(_shotTimer.seconds),
                 fill: _shotTimer == ShotTimer.off
                     ? NeoColors.surface
-                    : NeoColors.orange,
+                    : NeoColors.coral,
                 onPressed: _countdown != null || _recording
                     ? null
                     : () => setState(() => _shotTimer = _shotTimer.next),
@@ -941,12 +941,12 @@ class CameraTabState extends State<CameraTab> {
                   child: _recording
                       ? const NeoLabel(
                           'REC',
-                          color: NeoColors.pink,
+                          color: NeoColors.coral,
                           icon: Icons.circle,
                         )
                       : NeoLabel(
                           AppLocalizations.of(context).checkingPhoto,
-                          color: NeoColors.yellow,
+                          color: NeoColors.green,
                           icon: Icons.search,
                         ),
                 ),
@@ -966,7 +966,7 @@ class CameraTabState extends State<CameraTab> {
                     height: 96,
                     alignment: Alignment.center,
                     decoration: NeoTheme.panel(
-                      color: NeoColors.yellow,
+                      color: NeoColors.green,
                       radius: 999,
                     ),
                     child: Text(
@@ -1025,7 +1025,7 @@ class CameraTabState extends State<CameraTab> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: level == nearest
-                            ? NeoColors.yellow
+                            ? NeoColors.green
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(999),
                       ),
@@ -1066,7 +1066,7 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildCameraFallback() {
     return ColoredBox(
-      color: NeoColors.blue,
+      color: NeoColors.green,
       child: Center(
         // Scales down when the square is short (small phones, quest strip).
         child: FittedBox(
@@ -1081,7 +1081,7 @@ class CameraTabState extends State<CameraTab> {
                   height: 82,
                   alignment: Alignment.center,
                   decoration: NeoTheme.panel(
-                    color: NeoColors.yellow,
+                    color: NeoColors.green,
                     borderWidth: 2,
                     radius: 999,
                   ),
@@ -1150,7 +1150,7 @@ class CameraTabState extends State<CameraTab> {
                     icon: Icons.add_photo_alternate_outlined,
                     tooltip: AppLocalizations.of(context).uploadPhotoTooltip,
                     onPressed: _processing ? null : _uploadFromGallery,
-                    fill: NeoColors.pink,
+                    fill: NeoColors.coral,
                   ),
                 ],
               ],
@@ -1165,7 +1165,7 @@ class CameraTabState extends State<CameraTab> {
               icon: Icons.flip_camera_ios_outlined,
               tooltip: AppLocalizations.of(context).switchCameraTooltip,
               onPressed: _flipCamera,
-              fill: NeoColors.purple,
+              fill: NeoColors.green,
             ),
           ),
         ),
@@ -1219,7 +1219,7 @@ class CameraTabState extends State<CameraTab> {
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: _recording ? NeoColors.pink : NeoColors.yellow,
+            color: _recording ? NeoColors.coral : NeoColors.green,
             shape: BoxShape.circle,
             border: Border.all(color: NeoColors.surface, width: 2),
           ),
@@ -1260,7 +1260,7 @@ class CameraTabState extends State<CameraTab> {
         child: Container(
           width: 46,
           height: 46,
-          decoration: NeoTheme.panel(color: NeoColors.teal, borderWidth: 2),
+          decoration: NeoTheme.panel(color: NeoColors.green, borderWidth: 2),
           child: const Icon(
             Icons.grid_view_rounded,
             color: NeoColors.ink,
@@ -1298,7 +1298,7 @@ class CameraTabState extends State<CameraTab> {
                 onPressed: _draftMode
                     ? () => _discardPrint(photo)
                     : () => setState(() => _showPrint = false),
-                fill: NeoColors.yellow,
+                fill: NeoColors.green,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1494,17 +1494,17 @@ class CameraTabState extends State<CameraTab> {
   Widget _statusBadge(NeoPhoto photo) => switch (photo.status) {
     ProcessingStatus.pending => NeoLabel(
       AppLocalizations.of(context).statusInking,
-      color: NeoColors.yellow,
+      color: NeoColors.green,
       icon: Icons.hourglass_top,
     ),
     ProcessingStatus.done => NeoLabel(
       AppLocalizations.of(context).statusReady,
-      color: NeoColors.teal,
+      color: NeoColors.green,
       icon: Icons.check,
     ),
     ProcessingStatus.failed => NeoLabel(
       AppLocalizations.of(context).statusOriginalSafe,
-      color: NeoColors.pink,
+      color: NeoColors.coral,
       icon: Icons.warning_amber_rounded,
     ),
   };

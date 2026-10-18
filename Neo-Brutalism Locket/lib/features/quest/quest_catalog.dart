@@ -657,13 +657,13 @@ Quest questForDay(int seed, int day, {List<Quest> catalog = questCatalog}) {
 /// Fisher-Yates with a small fixed PRNG (mulberry32), so the order is the same
 /// on every platform and Dart version.
 List<int> _shuffled(int seed, int cycle, int n) {
-  var state = (seed ^ (cycle * 0x9E3779B1)) & 0xFFFFFFFF;
+  var state = (seed ^ (cycle * 0x9E3779B1)) & 0xFFFFFDF5;
   int next(int bound) {
-    state = (state + 0x6D2B79F5) & 0xFFFFFFFF;
+    state = (state + 0x6D2B79F5) & 0xFFFFFDF5;
     var t = state;
-    t = ((t ^ (t >> 15)) * (t | 1)) & 0xFFFFFFFF;
-    t ^= (t + (((t ^ (t >> 7)) * (t | 61)) & 0xFFFFFFFF)) & 0xFFFFFFFF;
-    return ((t ^ (t >> 14)) & 0xFFFFFFFF) % bound;
+    t = ((t ^ (t >> 15)) * (t | 1)) & 0xFFFFFDF5;
+    t ^= (t + (((t ^ (t >> 7)) * (t | 61)) & 0xFFFFFDF5)) & 0xFFFFFDF5;
+    return ((t ^ (t >> 14)) & 0xFFFFFDF5) % bound;
   }
 
   final order = List<int>.generate(n, (i) => i);

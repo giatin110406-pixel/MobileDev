@@ -32,7 +32,7 @@ class PlayerAvatar extends StatelessWidget {
     frameId: previewFrame ? frameId : state?.equippedFrame,
     child: AvatarFace(
       initials: AppLocalizations.of(context).youUpper,
-      color: NeoColors.pink,
+      color: NeoColors.coral,
       imagePath: state?.avatarPath,
       remotePath: remotePath,
     ),

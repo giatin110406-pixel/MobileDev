@@ -125,7 +125,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         height: 56,
                         alignment: Alignment.center,
                         decoration: NeoTheme.panel(
-                          color: NeoColors.pink,
+                          color: NeoColors.coral,
                           radius: 12,
                         ),
                         child: const Icon(

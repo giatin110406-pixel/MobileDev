@@ -207,7 +207,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           width: 84,
                           height: 84,
                           decoration: BoxDecoration(
-                            color: NeoColors.pink,
+                            color: NeoColors.coral,
                             shape: BoxShape.circle,
                             border: Border.all(color: NeoColors.ink, width: 2),
                             boxShadow: const [

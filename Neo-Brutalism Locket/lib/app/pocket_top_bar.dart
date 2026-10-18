@@ -17,7 +17,7 @@ class PocketTopBar extends StatelessWidget {
           height: 42,
           alignment: Alignment.center,
           decoration: NeoTheme.panel(
-            color: NeoColors.pink,
+            color: NeoColors.coral,
             borderWidth: 2,
             radius: 8,
           ),

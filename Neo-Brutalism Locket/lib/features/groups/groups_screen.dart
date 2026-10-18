@@ -70,7 +70,7 @@ class GroupsScreen extends StatelessWidget {
                   ),
                   NeoLabel(
                     l10n.groupsCount(store.groups.length),
-                    color: NeoColors.yellow,
+                    color: NeoColors.green,
                   ),
                 ],
               ),
@@ -160,7 +160,7 @@ class _ErrorNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: NeoTheme.panel(color: NeoColors.orange),
+      decoration: NeoTheme.panel(color: NeoColors.coral),
       child: Row(
         children: [
           Expanded(
@@ -303,7 +303,7 @@ class _GroupTile extends StatelessWidget {
                 ),
               ),
               if (summary.unread > 0)
-                NeoLabel('${summary.unread}', color: NeoColors.pink),
+                NeoLabel('${summary.unread}', color: NeoColors.coral),
             ],
           ),
         ),
@@ -354,7 +354,7 @@ class _InviteTileState extends State<_InviteTile> {
     final invite = widget.invite;
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: NeoTheme.panel(color: NeoColors.yellow),
+      decoration: NeoTheme.panel(color: NeoColors.green),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -562,7 +562,7 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
                 Text(
                   _error!,
                   style: const TextStyle(
-                    color: NeoColors.pink,
+                    color: NeoColors.coral,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

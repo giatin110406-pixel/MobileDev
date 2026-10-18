@@ -84,7 +84,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       child: NeoIconButton(
                         icon: Icons.arrow_back,
                         tooltip: l10n.cancel,
-                        fill: NeoColors.yellow,
+                        fill: NeoColors.green,
                         onPressed: widget.onCancel,
                       ),
                     ),

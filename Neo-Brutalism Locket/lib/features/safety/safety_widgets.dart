@@ -274,7 +274,7 @@ class _BlockedScreenState extends State<BlockedScreen> {
                   NeoIconButton(
                     icon: Icons.arrow_back,
                     tooltip: l10n.cancel,
-                    fill: NeoColors.yellow,
+                    fill: NeoColors.green,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 12),
