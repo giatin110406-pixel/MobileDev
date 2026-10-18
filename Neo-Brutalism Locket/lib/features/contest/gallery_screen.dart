@@ -116,7 +116,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                   NeoIconButton(
                     icon: Icons.emoji_events_outlined,
                     tooltip: AppLocalizations.of(context).hallOfFameTitle,
-                    fill: NeoColors.orange,
+                    fill: NeoColors.coral,
                     onPressed: () => Navigator.of(context).push<void>(
                       MaterialPageRoute(
                         builder: (_) => HallOfFameScreen(
@@ -132,7 +132,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     tooltip: _grid
                         ? AppLocalizations.of(context).galleryViewCorridor
                         : AppLocalizations.of(context).galleryViewGrid,
-                    fill: NeoColors.yellow,
+                    fill: NeoColors.green,
                     onPressed: () => setState(() => _grid = !_grid),
                   ),
                 ],
@@ -212,7 +212,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             right: 12,
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: NeoTheme.panel(color: NeoColors.orange),
+              decoration: NeoTheme.panel(color: NeoColors.coral),
               child: Text(
                 AppLocalizations.of(context).galleryLoadMoreFailed,
                 style: const TextStyle(
@@ -329,6 +329,6 @@ class GalleryGrid extends StatelessWidget {
 
 /// The colours of the frames in the grid view (the same as in the corridor).
 abstract final class CorridorFrameColors {
-  static const frame = Color(0xFF1A1A1A);
-  static const mat = Color(0xFFFDF2E9);
+  static const frame = Color(0xFF000000);
+  static const mat = Color(0xFFFFFDF5);
 }

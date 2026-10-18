@@ -97,7 +97,7 @@ class FieldMessage extends StatelessWidget {
     child: Text(
       text,
       style: TextStyle(
-        color: good ? const Color(0xFF1B7F79) : const Color(0xFFC0392B),
+        color: good ? const Color(0xFF0B8F4D) : const Color(0xFFC0392B),
         fontSize: 12,
         fontWeight: FontWeight.w700,
       ),

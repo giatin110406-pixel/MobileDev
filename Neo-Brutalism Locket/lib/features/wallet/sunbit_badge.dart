@@ -82,7 +82,7 @@ class _SunbitBadgeState extends State<SunbitBadge>
           child: Container(
             padding: const EdgeInsets.fromLTRB(6, 4, 10, 4),
             decoration: BoxDecoration(
-              color: NeoColors.yellow,
+              color: NeoColors.green,
               border: Border.all(color: NeoColors.ink, width: 2),
               borderRadius: BorderRadius.circular(999),
               boxShadow: const [
@@ -133,7 +133,7 @@ class StreakChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: streak > 0 ? NeoColors.orange : NeoColors.switchOff,
+            color: streak > 0 ? NeoColors.coral : NeoColors.switchOff,
             border: Border.all(color: NeoColors.ink, width: 2),
             borderRadius: BorderRadius.circular(999),
             boxShadow: const [

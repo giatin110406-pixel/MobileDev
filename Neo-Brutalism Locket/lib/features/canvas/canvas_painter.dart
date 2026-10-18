@@ -41,12 +41,16 @@ class CanvasPainter extends CustomPainter {
         );
       }
       for (var i = 1; i < rows; i++) {
-        canvas.drawLine(Offset(0, i * cell), Offset(size.width, i * cell), grid);
+        canvas.drawLine(
+          Offset(0, i * cell),
+          Offset(size.width, i * cell),
+          grid,
+        );
       }
     }
 
     // My unsent pixels get a small dot until the server has them.
-    final dot = Paint()..color = const Color(0xFF1A1A1A);
+    final dot = Paint()..color = const Color(0xFF000000);
     for (var y = 0; y < rows; y++) {
       for (var x = 0; x < columns; x++) {
         if (store.isPending(x, y)) {

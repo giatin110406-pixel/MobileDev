@@ -191,7 +191,7 @@ class _ContestScreenState extends State<ContestScreen> {
             Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
-              decoration: NeoTheme.panel(color: NeoColors.orange),
+              decoration: NeoTheme.panel(color: NeoColors.coral),
               child: Text(
                 AppLocalizations.of(context).contestStale,
                 style: TextStyle(
@@ -425,7 +425,7 @@ class _ContestScreenState extends State<ContestScreen> {
         Container(
           padding: const EdgeInsets.all(14),
           margin: const EdgeInsets.only(bottom: 10),
-          decoration: NeoTheme.panel(color: NeoColors.teal),
+          decoration: NeoTheme.panel(color: NeoColors.green),
           child: Text(
             AppLocalizations.of(
               context,

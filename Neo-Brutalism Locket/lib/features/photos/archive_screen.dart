@@ -71,7 +71,7 @@ class ArchiveScreen extends StatelessWidget {
               ),
               NeoLabel(
                 AppLocalizations.of(context).itemsCount(photos.length),
-                color: NeoColors.purple,
+                color: NeoColors.green,
               ),
             ],
           ),
@@ -101,7 +101,7 @@ class ArchiveScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: NeoTheme.panel(
-          color: index.isEven ? NeoColors.surface : NeoColors.yellow,
+          color: index.isEven ? NeoColors.surface : NeoColors.green,
           borderWidth: 2,
         ),
         child: Row(
@@ -110,7 +110,7 @@ class ArchiveScreen extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: NeoColors.teal,
+                color: NeoColors.green,
                 border: Border.all(color: NeoColors.ink, width: 2),
                 borderRadius: BorderRadius.circular(999),
                 boxShadow: const [
@@ -169,7 +169,7 @@ class ArchiveScreen extends StatelessWidget {
   Widget _buildEmptyArchive(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: NeoTheme.panel(color: NeoColors.blue, borderWidth: 2),
+      decoration: NeoTheme.panel(color: NeoColors.green, borderWidth: 2),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -178,7 +178,7 @@ class ArchiveScreen extends StatelessWidget {
             height: 68,
             alignment: Alignment.center,
             decoration: NeoTheme.panel(
-              color: NeoColors.pink,
+              color: NeoColors.coral,
               borderWidth: 2,
               radius: 999,
             ),

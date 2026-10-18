@@ -169,8 +169,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final names = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
     const colors = {
       1: NeoColors.yellow,
-      2: NeoColors.teal,
-      3: NeoColors.orange,
+      2: NeoColors.surface,
+      3: NeoColors.coral,
     };
     final rank = entry.rank ?? 3;
     return Container(
@@ -210,8 +210,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F2E9),
-                  border: Border.all(color: const Color(0xFF17110E), width: 6),
+                  color: const Color(0xFFFFFDF5),
+                  border: Border.all(color: const Color(0xFF000000), width: 6),
                 ),
                 child: PixelArt(
                   width: entry.width,

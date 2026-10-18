@@ -82,12 +82,12 @@ class FrameSlot {
 
 int _hash(int a, int b) {
   var hash = (a * 73856093) ^ (b * 19349663);
-  hash &= 0xFFFFFFFF;
+  hash &= 0xFFFFFDF5;
   // Mix the bits so that neighbouring numbers do not get patterns.
   hash ^= hash >> 16;
-  hash = (hash * 0x85EBCA6B) & 0xFFFFFFFF;
+  hash = (hash * 0x85EBCA6B) & 0xFFFFFDF5;
   hash ^= hash >> 13;
-  hash = (hash * 0xC2B2AE35) & 0xFFFFFFFF;
+  hash = (hash * 0xC2B2AE35) & 0xFFFFFDF5;
   hash ^= hash >> 16;
   return hash;
 }

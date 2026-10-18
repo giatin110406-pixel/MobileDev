@@ -62,12 +62,12 @@ String systemMessageText(
 };
 
 const _badgeColors = [
-  NeoColors.pink,
-  NeoColors.purple,
-  NeoColors.teal,
-  NeoColors.yellow,
-  NeoColors.blue,
-  NeoColors.orange,
+  NeoColors.green,
+  NeoColors.coral,
+  NeoColors.surface,
+  NeoColors.coral,
+  NeoColors.green,
+  NeoColors.surface,
 ];
 
 /// A coloured square with the first letter: the group's picture.
@@ -207,7 +207,7 @@ class _Segment extends StatelessWidget {
         child: Container(
           height: 44,
           decoration: BoxDecoration(
-            color: selected ? NeoColors.yellow : NeoColors.surface,
+            color: selected ? NeoColors.green : NeoColors.surface,
             border: Border.all(color: NeoColors.ink, width: 2),
             borderRadius: BorderRadius.circular(8),
             boxShadow: selected
@@ -235,7 +235,7 @@ class _Segment extends StatelessWidget {
               ),
               if (badge > 0) ...[
                 const SizedBox(width: 8),
-                NeoLabel('$badge', color: NeoColors.pink),
+                NeoLabel('$badge', color: NeoColors.coral),
               ],
             ],
           ),

@@ -185,7 +185,7 @@ class _SubmitSheetState extends State<_SubmitSheet> {
                 Text(
                   _error!,
                   style: const TextStyle(
-                    color: NeoColors.pink,
+                    color: NeoColors.coral,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

@@ -182,7 +182,7 @@ class _GroupChatViewState extends State<GroupChatView> {
             builder: (context, _) => NeoIconButton(
               icon: Icons.send,
               tooltip: AppLocalizations.of(context).sendTooltip,
-              fill: NeoColors.yellow,
+              fill: NeoColors.green,
               onPressed: widget.store.sending ? null : _send,
             ),
           ),
@@ -241,7 +241,7 @@ class _Bubble extends StatelessWidget {
                   vertical: 9,
                 ),
                 decoration: BoxDecoration(
-                  color: mine ? NeoColors.yellow : NeoColors.surface,
+                  color: mine ? NeoColors.green : NeoColors.surface,
                   border: Border.all(color: NeoColors.ink, width: 2),
                   borderRadius: BorderRadius.circular(10),
                 ),

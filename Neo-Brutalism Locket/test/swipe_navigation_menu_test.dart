@@ -11,31 +11,31 @@ void main() {
       label: 'CHỤP',
       outlineIcon: Icons.photo_camera_outlined,
       filledIcon: Icons.photo_camera,
-      activeColor: NeoColors.teal,
+      activeColor: NeoColors.green,
     ),
     const NeoBottomNavTab(
       label: 'BẠN BÈ',
       outlineIcon: Icons.people_alt_outlined,
       filledIcon: Icons.people_alt,
-      activeColor: NeoColors.purple,
+      activeColor: NeoColors.green,
     ),
     const NeoBottomNavTab(
       label: 'HỘP THƯ',
       outlineIcon: Icons.chat_bubble_outline,
       filledIcon: Icons.chat_bubble,
-      activeColor: NeoColors.blue,
+      activeColor: NeoColors.green,
     ),
     const NeoBottomNavTab(
       label: 'LỊCH SỬ',
       outlineIcon: Icons.grid_view_outlined,
       filledIcon: Icons.grid_view_rounded,
-      activeColor: NeoColors.orange,
+      activeColor: NeoColors.coral,
     ),
     const NeoBottomNavTab(
       label: 'TÔI',
       outlineIcon: Icons.person_outline,
       filledIcon: Icons.person,
-      activeColor: NeoColors.pink,
+      activeColor: NeoColors.coral,
     ),
   ];
 

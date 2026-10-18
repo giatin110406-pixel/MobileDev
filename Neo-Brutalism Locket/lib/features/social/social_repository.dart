@@ -101,7 +101,7 @@ class FriendPost {
     friendId: json['friendId'] as String,
     caption: json['caption'] as String? ?? '',
     createdAt: DateTime.parse(json['createdAt'] as String),
-    color: json['color'] as int? ?? 0xFFFFE66D,
+    color: json['color'] as int? ?? 0xFFFFD23F,
     emoji: json['emoji'] as String? ?? '',
     imagePath: json['imagePath'] as String?,
     questId: json['questId'] as String?,
@@ -222,11 +222,11 @@ class SocialRepository {
   static const _questSamplesKey = 'pocket_quest_samples_v1';
   static const _avatarColors = [
     0xFFFF6B6B,
-    0xFFA388EE,
-    0xFF4ECDC4,
-    0xFFFFE66D,
-    0xFF45B7D1,
-    0xFFF7A072,
+    0xFFFFD23F,
+    0xFFFFD23F,
+    0xFFFFD23F,
+    0xFFFFD23F,
+    0xFFFF6B6B,
   ];
 
   Future<SocialSnapshot> load() async {
@@ -488,7 +488,7 @@ class SocialRepository {
       friendId: 'sample-ava',
       caption: 'Morning light looked unreal',
       emoji: '☀️',
-      color: 0xFFFFE66D,
+      color: 0xFFFFD23F,
       createdAt: now.subtract(const Duration(minutes: 12)),
     ),
     FriendPost(
@@ -496,7 +496,7 @@ class SocialRepository {
       friendId: 'sample-jules',
       caption: 'Coffee walk after class',
       emoji: '☕',
-      color: 0xFF4ECDC4,
+      color: 0xFFFFD23F,
       createdAt: now.subtract(const Duration(hours: 1, minutes: 20)),
     ),
     FriendPost(
@@ -504,7 +504,7 @@ class SocialRepository {
       friendId: 'sample-remy',
       caption: 'Fresh print from the darkroom',
       emoji: '🎞️',
-      color: 0xFFA388EE,
+      color: 0xFFFFD23F,
       createdAt: now.subtract(const Duration(hours: 3)),
     ),
   ];

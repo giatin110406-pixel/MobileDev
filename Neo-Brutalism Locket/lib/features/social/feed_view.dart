@@ -258,7 +258,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
               NeoIconButton(
                 icon: Icons.keyboard_arrow_down,
                 tooltip: AppLocalizations.of(context).backToCameraTooltip,
-                fill: NeoColors.yellow,
+                fill: NeoColors.green,
                 onPressed: widget.onClose,
               ),
               const SizedBox(width: 12),
@@ -282,7 +282,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                       : AppLocalizations.of(context).musicOff,
                   fill: widget.musicMuted
                       ? NeoColors.switchOff
-                      : NeoColors.teal,
+                      : NeoColors.green,
                   onPressed: () => widget.onMuteChanged!(!widget.musicMuted),
                 ),
               ],
@@ -294,7 +294,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                 ? Center(
                     child: NeoLabel(
                       AppLocalizations.of(context).noPostsYet,
-                      color: NeoColors.yellow,
+                      color: NeoColors.green,
                     ),
                   )
                 : PageView.builder(
@@ -426,7 +426,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
               frameId: widget.self.frameId,
               child: AvatarFace(
                 initials: AppLocalizations.of(context).youUpper,
-                color: NeoColors.pink,
+                color: NeoColors.coral,
                 imagePath: widget.self.avatarPath,
               ),
             ),
@@ -648,7 +648,7 @@ class ActivityStrip extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: NeoLabel(
                 '${reaction.emoji} ${nameOf(reaction.userId)}',
-                color: NeoColors.yellow,
+                color: NeoColors.green,
               ),
             ),
         ],
@@ -666,7 +666,7 @@ class QuestStyleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NeoLabel(
     '♪ ${style.label}',
-    color: style == StyleType.vanGogh ? NeoColors.yellow : NeoColors.teal,
+    color: style == StyleType.vanGogh ? NeoColors.green : NeoColors.coral,
   );
 }
 
@@ -679,7 +679,7 @@ class QuestTitleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    decoration: NeoTheme.panel(color: NeoColors.purple, radius: 999),
+    decoration: NeoTheme.panel(color: NeoColors.green, radius: 999),
     child: Text(
       '${quest.emoji}  ${quest.storyTitleFor(vietnamese: isVietnamese(context))}',
       maxLines: 1,

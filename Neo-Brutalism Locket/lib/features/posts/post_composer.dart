@@ -134,7 +134,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
                 NeoIconButton(
                   icon: Icons.arrow_back,
                   tooltip: l10n.cancel,
-                  fill: NeoColors.yellow,
+                  fill: NeoColors.green,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(width: 12),
@@ -226,7 +226,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
             if (noFriends)
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: NeoTheme.panel(color: NeoColors.blue),
+                decoration: NeoTheme.panel(color: NeoColors.green),
                 child: Text(
                   l10n.composerNoFriends,
                   style: const TextStyle(
@@ -292,7 +292,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? NeoColors.teal : NeoColors.surface,
+          color: selected ? NeoColors.green : NeoColors.surface,
           border: Border.all(color: NeoColors.ink, width: 2),
           borderRadius: BorderRadius.circular(999),
           boxShadow: const [
@@ -353,7 +353,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
                       bottom: -4,
                       child: CircleAvatar(
                         radius: 10,
-                        backgroundColor: NeoColors.teal,
+                        backgroundColor: NeoColors.green,
                         child: Icon(
                           Icons.check,
                           size: 14,

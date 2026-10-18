@@ -106,7 +106,7 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
               const SizedBox(height: 5),
               NeoLabel(
                 AppLocalizations.of(context).vanGoghOnLaptop,
-                color: NeoColors.yellow,
+                color: NeoColors.green,
               ),
               const SizedBox(height: 20),
               _fieldLabel(AppLocalizations.of(context).serverAddressLabel),

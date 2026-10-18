@@ -115,7 +115,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       NeoIconButton(
                         icon: Icons.arrow_back,
                         tooltip: AppLocalizations.of(context).backTooltip,
-                        fill: NeoColors.yellow,
+                        fill: NeoColors.green,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 12),
@@ -213,7 +213,7 @@ class _ShopScreenState extends State<ShopScreen> {
           height: 40,
           alignment: Alignment.center,
           decoration: NeoTheme.panel(
-            color: selected ? NeoColors.teal : NeoColors.surface,
+            color: selected ? NeoColors.green : NeoColors.surface,
           ),
           child: Text(
             AppLocalizations.of(context).shopKindLabel(kind),
@@ -240,7 +240,7 @@ class _ShopScreenState extends State<ShopScreen> {
             alignment: Alignment.centerLeft,
             child: NeoLabel(
               AppLocalizations.of(context).shopLimitedOffer,
-              color: NeoColors.pink,
+              color: NeoColors.coral,
               icon: Icons.timer_outlined,
             ),
           ),
@@ -446,7 +446,7 @@ class _OfferCountdownState extends State<_OfferCountdown> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.timer_outlined, size: 14, color: NeoColors.pink),
+        const Icon(Icons.timer_outlined, size: 14, color: NeoColors.coral),
         const SizedBox(width: 4),
         Text(
           left <= Duration.zero
@@ -633,7 +633,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
             children: [
               Row(
                 children: [
-                  NeoLabel(item.theme.label, color: NeoColors.purple),
+                  NeoLabel(item.theme.label, color: NeoColors.green),
                   const SizedBox(width: 8),
                   RarityChip(rarity: item.rarity),
                   const Spacer(),
@@ -676,7 +676,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                   children: [
                     NeoLabel(
                       AppLocalizations.of(context).shopLimitedOffer,
-                      color: NeoColors.pink,
+                      color: NeoColors.coral,
                     ),
                     _OfferCountdown(
                       endsAt: endsAt,
@@ -756,7 +756,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                     },
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _error == null ? NeoColors.muted : NeoColors.pink,
+                  color: _error == null ? NeoColors.muted : NeoColors.coral,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),

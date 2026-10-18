@@ -215,7 +215,7 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
       children: [
         Expanded(child: Text(label, style: _bodyStyle)),
         if (ink)
-          const Icon(Icons.water_drop, size: 18, color: NeoColors.blue)
+          const Icon(Icons.water_drop, size: 18, color: NeoColors.green)
         else
           const SunbitCoin(size: 18),
         const SizedBox(width: 6),
@@ -256,7 +256,7 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
                     NeoIconButton(
                       icon: Icons.arrow_back,
                       tooltip: AppLocalizations.of(context).laterTooltip,
-                      fill: NeoColors.yellow,
+                      fill: NeoColors.green,
                       onPressed: () => Navigator.of(context).pop(false),
                     ),
                     const SizedBox(width: 12),
