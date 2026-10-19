@@ -259,58 +259,60 @@ class _ShopScreenState extends State<ShopScreen> {
     final vi = Localizations.localeOf(context).languageCode != 'en';
     final l10n = AppLocalizations.of(context);
     final medals = {1: l10n.rank1, 2: l10n.rank2, 3: l10n.rank3};
-    return InkWell(
+    return _ShopCard(
+      equipped: action == ShopAction.unequip,
       onTap: Haptics.tap(() => _openOffer(item)),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: NeoTheme.panel(color: NeoColors.surface),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: profileBannerAspect,
-              child: ProfileBanner(bannerId: item.id, height: double.infinity),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: profileBannerAspect,
+            child: ProfileBanner(bannerId: item.id, height: double.infinity),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
             ),
-            const SizedBox(height: 8),
-            Text(
-              item.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: NeoColors.ink,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
+          ),
+          Text(
+            '${medals[item.rank] ?? 'TOP 3'} · ${vi ? item.titleVi : item.titleEn}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: NeoColors.muted,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              _OfferCountdown(
+                endsAt: item.endsAt,
+                clock: widget.clock,
+                onEnded: _offersEnded,
               ),
-            ),
-            Text(
-              '${medals[item.rank] ?? 'TOP 3'} · ${vi ? item.titleVi : item.titleEn}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: NeoColors.muted,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                _OfferCountdown(
-                  endsAt: item.endsAt,
-                  clock: widget.clock,
-                  onEnded: _offersEnded,
+              const Spacer(),
+              switch (action) {
+                ShopAction.unequip => _StatusPill(
+                  inUse: true,
+                  text: l10n.shopInUse,
                 ),
-                const Spacer(),
-                switch (action) {
-                  ShopAction.unequip => _StatusText(l10n.shopInUse),
-                  ShopAction.equip => _StatusText(l10n.shopOwned),
-                  _ => PriceTag(price: item.price),
-                },
-              ],
-            ),
-          ],
-        ),
+                ShopAction.equip => _StatusPill(
+                  inUse: false,
+                  text: l10n.shopOwned,
+                ),
+                _ => PriceTag(price: item.price),
+              },
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -329,63 +331,61 @@ class _ShopScreenState extends State<ShopScreen> {
 
   Widget _itemCard(PlayerState state, ShopItem item) {
     final action = shopActionFor(state, item);
-    return InkWell(
+    return _ShopCard(
+      equipped: action == ShopAction.unequip,
       onTap: Haptics.tap(() => showShopItemSheet(context, widget.store, item)),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: NeoTheme.panel(color: NeoColors.surface),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Center(
-                child: item.kind == CosmeticKind.frame
-                    ? PlayerAvatar(
-                        state: state,
-                        size: 92,
-                        frameId: item.id,
-                        previewFrame: true,
-                      )
-                    : ProfileBanner(bannerId: item.id, height: 74),
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Center(
+              child: item.kind == CosmeticKind.frame
+                  ? PlayerAvatar(
+                      state: state,
+                      size: 92,
+                      frameId: item.id,
+                      previewFrame: true,
+                    )
+                  : ProfileBanner(bannerId: item.id, height: 74),
             ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context).shopItemName(item),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: NeoColors.ink,
-                fontSize: 13,
-                height: 1.15,
-                fontWeight: FontWeight.w800,
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context).shopItemName(item),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontSize: 13,
+              height: 1.15,
+              fontWeight: FontWeight.w800,
             ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: RarityChip(rarity: item.rarity),
-                  ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: RarityChip(rarity: item.rarity),
                 ),
-                const SizedBox(width: 6),
-                switch (action) {
-                  ShopAction.unequip => _StatusText(
-                    AppLocalizations.of(context).shopInUse,
-                  ),
-                  ShopAction.equip => _StatusText(
-                    AppLocalizations.of(context).shopOwned,
-                  ),
-                  _ => PriceTag(price: item.price),
-                },
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 6),
+              switch (action) {
+                ShopAction.unequip => _StatusPill(
+                  inUse: true,
+                  text: AppLocalizations.of(context).shopInUse,
+                ),
+                ShopAction.equip => _StatusPill(
+                  inUse: false,
+                  text: AppLocalizations.of(context).shopOwned,
+                ),
+                _ => PriceTag(price: item.price),
+              },
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -463,19 +463,104 @@ class _OfferCountdownState extends State<_OfferCountdown> {
   }
 }
 
-class _StatusText extends StatelessWidget {
-  const _StatusText(this.text);
+/// What a card says about an item you already own: a solid green "IN USE" pill
+/// with a tick for the one worn right now, a plain outlined "OWNED" for the rest.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.inUse, required this.text});
 
+  final bool inUse;
   final String text;
 
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: const TextStyle(
-      color: NeoColors.ink,
-      fontSize: 10,
-      fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+    decoration: BoxDecoration(
+      color: inUse ? NeoColors.green : NeoColors.surface,
+      border: Border.all(color: NeoColors.ink, width: 2),
+      borderRadius: BorderRadius.circular(999),
+      boxShadow: inUse
+          ? const [BoxShadow(color: NeoColors.ink, offset: Offset(2, 2))]
+          : null,
     ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (inUse) ...[
+          const Icon(Icons.check_rounded, size: 12, color: NeoColors.ink),
+          const SizedBox(width: 3),
+        ],
+        Text(
+          text,
+          style: const TextStyle(
+            color: NeoColors.ink,
+            fontFamily: NeoFont.display,
+            fontSize: 10,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// A shop card. The item being worn gets a green ground, a thicker outline and a
+/// big tick stamped on its corner, so it reads at a glance without any text.
+class _ShopCard extends StatelessWidget {
+  const _ShopCard({
+    required this.equipped,
+    required this.onTap,
+    required this.child,
+  });
+
+  final bool equipped;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    clipBehavior: Clip.none,
+    children: [
+      // The worn item stays pressed in; the others stand proud of the page.
+      NeoPress(
+        onTap: onTap,
+        sunken: equipped,
+        builder: (context, pressed) => Container(
+          padding: const EdgeInsets.all(10),
+          decoration: NeoTheme.panel(
+            color: equipped ? const Color(0xFFD9F2DF) : NeoColors.surface,
+            borderWidth: equipped ? 3 : 2,
+            pressed: pressed,
+          ),
+          child: child,
+        ),
+      ),
+      if (equipped)
+        Positioned(
+          // Moves with the card, which sits 4px down and right when pressed in.
+          top: -6,
+          right: -2,
+          child: IgnorePointer(
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: NeoColors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: NeoColors.ink, width: 3),
+                boxShadow: const [
+                  BoxShadow(color: NeoColors.ink, offset: Offset(2, 2)),
+                ],
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                size: 18,
+                color: NeoColors.ink,
+              ),
+            ),
+          ),
+        ),
+    ],
   );
 }
 

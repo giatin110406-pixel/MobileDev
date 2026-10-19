@@ -12,11 +12,12 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 /// of the screen and never written into the photo or the post.
 enum PrintStamp { approved, verified, topSecret }
 
-/// Which stamp a post earns: a passed quest is VERIFIED, every seventh day of a
-/// streak is TOP SECRET, anything else APPROVED.
-PrintStamp printStampFor({required bool quest, required int streak}) {
+/// Which stamp a post gets; the person does not choose. A passed daily quest is
+/// always VERIFIED, a post sent to only some friends is TOP SECRET, and a post to
+/// everyone is APPROVED.
+PrintStamp printStampFor({required bool quest, bool private = false}) {
   if (quest) return PrintStamp.verified;
-  if (streak > 0 && streak % 7 == 0) return PrintStamp.topSecret;
+  if (private) return PrintStamp.topSecret;
   return PrintStamp.approved;
 }
 
@@ -347,63 +348,3 @@ String printStampLabel(AppLocalizations l10n, PrintStamp stamp) =>
       PrintStamp.verified => l10n.stampVerified,
       PrintStamp.topSecret => l10n.stampTopSecret,
     };
-
-/// Three chips to pick the stamp for the post animation. The one the post earns
-/// is lit until another is picked. It is only a show, never part of the photo.
-class StampPicker extends StatelessWidget {
-  const StampPicker({
-    required this.selected,
-    required this.onChanged,
-    super.key,
-  });
-
-  final PrintStamp selected;
-  final ValueChanged<PrintStamp> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Row(
-      key: const ValueKey('stamp-picker'),
-      children: [
-        for (final stamp in PrintStamp.values) ...[
-          if (stamp != PrintStamp.values.first) const SizedBox(width: 8),
-          Expanded(
-            child: Semantics(
-              button: true,
-              selected: stamp == selected,
-              child: InkWell(
-                onTap: Haptics.tap(
-                  () => onChanged(stamp),
-                  kind: HapticKind.select,
-                ),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  height: 34,
-                  alignment: Alignment.center,
-                  decoration: NeoTheme.panel(
-                    color: stamp == selected
-                        ? NeoColors.green
-                        : NeoColors.surface,
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      printStampLabel(l10n, stamp),
-                      style: const TextStyle(
-                        color: NeoColors.ink,
-                        fontFamily: NeoFont.body,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}

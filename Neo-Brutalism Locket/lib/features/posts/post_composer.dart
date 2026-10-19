@@ -26,7 +26,7 @@ const maxCaptionLength = 80;
 
 /// After a photo is ready: add a caption and pick who gets it. Pops a
 /// [ComposerResult], or null when the person backs out.
-class PostComposerScreen extends StatefulWidget {
+class PostComposerScreen extends StatelessWidget {
   const PostComposerScreen({
     super.key,
     required this.imagePath,
@@ -46,10 +46,140 @@ class PostComposerScreen extends StatefulWidget {
   final DateTime Function() clock;
 
   @override
-  State<PostComposerScreen> createState() => _PostComposerScreenState();
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: NeoColors.paper,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+          children: [
+            Row(
+              children: [
+                NeoIconButton(
+                  icon: Icons.arrow_back,
+                  tooltip: l10n.cancel,
+                  fill: NeoColors.green,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.composerTitle,
+                    style: const TextStyle(
+                      color: NeoColors.ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            PostComposerForm(
+              friends: friends,
+              initialCaption: initialCaption,
+              isVideo: isVideo,
+              placeLookup: placeLookup,
+              clock: clock,
+              previewBuilder: (context, overlay) => ComposerPreview(
+                path: imagePath,
+                isVideo: isVideo,
+                overlay: overlay,
+              ),
+              onSubmit: (result) => Navigator.of(context).pop(result),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _PostComposerScreenState extends State<PostComposerScreen> {
+/// The square picture (or clip) of a post being composed, with its labels.
+class ComposerPreview extends StatelessWidget {
+  const ComposerPreview({
+    super.key,
+    required this.path,
+    required this.overlay,
+    this.isVideo = false,
+  });
+
+  final String path;
+  final bool isVideo;
+  final PostOverlay overlay;
+
+  @override
+  Widget build(BuildContext context) => AspectRatio(
+    aspectRatio: 1,
+    child: Container(
+      decoration: NeoTheme.panel(color: NeoColors.surface, radius: 40),
+      foregroundDecoration: neoPanelOutline(radius: 40),
+      child: NeoPanelClip(
+        radius: 40,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (isVideo)
+              LocalVideoPreview(path: path)
+            else
+              Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stack) =>
+                    const Icon(Icons.broken_image_outlined),
+              ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: OverlayLabels(overlay: overlay),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// The composer's fields: [previewBuilder]'s picture, then (optionally)
+/// [afterPreview], the time and place labels, the caption, who gets it and the
+/// post button. Used as a full page and inside the popup after a shot.
+class PostComposerForm extends StatefulWidget {
+  const PostComposerForm({
+    super.key,
+    required this.friends,
+    required this.previewBuilder,
+    required this.onSubmit,
+    this.afterPreview,
+    this.canPost = true,
+    this.initialCaption = '',
+    this.isVideo = false,
+    this.placeLookup = const DevicePlaceLookup(),
+    this.clock = DateTime.now,
+  });
+
+  final List<Friend> friends;
+
+  /// Draws the picture; gets the labels chosen so far to lay on it.
+  final Widget Function(BuildContext context, PostOverlay overlay)
+  previewBuilder;
+  final ValueChanged<ComposerResult> onSubmit;
+
+  /// Shown right under the picture (the popup puts the style picker here).
+  final Widget? afterPreview;
+
+  /// False while the picture is not ready to send (still being styled).
+  final bool canPost;
+  final String initialCaption;
+  final bool isVideo;
+  final PlaceLookup placeLookup;
+  final DateTime Function() clock;
+
+  @override
+  State<PostComposerForm> createState() => _PostComposerFormState();
+}
+
+class _PostComposerFormState extends State<PostComposerForm> {
   late final _caption = TextEditingController(text: widget.initialCaption);
   late final Set<String> _selected = {
     for (final friend in widget.friends) friend.person.id,
@@ -110,7 +240,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
   void _send() {
     // With no friends yet there is nobody to pick: it is posted to the history.
     if (widget.friends.isNotEmpty && _selected.isEmpty) return;
-    Navigator.of(context).pop(
+    widget.onSubmit(
       ComposerResult(
         caption: _caption.text.trim(),
         recipients: _all ? null : _selected.toList(),
@@ -123,159 +253,111 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final noFriends = widget.friends.isEmpty;
-    return Scaffold(
-      backgroundColor: NeoColors.paper,
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        widget.previewBuilder(context, _overlay),
+        if (widget.afterPreview != null) ...[
+          const SizedBox(height: 12),
+          widget.afterPreview!,
+        ],
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
           children: [
-            Row(
-              children: [
-                NeoIconButton(
-                  icon: Icons.arrow_back,
-                  tooltip: l10n.cancel,
-                  fill: NeoColors.green,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l10n.composerTitle,
-                    style: const TextStyle(
-                      color: NeoColors.ink,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ],
+            _recipientChip(
+              label: '${l10n.overlayTime} $_time',
+              selected: _showTime,
+              onTap: () => setState(() => _showTime = !_showTime),
             ),
-            const SizedBox(height: 16),
-            AspectRatio(
-              aspectRatio: 1,
-              child: Container(
-                decoration: NeoTheme.panel(
-                  color: NeoColors.surface,
-                  radius: 40,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (widget.isVideo)
-                      LocalVideoPreview(path: widget.imagePath)
-                    else
-                      Image.file(
-                        File(widget.imagePath),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stack) =>
-                            const Icon(Icons.broken_image_outlined),
-                      ),
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: OverlayLabels(overlay: _overlay),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _recipientChip(
-                  label: '${l10n.overlayTime} $_time',
-                  selected: _showTime,
-                  onTap: () => setState(() => _showTime = !_showTime),
-                ),
-                _recipientChip(
-                  label: _findingPlace
-                      ? l10n.overlayFindingPlace
-                      : _place == null
-                      ? l10n.overlayPlace
-                      : '${l10n.overlayPlace}: $_place',
-                  selected: _place != null,
-                  onTap: _findingPlace ? () {} : _togglePlace,
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: NeoTheme.panel(color: NeoColors.surface),
-              child: TextField(
-                controller: _caption,
-                maxLength: maxCaptionLength,
-                maxLines: 2,
-                minLines: 1,
-                textCapitalization: TextCapitalization.sentences,
-                style: const TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: l10n.composerCaptionHint,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (noFriends)
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: NeoTheme.panel(color: NeoColors.green),
-                child: Text(
-                  l10n.composerNoFriends,
-                  style: const TextStyle(
-                    color: NeoColors.ink,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              )
-            else ...[
-              _recipientChip(
-                label: '${l10n.composerAllFriends} (${widget.friends.length})',
-                selected: _all,
-                onTap: _toggleAll,
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 14,
-                runSpacing: 12,
-                children: [
-                  for (final friend in widget.friends) _friendChip(friend),
-                ],
-              ),
-              if (_selected.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    l10n.composerPickAtLeastOne,
-                    style: const TextStyle(
-                      color: Color(0xFFC0392B),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-            ],
-            const SizedBox(height: 20),
-            NeoButton(
-              expand: true,
-              label: _all || noFriends
-                  ? l10n.composerPostAll
-                  : l10n.composerSendToSome(_selected.length),
-              icon: Icons.send_rounded,
-              variant: NeoButtonVariant.primary,
-              onPressed: !noFriends && _selected.isEmpty ? null : _send,
+            _recipientChip(
+              label: _findingPlace
+                  ? l10n.overlayFindingPlace
+                  : _place == null
+                  ? l10n.overlayPlace
+                  : '${l10n.overlayPlace}: $_place',
+              selected: _place != null,
+              onTap: _findingPlace ? () {} : _togglePlace,
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: NeoTheme.panel(color: NeoColors.surface),
+          child: TextField(
+            controller: _caption,
+            maxLength: maxCaptionLength,
+            maxLines: 2,
+            minLines: 1,
+            textCapitalization: TextCapitalization.sentences,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: l10n.composerCaptionHint,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (noFriends)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: NeoTheme.panel(color: NeoColors.green),
+            child: Text(
+              l10n.composerNoFriends,
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          )
+        else ...[
+          _recipientChip(
+            label: '${l10n.composerAllFriends} (${widget.friends.length})',
+            selected: _all,
+            onTap: _toggleAll,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 14,
+            runSpacing: 12,
+            children: [
+              for (final friend in widget.friends) _friendChip(friend),
+            ],
+          ),
+          if (_selected.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                l10n.composerPickAtLeastOne,
+                style: const TextStyle(
+                  color: Color(0xFFC0392B),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+        ],
+        const SizedBox(height: 20),
+        NeoButton(
+          expand: true,
+          label: _all || noFriends
+              ? l10n.composerPostAll
+              : l10n.composerSendToSome(_selected.length),
+          icon: Icons.send_rounded,
+          variant: NeoButtonVariant.primary,
+          onPressed: !widget.canPost || (!noFriends && _selected.isEmpty)
+              ? null
+              : _send,
+        ),
+      ],
     );
   }
 

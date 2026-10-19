@@ -14,7 +14,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
-import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_backdrops.dart';
 import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
@@ -647,6 +647,25 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     );
   }
 
+  /// The shot just taken, with the caption, labels and recipients chosen in the
+  /// popup over the camera: queue it.
+  Future<bool> _postDraft(NeoPhoto photo, ComposerResult result) async {
+    final store = _friendsStore;
+    if (store == null) return false;
+    final processed = photo.status == ProcessingStatus.done
+        ? photo.processedPath
+        : null;
+    final path = processed ?? photo.originalPath;
+    return _queuePost(
+      file: File(path),
+      caption: result.caption,
+      style: processed == null ? StyleType.none : photo.styleType,
+      overlay: result.overlay,
+      recipients: result.recipients,
+      friendCount: result.recipients?.length ?? store.friends.length,
+    );
+  }
+
   /// A clip from the camera: caption, labels and who gets it, then queue it.
   Future<void> _sendVideo(File video) async {
     final store = _friendsStore;
@@ -907,7 +926,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final l10n = AppLocalizations.of(context);
     try {
       await _interactions?.react(post.id, emoji);
-      if (mounted) _notify(l10n.reactionSent(emoji));
     } on InteractionFailure {
       if (mounted) _notify(l10n.errUnknown);
     }
@@ -1153,12 +1171,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _messages = snapshot.messages;
         _posts = snapshot.posts;
       });
+      // A reaction shows as emojis floating up the feed, not as a notice.
+      if (reaction != null) return;
       final name = _friends
           .where((friend) => friend.id == post.friendId)
           .map((friend) => friend.name.split(' ').first)
           .firstOrNull;
       final l10n = AppLocalizations.of(context);
-      final what = reaction ?? l10n.replyWord;
+      final what = l10n.replyWord;
       _notify(
         name == null
             ? l10n.sentNotice(what)
@@ -1415,6 +1435,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           onOpenQuestSheet: _openQuestSheet,
                           onQuestPassed: _openQuestPost,
                           onSendPrint: _online ? _sendPrint : null,
+                          onPostDraft: _online ? _postDraft : null,
+                          friends: _friendsStore?.friends ?? const [],
                           onPhotoRemoved: _onPhotoRemoved,
                           onVideoRecorded: _online ? _sendVideo : null,
                           header: _homeHeader(),
@@ -1486,10 +1508,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 140),
             child: isContestTab
-                ? const StarryNight(
-                    key: ValueKey('contest-bg'),
-                    child: SizedBox.expand(),
-                  )
+                ? _contestBackground()
                 // An empty ColoredBox shrinks to nothing inside the switcher's
                 // loose Stack, which left the window's black showing through.
                 : const ColoredBox(
@@ -1503,6 +1522,26 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ],
     );
     return _withScopes(body);
+  }
+
+  /// The contest tab's background: this week's theme, painted.
+  Widget _contestBackground() {
+    final store = _contestStore;
+    if (store == null) {
+      return const ContestBackdrop(
+        key: ValueKey('contest-bg'),
+        child: SizedBox.expand(),
+      );
+    }
+    return ListenableBuilder(
+      key: const ValueKey('contest-bg'),
+      listenable: store,
+      builder: (context, _) => ContestBackdrop(
+        key: ValueKey('contest-bg-${store.theme?.titleEn}'),
+        themeTitle: store.theme?.titleEn,
+        child: const SizedBox.expand(),
+      ),
+    );
   }
 
   /// What every page of the app needs below it: where pictures come from, and the
@@ -1742,7 +1781,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               onTap: Haptics.tap(() => _selectTab(_profilePage)),
               child: PlayerAvatar(
                 state: _player.state,
-                size: 40,
+                size: 54,
                 remotePath: widget.session?.profile.avatarPath,
               ),
             ),
@@ -1796,14 +1835,16 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       child: Semantics(
         button: true,
         selected: selected,
-        child: InkWell(
-          onTap: Haptics.tap(onTap),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
+        child: NeoPress(
+          onTap: onTap,
+          // The chosen chip stays pressed in.
+          sunken: selected,
+          builder: (context, pressed) => Container(
             height: 36,
             alignment: Alignment.center,
             decoration: NeoTheme.panel(
               color: selected ? NeoColors.green : NeoColors.surface,
+              pressed: pressed,
             ),
             child: Text(
               label,

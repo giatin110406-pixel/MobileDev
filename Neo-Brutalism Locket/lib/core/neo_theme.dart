@@ -53,13 +53,14 @@ abstract final class NeoTheme {
     Color color = NeoColors.surface,
     double borderWidth = 2,
     double radius = 8,
+
+    /// A pressed panel has lost its hard shadow (see [NeoPress]).
+    bool pressed = false,
   }) => BoxDecoration(
     color: color,
     border: Border.all(color: NeoColors.ink, width: borderWidth),
     borderRadius: BorderRadius.circular(radius),
-    boxShadow: const [
-      BoxShadow(color: NeoColors.ink, offset: Offset(4, 4), blurRadius: 0),
-    ],
+    boxShadow: NeoPress.shadow(pressed),
   );
 }
 
@@ -341,6 +342,85 @@ class NeoSwitch extends StatelessWidget {
   }
 }
 
+/// The neo-brutalist press: while a finger is down (or while [sunken] is set) the
+/// thing slides onto its own hard shadow and the shadow disappears, as if it were
+/// pushed into the page. [builder] draws the thing and should take its shadow from
+/// [NeoPress.shadow] with the `pressed` it is given.
+///
+/// With no [onTap] and no [onLongPress] it only shows [sunken].
+class NeoPress extends StatefulWidget {
+  const NeoPress({
+    required this.builder,
+    this.onTap,
+    this.onLongPress,
+    this.offset = const Offset(4, 4),
+    this.sunken = false,
+    this.haptic = true,
+    super.key,
+  });
+
+  final Widget Function(BuildContext context, bool pressed) builder;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
+  /// How far the shadow reaches; the thing moves by the same amount.
+  final Offset offset;
+
+  /// Stays pressed in (a selected or worn thing).
+  final bool sunken;
+  final bool haptic;
+
+  /// A hard black shadow [offset] away, or none while [pressed].
+  static List<BoxShadow> shadow(
+    bool pressed, {
+    Offset offset = const Offset(4, 4),
+  }) => pressed
+      ? const []
+      : [BoxShadow(color: NeoColors.ink, offset: offset, blurRadius: 0)];
+
+  @override
+  State<NeoPress> createState() => _NeoPressState();
+}
+
+class _NeoPressState extends State<NeoPress> {
+  bool _down = false;
+
+  bool get _active => widget.onTap != null || widget.onLongPress != null;
+
+  void _set(bool value) {
+    if (!_active || _down == value || !mounted) return;
+    setState(() => _down = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pressed = _down || widget.sunken;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _set(true),
+      onTapUp: (_) => _set(false),
+      onTapCancel: () => _set(false),
+      onTap: widget.onTap == null
+          ? null
+          : () {
+              if (widget.haptic) Haptics.light();
+              widget.onTap!();
+            },
+      onLongPress: widget.onLongPress,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOut,
+        transform: Matrix4.translationValues(
+          pressed ? widget.offset.dx : 0,
+          pressed ? widget.offset.dy : 0,
+          0,
+        ),
+        child: widget.builder(context, pressed),
+      ),
+    );
+  }
+}
+
 class NeoIconButton extends StatelessWidget {
   const NeoIconButton({
     required this.icon,
@@ -362,34 +442,22 @@ class NeoIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final offset = size < 40 ? const Offset(2, 2) : const Offset(4, 4);
     return Tooltip(
       message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed == null
-              ? null
-              : () {
-                  Haptics.light();
-                  onPressed!();
-                },
-          child: Ink(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: fill,
-              border: Border.all(color: NeoColors.ink, width: 2),
-              borderRadius: BorderRadius.circular(size < 40 ? 999 : 8),
-              boxShadow: [
-                BoxShadow(
-                  color: NeoColors.ink,
-                  offset: size < 40 ? const Offset(2, 2) : const Offset(4, 4),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: Icon(icon, color: NeoColors.ink, size: size * 0.55),
+      child: NeoPress(
+        onTap: onPressed,
+        offset: offset,
+        builder: (context, pressed) => Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: fill,
+            border: Border.all(color: NeoColors.ink, width: 2),
+            borderRadius: BorderRadius.circular(size < 40 ? 999 : 8),
+            boxShadow: NeoPress.shadow(pressed, offset: offset),
           ),
+          child: Icon(icon, color: NeoColors.ink, size: size * 0.55),
         ),
       ),
     );

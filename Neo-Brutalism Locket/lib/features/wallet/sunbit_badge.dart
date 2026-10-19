@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
-import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// The Sunbit balance pill. It bounces and floats "+N" whenever the balance
 /// goes up.
@@ -46,9 +45,10 @@ class _SunbitBadgeState extends State<SunbitBadge>
     return Semantics(
       button: widget.onTap != null,
       label: '${widget.balance} Sunbit',
-      child: GestureDetector(
-        onTap: Haptics.tap(widget.onTap),
-        child: AnimatedBuilder(
+      child: NeoPress(
+        onTap: widget.onTap,
+        offset: const Offset(2, 2),
+        builder: (context, pressed) => AnimatedBuilder(
           animation: _bounce,
           builder: (context, child) {
             final t = _bounce.value;
@@ -85,13 +85,7 @@ class _SunbitBadgeState extends State<SunbitBadge>
               color: NeoColors.green,
               border: Border.all(color: NeoColors.ink, width: 2),
               borderRadius: BorderRadius.circular(999),
-              boxShadow: const [
-                BoxShadow(
-                  color: NeoColors.ink,
-                  offset: Offset(2, 2),
-                  blurRadius: 0,
-                ),
-              ],
+              boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -128,21 +122,16 @@ class StreakChip extends StatelessWidget {
     return Semantics(
       button: onTap != null,
       label: AppLocalizations.of(context).streakSemantics(streak),
-      child: GestureDetector(
-        onTap: Haptics.tap(onTap),
-        child: Container(
+      child: NeoPress(
+        onTap: onTap,
+        offset: const Offset(2, 2),
+        builder: (context, pressed) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: streak > 0 ? NeoColors.coral : NeoColors.switchOff,
             border: Border.all(color: NeoColors.ink, width: 2),
             borderRadius: BorderRadius.circular(999),
-            boxShadow: const [
-              BoxShadow(
-                color: NeoColors.ink,
-                offset: Offset(2, 2),
-                blurRadius: 0,
-              ),
-            ],
+            boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
           ),
           child: Text(
             '🔥 $streak',
@@ -178,9 +167,10 @@ class StatusIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Tooltip(
     message: tooltip,
-    child: GestureDetector(
-      onTap: Haptics.tap(onPressed),
-      child: Container(
+    child: NeoPress(
+      onTap: onPressed,
+      offset: const Offset(2, 2),
+      builder: (context, pressed) => Container(
         width: 30,
         height: 30,
         alignment: Alignment.center,
@@ -188,9 +178,7 @@ class StatusIconButton extends StatelessWidget {
           color: fill,
           shape: BoxShape.circle,
           border: Border.all(color: NeoColors.ink, width: 2),
-          boxShadow: const [
-            BoxShadow(color: NeoColors.ink, offset: Offset(2, 2)),
-          ],
+          boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
         ),
         child: Icon(icon, size: 16, color: NeoColors.ink),
       ),

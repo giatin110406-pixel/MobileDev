@@ -16,6 +16,7 @@ import 'package:neo_brutalism_locket/features/progress/player_state.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/social/double_tap_heart.dart';
+import 'package:neo_brutalism_locket/features/social/emoji_rain.dart';
 import 'package:neo_brutalism_locket/features/social/reply_bar.dart';
 import 'package:neo_brutalism_locket/features/social/sample_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
@@ -190,6 +191,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
   );
   late final PageController _pages = PageController(initialPage: _page);
   bool _foreground = true;
+  final _rain = GlobalKey<EmojiRainLayerState>();
   Timer? _viewedTimer;
 
   @override
@@ -253,6 +255,16 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(child: _buildFeed(context)),
+        // Reactions float up over the whole page.
+        Positioned.fill(child: EmojiRainLayer(key: _rain)),
+      ],
+    );
+  }
+
+  Widget _buildFeed(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
       child: Column(
@@ -405,9 +417,17 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           widget.onReactRemote == null) {
         return null;
       }
-      return () => unawaited(widget.onReactRemote!(remote, emoji));
+      return () {
+        _rain.currentState?.burst(emoji);
+        unawaited(widget.onReactRemote!(remote, emoji));
+      };
     }
-    if (post != null) return () => unawaited(widget.onReact(post, emoji));
+    if (post != null) {
+      return () {
+        _rain.currentState?.burst(emoji);
+        unawaited(widget.onReact(post, emoji));
+      };
+    }
     return null;
   }
 
@@ -494,7 +514,10 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   context,
                 ).replyHint(friend.name.split(' ').first),
                 onSendText: (text) => widget.onReplyRemote!(remote, text),
-                onReact: (emoji) => widget.onReactRemote!(remote, emoji),
+                onReact: (emoji) {
+                  _rain.currentState?.burst(emoji);
+                  return widget.onReactRemote!(remote, emoji);
+                },
               )
             : post != null && friend != null && widget.allowReplies
             ? ReplyBar(
@@ -502,7 +525,10 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   context,
                 ).replyHint(friend.name.split(' ').first),
                 onSendText: (text) => widget.onReplyText(post, text),
-                onReact: (emoji) => widget.onReact(post, emoji),
+                onReact: (emoji) {
+                  _rain.currentState?.burst(emoji);
+                  return widget.onReact(post, emoji);
+                },
               )
             : entry.print != null
             ? NeoButton(

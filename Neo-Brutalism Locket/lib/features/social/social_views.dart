@@ -947,10 +947,14 @@ class FriendAvatar extends StatelessWidget {
     required this.friend,
     required this.size,
     this.showFrame = false,
+    this.shadow = true,
   });
 
   final PocketFriend friend;
   final double size;
+
+  /// See [FramedAvatar.shadow].
+  final bool shadow;
 
   /// Draw the avatar frame the friend has equipped (profile, feed, thread).
   final bool showFrame;
@@ -962,6 +966,7 @@ class FriendAvatar extends StatelessWidget {
       return FramedAvatar(
         size: size,
         frameId: frameId,
+        shadow: shadow,
         child: AvatarFace(
           initials: friend.initials,
           color: Color(friend.avatarColor),
@@ -977,9 +982,15 @@ class FriendAvatar extends StatelessWidget {
         color: Color(friend.avatarColor),
         border: Border.all(color: NeoColors.ink, width: 2),
         shape: BoxShape.circle,
-        boxShadow: const [
-          BoxShadow(color: NeoColors.ink, offset: Offset(2, 2), blurRadius: 0),
-        ],
+        boxShadow: shadow
+            ? const [
+                BoxShadow(
+                  color: NeoColors.ink,
+                  offset: Offset(2, 2),
+                  blurRadius: 0,
+                ),
+              ]
+            : null,
       ),
       child: Text(
         friend.initials,

@@ -9,7 +9,6 @@ import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
-import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// Where today's quest stands for the user.
 enum QuestStatus { open, passed, outOfTries, done }
@@ -35,44 +34,44 @@ class QuestStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quest = store.todayQuest;
-    if (quest == null) return const SizedBox(height: 52);
+    if (quest == null) return const SizedBox(height: 68);
     final status = questStatusOf(store);
     return Semantics(
       button: true,
       label: AppLocalizations.of(
         context,
       ).questSemantics(quest.subjectFor(vietnamese: isVietnamese(context))),
-      child: InkWell(
-        onTap: Haptics.tap(onTap),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.fromLTRB(6, 6, 10, 6),
+      child: NeoPress(
+        onTap: onTap,
+        builder: (context, pressed) => Container(
+          height: 68,
+          padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
           decoration: NeoTheme.panel(
             color: status == QuestStatus.done
                 ? NeoColors.green
                 : NeoColors.surface,
+            pressed: pressed,
           ),
           child: Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 52,
+                height: 52,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: questStyleColor(quest.style),
                   border: Border.all(color: NeoColors.ink, width: 2),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   quest.emoji,
                   style: const TextStyle(
                     fontFamily: NeoFont.display,
-                    fontSize: 20,
+                    fontSize: 28,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +85,7 @@ class QuestStrip extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: NeoColors.muted,
-                        fontSize: 9,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -99,7 +98,7 @@ class QuestStrip extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: NeoColors.ink,
-                        fontSize: 15,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

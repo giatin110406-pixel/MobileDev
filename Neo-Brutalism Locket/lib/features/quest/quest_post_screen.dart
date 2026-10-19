@@ -149,7 +149,7 @@ class _QuestPostScreenState extends State<QuestPostScreen> {
       await playPrintPost(
         context,
         photo: _photo,
-        stamp: printStampFor(quest: true, streak: widget.store.streak),
+        stamp: printStampFor(quest: true),
       );
       if (!mounted) return;
       await _showReward(reward);

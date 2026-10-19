@@ -3,9 +3,8 @@ import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
-import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_backdrops.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
-import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// What went wrong with a contest action, in words.
 String contestFailureText(AppLocalizations l10n, ContestFailure failure) =>
@@ -113,13 +112,17 @@ class ContestBanner extends StatelessWidget {
             theme.title(vietnamese: vi),
             phaseLabel(AppLocalizations.of(context), phase),
           ),
-          child: GestureDetector(
-            onTap: Haptics.tap(onTap),
-            child: Container(
-              decoration: NeoTheme.panel(color: NeoColors.surface),
+          child: NeoPress(
+            onTap: onTap,
+            builder: (context, pressed) => Container(
+              decoration: NeoTheme.panel(
+                color: NeoColors.surface,
+                pressed: pressed,
+              ),
               // Van Gogh's sky behind the card, under a veil so the text reads.
               child: NeoPanelClip(
-                child: StarryNight(
+                child: ContestBackdrop(
+                  themeTitle: theme.titleEn,
                   veil: 0.62,
                   child: Padding(
                     padding: const EdgeInsets.all(14),
