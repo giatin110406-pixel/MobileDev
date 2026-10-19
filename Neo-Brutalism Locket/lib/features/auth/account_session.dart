@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:flutter/foundation.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
 import 'package:neo_brutalism_locket/features/auth/profile_repository.dart';
@@ -57,7 +58,9 @@ class AccountSession extends ChangeNotifier {
   Future<void> rememberLocale(String code) async {
     try {
       await _profiles.setLocale(user.id, code);
-    } catch (_) {}
+    } catch (e, st) {
+      AppLog.warn('account_session', e, st);
+    }
   }
 
   Future<void> changePassword(String newPassword) =>
@@ -67,7 +70,9 @@ class AccountSession extends ChangeNotifier {
   Future<void> deleteAccount() async {
     try {
       await beforeSignOut?.call();
-    } catch (_) {}
+    } catch (e, st) {
+      AppLog.warn('account_session', e, st);
+    }
     await _profiles.deleteAccount(user.id);
     try {
       await _auth.signOut();

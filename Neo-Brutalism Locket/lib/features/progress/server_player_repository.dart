@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -177,7 +178,9 @@ class ServerPlayerRepository implements PlayerGateway {
     if (previous != null && previous != path) {
       try {
         await File(previous).delete();
-      } catch (_) {}
+      } catch (e, st) {
+        AppLog.warn('server_player_repository', e, st);
+      }
     }
     _avatarPath = path;
     final state = _last;

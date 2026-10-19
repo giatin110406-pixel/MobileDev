@@ -4,7 +4,7 @@ A Flutter camera app with a neo-brutalist look. Take a photo, turn it into a Van
 
 ## Features
 
-- **Camera and styles**: front/back camera, flash, before/after comparison. Styles: original, **8-bit** (runs fully on the phone) and **Van Gogh** (on-device Magenta TFLite model, or a high-quality diffusion server on a laptop GPU).
+- **Camera and styles**: front/back camera, flash, before/after comparison. Styles: original, **8-bit** (runs fully on the phone) and **Van Gogh** (on-device Magenta TFLite model, or a high-quality diffusion server on a free Google Colab GPU notebook or a laptop GPU).
 - **Accounts and friends** (Supabase): email sign-up, friend requests, blocking and reporting, account deletion.
 - **Feed, chat and reactions**: post a print to friends, react, reply, send messages.
 - **Daily quest**: one photo quest per user per day (new day at 00:00 Vietnam time), each tied to Van Gogh or 8-bit and a true story (`lib/features/quest/quest_catalog.dart`). Camera only, 3 tries a day. The phone checks the subject itself with MobileCLIP2-S0 through ONNX Runtime (`lib/features/quest/on_device/`, model and label vectors in `assets/quest_model/`), so no laptop or network is needed; the label vectors are regenerated with `server/eval/export_quest_model.py` whenever the quest catalog changes (see `docs/HUONG_DAN_CHAY_APP.docx`, section 8.3). A match is styled, captioned (max 80 characters) and posted to the profile and feed, with orchestral (Van Gogh) or chiptune (8-bit) music (`assets/music/CREDITS.md`).
@@ -23,7 +23,7 @@ Without a backend config the app still runs offline: the archive is local and fr
 | `test/` | Widget and unit tests |
 | `assets/` | TFLite models, style reference, music |
 | `supabase/` | Database migrations, RLS, pgTAP tests, `notify` Edge Function. See `supabase/README.md` |
-| `server/` | Optional laptop GPU server (Van Gogh diffusion; also the quest-model export and eval scripts in `server/eval/`). See `server/README.md` |
+| `server/` | Optional GPU server (Van Gogh diffusion, on a Colab notebook via `server/colab/` or on a laptop; also the quest-model export and eval scripts in `server/eval/`). See `server/README.md` |
 | `env/` | `dev.json.example`; copy to `env/dev.json` (git-ignored) |
 
 ## Quick start
@@ -57,7 +57,7 @@ flutter run --dart-define-from-file=env/dev.json
 ### Optional
 
 - **Push notifications**: needs your own `android/app/google-services.json` (git-ignored) and the setup in `supabase/PUSH_SETUP.md`. Without it the app builds and runs normally, just without pushes.
-- **Laptop server**: needed only for high-quality Van Gogh (the quest photo check runs on the phone). Requires an NVIDIA GPU. See `server/README.md`.
+- **Stylize server**: needed only for high-quality Van Gogh (the quest photo check runs on the phone). Run it in a Google Colab GPU notebook (free, no GPU needed on your PC; start it by hand each time) or on a laptop with an NVIDIA GPU. See `server/README.md`.
 
 ### Building an APK
 
@@ -81,4 +81,4 @@ flutter test
 ## Notes
 
 - Model and music licenses: `assets/models/README.md`, `assets/music/CREDITS.md`, and the "Models and licenses" section of `server/README.md`. Verify them before any public release.
-- The server uses cleartext HTTP and is meant for personal LAN/USB use only.
+- The laptop server uses cleartext HTTP and is meant for personal LAN/USB use only; the Colab one is https.

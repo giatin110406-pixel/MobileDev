@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -282,7 +283,9 @@ class PlayerRepository implements PlayerGateway {
     if (previous != null && previous != path) {
       try {
         await File(previous!).delete();
-      } catch (_) {}
+      } catch (e, st) {
+        AppLog.warn('player_repository', e, st);
+      }
     }
     return state;
   }

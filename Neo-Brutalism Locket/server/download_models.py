@@ -11,12 +11,19 @@ JOBS = [
     ("file", ("h94/IP-Adapter", "models/ip-adapter_sd15.safetensors"), {}),
     ("file", ("h94/IP-Adapter", "models/image_encoder/config.json"), {}),
     ("file", ("h94/IP-Adapter", "models/image_encoder/model.safetensors"), {}),
+    # face pass (otherwise fetched on the first photo with a face, ~0.7 GB)
+    ("snapshot", "CrucibleAI/ControlNetMediaPipeFace", dict(allow_patterns=["laion_face_common.py", "diffusion_sd15/config.json", "diffusion_sd15/*fp16.safetensors"])),
 ]
 
-for kind, target, kwargs in JOBS:
-    print("->", target, flush=True)
-    if kind == "snapshot":
-        print(snapshot_download(target, **kwargs), flush=True)
-    else:
-        print(hf_hub_download(target[0], target[1]), flush=True)
-print("DONE")
+def main():
+    for kind, target, kwargs in JOBS:
+        print("->", target, flush=True)
+        if kind == "snapshot":
+            print(snapshot_download(target, **kwargs), flush=True)
+        else:
+            print(hf_hub_download(target[0], target[1]), flush=True)
+    print("DONE")
+
+
+if __name__ == "__main__":
+    main()

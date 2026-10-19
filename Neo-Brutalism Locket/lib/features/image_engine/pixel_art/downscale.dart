@@ -5,6 +5,9 @@ import 'dart:typed_data';
 /// averaging them into mud. Fully deterministic: clusters start at the block's
 /// darkest and lightest pixels.
 ///
+/// [meanBlend] (0..1) mixes blocks outside [keepDark] towards their average;
+/// [blendMap] sets that per block instead.
+///
 /// Where [keepDark] is set (the face), a darker minority cluster that covers at
 /// least a quarter of the block and is clearly darker wins, so eyes, brows and
 /// lips survive instead of being averaged into skin.
@@ -14,6 +17,8 @@ Float32List kCentroidDownscale(
   int height,
   int factor, {
   Uint8List? keepDark,
+  double meanBlend = 0,
+  Float32List? blendMap,
 }) {
   final outWidth = width ~/ factor;
   final outHeight = height ~/ factor;
@@ -81,6 +86,26 @@ Float32List kCentroidDownscale(
         if (n0 >= minDark && n1 > n0 && c1[0] - c0[0] > 0.12) winner = c0;
       }
       final out = (by * outWidth + bx) * 3;
+      final isFace = keepDark != null && keepDark[by * outWidth + bx] != 0;
+      final blend = blendMap?[by * outWidth + bx] ?? meanBlend;
+      if (blend > 0 && !isFace) {
+        // Away from the face, pull towards the block average: fine repeating
+        // detail (windows, grids) blurs into a tone instead of aliasing.
+        final mean = [0.0, 0.0, 0.0];
+        for (var j = 0; j < blockSize; j++) {
+          final o =
+              (((by * factor) + j ~/ factor) * width +
+                  bx * factor +
+                  j % factor) *
+              3;
+          for (var k = 0; k < 3; k++) {
+            mean[k] += lab[o + k] / blockSize;
+          }
+        }
+        winner = [
+          for (var k = 0; k < 3; k++) winner[k] + (mean[k] - winner[k]) * blend,
+        ];
+      }
       output[out] = winner[0];
       output[out + 1] = winner[1];
       output[out + 2] = winner[2];

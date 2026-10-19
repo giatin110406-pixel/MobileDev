@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 
@@ -65,7 +66,9 @@ class AudioMusicPlayer implements MusicPlayer {
     _current = null;
     try {
       await _player?.stop();
-    } catch (_) {}
+    } catch (e, st) {
+      AppLog.warn('quest_music', e, st);
+    }
   }
 
   @override
@@ -75,6 +78,8 @@ class AudioMusicPlayer implements MusicPlayer {
     _player = null;
     try {
       await player?.dispose();
-    } catch (_) {}
+    } catch (e, st) {
+      AppLog.warn('quest_music', e, st);
+    }
   }
 }

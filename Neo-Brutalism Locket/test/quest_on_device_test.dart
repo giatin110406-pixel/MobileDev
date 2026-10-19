@@ -181,7 +181,10 @@ void main() {
     }
 
     test('any size is produced', () {
-      expect(preprocessQuestPhoto(photo(goldens.first), 64).length, 3 * 64 * 64);
+      expect(
+        preprocessQuestPhoto(photo(goldens.first), 64).length,
+        3 * 64 * 64,
+      );
     });
 
     test('something that is not an image is refused', () {
@@ -201,7 +204,10 @@ void main() {
 
     test('passes a photo whose embedding shows the subject', () async {
       final encoder = FakeEncoder(vectorOf(dog['embedding'] as List<dynamic>));
-      expect(await verifier(encoder).check(photo(dog), quest('px_dog')), isTrue);
+      expect(
+        await verifier(encoder).check(photo(dog), quest('px_dog')),
+        isTrue,
+      );
       expect(encoder.lastSize, bank.inputSize);
       expect(encoder.lastLength, 3 * bank.inputSize * bank.inputSize);
     });
@@ -235,9 +241,13 @@ void main() {
 
     test('refuses a photo that shows something else', () async {
       final wrong = goldens.firstWhere((g) => g['match'] == false);
-      final encoder = FakeEncoder(vectorOf(wrong['embedding'] as List<dynamic>));
+      final encoder = FakeEncoder(
+        vectorOf(wrong['embedding'] as List<dynamic>),
+      );
       expect(
-        await verifier(encoder).check(photo(wrong), quest(wrong['quest'] as String)),
+        await verifier(
+          encoder,
+        ).check(photo(wrong), quest(wrong['quest'] as String)),
         isFalse,
       );
     });

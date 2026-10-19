@@ -74,8 +74,11 @@ Uint8List mapToColorPalette(
   PaletteInfo palette, {
   double spread = 0.06,
   Uint8List? noDither,
+  double settle = 1.35,
 }) {
   final output = Uint8List(width * height);
+  final second = Uint8List(width * height);
+  final ratio = Float32List(width * height);
   for (var y = 0; y < height; y++) {
     for (var x = 0; x < width; x++) {
       final index = y * width + x;
@@ -87,7 +90,9 @@ Uint8List mapToColorPalette(
           : (bayerThreshold(x, y) - 0.5) * spread;
       final l = lab[o] + offset;
       var best = 0;
+      var runnerUp = 0;
       var bestDistance = double.infinity;
+      var runnerDistance = double.infinity;
       for (var candidate = 0; candidate < palette.colors.length; candidate++) {
         final c = candidate * 3;
         final dl = l - palette.lab[c];
@@ -95,11 +100,40 @@ Uint8List mapToColorPalette(
         final db = lab[o + 2] - palette.lab[c + 2];
         final distance = dl * dl + 1.69 * (da * da + db * db);
         if (distance < bestDistance) {
+          runnerDistance = bestDistance;
+          runnerUp = best;
           bestDistance = distance;
           best = candidate;
+        } else if (distance < runnerDistance) {
+          runnerDistance = distance;
+          runnerUp = candidate;
         }
       }
       output[index] = best;
+      second[index] = runnerUp;
+      ratio[index] = runnerDistance / (bestDistance + 1e-6);
+    }
+  }
+  if (settle <= 1) return output;
+
+  // A pixel nearly halfway between two palette colours takes the one its
+  // neighbours already use, so regions stay whole instead of speckling.
+  final first = Uint8List.fromList(output);
+  for (var y = 1; y < height - 1; y++) {
+    for (var x = 1; x < width - 1; x++) {
+      final index = y * width + x;
+      if (ratio[index] > settle) continue;
+      if (edges[index] > _noDitherEdge) continue;
+      var bestVotes = 0, runnerVotes = 0;
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          if (dx == 0 && dy == 0) continue;
+          final v = first[index + dy * width + dx];
+          if (v == first[index]) bestVotes++;
+          if (v == second[index]) runnerVotes++;
+        }
+      }
+      if (runnerVotes > bestVotes) output[index] = second[index];
     }
   }
   return output;

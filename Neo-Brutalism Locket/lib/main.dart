@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:neo_brutalism_locket/app/app_shell.dart';
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
@@ -12,6 +13,7 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLog.install();
   await Backend.init();
   // A friend's new photo refreshes the home-screen widget even when the app
   // is closed (needs Firebase; does nothing without it).

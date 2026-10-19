@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -204,7 +205,9 @@ class PostOutbox extends ChangeNotifier {
     for (final path in [item.mediaFile, ?item.thumbFile]) {
       try {
         await File(path).delete();
-      } catch (_) {}
+      } catch (e, st) {
+        AppLog.warn('post_outbox', e, st);
+      }
     }
   }
 }

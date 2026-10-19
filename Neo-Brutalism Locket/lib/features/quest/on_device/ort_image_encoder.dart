@@ -37,7 +37,9 @@ class OrtQuestImageEncoder implements QuestImageEncoder {
       final embedding = outputs['embedding'];
       if (embedding == null) throw StateError('model has no embedding output');
       final values = await embedding.asFlattenedList();
-      return Float32List.fromList([for (final v in values) (v as num).toDouble()]);
+      return Float32List.fromList([
+        for (final v in values) (v as num).toDouble(),
+      ]);
     } finally {
       await input.dispose();
       for (final value in outputs.values) {

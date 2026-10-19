@@ -229,30 +229,32 @@ void main() {
       expect(store.groups.length, 1);
     });
 
-    test('an invite that fails (expired) still disappears after reload',
-        () async {
-      final repo = FakeGroups(
-        incoming: [
-          GroupInvite(
-            id: 'i1',
-            groupId: 'a',
-            groupName: 'Old',
-            person: person('boss'),
-            incoming: true,
-            createdAt: DateTime(2026, 1, 1),
-          ),
-        ],
-      );
-      final store = GroupsStore(repo);
-      await store.refresh();
-      expect(store.incoming.length, 1);
-      repo.failNext = const GroupFailure(GroupFailureKind.expired);
-      await expectLater(
-        store.respond(store.incoming.single, accept: true),
-        throwsA(isA<GroupFailure>()),
-      );
-      expect(store.incoming, isEmpty);
-    });
+    test(
+      'an invite that fails (expired) still disappears after reload',
+      () async {
+        final repo = FakeGroups(
+          incoming: [
+            GroupInvite(
+              id: 'i1',
+              groupId: 'a',
+              groupName: 'Old',
+              person: person('boss'),
+              incoming: true,
+              createdAt: DateTime(2026, 1, 1),
+            ),
+          ],
+        );
+        final store = GroupsStore(repo);
+        await store.refresh();
+        expect(store.incoming.length, 1);
+        repo.failNext = const GroupFailure(GroupFailureKind.expired);
+        await expectLater(
+          store.respond(store.incoming.single, accept: true),
+          throwsA(isA<GroupFailure>()),
+        );
+        expect(store.incoming, isEmpty);
+      },
+    );
 
     test('a change from the server reloads by itself', () async {
       final repo = FakeGroups();
@@ -296,17 +298,19 @@ void main() {
       expect(repo.marked, ['a']);
     });
 
-    test('shows new messages of this group once, ignores other groups',
-        () async {
-      final repo = FakeGroups();
-      final chat = GroupChatStore(repo, groupId: 'a', myId: 'id-me');
-      await chat.load();
-      repo.pushMessage(message('1', 'a', 'hi'));
-      repo.pushMessage(message('1', 'a', 'hi'));
-      repo.pushMessage(message('2', 'b', 'elsewhere'));
-      await Future<void>.delayed(Duration.zero);
-      expect(chat.messages.map((m) => m.body), ['hi']);
-    });
+    test(
+      'shows new messages of this group once, ignores other groups',
+      () async {
+        final repo = FakeGroups();
+        final chat = GroupChatStore(repo, groupId: 'a', myId: 'id-me');
+        await chat.load();
+        repo.pushMessage(message('1', 'a', 'hi'));
+        repo.pushMessage(message('1', 'a', 'hi'));
+        repo.pushMessage(message('2', 'b', 'elsewhere'));
+        await Future<void>.delayed(Duration.zero);
+        expect(chat.messages.map((m) => m.body), ['hi']);
+      },
+    );
 
     test('sending stores the message and reloads', () async {
       final repo = FakeGroups();
