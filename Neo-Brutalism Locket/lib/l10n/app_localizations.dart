@@ -1964,6 +1964,12 @@ abstract class AppLocalizations {
   /// **'GIỮ ĐỂ SO SÁNH'**
   String get holdToCompare;
 
+  /// No description provided for @dragToCompare.
+  ///
+  /// In vi, this message translates to:
+  /// **'KÉO ĐỂ SO SÁNH'**
+  String get dragToCompare;
+
   /// No description provided for @styleWorking8bit.
   ///
   /// In vi, this message translates to:

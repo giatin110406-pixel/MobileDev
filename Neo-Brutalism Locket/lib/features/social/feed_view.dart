@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/posts/interactions_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/post_models.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
@@ -580,6 +581,15 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
     children: [
       if (post.isVideo)
         RemoteVideo(path: post.mediaPath, thumbPath: post.thumbPath)
+      else if (post.originalPath != null)
+        // Drag across the picture to see it before and after its style.
+        RevealCompare(
+          before: RemoteImage(
+            path: post.originalPath!,
+            previewPath: post.thumbPath,
+          ),
+          after: RemoteImage(path: post.mediaPath, previewPath: post.thumbPath),
+        )
       else
         RemoteImage(path: post.mediaPath, previewPath: post.thumbPath),
       Positioned(

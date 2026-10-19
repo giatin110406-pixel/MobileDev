@@ -544,6 +544,7 @@
   "stampVerified": "VERIFIED",
   "stampTopSecret": "TOP SECRET",
   "holdToCompare": "HOLD TO COMPARE",
+  "dragToCompare": "DRAG TO COMPARE",
   "styleWorking8bit": "GRINDING PIXELS…",
   "styleWorkingVanGogh": "SWIRLING VAN GOGH COLOURS…",
   "styleWorking": "WORKING…",

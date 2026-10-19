@@ -399,6 +399,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           style: mine.style,
           questId: mine.questId,
           friendCount: _friendsStore?.friends.length,
+          original: _originalToCompare(photo, mine.imagePath),
         );
       }
       // Show the new post in the feed, with its music.
@@ -579,6 +580,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     Map<String, dynamic>? overlay,
     List<String>? recipients,
     int? friendCount,
+    File? original,
   }) => _queueAndSend(
     (outbox) => outbox.enqueue(
       source: file,
@@ -587,6 +589,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       questId: questId,
       overlay: overlay,
       recipients: recipients,
+      original: original,
     ),
     recipients: recipients,
     friendCount: friendCount,
@@ -644,6 +647,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       overlay: result.overlay,
       recipients: result.recipients,
       friendCount: result.recipients?.length ?? store.friends.length,
+      original: _originalToCompare(photo, processed),
     );
   }
 
@@ -663,7 +667,20 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       overlay: result.overlay,
       recipients: result.recipients,
       friendCount: result.recipients?.length ?? store.friends.length,
+      original: _originalToCompare(photo, processed),
     );
+  }
+
+  /// The shot before its style, to send beside the styled one so people can
+  /// compare; null when it was not styled.
+  File? _originalToCompare(NeoPhoto photo, String? processed) {
+    if (processed == null ||
+        processed == photo.originalPath ||
+        photo.styleType == null ||
+        photo.styleType == StyleType.none) {
+      return null;
+    }
+    return File(photo.originalPath);
   }
 
   /// A clip from the camera: caption, labels and who gets it, then queue it.

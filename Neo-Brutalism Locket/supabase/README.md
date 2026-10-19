@@ -43,6 +43,7 @@ Desktop. With it, `npx supabase test db` runs the pgTAP tests in `supabase/tests
 | `20261007000001_profiles.sql` | `profiles` (auto-created at sign-up), column-level update grants, `avatars` bucket + policies |
 | `20261007000002_friends.sql` | `friend_requests`, `friendships`, `blocks` (read-only for clients); RPCs `send_friend_request`, `respond_friend_request`, `cancel_friend_request`, `remove_friend`, `search_profiles`; 20-friend limit |
 | `20261007000003_posts.sql` | `posts`, `post_recipients` (readable by author and recipients), private `media` bucket, `create_post` RPC (idempotent by id), realtime on `post_recipients` |
+| `20261015000001_post_originals.sql` | `posts.original_path` (the shot before its style, readable by the same people as the post); `create_post` gets an optional `p_original_path` (old signature dropped) |
 | `20261007000004_interactions.sql` | `post_reactions`, `post_views`, `messages`; RPCs `react_to_post`, `mark_post_viewed`, `delete_post`, `send_message`, `mark_thread_read`; realtime on messages and reactions |
 | `20261007000005_player.sql` | `shop_items` (seeded), `player_state`, `sunbit_ledger`, `inventory`; RPCs `get_player_state`, `record_quest_attempt`, `complete_quest`, `buy_item`, `equip_item`, `unequip_item`, `set_music_muted` — all quest/Sunbit/shop rules run on the server |
 | `20261007000006_safety.sql` | `reports`; RPCs `block_user`, `unblock_user`, `report_content`, `delete_my_account` |

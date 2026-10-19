@@ -115,7 +115,6 @@ class CameraTabState extends State<CameraTab> {
   int _cameraIndex = 0;
   bool _cameraLoading = true;
   bool _processing = false;
-  bool _showOriginal = false;
   bool _showPrint = false;
 
   /// What is being chosen for the shot just taken (caption, labels, who gets
@@ -207,7 +206,6 @@ class CameraTabState extends State<CameraTab> {
       _activePhoto = photo;
       _selectedStyleType = photo.styleType ?? StyleType.pixel8bit;
       _showPrint = true;
-      _showOriginal = photo.status != ProcessingStatus.done;
     });
   }
 
@@ -608,7 +606,6 @@ class CameraTabState extends State<CameraTab> {
     setState(() {
       _activePhoto = photo;
       _draftId = photo.id;
-      _showOriginal = true;
       // With an account the shot stays on this page, in the viewfinder's place,
       // with its options below; without one the print page opens as before.
       _showPrint = !draft;
@@ -663,7 +660,6 @@ class CameraTabState extends State<CameraTab> {
       if (!mounted) return;
       setState(() {
         _activePhoto = complete;
-        _showOriginal = false;
         _processing = false;
       });
     } catch (error) {
@@ -677,7 +673,6 @@ class CameraTabState extends State<CameraTab> {
       if (!mounted) return;
       setState(() {
         _activePhoto = failed;
-        _showOriginal = true;
         _processing = false;
       });
       _notify(AppLocalizations.of(context).styleFailedOriginalSafe);
@@ -697,7 +692,6 @@ class CameraTabState extends State<CameraTab> {
     setState(() {
       _selectedStyleType = styleType;
       _activePhoto = pending;
-      _showOriginal = true;
       _processing = true;
     });
     await widget.repository.upsert(pending);
@@ -1014,8 +1008,6 @@ class CameraTabState extends State<CameraTab> {
                       ? null
                       : styleName(l10n, photo.styleType!)) ??
                   l10n.editLabel,
-              showStyled: !_showOriginal,
-              onChanged: (styled) => setState(() => _showOriginal = !styled),
             ),
             // The picture's own badges take the top corners; the labels sit above
             // the caption.
@@ -1850,9 +1842,6 @@ class CameraTabState extends State<CameraTab> {
                                   photo.styleType!,
                                 )) ??
                           AppLocalizations.of(context).editLabel,
-                      showStyled: !_showOriginal,
-                      onChanged: (styled) =>
-                          setState(() => _showOriginal = !styled),
                     ),
                   ),
                 ),

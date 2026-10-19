@@ -124,6 +124,20 @@ class SupabasePostsRepository implements PostsRepository {
         ),
       );
     }
+    final originalFile = post.originalFile;
+    final originalPath = originalFile == null
+        ? null
+        : '$myId/${post.id}_orig.jpg';
+    if (originalFile != null && originalPath != null) {
+      await storage.upload(
+        originalPath,
+        File(originalFile),
+        fileOptions: const sb.FileOptions(
+          contentType: 'image/jpeg',
+          upsert: true,
+        ),
+      );
+    }
     await _db.rpc(
       'create_post',
       params: {
@@ -136,6 +150,7 @@ class SupabasePostsRepository implements PostsRepository {
         'p_quest_id': post.questId,
         'p_overlay': post.overlay,
         'p_recipients': post.recipients,
+        'p_original_path': originalPath,
       },
     );
   });

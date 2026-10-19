@@ -32,6 +32,7 @@ class RemotePost {
     required this.createdAt,
     this.kind = 'photo',
     this.thumbPath,
+    this.originalPath,
     this.caption = '',
     this.style,
     this.questId,
@@ -45,6 +46,11 @@ class RemotePost {
   /// Paths in the `media` bucket.
   final String mediaPath;
   final String? thumbPath;
+
+  /// The shot as it was before its style, when the author sent it too (drag
+  /// across the picture to compare). Null for older posts and for posts with no
+  /// style.
+  final String? originalPath;
   final String caption;
   final StyleType? style;
   final String? questId;
@@ -54,8 +60,8 @@ class RemotePost {
   bool get isVideo => kind == 'video';
 
   static const columns =
-      'id, author_id, kind, media_path, thumb_path, caption, style, quest_id, '
-      'overlay, created_at';
+      'id, author_id, kind, media_path, thumb_path, original_path, caption, '
+      'style, quest_id, overlay, created_at';
 
   factory RemotePost.fromRow(Map<String, dynamic> row) => RemotePost(
     id: row['id'] as String,
@@ -63,6 +69,7 @@ class RemotePost {
     kind: (row['kind'] as String?) ?? 'photo',
     mediaPath: row['media_path'] as String,
     thumbPath: row['thumb_path'] as String?,
+    originalPath: row['original_path'] as String?,
     caption: (row['caption'] as String?) ?? '',
     style: _styleFromName(row['style'] as String?),
     questId: row['quest_id'] as String?,
@@ -80,6 +87,7 @@ class PendingPost {
     required this.thumbFile,
     required this.extension,
     required this.createdAt,
+    this.originalFile,
     this.kind = 'photo',
     this.caption = '',
     this.style,
@@ -94,6 +102,10 @@ class PendingPost {
 
   /// Null when no thumbnail could be made (a video on a picky phone).
   final String? thumbFile;
+
+  /// The shot before its style, saved to send beside the styled one; null when
+  /// there is none to compare.
+  final String? originalFile;
 
   /// `photo` or `video`.
   final String kind;
@@ -122,6 +134,7 @@ class PendingPost {
     id: id,
     mediaFile: mediaFile,
     thumbFile: thumbFile,
+    originalFile: originalFile,
     extension: extension,
     createdAt: createdAt,
     kind: kind,
@@ -137,6 +150,7 @@ class PendingPost {
     'id': id,
     'mediaFile': mediaFile,
     'thumbFile': thumbFile,
+    'originalFile': originalFile,
     'kind': kind,
     'extension': extension,
     'caption': caption,
@@ -152,6 +166,7 @@ class PendingPost {
     id: json['id'] as String,
     mediaFile: json['mediaFile'] as String,
     thumbFile: json['thumbFile'] as String?,
+    originalFile: json['originalFile'] as String?,
     kind: json['kind'] as String? ?? 'photo',
     extension: json['extension'] as String? ?? 'jpg',
     caption: json['caption'] as String? ?? '',

@@ -116,8 +116,6 @@ void main() {
               originalPath: 'original.jpg',
               styledPath: styled,
               styleLabel: '8-BIT',
-              showStyled: false,
-              onChanged: (_) {},
             ),
           ),
           changes.add,
