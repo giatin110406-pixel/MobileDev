@@ -907,7 +907,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final l10n = AppLocalizations.of(context);
     try {
       await _interactions?.react(post.id, emoji);
-      if (mounted) _notify(l10n.reactionSent(emoji));
     } on InteractionFailure {
       if (mounted) _notify(l10n.errUnknown);
     }
@@ -1153,12 +1152,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _messages = snapshot.messages;
         _posts = snapshot.posts;
       });
+      // A reaction shows as emojis floating up the feed, not as a notice.
+      if (reaction != null) return;
       final name = _friends
           .where((friend) => friend.id == post.friendId)
           .map((friend) => friend.name.split(' ').first)
           .firstOrNull;
       final l10n = AppLocalizations.of(context);
-      final what = reaction ?? l10n.replyWord;
+      final what = l10n.replyWord;
       _notify(
         name == null
             ? l10n.sentNotice(what)
