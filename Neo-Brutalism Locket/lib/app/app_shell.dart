@@ -1759,7 +1759,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               onTap: Haptics.tap(() => _selectTab(_profilePage)),
               child: PlayerAvatar(
                 state: _player.state,
-                size: 40,
+                size: 54,
                 remotePath: widget.session?.profile.avatarPath,
               ),
             ),

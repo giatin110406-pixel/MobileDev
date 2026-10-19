@@ -150,9 +150,9 @@ class FeedFilterPill extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: () => _open(context),
           child: Container(
-            height: 40,
-            constraints: const BoxConstraints(maxWidth: 220),
-            padding: const EdgeInsets.only(left: 6, right: 10),
+            height: 54,
+            constraints: const BoxConstraints(maxWidth: 260),
+            padding: const EdgeInsets.only(left: 8, right: 12),
             decoration: NeoTheme.panel(color: NeoColors.surface, radius: 999)
                 .copyWith(
                   boxShadow: const [
@@ -166,7 +166,7 @@ class FeedFilterPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _leading(filter, 28),
+                _leading(filter, 38),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
@@ -176,7 +176,7 @@ class FeedFilterPill extends StatelessWidget {
                     style: const TextStyle(
                       fontFamily: NeoFont.display,
                       color: NeoColors.ink,
-                      fontSize: 15,
+                      fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -184,7 +184,7 @@ class FeedFilterPill extends StatelessWidget {
                 const SizedBox(width: 4),
                 const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  size: 22,
+                  size: 26,
                   color: NeoColors.ink,
                 ),
               ],

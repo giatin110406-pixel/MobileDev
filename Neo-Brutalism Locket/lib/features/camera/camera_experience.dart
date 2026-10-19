@@ -719,8 +719,8 @@ class CameraTabState extends State<CameraTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: 40, child: widget.header),
-          const SizedBox(height: 14),
+          SizedBox(height: 54, child: widget.header),
+          const SizedBox(height: 20),
           _questMode
               ? _buildQuestModeHeader(_questModeQuest!)
               : QuestStrip(
