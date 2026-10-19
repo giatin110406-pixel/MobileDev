@@ -521,22 +521,25 @@ class _ShopCard extends StatelessWidget {
   Widget build(BuildContext context) => Stack(
     clipBehavior: Clip.none,
     children: [
-      InkWell(
+      // The worn item stays pressed in; the others stand proud of the page.
+      NeoPress(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
+        sunken: equipped,
+        builder: (context, pressed) => Container(
           padding: const EdgeInsets.all(10),
           decoration: NeoTheme.panel(
             color: equipped ? const Color(0xFFD9F2DF) : NeoColors.surface,
             borderWidth: equipped ? 3 : 2,
+            pressed: pressed,
           ),
           child: child,
         ),
       ),
       if (equipped)
         Positioned(
-          top: -10,
-          right: -6,
+          // Moves with the card, which sits 4px down and right when pressed in.
+          top: -6,
+          right: -2,
           child: IgnorePointer(
             child: Container(
               width: 30,

@@ -97,11 +97,16 @@ class FramedAvatar extends StatelessWidget {
     required this.size,
     required this.child,
     this.frameId,
+    this.shadow = true,
   });
 
   final double size;
   final Widget child;
   final String? frameId;
+
+  /// The hard drop shadow of an unframed avatar; off where avatars sit in a
+  /// list next to flat icons.
+  final bool shadow;
 
   static const _photoScale = 0.74;
 
@@ -120,7 +125,7 @@ class FramedAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: NeoColors.surface,
-              boxShadow: framed
+              boxShadow: framed || !shadow
                   ? null
                   : const [
                       BoxShadow(

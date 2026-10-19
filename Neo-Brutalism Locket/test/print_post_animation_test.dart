@@ -73,18 +73,17 @@ void main() {
   );
 
   group('which stamp', () {
-    test('a quest post is verified', () {
-      expect(printStampFor(quest: true, streak: 7), PrintStamp.verified);
+    test('a passed quest is always verified', () {
+      expect(printStampFor(quest: true), PrintStamp.verified);
+      expect(printStampFor(quest: true, private: true), PrintStamp.verified);
     });
 
-    test('a plain post is approved', () {
-      expect(printStampFor(quest: false, streak: 0), PrintStamp.approved);
-      expect(printStampFor(quest: false, streak: 6), PrintStamp.approved);
+    test('a post to everyone is approved', () {
+      expect(printStampFor(quest: false), PrintStamp.approved);
     });
 
-    test('every seventh streak day is top secret', () {
-      expect(printStampFor(quest: false, streak: 7), PrintStamp.topSecret);
-      expect(printStampFor(quest: false, streak: 14), PrintStamp.topSecret);
+    test('a post to only some friends is top secret', () {
+      expect(printStampFor(quest: false, private: true), PrintStamp.topSecret);
     });
   });
 
@@ -250,31 +249,5 @@ void main() {
       File('assets/${PrintSound.stampAsset}').lengthSync(),
       greaterThan(1000),
     );
-  });
-  testWidgets('the stamp picker lights one chip and reports a pick', (
-    tester,
-  ) async {
-    var picked = PrintStamp.approved;
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('vi'),
-        home: Scaffold(
-          body: StatefulBuilder(
-            builder: (context, setState) => StampPicker(
-              selected: picked,
-              onChanged: (stamp) => setState(() => picked = stamp),
-            ),
-          ),
-        ),
-      ),
-    );
-    expect(find.text('ĐÃ DUYỆT'), findsOneWidget);
-    expect(find.text('XÁC THỰC'), findsOneWidget);
-    expect(find.text('TUYỆT MẬT'), findsOneWidget);
-    await tester.tap(find.text('TUYỆT MẬT'));
-    await tester.pump();
-    expect(picked, PrintStamp.topSecret);
   });
 }

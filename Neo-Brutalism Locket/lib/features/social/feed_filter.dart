@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neo_brutalism_locket/core/haptics.dart';
+import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
@@ -56,8 +56,8 @@ class FeedFilterPill extends StatelessWidget {
   }
 
   Future<void> _open(BuildContext context) async {
-    Haptics.light();
     final l10n = AppLocalizations.of(context);
+    final urls = MediaUrlsScope.maybeOf(context);
     final box = context.findRenderObject()! as RenderBox;
     final overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
@@ -78,11 +78,11 @@ class FeedFilterPill extends StatelessWidget {
       ),
       constraints: const BoxConstraints(minWidth: 200, maxHeight: 360),
       items: [
-        _item(l10n.feedFilterEveryone, const FeedFilter.everyone()),
-        _item(l10n.feedFilterMine, const FeedFilter.mine()),
+        _item(l10n.feedFilterEveryone, const FeedFilter.everyone(), urls),
+        _item(l10n.feedFilterMine, const FeedFilter.mine(), urls),
         if (friends.isNotEmpty) const PopupMenuDivider(height: 8),
         for (final friend in friends)
-          _item(friend.name, FeedFilter.friend(friend.id)),
+          _item(friend.name, FeedFilter.friend(friend.id), urls),
       ],
     );
     if (picked != null && picked != filter) onChanged(picked);
@@ -90,7 +90,7 @@ class FeedFilterPill extends StatelessWidget {
 
   /// The picture for a choice: an icon for everyone / just me, the friend's
   /// profile photo for a friend.
-  Widget _leading(FeedFilter value, double size) {
+  Widget _leading(FeedFilter value, double size, [MediaUrls? urls]) {
     if (value.isEveryone || value.isMine) {
       return Container(
         width: size,
@@ -109,34 +109,45 @@ class FeedFilterPill extends StatelessWidget {
     }
     final friend = friends.where((f) => f.id == value.friendId).firstOrNull;
     if (friend == null) return _leading(const FeedFilter.everyone(), size);
-    return FriendAvatar(friend: friend, size: size);
+    final avatar = FriendAvatar(
+      friend: friend,
+      size: size,
+      showFrame: true,
+      shadow: false,
+    );
+    // The menu is its own route, outside the app's picture links: carry them in
+    // or the profile photo shows as initials until the friend is picked.
+    return urls == null ? avatar : MediaUrlsScope(urls: urls, child: avatar);
   }
 
-  PopupMenuItem<FeedFilter> _item(String text, FeedFilter value) =>
-      PopupMenuItem<FeedFilter>(
-        value: value,
-        height: 52,
-        child: Row(
-          children: [
-            _leading(value, 34),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+  PopupMenuItem<FeedFilter> _item(
+    String text,
+    FeedFilter value,
+    MediaUrls? urls,
+  ) => PopupMenuItem<FeedFilter>(
+    value: value,
+    height: 52,
+    child: Row(
+      children: [
+        _leading(value, 38, urls),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
             ),
-            if (value == filter)
-              const Icon(Icons.check, size: 18, color: NeoColors.ink),
-          ],
+          ),
         ),
-      );
+        if (value == filter)
+          const Icon(Icons.check, size: 18, color: NeoColors.ink),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -146,22 +157,19 @@ class FeedFilterPill extends StatelessWidget {
         button: true,
         label: l10n.feedFilterTitle,
         value: _label(l10n),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        child: NeoPress(
           onTap: () => _open(context),
-          child: Container(
+          offset: const Offset(3, 3),
+          builder: (context, pressed) => Container(
             height: 54,
             constraints: const BoxConstraints(maxWidth: 260),
             padding: const EdgeInsets.only(left: 8, right: 12),
             decoration: NeoTheme.panel(color: NeoColors.surface, radius: 999)
                 .copyWith(
-                  boxShadow: const [
-                    BoxShadow(
-                      color: NeoColors.ink,
-                      offset: Offset(3, 3),
-                      blurRadius: 0,
-                    ),
-                  ],
+                  boxShadow: NeoPress.shadow(
+                    pressed,
+                    offset: const Offset(3, 3),
+                  ),
                 ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
