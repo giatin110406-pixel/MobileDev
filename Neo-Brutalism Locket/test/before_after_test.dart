@@ -86,4 +86,47 @@ void main() {
     );
     expect(find.byIcon(Icons.swap_horiz_rounded), findsNothing);
   });
+
+  testWidgets('the line and grip fade out after the finger lifts', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(_view()));
+    double opacityOfGrip() => tester
+        .widget<AnimatedOpacity>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.swap_horiz_rounded),
+                matching: find.byType(AnimatedOpacity),
+              )
+              .first,
+        )
+        .opacity;
+    final left = tester.getTopLeft(find.byType(BeforeAfterView));
+    final drag = await tester.startGesture(left + const Offset(100, 150));
+    await drag.moveTo(left + const Offset(140, 150));
+    await drag.moveTo(left + const Offset(200, 150));
+    await tester.pump();
+    expect(opacityOfGrip(), greaterThan(0));
+    await drag.up();
+    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(opacityOfGrip(), 0, reason: 'nothing left sitting on the picture');
+  });
+
+  testWidgets('the before picture waits its turn when asked to', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        const RevealCompare(
+          beforeDelay: Duration(seconds: 1),
+          before: Text('BEFORE-PIC'),
+          after: Text('AFTER-PIC'),
+        ),
+      ),
+    );
+    expect(find.text('BEFORE-PIC'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 1100));
+    expect(find.text('BEFORE-PIC'), findsOneWidget);
+  });
 }

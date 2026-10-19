@@ -519,6 +519,21 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     _lastLoadedPosts = signature;
     _interactions?.load(posts);
     _refreshWidget();
+    _warmFeedPictures(posts);
+  }
+
+  /// Starts fetching the newest pictures now, so the feed opens on pictures
+  /// that are already on the phone: small previews first, then the full ones,
+  /// then the originals people may drag to compare.
+  void _warmFeedPictures(List<RemotePost> posts) {
+    final newest = posts.take(12).toList();
+    warmMedia(_mediaUrls, [
+      for (final post in newest) ?post.thumbPath,
+      for (final post in newest)
+        if (!post.isVideo) post.mediaPath,
+      for (final post in newest)
+        if (!post.isVideo) ?post.originalPath,
+    ]);
   }
 
   /// Puts the newest friend photo on the home-screen widget.

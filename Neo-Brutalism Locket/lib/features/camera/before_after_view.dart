@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class RevealCompare extends StatefulWidget {
     this.beforeLabel,
     this.afterLabel,
     this.showHint = false,
+    this.beforeDelay = Duration.zero,
   });
 
   final Widget after;
@@ -32,9 +34,18 @@ class RevealCompare extends StatefulWidget {
   /// "Drag to compare" until the first drag.
   final bool showHint;
 
+  /// How long to wait before the "before" picture is put on screen (and starts
+  /// loading, if it comes over the network): the finished picture should get
+  /// the connection first. A drag starts it at once.
+  final Duration beforeDelay;
+
   @override
   State<RevealCompare> createState() => _RevealCompareState();
 }
+
+/// Once anyone has dragged a picture the little grip no longer sits on every
+/// picture to point it out.
+bool _learnedToDrag = false;
 
 class _RevealCompareState extends State<RevealCompare> {
   /// Share of the width, from the left, that shows the "before" side.
@@ -47,6 +58,44 @@ class _RevealCompareState extends State<RevealCompare> {
   /// Where the handle sits on the line, as a share of the height. It rides with
   /// the finger and rests low, away from the middle of the picture.
   double _knobY = 0.74;
+
+  /// The line and grip show while dragging and for a moment after; then they
+  /// fade so nothing sits on the picture.
+  bool _chrome = false;
+  Timer? _hideTimer;
+
+  /// The "before" picture is only built (so only loaded) from here on.
+  bool _beforeReady = false;
+  Timer? _beforeTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.beforeDelay == Duration.zero) {
+      _beforeReady = true;
+    } else {
+      _beforeTimer = Timer(widget.beforeDelay, () {
+        if (mounted) setState(() => _beforeReady = true);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    _beforeTimer?.cancel();
+    super.dispose();
+  }
+
+  void _showChrome({required bool keep}) {
+    _hideTimer?.cancel();
+    _chrome = true;
+    if (!keep) {
+      _hideTimer = Timer(const Duration(milliseconds: 900), () {
+        if (mounted) setState(() => _chrome = false);
+      });
+    }
+  }
 
   void _moveTo(Offset at, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
@@ -73,63 +122,81 @@ class _RevealCompareState extends State<RevealCompare> {
             onHorizontalDragStart: (details) {
               Haptics.light();
               _dragged = true;
+              _learnedToDrag = true;
               _dragging = true;
+              _beforeReady = true;
+              _showChrome(keep: true);
               _moveTo(details.localPosition, size);
             },
             onHorizontalDragUpdate: (details) =>
                 _moveTo(details.localPosition, size),
-            onHorizontalDragEnd: (_) => setState(() => _dragging = false),
-            onHorizontalDragCancel: () => setState(() => _dragging = false),
+            onHorizontalDragEnd: (_) => setState(() {
+              _dragging = false;
+              _showChrome(keep: false);
+            }),
+            onHorizontalDragCancel: () => setState(() {
+              _dragging = false;
+              _showChrome(keep: false);
+            }),
             child: Stack(
               fit: StackFit.expand,
               children: [
                 widget.after,
-                ClipRect(
-                  clipper: _LeftOf(x),
-                  child: SizedBox.expand(child: before),
-                ),
-                // The dividing line: thin, with a light edge so it reads on dark
-                // and bright pictures alike.
+                if (_beforeReady)
+                  ClipRect(
+                    clipper: _LeftOf(x),
+                    child: SizedBox.expand(child: before),
+                  ),
+                // The dividing line: hairline-thin, with a light edge so it reads on
+                // dark and bright pictures alike. Only while dragging.
                 Positioned(
-                  left: x.clamp(1.0, width - 1.0) - 1,
+                  left: x.clamp(1.0, width - 1.0) - 0.75,
                   top: 0,
                   bottom: 0,
-                  width: 2,
-                  child: const IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: NeoColors.ink,
-                        boxShadow: [
-                          BoxShadow(color: NeoColors.surface, spreadRadius: 1),
-                        ],
+                  width: 1.5,
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 220),
+                      opacity: _chrome ? 0.85 : 0,
+                      child: const DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: NeoColors.ink,
+                          boxShadow: [
+                            BoxShadow(
+                              color: NeoColors.surface,
+                              spreadRadius: 0.75,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-                // A small grip, not a big button: see-through while dragging.
+                // A tiny grip: faint on a picture nobody has dragged yet, then
+                // only while a finger is on it.
                 Positioned(
-                  left: handleX - 14,
-                  top: _knobY * size.height - 14,
-                  width: 28,
-                  height: 28,
+                  left: handleX - 11,
+                  top: _knobY * size.height - 11,
+                  width: 22,
+                  height: 22,
                   child: IgnorePointer(
                     child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 120),
-                      opacity: _dragging ? 0.45 : 0.92,
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 120),
-                        scale: _dragging ? 0.75 : 1,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: NeoColors.surface,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: NeoColors.ink, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.swap_horiz_rounded,
-                            size: 16,
-                            color: NeoColors.ink,
-                          ),
+                      duration: const Duration(milliseconds: 220),
+                      opacity: _dragging
+                          ? 0.4
+                          : _chrome
+                          ? 0.6
+                          : (_learnedToDrag ? 0.0 : 0.5),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: NeoColors.surface,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: NeoColors.ink, width: 1.5),
+                        ),
+                        child: const Icon(
+                          Icons.swap_horiz_rounded,
+                          size: 13,
+                          color: NeoColors.ink,
                         ),
                       ),
                     ),

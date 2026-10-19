@@ -202,6 +202,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncMusic();
       _scheduleViewed();
+      _warmAhead();
     });
   }
 
@@ -250,6 +251,23 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
     } else {
       _music.play(QuestMusic.trackFor(style, entry!.id));
     }
+  }
+
+  /// The next few pictures start coming while this one is looked at.
+  void _warmAhead() {
+    final ahead = widget.entries
+        .skip(_page + 1)
+        .take(4)
+        .map((entry) => entry.remote)
+        .whereType<RemotePost>()
+        .toList();
+    warmMedia(MediaUrlsScope.maybeOf(context), [
+      for (final post in ahead) ?post.thumbPath,
+      for (final post in ahead)
+        if (!post.isVideo) post.mediaPath,
+      for (final post in ahead)
+        if (!post.isVideo) ?post.originalPath,
+    ]);
   }
 
   bool get _anyMusic => widget.entries.any((entry) => entry.musicStyle != null);
@@ -326,6 +344,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                       _page = page;
                       _syncMusic();
                       _scheduleViewed();
+                      _warmAhead();
                     },
                     itemBuilder: (context, index) =>
                         _buildPage(widget.entries[index]),
@@ -584,6 +603,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
       else if (post.originalPath != null)
         // Drag across the picture to see it before and after its style.
         RevealCompare(
+          beforeDelay: const Duration(milliseconds: 1500),
           before: RemoteImage(
             path: post.originalPath!,
             previewPath: post.thumbPath,
