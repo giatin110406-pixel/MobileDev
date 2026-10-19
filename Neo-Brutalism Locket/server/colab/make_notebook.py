@@ -53,7 +53,9 @@ for line in (WORK / "server" / "requirements.txt").read_text(encoding="utf-8").s
 subprocess.run([sys.executable, "-m", "uv", "pip", "install", "--python", PY, *pins], check=True)
 print("libraries ready")'''
 
-MODELS = '''MODELS = WORK / "models"
+MODELS = '''import time
+
+MODELS = WORK / "models"
 WEIGHTS = {
     "RealESRGAN_x2plus.pth":
         "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth",
@@ -64,9 +66,22 @@ WEIGHTS = {
 
 if not MODELS.exists():
     if (DRIVE / "models.tar").exists():
-        print("restoring models from Drive (~2 min)...")
+        # Drive is slow to read (a 6 GB file can take 5-15 min), and extractall prints nothing:
+        # unpack member by member so the cell shows how far it is.
+        print("restoring models from Drive (5-15 min, progress below)...")
         MODELS.mkdir()
-        tarfile.open(DRIVE / "models.tar").extractall(MODELS, filter="data")
+        archive = DRIVE / "models.tar"
+        total = archive.stat().st_size
+        started = time.time()
+        next_note = 0.05
+        with tarfile.open(archive, "r:") as tar:
+            for member in tar:
+                tar.extract(member, MODELS, filter="data")
+                done = tar.fileobj.tell() / total
+                if done >= next_note:
+                    print(f"  {done:.0%} restored ({int(time.time() - started)} s)", flush=True)
+                    next_note = done + 0.05
+        print("restored in", int(time.time() - started), "s")
     else:
         print("first run: downloading ~6 GB of models (~5-10 min), saved to Drive for next time")
         (MODELS / "weights").mkdir(parents=True)
@@ -74,6 +89,7 @@ if not MODELS.exists():
             urllib.request.urlretrieve(url, MODELS / "weights" / name)
         env = dict(os.environ, HF_HOME=str(MODELS / "hf"), TORCH_HOME=str(MODELS / "torch"))
         subprocess.run([PY, "download_models.py"], cwd=WORK / "server", env=env, check=True)
+        print("saving the models to Drive for next time (a few minutes)...")
         with tarfile.open(DRIVE / "models.tar", "w") as tar:
             tar.add(MODELS / "hf", arcname="hf")
             tar.add(MODELS / "weights", arcname="weights")
