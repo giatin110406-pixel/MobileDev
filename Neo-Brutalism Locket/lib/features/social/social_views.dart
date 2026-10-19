@@ -75,8 +75,7 @@ class FriendsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SocialMasthead(),
-          SizedBox(height: segment == null ? 24 : 14),
+          if (segment != null) const SizedBox(height: 0),
           if (segment != null) ...[segment!, const SizedBox(height: 14)],
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -254,8 +253,7 @@ class InboxScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SocialMasthead(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -991,66 +989,6 @@ class FriendAvatar extends StatelessWidget {
           fontWeight: FontWeight.w800,
         ),
       ),
-    );
-  }
-}
-
-class _SocialMasthead extends StatelessWidget {
-  const _SocialMasthead();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(
-          width: 42,
-          height: 42,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: NeoColors.coral,
-              border: Border.fromBorderSide(
-                BorderSide(color: NeoColors.ink, width: 2),
-              ),
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-            ),
-            child: Icon(
-              Icons.photo_camera_outlined,
-              color: NeoColors.ink,
-              size: 22,
-            ),
-          ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'POCKET PORTRAIT',
-                style: TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 3),
-              Text(
-                AppLocalizations.of(context).appTagline,
-                style: TextStyle(
-                  color: NeoColors.muted,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        NeoLabel(
-          AppLocalizations.of(context).localLabel,
-          color: NeoColors.green,
-          icon: Icons.lock_outline,
-        ),
-      ],
     );
   }
 }

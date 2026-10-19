@@ -63,6 +63,16 @@ abstract final class NeoTheme {
   );
 }
 
+/// The panel's black outline alone, to lay over the picture inside a
+/// [NeoPanelClip] as `foregroundDecoration`: the anti-aliased clip edge at the
+/// four rounded corners then never shows a light fringe between the picture and
+/// the border.
+BoxDecoration neoPanelOutline({double radius = 8, double borderWidth = 2}) =>
+    BoxDecoration(
+      border: Border.all(color: NeoColors.ink, width: borderWidth),
+      borderRadius: BorderRadius.circular(radius),
+    );
+
 /// Clips [child] to the inside of a [NeoTheme.panel] of the same [radius] and
 /// [borderWidth]. Clipping with the panel's own `clipBehavior` cuts at the outer
 /// edge, so the child's square corners cover the inner half of the border and
@@ -337,6 +347,7 @@ class NeoIconButton extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     this.fill = NeoColors.paper,
+    this.size = 40,
     super.key,
   });
 
@@ -344,6 +355,10 @@ class NeoIconButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback? onPressed;
   final Color fill;
+
+  /// Side of the square; below 40 the button is the compact version (thinner
+  /// shadow, smaller icon) that sits beside the status pills.
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -359,21 +374,21 @@ class NeoIconButton extends StatelessWidget {
                   onPressed!();
                 },
           child: Ink(
-            width: 40,
-            height: 40,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               color: fill,
               border: Border.all(color: NeoColors.ink, width: 2),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: const [
+              borderRadius: BorderRadius.circular(size < 40 ? 999 : 8),
+              boxShadow: [
                 BoxShadow(
                   color: NeoColors.ink,
-                  offset: Offset(4, 4),
+                  offset: size < 40 ? const Offset(2, 2) : const Offset(4, 4),
                   blurRadius: 0,
                 ),
               ],
             ),
-            child: Icon(icon, color: NeoColors.ink, size: 22),
+            child: Icon(icon, color: NeoColors.ink, size: size * 0.55),
           ),
         ),
       ),

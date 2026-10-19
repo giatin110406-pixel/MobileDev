@@ -710,7 +710,7 @@ void main() {
         createdAt: DateTime(2026, 1, 1),
       );
       await pumpShell(tester, FakeFriends(friends: [bo]), feed: [newer, older]);
-      await tester.tap(find.bySemanticsLabel('Open archive'));
+      await tester.tap(find.byTooltip('HISTORY'));
       await tester.pumpAndSettle();
       expect(find.byType(RemoteImage), findsNWidgets(2));
       expect(find.text('JANUARY 2026'), findsOneWidget);

@@ -736,6 +736,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get feedLabel => 'BẢNG TIN';
 
   @override
+  String get feedFilterEveryone => 'Mọi người';
+
+  @override
+  String get feedFilterMine => 'Chỉ mình tôi';
+
+  @override
+  String get feedFilterTitle => 'Xem bài đăng của';
+
+  @override
   String zoomSemantics(String level) {
     return 'Thu phóng $level';
   }

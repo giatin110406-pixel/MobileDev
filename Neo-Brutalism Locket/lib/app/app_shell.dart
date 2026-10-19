@@ -59,7 +59,10 @@ import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_post_screen.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_verifier.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_screen.dart';
+import 'package:neo_brutalism_locket/features/profile/player_avatar.dart';
+import 'package:neo_brutalism_locket/features/social/feed_filter.dart';
 import 'package:neo_brutalism_locket/features/social/feed_view.dart';
+import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/social/local_friend_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
@@ -176,6 +179,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int? _shownDay;
   List<NeoPhoto> _photos = [];
   List<PocketFriend> _friends = [];
+  FeedFilter _feedFilter = const FeedFilter.everyone();
   List<PocketMessage> _messages = [];
   List<FriendPost> _posts = [];
   PocketFriend? _activeFriend;
@@ -1284,9 +1288,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     }
   }
 
-  /// The archive is a page behind the camera's thumbnail, not a menu tab: it
-  /// sits after the five tabs.
-  static const _archivePage = 5;
+  /// The archive is the fifth menu tab; the profile is a page behind the
+  /// avatar on the camera, not a menu tab: it sits after the five tabs.
+  static const _archiveTab = 4;
+  static const _profilePage = 5;
 
   void _selectTab(int index) {
     Haptics.select();
@@ -1298,13 +1303,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (index == 0) _camera?.closePrint();
     if (index != 0) _camera?.leaveQuestMode();
     if (index == 1 || index == 2) _loadSocial();
-    if (index == _archivePage) _loadArchive();
+    if (index == _archiveTab) _loadArchive();
   }
 
   /// Swiping moves between the five menu tabs; the archive page (opened from the
   /// camera) is not one of them, so it is left with its back button.
   void _swipeTab(int index) {
-    if (_tabIndex >= _archivePage) return;
+    if (_tabIndex >= _profilePage) return;
     _selectTab(index);
   }
 
@@ -1345,17 +1350,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final page = switch (_tabIndex) {
       0 when _showFeed => _feedScreen(
         key: const ValueKey('feed'),
-        entries: _online
-            ? buildRemoteFeed(
-                _postsStore?.posts ?? const [],
-                myId: widget.session!.user.id,
-                friendIds: {for (final f in _friends) f.id},
-              )
-            : buildFeed(
-                _posts,
-                _photos,
-                questPosts: _player.state?.questPosts ?? const [],
-              ),
+        entries: _filteredFeed(),
+        filterPill: _filterPill(),
         onClose: () => setState(() => _showFeed = false),
       ),
       0 => const SizedBox.shrink(key: ValueKey('camera')),
@@ -1383,24 +1379,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                 allowPhoto: !_online,
               ),
       3 => _buildContestTab(),
-      _archivePage => _buildArchivePage(),
-      _ => ProfileScreen(
-        key: const ValueKey('profile'),
-        store: _player,
-        session: widget.session,
-        onOpenSettings: _online && widget.settings != null
-            ? _openSettings
-            : null,
-        remoteQuestPosts: _online
-            ? [
-                for (final post in _postsStore?.posts ?? const <RemotePost>[])
-                  if (post.authorId == widget.session!.user.id &&
-                      post.questId != null)
-                    post,
-              ]
-            : null,
-        onOpenRemote: _openHistoryPost,
-      ),
+      _archiveTab => _buildArchivePage(),
+      _ => _buildProfilePage(),
     };
     final isContestTab = _tabIndex == 3;
     final scaffold = Scaffold(
@@ -1432,12 +1412,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           questVerifier: _questVerifier,
                           onPhotoChanged: _onPhotoChanged,
                           onOpenFeed: _openFeed,
-                          onOpenArchive: () => _selectTab(_archivePage),
                           onOpenQuestSheet: _openQuestSheet,
                           onQuestPassed: _openQuestPost,
                           onSendPrint: _online ? _sendPrint : null,
                           onPhotoRemoved: _onPhotoRemoved,
                           onVideoRecorded: _online ? _sendVideo : null,
+                          header: _homeHeader(),
                         ),
                       ),
                     ),
@@ -1490,9 +1470,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               activeColor: NeoColors.green,
             ),
             NeoBottomNavTab(
-              label: l10n.tabMe,
-              outlineIcon: Icons.person_outline,
-              filledIcon: Icons.person,
+              label: _online ? l10n.historyTab : l10n.tabPrints,
+              outlineIcon: Icons.grid_view_outlined,
+              filledIcon: Icons.grid_view_rounded,
               activeColor: NeoColors.green,
             ),
           ],
@@ -1611,14 +1591,43 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     }
   }
 
+  /// The feed entries that pass the whose-posts filter.
+  List<FeedEntry> _filteredFeed() {
+    final myId = widget.session?.user.id;
+    final entries = _online
+        ? buildRemoteFeed(
+            _postsStore?.posts ?? const [],
+            myId: myId!,
+            friendIds: {for (final f in _friends) f.id},
+          )
+        : buildFeed(
+            _posts,
+            _photos,
+            questPosts: _player.state?.questPosts ?? const [],
+          );
+    if (_feedFilter.isEveryone) return entries;
+    return [
+      for (final entry in entries)
+        if (_feedFilter.allows(entry.authorId, myId)) entry,
+    ];
+  }
+
+  Widget _filterPill() => FeedFilterPill(
+    filter: _feedFilter,
+    friends: _friends,
+    onChanged: (filter) => setState(() => _feedFilter = filter),
+  );
+
   /// The feed UI, for the feed itself and for the history viewer.
   FeedScreen _feedScreen({
     Key? key,
     required List<FeedEntry> entries,
     required VoidCallback onClose,
     int initialPage = 0,
+    Widget? filterPill,
   }) => FeedScreen(
     key: key,
+    filterPill: filterPill,
     entries: entries,
     initialPage: initialPage,
     friends: _friends,
@@ -1632,7 +1641,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       userId: widget.session?.user.id,
     ),
     onOpenFriend: _openFriendProfile,
-    onOpenSelf: () => _selectTab(4),
+    onOpenSelf: () => _selectTab(_profilePage),
     musicMuted: _player.state?.musicMuted ?? false,
     onMuteChanged: _player.setMusicMuted,
     onReplyRemote: _online ? _replyToRemote : null,
@@ -1676,11 +1685,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     );
   }
 
-  /// The archive (posts and prints on this phone), opened from the camera.
-  Widget _buildArchivePage() {
+  /// Your profile, opened from the avatar on the camera page; the back button
+  /// returns to the camera.
+  Widget _buildProfilePage() {
     final l10n = AppLocalizations.of(context);
     return Column(
-      key: const ValueKey('archive'),
+      key: const ValueKey('profile'),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 10, 22, 0),
@@ -1691,7 +1701,67 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                 tooltip: l10n.backTooltip,
                 onPressed: () => _selectTab(0),
               ),
-              const SizedBox(width: 12),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ProfileScreen(
+            store: _player,
+            session: widget.session,
+            onOpenSettings: _online && widget.settings != null
+                ? _openSettings
+                : null,
+            remoteQuestPosts: _online
+                ? [
+                    for (final post
+                        in _postsStore?.posts ?? const <RemotePost>[])
+                      if (post.authorId == widget.session!.user.id &&
+                          post.questId != null)
+                        post,
+                  ]
+                : null,
+            onOpenRemote: _openHistoryPost,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The camera page's header: the whose-posts pill in the middle and your
+  /// profile avatar on the right.
+  Widget _homeHeader() => Row(
+    children: [
+      const Expanded(child: SizedBox()),
+      _filterPill(),
+      Expanded(
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Tooltip(
+            message: AppLocalizations.of(context).tabMe,
+            child: GestureDetector(
+              onTap: Haptics.tap(() => _selectTab(_profilePage)),
+              child: PlayerAvatar(
+                state: _player.state,
+                size: 40,
+                remotePath: widget.session?.profile.avatarPath,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+
+  /// The archive (posts and prints on this phone), a menu tab.
+  Widget _buildArchivePage() {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      key: const ValueKey('archive'),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 10, 22, 0),
+          child: Row(
+            children: [
               Expanded(
                 child: Text(
                   _online ? l10n.historyTab : l10n.tabPrints,
@@ -1823,6 +1893,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         children: [
           StreakChip(streak: _player.streak, onTap: _openQuestSheet),
           const Spacer(),
+          StatusIconButton(
+            icon: Icons.dns_outlined,
+            tooltip: AppLocalizations.of(context).laptopSettingsTooltip,
+            onPressed: () => showServerSettingsSheet(context),
+          ),
+          const SizedBox(width: 10),
           SunbitBadge(
             balance: _player.balance,
             onTap: () => openShop(context, _player),

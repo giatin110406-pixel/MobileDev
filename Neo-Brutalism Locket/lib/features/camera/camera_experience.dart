@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:neo_brutalism_locket/app/pocket_top_bar.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_progress.dart';
 import 'package:neo_brutalism_locket/core/print_sound.dart';
@@ -19,7 +18,6 @@ import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
 import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
 import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
-import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
@@ -47,12 +45,12 @@ class CameraTab extends StatefulWidget {
     required this.questVerifier,
     required this.onPhotoChanged,
     required this.onOpenFeed,
-    required this.onOpenArchive,
     required this.onOpenQuestSheet,
     required this.onQuestPassed,
     this.onSendPrint,
     this.onPhotoRemoved,
     this.onVideoRecorded,
+    this.header,
   });
 
   final PlayerStore player;
@@ -66,7 +64,6 @@ class CameraTab extends StatefulWidget {
   /// A print was created or changed (saved already).
   final ValueChanged<NeoPhoto> onPhotoChanged;
   final VoidCallback onOpenFeed;
-  final VoidCallback onOpenArchive;
   final VoidCallback onOpenQuestSheet;
 
   /// Today's quest photo passed the check: style, caption and post it.
@@ -84,6 +81,9 @@ class CameraTab extends StatefulWidget {
   /// A clip was recorded (hold the shutter). Null without an account: there
   /// is nowhere to keep videos on the phone, so recording is off.
   final Future<void> Function(File video)? onVideoRecorded;
+
+  /// The top of the camera page: whose-posts picker and profile avatar.
+  final Widget? header;
 
   @override
   State<CameraTab> createState() => CameraTabState();
@@ -719,42 +719,7 @@ class CameraTabState extends State<CameraTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          PocketTopBar(
-            actions: [
-              NeoIconButton(
-                icon: Icons.dns_outlined,
-                tooltip: AppLocalizations.of(context).laptopSettingsTooltip,
-                fill: NeoColors.green,
-                onPressed: () => showServerSettingsSheet(context),
-              ),
-              NeoIconButton(
-                icon: _flashMode == FlashMode.off
-                    ? Icons.flash_off
-                    : Icons.flash_on,
-                tooltip: AppLocalizations.of(context).flashTooltip,
-                fill: NeoColors.green,
-                onPressed: _toggleFlash,
-              ),
-              NeoIconButton(
-                icon: switch (_shotTimer) {
-                  ShotTimer.off => Icons.timer_off_outlined,
-                  ShotTimer.three => Icons.timer_3,
-                  ShotTimer.ten => Icons.timer_10,
-                },
-                tooltip: _shotTimer == ShotTimer.off
-                    ? AppLocalizations.of(context).timerOff
-                    : AppLocalizations.of(
-                        context,
-                      ).timerSeconds(_shotTimer.seconds),
-                fill: _shotTimer == ShotTimer.off
-                    ? NeoColors.surface
-                    : NeoColors.coral,
-                onPressed: _countdown != null || _recording
-                    ? null
-                    : () => setState(() => _shotTimer = _shotTimer.next),
-              ),
-            ],
-          ),
+          SizedBox(height: 40, child: widget.header),
           const SizedBox(height: 14),
           _questMode
               ? _buildQuestModeHeader(_questModeQuest!)
@@ -916,6 +881,7 @@ class CameraTabState extends State<CameraTab> {
           borderWidth: 2,
           radius: _squareRadius,
         ),
+        foregroundDecoration: neoPanelOutline(radius: _squareRadius),
         child: NeoPanelClip(
           radius: _squareRadius,
           child: Stack(
@@ -936,20 +902,25 @@ class CameraTabState extends State<CameraTab> {
               // photo. The viewfinder is otherwise just the picture.
               if (_recording || _checkingQuest)
                 Positioned(
-                  top: 12,
-                  left: 12,
-                  child: _recording
-                      ? const NeoLabel(
-                          'REC',
-                          color: NeoColors.coral,
-                          icon: Icons.circle,
-                        )
-                      : NeoLabel(
-                          AppLocalizations.of(context).checkingPhoto,
-                          color: NeoColors.green,
-                          icon: Icons.search,
-                        ),
+                  top: 14,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: _recording
+                        ? const NeoLabel(
+                            'REC',
+                            color: NeoColors.coral,
+                            icon: Icons.circle,
+                          )
+                        : NeoLabel(
+                            AppLocalizations.of(context).checkingPhoto,
+                            color: NeoColors.green,
+                            icon: Icons.search,
+                          ),
+                  ),
                 ),
+              Positioned(top: 18, left: 18, child: _flashControl()),
+              Positioned(top: 18, right: 18, child: _timerControl()),
               if (camera != null &&
                   camera.value.isInitialized &&
                   zoomPresets(_minZoom, _maxZoom).length > 1)
@@ -986,6 +957,83 @@ class CameraTabState extends State<CameraTab> {
       ),
     );
   }
+
+  /// A small round control laid over the viewfinder: see-through while off so
+  /// it hides little of the picture, solid once it is switched on.
+  Widget _cornerControl({
+    required IconData icon,
+    required String tooltip,
+    required bool active,
+    required Color activeColor,
+    required VoidCallback? onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onPressed == null ? null : Haptics.tap(onPressed),
+        // A roomy touch area around a small disc.
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: active
+                    ? activeColor
+                    : NeoColors.ink.withValues(alpha: 0.28),
+                border: Border.all(
+                  color: active
+                      ? NeoColors.ink
+                      : NeoColors.surface.withValues(alpha: 0.5),
+                  width: active ? 2 : 1,
+                ),
+              ),
+              child: Icon(
+                icon,
+                size: 17,
+                color: active
+                    ? NeoColors.ink
+                    : NeoColors.surface.withValues(alpha: 0.9),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _flashControl() => _cornerControl(
+    icon: switch (_flashMode) {
+      FlashMode.off => Icons.flash_off,
+      FlashMode.auto => Icons.flash_auto,
+      _ => Icons.flash_on,
+    },
+    tooltip: AppLocalizations.of(context).flashTooltip,
+    active: _flashMode != FlashMode.off,
+    activeColor: NeoColors.green,
+    onPressed: _toggleFlash,
+  );
+
+  Widget _timerControl() => _cornerControl(
+    icon: switch (_shotTimer) {
+      ShotTimer.off => Icons.timer_off_outlined,
+      ShotTimer.three => Icons.timer_3,
+      ShotTimer.ten => Icons.timer_10,
+    },
+    tooltip: _shotTimer == ShotTimer.off
+        ? AppLocalizations.of(context).timerOff
+        : AppLocalizations.of(context).timerSeconds(_shotTimer.seconds),
+    active: _shotTimer != ShotTimer.off,
+    activeColor: NeoColors.coral,
+    onPressed: _countdown != null || _recording
+        ? null
+        : () => setState(() => _shotTimer = _shotTimer.next),
+  );
 
   Widget _zoomButtons() {
     final presets = zoomPresets(_minZoom, _maxZoom);
@@ -1134,38 +1182,30 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildCaptureControls() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _recentThumb(),
-                // Quests must be shot live: no gallery in quest mode.
-                if (!_questMode) ...[
-                  const SizedBox(width: 10),
-                  NeoIconButton(
+          // Quests must be shot live: no gallery in quest mode.
+          child: _questMode
+              ? const SizedBox.shrink()
+              : Center(
+                  child: NeoIconButton(
                     icon: Icons.add_photo_alternate_outlined,
                     tooltip: AppLocalizations.of(context).uploadPhotoTooltip,
                     onPressed: _processing ? null : _uploadFromGallery,
                     fill: NeoColors.coral,
+                    size: 54,
                   ),
-                ],
-              ],
-            ),
-          ),
+                ),
         ),
         _shutterButton(),
         Expanded(
-          child: Align(
-            alignment: Alignment.centerRight,
+          child: Center(
             child: NeoIconButton(
               icon: Icons.flip_camera_ios_outlined,
               tooltip: AppLocalizations.of(context).switchCameraTooltip,
               onPressed: _flipCamera,
               fill: NeoColors.green,
+              size: 54,
             ),
           ),
         ),
@@ -1250,27 +1290,6 @@ class CameraTabState extends State<CameraTab> {
     ),
   );
 
-  /// The way into the archive: the same four-pane icon the menu used to show.
-  Widget _recentThumb() {
-    return Semantics(
-      button: true,
-      label: AppLocalizations.of(context).openArchiveLabel,
-      child: GestureDetector(
-        onTap: Haptics.tap(widget.onOpenArchive),
-        child: Container(
-          width: 46,
-          height: 46,
-          decoration: NeoTheme.panel(color: NeoColors.green, borderWidth: 2),
-          child: const Icon(
-            Icons.grid_view_rounded,
-            color: NeoColors.ink,
-            size: 24,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildPrint(NeoPhoto photo, {required Key key}) {
     final ready = photo.status == ProcessingStatus.done;
     final processed = photo.processedPath;
@@ -1353,6 +1372,7 @@ class CameraTabState extends State<CameraTab> {
                     borderWidth: 2,
                     radius: _squareRadius,
                   ),
+                  foregroundDecoration: neoPanelOutline(radius: _squareRadius),
                   child: NeoPanelClip(
                     radius: _squareRadius,
                     child: BeforeAfterView(

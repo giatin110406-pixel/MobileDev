@@ -335,7 +335,8 @@ void main() {
       final push = await pumpShell(tester);
       push.tap(const PushTap(type: 'new_post', postId: 'p1'));
       await tester.pumpAndSettle();
-      expect(find.text('FEED'), findsOneWidget);
+      // The feed header shows the whose-posts pill (default: everyone).
+      expect(find.text('Everyone'), findsOneWidget);
       expect(find.text('NO POSTS YET'), findsOneWidget);
     });
   });
