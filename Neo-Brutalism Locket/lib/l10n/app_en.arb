@@ -119,6 +119,7 @@
   "composerTitle": "POST",
   "composerCaptionHint": "Add a caption...",
   "composerAllFriends": "ALL FRIENDS",
+  "composerAllShort": "All",
   "composerSend": "SEND",
   "composerNoFriends": "No friends yet. Your post goes to your history, and you can still add friends any time.",
   "composerPickAtLeastOne": "Pick at least one friend.",

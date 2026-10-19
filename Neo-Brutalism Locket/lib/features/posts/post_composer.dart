@@ -24,6 +24,90 @@ class ComposerResult {
 
 const maxCaptionLength = 80;
 
+/// What is being chosen for one post: caption, time and place labels, and who
+/// gets it. Owned by whatever shows the fields (the camera page after a shot).
+class ComposerController extends ChangeNotifier {
+  ComposerController({
+    required this.friends,
+    this.placeLookup = const DevicePlaceLookup(),
+    DateTime Function() clock = DateTime.now,
+  }) : selected = {for (final friend in friends) friend.person.id},
+       time = formatOverlayTime(clock());
+
+  final List<Friend> friends;
+  final PlaceLookup placeLookup;
+  final caption = TextEditingController();
+  final captionFocus = FocusNode();
+
+  /// Friend ids that get the post.
+  final Set<String> selected;
+
+  /// The time label, fixed when the shot was taken.
+  final String time;
+  bool showTime = false;
+  String? place;
+  bool findingPlace = false;
+
+  bool get all => selected.length == friends.length;
+  bool get hasRecipients => friends.isEmpty || selected.isNotEmpty;
+
+  PostOverlay get overlay =>
+      PostOverlay(time: showTime ? time : null, place: place);
+
+  void toggleAll() {
+    if (all) {
+      selected.clear();
+    } else {
+      selected.addAll(friends.map((friend) => friend.person.id));
+    }
+    notifyListeners();
+  }
+
+  void toggle(String id) {
+    if (!selected.remove(id)) selected.add(id);
+    notifyListeners();
+  }
+
+  void toggleTime() {
+    showTime = !showTime;
+    notifyListeners();
+  }
+
+  /// Adds the place label, or removes it. [onProblem] hears why it failed.
+  Future<void> togglePlace(
+    void Function(PlaceProblem problem) onProblem,
+  ) async {
+    if (place != null) {
+      place = null;
+      notifyListeners();
+      return;
+    }
+    findingPlace = true;
+    notifyListeners();
+    try {
+      place = await placeLookup.currentPlace();
+    } on PlaceUnavailable catch (error) {
+      onProblem(error.problem);
+    } finally {
+      findingPlace = false;
+      notifyListeners();
+    }
+  }
+
+  ComposerResult result() => ComposerResult(
+    caption: caption.text.trim(),
+    recipients: all ? null : selected.toList(),
+    overlay: overlay.toJson(),
+  );
+
+  @override
+  void dispose() {
+    caption.dispose();
+    captionFocus.dispose();
+    super.dispose();
+  }
+}
+
 /// After a photo is ready: add a caption and pick who gets it. Pops a
 /// [ComposerResult], or null when the person backs out.
 class PostComposerScreen extends StatelessWidget {

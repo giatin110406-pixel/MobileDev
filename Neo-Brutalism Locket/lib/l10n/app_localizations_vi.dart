@@ -269,6 +269,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get composerAllFriends => 'TẤT CẢ BẠN BÈ';
 
   @override
+  String get composerAllShort => 'Tất cả';
+
+  @override
   String get composerSend => 'GỬI';
 
   @override

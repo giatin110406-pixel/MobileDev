@@ -272,6 +272,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get composerAllFriends => 'ALL FRIENDS';
 
   @override
+  String get composerAllShort => 'All';
+
+  @override
   String get composerSend => 'SEND';
 
   @override

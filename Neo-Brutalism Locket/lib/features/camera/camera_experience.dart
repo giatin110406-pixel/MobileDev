@@ -21,6 +21,7 @@ import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
+import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
@@ -117,15 +118,15 @@ class CameraTabState extends State<CameraTab> {
   bool _showOriginal = false;
   bool _showPrint = false;
 
-  /// Bumped on every setState so the popup after a shot redraws with the camera
-  /// (the style finishing, the progress moving).
-  final ValueNotifier<int> _sheetTick = ValueNotifier(0);
+  /// What is being chosen for the shot just taken (caption, labels, who gets
+  /// it); null on the live camera.
+  ComposerController? _composer;
+  bool _posting = false;
 
-  @override
-  void setState(VoidCallback fn) {
-    super.setState(fn);
-    _sheetTick.value++;
-  }
+  bool get _draftMode =>
+      widget.onPostDraft != null &&
+      _draftId != null &&
+      _activePhoto?.id == _draftId;
 
   double _progress = 0;
 
@@ -171,7 +172,7 @@ class CameraTabState extends State<CameraTab> {
 
   @override
   void dispose() {
-    _sheetTick.dispose();
+    _composer?.dispose();
     _countdownTimer?.cancel();
     _recordTimer?.cancel();
     _camera?.dispose();
@@ -219,33 +220,19 @@ class CameraTabState extends State<CameraTab> {
   /// HỦY: the shot is deleted and the camera is back.
   void _discardPrint(NeoPhoto photo) => _removeShot(photo);
 
-  /// The shot just taken: a popup over the camera to restyle it, caption it,
-  /// label it and pick who gets it. Closing it any way but POST throws the shot
-  /// away, like the X.
-  Future<void> _openDraftSheet(NeoPhoto photo) async {
-    final result = await showModalBottomSheet<ComposerResult>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: NeoColors.paper,
-      shape: const RoundedRectangleBorder(
-        side: BorderSide(color: NeoColors.ink, width: 2),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) => ValueListenableBuilder<int>(
-        valueListenable: _sheetTick,
-        builder: (context, _, _) => _buildDraftSheet(context),
-      ),
-    );
-    if (!mounted) return;
-    final current = _activePhoto;
-    if (result == null) {
-      if (current != null && current.id == photo.id) _discardPrint(current);
-      return;
+  /// POST: send the shot with what was chosen on the page.
+  Future<void> _sendDraft() async {
+    final photo = _activePhoto;
+    final composer = _composer;
+    if (photo == null || composer == null || _posting) return;
+    if (!composer.hasRecipients) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _posting = true);
+    try {
+      await _postDraft(photo, composer.result());
+    } finally {
+      if (mounted) setState(() => _posting = false);
     }
-    await _postDraft(current ?? photo, result);
   }
 
   Future<void> _postDraft(NeoPhoto photo, ComposerResult result) async {
@@ -263,127 +250,15 @@ class CameraTabState extends State<CameraTab> {
     if (mounted) _removeShot(photo);
   }
 
-  Widget _buildDraftSheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final photo = _activePhoto;
-    if (photo == null) return const SizedBox.shrink();
-    final ready = photo.status == ProcessingStatus.done;
-    final processed = photo.processedPath;
-    final styledPath =
-        ready &&
-            processed != null &&
-            processed != photo.originalPath &&
-            photo.styleType != StyleType.none
-        ? processed
-        : null;
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Navigator.of(context).pop();
-      },
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  NeoIconButton(
-                    icon: Icons.close,
-                    tooltip: l10n.printDiscard,
-                    fill: NeoColors.coral,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      l10n.composerTitle,
-                      style: const TextStyle(
-                        color: NeoColors.ink,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  _statusBadge(photo),
-                ],
-              ),
-              const SizedBox(height: 14),
-              PostComposerForm(
-                friends: widget.friends,
-                canPost: ready && !_processing,
-                previewBuilder: (context, overlay) => Center(
-                  child: FractionallySizedBox(
-                    widthFactor: 0.78,
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: Container(
-                        decoration: NeoTheme.panel(
-                          color: NeoColors.surface,
-                          radius: _squareRadius,
-                        ),
-                        foregroundDecoration: neoPanelOutline(
-                          radius: _squareRadius,
-                        ),
-                        child: NeoPanelClip(
-                          radius: _squareRadius,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              BeforeAfterView(
-                                key: ValueKey('draft-before-after-${photo.id}'),
-                                originalPath: photo.originalPath,
-                                styledPath: styledPath,
-                                styleLabel:
-                                    (photo.styleType == null
-                                        ? null
-                                        : styleName(l10n, photo.styleType!)) ??
-                                    l10n.editLabel,
-                                showStyled: !_showOriginal,
-                                onChanged: (styled) =>
-                                    setState(() => _showOriginal = !styled),
-                              ),
-                              Positioned(
-                                top: 14,
-                                right: 14,
-                                child: OverlayLabels(overlay: overlay),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                afterPreview: Column(
-                  children: [
-                    _buildStylePill(photo: photo),
-                    if (_processing &&
-                        photo.status == ProcessingStatus.pending) ...[
-                      const SizedBox(height: 10),
-                      NeoProgress(
-                        value: _progress <= 0 ? null : _progress,
-                        label: styleWorkingLabel(l10n, photo.styleType),
-                      ),
-                    ],
-                  ],
-                ),
-                onSubmit: (result) => Navigator.of(context).pop(result),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _removeShot(NeoPhoto photo) {
     _discarded.add(photo.id);
-    if (_draftId == photo.id) _draftId = null;
+    if (_draftId == photo.id) {
+      _draftId = null;
+      final composer = _composer;
+      _composer = null;
+      // After this frame: the page's text field is still listening until then.
+      WidgetsBinding.instance.addPostFrameCallback((_) => composer?.dispose());
+    }
     setState(() {
       _showPrint = false;
       if (_activePhoto?.id == photo.id) _activePhoto = null;
@@ -726,18 +601,21 @@ class CameraTabState extends State<CameraTab> {
     );
     if (!mounted) return;
     final draft = widget.onPostDraft != null;
+    if (draft) {
+      _composer?.dispose();
+      _composer = ComposerController(friends: widget.friends);
+    }
     setState(() {
       _activePhoto = photo;
       _draftId = photo.id;
       _showOriginal = true;
-      // With an account the options pop up over the camera; without one the
-      // print page opens as before.
+      // With an account the shot stays on this page, in the viewfinder's place,
+      // with its options below; without one the print page opens as before.
       _showPrint = !draft;
     });
     PrintSound.warmUp();
     widget.onPhotoChanged(photo);
     _processPhoto(photo);
-    if (draft) unawaited(_openDraftSheet(photo));
   }
 
   Future<void> _processPhoto(NeoPhoto photo) async {
@@ -872,10 +750,12 @@ class CameraTabState extends State<CameraTab> {
       key: key,
       behavior: HitTestBehavior.translucent,
       // Swipe up anywhere on the camera page to see the feed (like Locket).
-      onVerticalDragEnd: (details) {
-        if ((details.primaryVelocity ?? 0) < -400) widget.onOpenFeed();
-      },
-      child: _buildCameraBody(),
+      onVerticalDragEnd: _draftMode
+          ? null
+          : (details) {
+              if ((details.primaryVelocity ?? 0) < -400) widget.onOpenFeed();
+            },
+      child: _draftMode ? _buildDraftBody() : _buildCameraBody(),
     );
   }
 
@@ -954,6 +834,417 @@ class CameraTabState extends State<CameraTab> {
           ),
         ],
       ),
+    );
+  }
+
+  /// The page right after a shot: the same layout as the live camera, with the
+  /// picture where the viewfinder was, X / POST / Aa where the shutter was, and
+  /// who gets it where the feed link was.
+  Widget _buildDraftBody() {
+    final l10n = AppLocalizations.of(context);
+    final photo = _activePhoto!;
+    final composer = _composer!;
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final ready = photo.status == ProcessingStatus.done && !_processing;
+    final canSend = ready && composer.hasRecipients && !_posting;
+    return ListenableBuilder(
+      listenable: composer,
+      builder: (context, _) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: 54,
+                child: Row(
+                  children: [
+                    const Expanded(child: SizedBox()),
+                    Text(
+                      l10n.composerTitle,
+                      style: const TextStyle(
+                        fontFamily: NeoFont.display,
+                        color: NeoColors.ink,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _statusBadge(photo),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!keyboard) ...[
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 68,
+                  child: Center(
+                    child: Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _draftChip(
+                          label: '${l10n.overlayTime} ${composer.time}',
+                          icon: Icons.schedule,
+                          selected: composer.showTime,
+                          onTap: composer.toggleTime,
+                        ),
+                        _draftChip(
+                          label: composer.findingPlace
+                              ? l10n.overlayFindingPlace
+                              : composer.place == null
+                              ? l10n.overlayPlace
+                              : '${l10n.overlayPlace}: ${composer.place}',
+                          icon: Icons.place_outlined,
+                          selected: composer.place != null,
+                          onTap: composer.findingPlace
+                              ? () {}
+                              : () => composer.togglePlace(_placeProblem),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 14),
+              Expanded(
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: _draftViewfinder(photo, composer),
+                  ),
+                ),
+              ),
+              if (!keyboard) ...[
+                const SizedBox(height: 10),
+                if (_processing && photo.status == ProcessingStatus.pending)
+                  NeoProgress(
+                    value: _progress <= 0 ? null : _progress,
+                    label: styleWorkingLabel(l10n, photo.styleType),
+                  )
+                else
+                  _buildStylePill(photo: photo),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: NeoIconButton(
+                        icon: Icons.close,
+                        tooltip: l10n.printDiscard,
+                        fill: NeoColors.coral,
+                        size: 54,
+                        onPressed: _posting ? null : () => _discardPrint(photo),
+                      ),
+                    ),
+                  ),
+                  _sendButton(enabled: canSend, busy: _posting),
+                  Expanded(
+                    child: Center(
+                      child: NeoIconButton(
+                        icon: Icons.text_fields_rounded,
+                        tooltip: l10n.composerCaptionHint,
+                        fill: NeoColors.surface,
+                        size: 54,
+                        onPressed: composer.captionFocus.requestFocus,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (!keyboard) ...[
+                const SizedBox(height: 10),
+                SizedBox(height: 78, child: _recipientsRow(composer)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _placeProblem(PlaceProblem problem) {
+    final l10n = AppLocalizations.of(context);
+    _notify(switch (problem) {
+      PlaceProblem.servicesOff => l10n.placeServicesOff,
+      PlaceProblem.denied => l10n.placeDenied,
+      PlaceProblem.failed => l10n.placeFailed,
+    });
+  }
+
+  /// The shot, in the place of the viewfinder: hold to compare, labels on the
+  /// corner and the caption typed right on the picture.
+  Widget _draftViewfinder(NeoPhoto photo, ComposerController composer) {
+    final l10n = AppLocalizations.of(context);
+    final ready = photo.status == ProcessingStatus.done;
+    final processed = photo.processedPath;
+    final styledPath =
+        ready &&
+            processed != null &&
+            processed != photo.originalPath &&
+            photo.styleType != StyleType.none
+        ? processed
+        : null;
+    return Container(
+      decoration: NeoTheme.panel(
+        color: NeoColors.surface,
+        borderWidth: 2,
+        radius: _squareRadius,
+      ),
+      foregroundDecoration: neoPanelOutline(radius: _squareRadius),
+      child: NeoPanelClip(
+        radius: _squareRadius,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            BeforeAfterView(
+              key: ValueKey('draft-before-after-${photo.id}'),
+              originalPath: photo.originalPath,
+              styledPath: styledPath,
+              styleLabel:
+                  (photo.styleType == null
+                      ? null
+                      : styleName(l10n, photo.styleType!)) ??
+                  l10n.editLabel,
+              showStyled: !_showOriginal,
+              onChanged: (styled) => setState(() => _showOriginal = !styled),
+            ),
+            // The picture's own badges take the top corners; the labels sit above
+            // the caption.
+            Positioned(
+              left: 16,
+              bottom: 72,
+              child: OverlayLabels(overlay: composer.overlay),
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: NeoColors.ink.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: TextField(
+                  controller: composer.caption,
+                  focusNode: composer.captionFocus,
+                  maxLength: maxCaptionLength,
+                  maxLines: 2,
+                  minLines: 1,
+                  textAlign: TextAlign.center,
+                  textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.done,
+                  cursorColor: NeoColors.surface,
+                  style: const TextStyle(
+                    color: NeoColors.surface,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    counterText: '',
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    hintText: l10n.composerCaptionHint,
+                    hintStyle: TextStyle(
+                      color: NeoColors.surface.withValues(alpha: 0.7),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _draftChip({
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) => Semantics(
+    button: true,
+    selected: selected,
+    child: NeoPress(
+      onTap: onTap,
+      offset: const Offset(2, 2),
+      sunken: selected,
+      builder: (context, pressed) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: selected ? NeoColors.green : NeoColors.surface,
+          border: Border.all(color: NeoColors.ink, width: 2),
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: NeoColors.ink),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  /// The big round button where the shutter was: send the post.
+  Widget _sendButton({required bool enabled, required bool busy}) => Semantics(
+    button: true,
+    enabled: enabled,
+    label: AppLocalizations.of(context).composerPostAll,
+    child: NeoPress(
+      onTap: enabled ? _sendDraft : null,
+      builder: (context, pressed) => Container(
+        width: 78,
+        height: 78,
+        decoration: BoxDecoration(
+          color: enabled ? NeoColors.green : NeoColors.switchOff,
+          shape: BoxShape.circle,
+          border: Border.all(color: NeoColors.ink, width: 3),
+          boxShadow: enabled ? NeoPress.shadow(pressed) : const [],
+        ),
+        child: busy
+            ? const Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(
+                  color: NeoColors.ink,
+                  strokeWidth: 3,
+                ),
+              )
+            : const Icon(Icons.send_rounded, size: 34, color: NeoColors.ink),
+      ),
+    ),
+  );
+
+  /// Where the feed link was: "All" and each friend, tap to pick who gets it.
+  Widget _recipientsRow(ComposerController composer) {
+    final l10n = AppLocalizations.of(context);
+    if (widget.friends.isEmpty) {
+      return Center(
+        child: Text(
+          l10n.composerNoFriends,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: NeoColors.ink,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+    Widget item({
+      required Widget avatar,
+      required String label,
+      required bool selected,
+      required VoidCallback onTap,
+    }) => Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: Haptics.tap(onTap),
+        child: SizedBox(
+          width: 72,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Opacity(opacity: selected ? 1 : 0.4, child: avatar),
+                  if (selected)
+                    Positioned(
+                      right: -4,
+                      bottom: -4,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: NeoColors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: NeoColors.ink, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          size: 12,
+                          color: NeoColors.ink,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: NeoColors.ink,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      children: [
+        item(
+          avatar: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: NeoColors.green,
+              shape: BoxShape.circle,
+              border: Border.all(color: NeoColors.ink, width: 2),
+            ),
+            child: const Icon(Icons.groups_rounded, color: NeoColors.ink),
+          ),
+          label: l10n.composerAllShort,
+          selected: composer.all,
+          onTap: composer.toggleAll,
+        ),
+        for (final friend in widget.friends)
+          item(
+            avatar: FriendAvatar(
+              friend: friend.person.toPocketFriend(),
+              size: 48,
+              shadow: false,
+            ),
+            label: friend.person.displayName.split(' ').first,
+            selected: composer.selected.contains(friend.person.id),
+            onTap: () => composer.toggle(friend.person.id),
+          ),
+      ],
     );
   }
 
