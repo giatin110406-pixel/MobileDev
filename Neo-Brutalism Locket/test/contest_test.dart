@@ -783,6 +783,29 @@ void main() {
       expect(few, many);
     });
 
+    test(
+      'every entry is wholly in view from the entrance, on phone screens',
+      () {
+        for (final size in const [
+          Size(411, 800),
+          Size(320, 568),
+          Size(360, 640),
+          Size(412, 915),
+        ]) {
+          final view = Projection(size, 0);
+          for (final count in [1, 2, 9, 60]) {
+            for (final slot in layoutGallery(count).where((s) => !s.isBlank)) {
+              final quad = view.wallQuad(slot)!;
+              for (final corner in quad) {
+                expect(corner.dx, inInclusiveRange(0, size.width));
+                expect(corner.dy, inInclusiveRange(0, size.height));
+              }
+            }
+          }
+        }
+      },
+    );
+
     test('a painting is a square in the middle of its frame', () {
       final view = Projection(const Size(400, 800), 0);
       final slot = layoutGallery(10).firstWhere((s) => !s.isBlank);
