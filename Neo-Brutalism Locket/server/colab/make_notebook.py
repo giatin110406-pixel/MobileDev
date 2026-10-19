@@ -94,8 +94,10 @@ except Exception:
 SERVER = '''import json
 import time
 
+# MPLBACKEND: Colab points matplotlib at its notebook backend, which the server's own Python
+# does not have; mediapipe imports matplotlib and would crash. The server has no screen anyway.
 ENV = dict(os.environ, LOCKET_TOKEN=TOKEN, HF_HOME=str(MODELS / "hf"),
-           TORCH_HOME=str(MODELS / "torch"), PYTHONWARNINGS="ignore")
+           TORCH_HOME=str(MODELS / "torch"), PYTHONWARNINGS="ignore", MPLBACKEND="Agg")
 
 
 def start_server():
