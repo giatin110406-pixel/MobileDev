@@ -14,7 +14,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
-import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_backdrops.dart';
 import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
@@ -907,7 +907,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final l10n = AppLocalizations.of(context);
     try {
       await _interactions?.react(post.id, emoji);
-      if (mounted) _notify(l10n.reactionSent(emoji));
     } on InteractionFailure {
       if (mounted) _notify(l10n.errUnknown);
     }
@@ -1153,12 +1152,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _messages = snapshot.messages;
         _posts = snapshot.posts;
       });
+      // A reaction shows as emojis floating up the feed, not as a notice.
+      if (reaction != null) return;
       final name = _friends
           .where((friend) => friend.id == post.friendId)
           .map((friend) => friend.name.split(' ').first)
           .firstOrNull;
       final l10n = AppLocalizations.of(context);
-      final what = reaction ?? l10n.replyWord;
+      final what = l10n.replyWord;
       _notify(
         name == null
             ? l10n.sentNotice(what)
@@ -1486,10 +1487,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 140),
             child: isContestTab
-                ? const StarryNight(
-                    key: ValueKey('contest-bg'),
-                    child: SizedBox.expand(),
-                  )
+                ? _contestBackground()
                 // An empty ColoredBox shrinks to nothing inside the switcher's
                 // loose Stack, which left the window's black showing through.
                 : const ColoredBox(
@@ -1503,6 +1501,26 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ],
     );
     return _withScopes(body);
+  }
+
+  /// The contest tab's background: this week's theme, painted.
+  Widget _contestBackground() {
+    final store = _contestStore;
+    if (store == null) {
+      return const ContestBackdrop(
+        key: ValueKey('contest-bg'),
+        child: SizedBox.expand(),
+      );
+    }
+    return ListenableBuilder(
+      key: const ValueKey('contest-bg'),
+      listenable: store,
+      builder: (context, _) => ContestBackdrop(
+        key: ValueKey('contest-bg-${store.theme?.titleEn}'),
+        themeTitle: store.theme?.titleEn,
+        child: const SizedBox.expand(),
+      ),
+    );
   }
 
   /// What every page of the app needs below it: where pictures come from, and the
@@ -1742,7 +1760,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               onTap: Haptics.tap(() => _selectTab(_profilePage)),
               child: PlayerAvatar(
                 state: _player.state,
-                size: 40,
+                size: 54,
                 remotePath: widget.session?.profile.avatarPath,
               ),
             ),
