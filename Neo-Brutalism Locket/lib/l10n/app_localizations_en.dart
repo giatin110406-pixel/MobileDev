@@ -1048,6 +1048,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dragToCompare => 'DRAG TO COMPARE';
 
   @override
+  String get pushOpen => 'OPEN';
+
+  @override
   String get styleWorking8bit => 'GRINDING PIXELS…';
 
   @override

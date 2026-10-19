@@ -1970,6 +1970,12 @@ abstract class AppLocalizations {
   /// **'KÉO ĐỂ SO SÁNH'**
   String get dragToCompare;
 
+  /// No description provided for @pushOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỞ'**
+  String get pushOpen;
+
   /// No description provided for @styleWorking8bit.
   ///
   /// In vi, this message translates to:

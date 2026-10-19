@@ -1044,6 +1044,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get dragToCompare => 'KÉO ĐỂ SO SÁNH';
 
   @override
+  String get pushOpen => 'MỞ';
+
+  @override
   String get styleWorking8bit => 'ĐANG MÀI PIXEL…';
 
   @override

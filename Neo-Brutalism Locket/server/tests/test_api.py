@@ -154,3 +154,23 @@ def test_verify_decision_rules():
     # A distractor clearly wins -> no match, and we report what it looked like.
     result = decide([0.1, 0.05, 0.85], ["a dog", "a puppy", "a wolf"], 2)
     assert not result.match and result.top == "a wolf"
+
+
+def test_health_reports_why_the_models_could_not_load():
+    """A failed warm-up used to show only in the log; /v1/health now says why."""
+    def broken_warmup():
+        raise OSError("no space left on device")
+
+    fake_runner.warmup = broken_warmup
+    try:
+        with TestClient(create_app(runner=fake_runner, token=TOKEN)) as c:
+            body = {}
+            for _ in range(100):
+                body = c.get("/v1/health").json()
+                if body["warmup_error"]:
+                    break
+                time.sleep(0.02)
+            assert body["models_ready"] is False
+            assert "no space left on device" in body["warmup_error"]
+    finally:
+        del fake_runner.warmup
