@@ -1814,14 +1814,16 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       child: Semantics(
         button: true,
         selected: selected,
-        child: InkWell(
-          onTap: Haptics.tap(onTap),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
+        child: NeoPress(
+          onTap: onTap,
+          // The chosen chip stays pressed in.
+          sunken: selected,
+          builder: (context, pressed) => Container(
             height: 36,
             alignment: Alignment.center,
             decoration: NeoTheme.panel(
               color: selected ? NeoColors.green : NeoColors.surface,
+              pressed: pressed,
             ),
             child: Text(
               label,

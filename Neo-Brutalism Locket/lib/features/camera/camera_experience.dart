@@ -121,6 +121,7 @@ class CameraTabState extends State<CameraTab> {
 
   // Video: recording while the shutter is held (up to [maxVideoLength]).
   bool _recording = false;
+  bool _shutterDown = false;
   DateTime? _recordStart;
   Timer? _recordTimer;
 
@@ -1219,72 +1220,82 @@ class CameraTabState extends State<CameraTab> {
     hint: widget.onVideoRecorded == null
         ? null
         : AppLocalizations.of(context).holdForVideo,
-    child: GestureDetector(
-      onTap: _processing
-          ? null
-          : () {
-              Haptics.press();
-              _capture();
-            },
-      onLongPressStart: _canRecord
-          ? (_) {
-              Haptics.heavy();
-              _startVideo();
-            }
-          : null,
-      onLongPressEnd: _canRecord || _recording
-          ? (_) {
-              Haptics.light();
-              _stopVideo();
-            }
-          : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        width: 78,
-        height: 78,
-        padding: const EdgeInsets.all(7),
-        decoration: BoxDecoration(
-          color: _processing ? NeoColors.switchOff : NeoColors.ink,
-          shape: BoxShape.circle,
-          border: Border.all(color: NeoColors.ink, width: 2),
-          boxShadow: _processing
-              ? const []
-              : const [
-                  BoxShadow(
-                    color: NeoColors.ink,
-                    offset: Offset(4, 4),
-                    blurRadius: 0,
-                  ),
-                ],
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: _recording ? NeoColors.coral : NeoColors.green,
-            shape: BoxShape.circle,
-            border: Border.all(color: NeoColors.surface, width: 2),
+    child: Listener(
+      onPointerDown: (_) => setState(() => _shutterDown = true),
+      onPointerUp: (_) => setState(() => _shutterDown = false),
+      onPointerCancel: (_) => setState(() => _shutterDown = false),
+      child: GestureDetector(
+        onTap: _processing
+            ? null
+            : () {
+                Haptics.press();
+                _capture();
+              },
+        onLongPressStart: _canRecord
+            ? (_) {
+                Haptics.heavy();
+                _startVideo();
+              }
+            : null,
+        onLongPressEnd: _canRecord || _recording
+            ? (_) {
+                Haptics.light();
+                _stopVideo();
+              }
+            : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: 78,
+          height: 78,
+          padding: const EdgeInsets.all(7),
+          transform: Matrix4.translationValues(
+            _shutterDown && !_processing ? 4 : 0,
+            _shutterDown && !_processing ? 4 : 0,
+            0,
           ),
-          child: _processing
-              ? const Padding(
-                  padding: EdgeInsets.all(17),
-                  child: CircularProgressIndicator(
-                    color: NeoColors.ink,
-                    strokeWidth: 2,
-                  ),
-                )
-              : _recording
-              ? TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
-                  duration: maxVideoLength,
-                  builder: (context, value, _) => Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: CircularProgressIndicator(
-                      value: value,
+          decoration: BoxDecoration(
+            color: _processing ? NeoColors.switchOff : NeoColors.ink,
+            shape: BoxShape.circle,
+            border: Border.all(color: NeoColors.ink, width: 2),
+            boxShadow: _processing || _shutterDown
+                ? const []
+                : const [
+                    BoxShadow(
                       color: NeoColors.ink,
-                      strokeWidth: 4,
+                      offset: Offset(4, 4),
+                      blurRadius: 0,
                     ),
-                  ),
-                )
-              : null,
+                  ],
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: _recording ? NeoColors.coral : NeoColors.green,
+              shape: BoxShape.circle,
+              border: Border.all(color: NeoColors.surface, width: 2),
+            ),
+            child: _processing
+                ? const Padding(
+                    padding: EdgeInsets.all(17),
+                    child: CircularProgressIndicator(
+                      color: NeoColors.ink,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : _recording
+                ? TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: maxVideoLength,
+                    builder: (context, value, _) => Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: CircularProgressIndicator(
+                        value: value,
+                        color: NeoColors.ink,
+                        strokeWidth: 4,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
         ),
       ),
     ),

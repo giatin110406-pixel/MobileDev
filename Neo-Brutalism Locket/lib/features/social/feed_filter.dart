@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
-import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
@@ -57,7 +56,6 @@ class FeedFilterPill extends StatelessWidget {
   }
 
   Future<void> _open(BuildContext context) async {
-    Haptics.light();
     final l10n = AppLocalizations.of(context);
     final urls = MediaUrlsScope.maybeOf(context);
     final box = context.findRenderObject()! as RenderBox;
@@ -159,22 +157,19 @@ class FeedFilterPill extends StatelessWidget {
         button: true,
         label: l10n.feedFilterTitle,
         value: _label(l10n),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        child: NeoPress(
           onTap: () => _open(context),
-          child: Container(
+          offset: const Offset(3, 3),
+          builder: (context, pressed) => Container(
             height: 54,
             constraints: const BoxConstraints(maxWidth: 260),
             padding: const EdgeInsets.only(left: 8, right: 12),
             decoration: NeoTheme.panel(color: NeoColors.surface, radius: 999)
                 .copyWith(
-                  boxShadow: const [
-                    BoxShadow(
-                      color: NeoColors.ink,
-                      offset: Offset(3, 3),
-                      blurRadius: 0,
-                    ),
-                  ],
+                  boxShadow: NeoPress.shadow(
+                    pressed,
+                    offset: const Offset(3, 3),
+                  ),
                 ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
