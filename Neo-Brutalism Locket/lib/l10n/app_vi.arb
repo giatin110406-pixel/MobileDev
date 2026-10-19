@@ -897,6 +897,8 @@
       }
     }
   },
+  "galleryFocusDetails": "CHẤM ĐIỂM & BÌNH LUẬN",
+  "galleryFocusLeave": "ĐI TIẾP",
   "corridorSemantics": "Hành lang triển lãm với {count} bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.",
   "@corridorSemantics": {
     "placeholders": {

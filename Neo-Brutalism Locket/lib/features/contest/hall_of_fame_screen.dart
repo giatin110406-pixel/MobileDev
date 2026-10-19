@@ -8,6 +8,7 @@ import 'package:neo_brutalism_locket/features/contest/entry_detail_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
 import 'package:neo_brutalism_locket/features/contest/hall_store.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
+import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 /// The colour of a winner's pedestal: gold, off-white and coral for first, second
@@ -256,8 +257,9 @@ class _Place extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final won = entry;
     final colour = hallFrameColor(rank);
+    // The frame is the shape of a banner; a painting keeps its own shape inside it.
     final picture = AspectRatio(
-      aspectRatio: 1,
+      aspectRatio: profileBannerAspect,
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: NeoTheme.panel(
@@ -277,12 +279,14 @@ class _Place extends StatelessWidget {
                   ),
                 ),
               )
-            : PixelArt(
-                width: won.width,
-                height: won.height,
-                palette: won.palette,
-                pixels: won.pixels,
-                semanticLabel: won.groupName,
+            : Center(
+                child: PixelArt(
+                  width: won.width,
+                  height: won.height,
+                  palette: won.palette,
+                  pixels: won.pixels,
+                  semanticLabel: won.groupName,
+                ),
               ),
       ),
     );

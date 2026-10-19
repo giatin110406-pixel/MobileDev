@@ -17,15 +17,16 @@ const _palette = [
   0xFF7B3B2A, 0xFFD9C7A0, 0xFF5E5240, 0xFF171717,
 ];
 
-/// A different little picture for every entry (stripes, rings, checks).
+/// A different little picture for every entry (stripes, rings, checks), in the shape
+/// of a canvas: 40 x 16 cells.
 GalleryEntry sample(int seq) {
-  const n = 32;
-  final pixels = Uint8List(n * n);
-  for (var y = 0; y < n; y++) {
-    for (var x = 0; x < n; x++) {
-      final dx = x - 15.5, dy = y - 15.5;
+  const w = 40, h = 16;
+  final pixels = Uint8List(w * h);
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      final dx = x - 19.5, dy = y - 7.5;
       final ring = (dx * dx + dy * dy) ~/ (30 + seq % 5 * 10);
-      pixels[y * n + x] = switch (seq % 3) {
+      pixels[y * w + x] = switch (seq % 3) {
         0 => (ring + seq) % 16,
         1 => ((x ~/ 4) + (y ~/ 4) * 2 + seq) % 16,
         _ => ((x + y + seq) ~/ 3) % 16,
@@ -37,8 +38,8 @@ GalleryEntry sample(int seq) {
     contestId: 'c1',
     seq: seq,
     groupName: 'Group $seq',
-    width: n,
-    height: n,
+    width: w,
+    height: h,
     palette: _palette,
     pixels: pixels,
     submittedAt: DateTime(2026, 10, 10),
@@ -74,6 +75,8 @@ void main() {
     required bool lite,
     String? writeTo,
     int count = 100,
+    double yaw = 0,
+    double eye = 0,
   }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
@@ -88,6 +91,8 @@ void main() {
       }
     });
     final camera = ValueNotifier<double>(cameraZ);
+    final turn = ValueNotifier<double>(yaw);
+    final height = ValueNotifier<double>(eye);
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.ltr,
@@ -96,6 +101,8 @@ void main() {
             child: CustomPaint(
               painter: CorridorPainter(
                 camera: camera,
+                yaw: turn,
+                eye: height,
                 entries: entries,
                 slots: slots,
                 cache: cache,
@@ -123,7 +130,37 @@ void main() {
     }
     await tester.pumpWidget(const SizedBox());
     camera.dispose();
+    turn.dispose();
+    height.dispose();
     cache.dispose();
+  }
+
+  // The visitor has stopped and turned to look at one painting (angles in degrees).
+  for (final (name, define, degrees) in const [
+    (
+      'a quarter of the way round',
+      String.fromEnvironment('GALLERY_TURN1_PNG'),
+      25,
+    ),
+    ('halfway round', String.fromEnvironment('GALLERY_TURN2_PNG'), 55),
+    ('facing the painting', String.fromEnvironment('GALLERY_FACE_PNG'), 90),
+  ]) {
+    testWidgets('looking at a painting: $name', (tester) async {
+      // The second entry hangs on the right wall, in the top row.
+      final slot = layoutGallery(7).firstWhere((s) => s.index == 1);
+      final z = (slot.z0 + slot.z1) / 2;
+      final share = degrees / 90;
+      final angle = degrees * 3.141592653589793 / 180 * slot.side;
+      await shoot(
+        tester,
+        cameraZ: z - 3 * (1 - share),
+        lite: false,
+        count: 7,
+        yaw: angle,
+        eye: (slot.yTop + slot.yBottom) / 2 * share,
+        writeTo: define.isEmpty ? null : define,
+      );
+    });
   }
 
   // Pictures of the Gallery, written when the paths are given (see docs/).

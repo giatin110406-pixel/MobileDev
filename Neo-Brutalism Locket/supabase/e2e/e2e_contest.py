@@ -160,7 +160,7 @@ def main() -> int:
                 and [e["group_name"] for e in entries] == ["E2E Team A", "E2E Team B", "E2E Team C"],
                 str(page)[:200])
         h.check("each entry carries palette and pixels (no line breaks)",
-                all(len(e["palette"]) == 16 and "\n" not in e["pixels"] and e["width"] == 32
+                all(len(e["palette"]) == 16 and "\n" not in e["pixels"] and e["width"] == 40
                     for e in entries), str(entries[0])[:120])
         h.check("scores stay hidden until the results", all(e["rank"] is None and e["score"] is None
                                                             for e in entries))
@@ -318,7 +318,7 @@ def main() -> int:
         status, art = h.rpc(x["token"], "get_banner_art", {"p_item": item_a})
         dump("banner_art", art)
         h.check("the banner's picture can be fetched by anyone",
-                status == 200 and art["width"] == 32 and len(art["pixels"]) > 1000 and "\n" not in art["pixels"]
+                status == 200 and art["width"] == 40 and art["height"] == 16 and len(art["pixels"]) > 800 and "\n" not in art["pixels"]
                 and art["group_name"] == "E2E Team A", str(art)[:120])
         h.rpc_refused(x["token"], "get_banner_art", {"p_item": "banner_space"}, "not_found",
                       "an ordinary banner has no painting")
@@ -359,7 +359,7 @@ def main() -> int:
         h.check("nobody was charged for the refused purchase", state_x["balance"] == 700, str(state_x["balance"]))
         status, art = h.rpc(x["token"], "get_banner_art", {"p_item": item_c})
         h.check("the picture is still available for the profiles that show it",
-                status == 200 and art["width"] == 32, str(status))
+                status == 200 and art["width"] == 40, str(status))
         status, state_c1 = h.rpc(c1["token"], "get_player_state")
         h.check("the winners keep their free copy", item_c in state_c1["owned"], str(state_c1["owned"]))
 

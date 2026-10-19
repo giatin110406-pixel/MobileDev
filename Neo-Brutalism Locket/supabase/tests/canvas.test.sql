@@ -50,7 +50,7 @@ select is(
      '[{"x":0,"y":0,"c":5}]'::jsonb) ->> 'painted')::int,
   0, 'painting a cell the colour it already is costs nothing');
 select throws_ok($$select public.paint_pixels((select cid from ctx),
-  '00000000-0000-0000-0000-0000000000a3', '[{"x":32,"y":0,"c":1}]'::jsonb)$$,
+  '00000000-0000-0000-0000-0000000000a3', '[{"x":40,"y":0,"c":1}]'::jsonb)$$,
   'bad_pixel', null, 'a pixel outside the canvas is refused');
 select throws_ok($$select public.paint_pixels((select cid from ctx),
   '00000000-0000-0000-0000-0000000000a4', '[{"x":0,"y":1,"c":16}]'::jsonb)$$,

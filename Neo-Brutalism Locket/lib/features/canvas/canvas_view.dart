@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_painter.dart';
@@ -56,15 +58,15 @@ class _CanvasViewState extends State<CanvasView> {
     }
   }
 
-  void _paintAt(Offset local, double side) {
-    final cell = side / store.width;
+  void _paintAt(Offset local, double width) {
+    final cell = width / store.width;
     final x = (local.dx / cell).floor();
     final y = (local.dy / cell).floor();
     store.paint(x, y, _selected);
   }
 
-  void _whoAt(Offset local, double side) {
-    final cell = side / store.width;
+  void _whoAt(Offset local, double width) {
+    final cell = width / store.width;
     final x = (local.dx / cell).floor();
     final y = (local.dy / cell).floor();
     if (x < 0 || y < 0 || x >= store.width || y >= store.height) return;
@@ -142,14 +144,22 @@ class _CanvasViewState extends State<CanvasView> {
         Expanded(
           child: LayoutBuilder(
             builder: (context, box) {
-              final side = box.biggest.shortestSide - 24;
+              // The canvas keeps its own shape (a banner's: wider than tall) and
+              // takes as much of the space as fits.
+              final aspect = store.width / store.height;
+              final width = math.min(
+                box.maxWidth - 24,
+                (box.maxHeight - 24) * aspect,
+              );
+              final innerWidth = width - 4;
+              final innerHeight = innerWidth / aspect;
               return InteractiveViewer(
                 minScale: 1,
                 maxScale: 10,
                 child: Center(
                   child: Container(
-                    width: side,
-                    height: side,
+                    width: width,
+                    height: innerHeight + 4,
                     decoration: BoxDecoration(
                       border: Border.all(color: NeoColors.ink, width: 2),
                       boxShadow: const [
@@ -161,15 +171,15 @@ class _CanvasViewState extends State<CanvasView> {
                       ],
                     ),
                     child: GestureDetector(
-                      onTapUp: (d) => _paintAt(d.localPosition, side - 4),
+                      onTapUp: (d) => _paintAt(d.localPosition, innerWidth),
                       onLongPressStart: (d) =>
-                          _whoAt(d.localPosition, side - 4),
+                          _whoAt(d.localPosition, innerWidth),
                       child: Semantics(
                         label: AppLocalizations.of(
                           context,
                         ).canvasSemantics(store.width, store.height),
                         child: CustomPaint(
-                          size: Size.square(side - 4),
+                          size: Size(innerWidth, innerHeight),
                           painter: CanvasPainter(store),
                         ),
                       ),

@@ -129,9 +129,16 @@ class CorridorPainter extends CustomPainter {
     this.style = CorridorStyle.gallery,
     this.decorOf,
     this.endZ,
-  }) : super(repaint: Listenable.merge([camera, cache]));
+    this.yaw = const AlwaysStoppedAnimation<double>(0),
+    this.eye = const AlwaysStoppedAnimation<double>(0),
+  }) : super(repaint: Listenable.merge([camera, yaw, eye, cache]));
 
   final ValueListenable<double> camera;
+
+  /// How far the visitor has turned from looking down the corridor (radians, positive
+  /// to the right), and the height of the eyes.
+  final ValueListenable<double> yaw;
+  final ValueListenable<double> eye;
   final List<GalleryEntry> entries;
   final List<FrameSlot> slots;
   final EntryImageCache cache;
@@ -164,16 +171,19 @@ class CorridorPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
     final cameraZ = camera.value;
-    final view = Projection(size, cameraZ);
+    final turn = yaw.value;
+    final view = Projection(size, cameraZ, yaw: turn, cameraY: eye.value);
+    // When the visitor looks at a wall, the corridor behind him comes into view too.
+    final behind = 14 * (turn.abs() / (math.pi / 2)).clamp(0.0, 1.0);
     canvas.clipRect(Offset.zero & size);
 
     final overlay = <void Function(Canvas)>[];
-    _hall(canvas, size, view);
-    _runner(canvas, view);
-    _lights(canvas, view);
+    _hall(canvas, size, view, behind);
+    _runner(canvas, view, behind);
+    _lights(canvas, view, behind);
     // The end wall hides the floor, runner and lamps that would lie beyond it.
     _end(canvas, view);
-    for (final slot in visibleSlots(slots, cameraZ)) {
+    for (final slot in visibleSlots(slots, cameraZ, behind: behind)) {
       _frame(canvas, view, slot, overlay);
     }
     // The paintings and plates go on top.
@@ -199,42 +209,28 @@ class CorridorPainter extends CustomPainter {
     return path..close();
   }
 
-  void _hall(Canvas canvas, Size size, Projection view) {
-    final z0 = view.cameraZ + 0.5;
+  Path _poly3(Projection view, List<Point3> corners) =>
+      _poly(view.polygon(corners));
+
+  void _hall(Canvas canvas, Size size, Projection view, double behind) {
+    final z0 = view.cameraZ + 0.5 - behind;
     final z1 = view.cameraZ + Corridor.far;
     const wx = Corridor.wallX;
     const top = Corridor.ceilingY;
     const bottom = Corridor.floorY;
     const ink = CorridorColors.ink;
 
-    Offset p(double x, double y, double z) => view.point(x, y, z)!;
-
     // The four surfaces between depths [a] and [b].
-    Path surface(int kind, double a, double b) => switch (kind) {
-      0 => _poly([
-        p(-wx, top, a),
-        p(wx, top, a),
-        p(wx, top, b),
-        p(-wx, top, b),
-      ]),
-      1 => _poly([
-        p(-wx, bottom, a),
-        p(wx, bottom, a),
-        p(wx, bottom, b),
-        p(-wx, bottom, b),
-      ]),
-      2 => _poly([
-        p(-wx, top, a),
-        p(-wx, bottom, a),
-        p(-wx, bottom, b),
-        p(-wx, top, b),
-      ]),
-      _ => _poly([
-        p(wx, top, a),
-        p(wx, bottom, a),
-        p(wx, bottom, b),
-        p(wx, top, b),
-      ]),
+    List<Point3> surface(int kind, double a, double b) => switch (kind) {
+      0 => [(-wx, top, a), (wx, top, a), (wx, top, b), (-wx, top, b)],
+      1 => [
+        (-wx, bottom, a),
+        (wx, bottom, a),
+        (wx, bottom, b),
+        (-wx, bottom, b),
+      ],
+      2 => [(-wx, top, a), (-wx, bottom, a), (-wx, bottom, b), (-wx, top, b)],
+      _ => [(wx, top, a), (wx, bottom, a), (wx, bottom, b), (wx, top, b)],
     };
 
     // Behind everything: the dark end of the corridor.
@@ -242,7 +238,7 @@ class CorridorPainter extends CustomPainter {
 
     final colours = [style.ceiling, style.floor, style.wall, style.wall];
     for (var k = 0; k < 4; k++) {
-      canvas.drawPath(surface(k, z0, z1), _fill(colours[k]));
+      canvas.drawPath(_poly3(view, surface(k, z0, z1)), _fill(colours[k]));
     }
 
     // A chequered floor.
@@ -254,11 +250,11 @@ class CorridorPainter extends CustomPainter {
         for (var c = -2; c < 2; c++) {
           if ((z.round() + c).isOdd) continue;
           canvas.drawPath(
-            _poly([
-              p(c * 0.8, bottom, a),
-              p((c + 1) * 0.8, bottom, a),
-              p((c + 1) * 0.8, bottom, z + 1),
-              p(c * 0.8, bottom, z + 1),
+            _poly3(view, [
+              (c * 0.8, bottom, a),
+              ((c + 1) * 0.8, bottom, a),
+              ((c + 1) * 0.8, bottom, z + 1),
+              (c * 0.8, bottom, z + 1),
             ]),
             dark,
           );
@@ -271,20 +267,20 @@ class CorridorPainter extends CustomPainter {
     for (final side in const [-1.0, 1.0]) {
       final x = side * wx;
       canvas.drawPath(
-        _poly([
-          p(x, bottom - 0.3, z0),
-          p(x, bottom, z0),
-          p(x, bottom, z1),
-          p(x, bottom - 0.3, z1),
+        _poly3(view, [
+          (x, bottom - 0.3, z0),
+          (x, bottom, z0),
+          (x, bottom, z1),
+          (x, bottom - 0.3, z1),
         ]),
         trim,
       );
       canvas.drawPath(
-        _poly([
-          p(x, top, z0),
-          p(x, top + 0.25, z0),
-          p(x, top + 0.25, z1),
-          p(x, top, z1),
+        _poly3(view, [
+          (x, top, z0),
+          (x, top + 0.25, z0),
+          (x, top + 0.25, z1),
+          (x, top, z1),
         ]),
         trim,
       );
@@ -299,7 +295,7 @@ class CorridorPainter extends CustomPainter {
       for (final band in bands) {
         for (var k = 0; k < 4; k++) {
           canvas.drawPath(
-            surface(k, band.from, band.to),
+            _poly3(view, surface(k, band.from, band.to)),
             _fill(ink.withAlpha(band.alpha)),
           );
         }
@@ -311,20 +307,25 @@ class CorridorPainter extends CustomPainter {
     for (final side in const [-1.0, 1.0]) {
       final x = side * wx;
       for (final y in [top, top + 0.25, bottom - 0.3, bottom]) {
-        canvas.drawLine(p(x, y, z0), p(x, y, z1), line);
+        final cut = view.segment((x, y, z0), (x, y, z1));
+        if (cut != null) canvas.drawLine(cut.$1, cut.$2, line);
       }
     }
   }
 
-  void _runner(Canvas canvas, Projection view) {
+  void _runner(Canvas canvas, Projection view, double behind) {
     const bottom = Corridor.floorY;
     const half = 0.75;
-    final z0 = view.cameraZ + 0.5;
+    final z0 = view.cameraZ + 0.5 - behind;
     final z1 = view.cameraZ + Corridor.far;
-    Offset p(double x, double z) => view.point(x, bottom, z)!;
 
     canvas.drawPath(
-      _poly([p(-half, z0), p(half, z0), p(half, z1), p(-half, z1)]),
+      _poly3(view, [
+        (-half, bottom, z0),
+        (half, bottom, z0),
+        (half, bottom, z1),
+        (-half, bottom, z1),
+      ]),
       _fill(style.runner),
     );
     // A thick black border along both edges.
@@ -333,7 +334,12 @@ class CorridorPainter extends CustomPainter {
       final outer = side * half;
       final inner = side * (half - 0.12);
       canvas.drawPath(
-        _poly([p(inner, z0), p(outer, z0), p(outer, z1), p(inner, z1)]),
+        _poly3(view, [
+          (inner, bottom, z0),
+          (outer, bottom, z0),
+          (outer, bottom, z1),
+          (inner, bottom, z1),
+        ]),
         border,
       );
     }
@@ -341,19 +347,19 @@ class CorridorPainter extends CustomPainter {
     // A motif in the middle of every metre.
     final motif = _fill(style.runnerMotif);
     final outline = _outline(style.runnerBorder);
-    final first = view.cameraZ.floorToDouble() + 1;
+    final first = (view.cameraZ - behind).floorToDouble() + 1;
     for (var z = first; z < view.cameraZ + 22; z += 1) {
       final centre = z + 0.5;
-      if (centre - view.cameraZ < Corridor.near) continue;
+      if (behind == 0 && centre - view.cameraZ < Corridor.near) continue;
       final Path shape;
       if (style.roundMotif) {
         shape = _circleOnFloor(view, 0, centre, 0.3);
       } else {
-        shape = _poly([
-          view.point(0, bottom, centre - 0.32),
-          view.point(0.32, bottom, centre),
-          view.point(0, bottom, centre + 0.32),
-          view.point(-0.32, bottom, centre),
+        shape = _poly3(view, [
+          (0, bottom, centre - 0.32),
+          (0.32, bottom, centre),
+          (0, bottom, centre + 0.32),
+          (-0.32, bottom, centre),
         ]);
       }
       canvas.drawPath(shape, motif);
@@ -363,33 +369,31 @@ class CorridorPainter extends CustomPainter {
 
   /// A circle lying on the floor, as the visitor sees it (an ellipse).
   Path _circleOnFloor(Projection view, double x, double z, double radius) {
-    final points = <Offset?>[
+    return _poly3(view, [
       for (var i = 0; i < 16; i++)
-        view.point(
+        (
           x + radius * math.cos(i * math.pi * 2 / 16),
           Corridor.floorY,
           z + radius * math.sin(i * math.pi * 2 / 16),
         ),
-    ];
-    return _poly(points);
+    ]);
   }
 
-  void _lights(Canvas canvas, Projection view) {
+  void _lights(Canvas canvas, Projection view, double behind) {
     if (!style.ceilingLights) return;
     const top = Corridor.ceilingY;
     const spacing = 2.6;
-    final first = (view.cameraZ / spacing).floor() * spacing + spacing;
+    final first =
+        ((view.cameraZ - behind) / spacing).floor() * spacing + spacing;
     for (var z = first; z < view.cameraZ + Corridor.far; z += spacing) {
-      if (z - view.cameraZ < 0.8) continue;
+      if (behind == 0 && z - view.cameraZ < 0.8) continue;
       // The lamp: a small square in the ceiling, yellow with a black edge.
-      final lamp = <Offset?>[
-        view.point(-0.2, top, z - 0.2),
-        view.point(0.2, top, z - 0.2),
-        view.point(0.2, top, z + 0.2),
-        view.point(-0.2, top, z + 0.2),
-      ];
-      if (lamp.any((c) => c == null)) continue;
-      final shape = _poly(lamp);
+      final shape = _poly3(view, [
+        (-0.2, top, z - 0.2),
+        (0.2, top, z - 0.2),
+        (0.2, top, z + 0.2),
+        (-0.2, top, z + 0.2),
+      ]);
       canvas.drawPath(shape, _fill(CorridorColors.light));
       canvas.drawPath(shape, _outline(CorridorColors.ink));
     }
@@ -402,45 +406,43 @@ class CorridorPainter extends CustomPainter {
     if (end == null) return;
     const wx = Corridor.wallX;
     final distance = end - view.cameraZ;
-    if (distance < Corridor.near + 0.3) return;
-    Offset? at(double x, double y, double z) => view.point(x, y, z);
-
     if (distance <= Corridor.far) {
-      final corners = [
-        at(-wx, Corridor.ceilingY, end),
-        at(wx, Corridor.ceilingY, end),
-        at(wx, Corridor.floorY, end),
-        at(-wx, Corridor.floorY, end),
-      ];
-      if (corners.any((c) => c == null)) return;
-      canvas.drawPath(_poly(corners), _fill(style.wall));
-      canvas.drawPath(_poly(corners), _outline(CorridorColors.ink));
+      final wall = _poly3(view, [
+        (-wx, Corridor.ceilingY, end),
+        (wx, Corridor.ceilingY, end),
+        (wx, Corridor.floorY, end),
+        (-wx, Corridor.floorY, end),
+      ]);
+      canvas.drawPath(wall, _fill(style.wall));
+      canvas.drawPath(wall, _outline(CorridorColors.ink));
     }
     if (!style.doorway) return;
     // Seen from afar the door sits just inside the fog.
     final z = math.min(end, view.cameraZ + Corridor.far - 1);
-    List<Offset?> rect(double x0, double x1, double y0, double y1) => [
-      at(x0, y0, z),
-      at(x1, y0, z),
-      at(x1, y1, z),
-      at(x0, y1, z),
+    List<Point3> rect(double x0, double x1, double y0, double y1) => [
+      (x0, y0, z),
+      (x1, y0, z),
+      (x1, y1, z),
+      (x0, y1, z),
     ];
-    final casing = rect(-0.95, 0.95, -1.12, Corridor.floorY);
-    final leaf = rect(-0.8, 0.8, -1.0, Corridor.floorY);
-    if (casing.any((c) => c == null) || leaf.any((c) => c == null)) return;
     // A shut door: black frame, a coloured leaf with two panels and a knob.
-    canvas.drawPath(_poly(casing), _fill(CorridorColors.ink));
-    canvas.drawPath(_poly(leaf), _fill(CorridorColors.doorLeaf));
+    canvas.drawPath(
+      _poly3(view, rect(-0.95, 0.95, -1.12, Corridor.floorY)),
+      _fill(CorridorColors.ink),
+    );
+    canvas.drawPath(
+      _poly3(view, rect(-0.8, 0.8, -1.0, Corridor.floorY)),
+      _fill(CorridorColors.doorLeaf),
+    );
     final line = _outline(CorridorColors.ink);
     for (final panel in [
       rect(-0.55, 0.55, -0.8, 0.0),
       rect(-0.55, 0.55, 0.25, 1.25),
     ]) {
-      if (panel.any((c) => c == null)) continue;
-      canvas.drawPath(_poly(panel), line);
+      canvas.drawPath(_poly3(view, panel), line);
     }
-    final knob = at(0.55, 0.55, z);
-    final knobSide = at(0.67, 0.55, z);
+    final knob = view.point(0.55, 0.55, z);
+    final knobSide = view.point(0.67, 0.55, z);
     if (knob != null && knobSide != null) {
       final radius = math.max(1.5, (knobSide - knob).distance);
       canvas.drawCircle(knob, radius, _fill(CorridorColors.light));
@@ -457,8 +459,23 @@ class CorridorPainter extends CustomPainter {
     List<void Function(Canvas)> overlay,
   ) {
     final outer = view.wallQuad(slot);
-    if (outer == null) return;
-    final depth = slot.z0 - view.cameraZ;
+    if (outer == null) {
+      // Part of it is behind the visitor (he has turned to look at the wall): just
+      // the part in front of him, plain.
+      final x = slot.side * Corridor.wallX;
+      final cut = _poly(
+        view.polygon([
+          (x, slot.yTop, slot.z0),
+          (x, slot.yTop, slot.z1),
+          (x, slot.yBottom, slot.z1),
+          (x, slot.yBottom, slot.z0),
+        ]),
+      );
+      canvas.drawPath(cut, _fill(galleryFrameLook(slot.style).frame));
+      canvas.drawPath(cut, _outline(CorridorColors.ink));
+      return;
+    }
+    final depth = ((slot.z0 + slot.z1) / 2 - view.cameraZ).abs();
     final fade = depth <= 18
         ? 1.0
         : (1 - (depth - 18) / (Corridor.far - 18)).clamp(0.0, 1.0);
@@ -511,7 +528,7 @@ class CorridorPainter extends CustomPainter {
       return;
     }
 
-    final picture = view.artQuad(slot);
+    final picture = view.artQuad(slot, aspect: entry.width / entry.height);
     if (picture == null) return;
     if (decor.plaque.isNotEmpty && depth < 9) {
       overlay.add((c) => _plate(c, view, slot, entry, decor.plaque));

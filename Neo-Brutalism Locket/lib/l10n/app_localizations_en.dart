@@ -1453,6 +1453,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get galleryFocusDetails => 'RATE & COMMENT';
+
+  @override
+  String get galleryFocusLeave => 'KEEP WALKING';
+
+  @override
   String corridorSemantics(int count) {
     return 'Exhibition corridor with $count paintings. Swipe up to walk forward, tap one to view it. Use the grid view button to browse as a list.';
   }
