@@ -94,6 +94,7 @@ class PostOutbox extends ChangeNotifier {
     String? questId,
     Map<String, dynamic>? overlay,
     List<String>? recipients,
+    File? original,
   }) async {
     final encoded = await encode(
       await source.readAsBytes(),
@@ -106,12 +107,29 @@ class PostOutbox extends ChangeNotifier {
     final thumbFile = '${base}_thumb.jpg';
     await File(mediaFile).writeAsBytes(encoded.media, flush: true);
     await File(thumbFile).writeAsBytes(encoded.thumb, flush: true);
+    // The shot before its style, to compare with: kept as a JPEG.
+    String? originalFile;
+    if (original != null) {
+      try {
+        final before = await encode(
+          await original.readAsBytes(),
+          lossless: false,
+        );
+        originalFile = '${base}_orig.${before.extension}';
+        await File(originalFile).writeAsBytes(before.media, flush: true);
+      } catch (e, st) {
+        // No original is fine: the post just has nothing to compare.
+        AppLog.warn('post_outbox', e, st);
+        originalFile = null;
+      }
+    }
     final items = await _load();
     items.add(
       PendingPost(
         id: id,
         mediaFile: mediaFile,
         thumbFile: thumbFile,
+        originalFile: originalFile,
         extension: encoded.extension,
         caption: caption.trim(),
         style: style,
@@ -202,7 +220,7 @@ class PostOutbox extends ChangeNotifier {
   }
 
   Future<void> _delete(PendingPost item) async {
-    for (final path in [item.mediaFile, ?item.thumbFile]) {
+    for (final path in [item.mediaFile, ?item.thumbFile, ?item.originalFile]) {
       try {
         await File(path).delete();
       } catch (e, st) {

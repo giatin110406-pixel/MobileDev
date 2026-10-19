@@ -86,7 +86,7 @@ class InteractionsStore extends ChangeNotifier {
   Future<void> deletePost(RemotePost post) async {
     await repository.deletePost(
       post.id,
-      filePaths: [post.mediaPath, ?post.thumbPath],
+      filePaths: [post.mediaPath, ?post.thumbPath, ?post.originalPath],
     );
     _activity = {..._activity}..remove(post.id);
     notifyListeners();

@@ -272,6 +272,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get composerAllFriends => 'ALL FRIENDS';
 
   @override
+  String get composerAllShort => 'All';
+
+  @override
   String get composerSend => 'SEND';
 
   @override
@@ -1040,6 +1043,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holdToCompare => 'HOLD TO COMPARE';
+
+  @override
+  String get dragToCompare => 'DRAG TO COMPARE';
 
   @override
   String get styleWorking8bit => 'GRINDING PIXELS…';

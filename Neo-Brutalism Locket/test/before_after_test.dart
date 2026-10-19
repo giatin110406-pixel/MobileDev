@@ -1,177 +1,132 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
-/// Holds the side shown, like the camera screen does.
-class Host extends StatefulWidget {
-  const Host({super.key, this.styledPath = 'styled.png'});
+Widget _host(Widget child) => MaterialApp(
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('en'),
+  home: Center(child: SizedBox.square(dimension: 300, child: child)),
+);
 
-  final String? styledPath;
-
-  @override
-  State<Host> createState() => HostState();
-}
-
-class HostState extends State<Host> {
-  bool showStyled = true;
-  String? styledPath;
-
-  @override
-  void initState() {
-    super.initState();
-    styledPath = widget.styledPath;
-  }
-
-  void finishStyle(String path) => setState(() => styledPath = path);
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    supportedLocales: AppLocalizations.supportedLocales,
-    locale: const Locale('en'),
-    home: Center(
-      child: SizedBox.square(
-        dimension: 300,
-        child: BeforeAfterView(
-          originalPath: 'original.jpg',
-          styledPath: styledPath,
-          styleLabel: '8-BIT',
-          showStyled: showStyled,
-          onChanged: (styled) => setState(() => showStyled = styled),
-        ),
-      ),
-    ),
-  );
-}
+Widget _view({String? styled = 'styled.png'}) => BeforeAfterView(
+  originalPath: 'original.jpg',
+  styledPath: styled,
+  styleLabel: '8-BIT',
+);
 
 void main() {
-  testWidgets('opens on the styled print, swipe right for the original', (
+  testWidgets('opens on the finished print with a hint to drag', (
     tester,
   ) async {
-    await tester.pumpWidget(const Host());
-    final host = tester.state<HostState>(find.byType(Host));
+    await tester.pumpWidget(_host(_view()));
     expect(find.text('8-BIT'), findsOneWidget);
-
-    await tester.fling(find.byType(PageView), const Offset(250, 0), 1000);
-    await tester.pumpAndSettle();
-    expect(host.showStyled, isFalse);
-    expect(find.text('ORIGINAL'), findsOneWidget);
-
-    await tester.fling(find.byType(PageView), const Offset(-250, 0), 1000);
-    await tester.pumpAndSettle();
-    expect(host.showStyled, isTrue);
-    expect(find.text('8-BIT'), findsOneWidget);
+    expect(find.text('ORIGINAL'), findsNothing);
+    expect(find.text('DRAG TO COMPARE'), findsOneWidget);
   });
 
-  testWidgets('a tap switches sides too', (tester) async {
-    await tester.pumpWidget(const Host());
-    final host = tester.state<HostState>(find.byType(Host));
-    await tester.tap(find.byType(PageView));
-    await tester.pumpAndSettle();
-    expect(host.showStyled, isFalse);
-    await tester.tap(find.byType(PageView));
-    await tester.pumpAndSettle();
-    expect(host.showStyled, isTrue);
+  testWidgets('the finger decides how much of each side shows', (tester) async {
+    await tester.pumpWidget(_host(_view()));
+    final left = tester.getTopLeft(find.byType(BeforeAfterView));
+
+    // Halfway: both sides are on screen.
+    final drag = await tester.startGesture(left + const Offset(150, 150));
+    await tester.pump();
+    await drag.moveTo(left + const Offset(150, 160));
+    await tester.pump();
+    expect(find.text('ORIGINAL'), findsOneWidget);
+    expect(find.text('8-BIT'), findsOneWidget);
+    expect(find.text('DRAG TO COMPARE'), findsNothing);
+
+    // Far right: almost all original, the style's name steps aside.
+    await drag.moveTo(left + const Offset(285, 160));
+    await tester.pump();
+    expect(find.text('ORIGINAL'), findsOneWidget);
+    expect(find.text('8-BIT'), findsNothing);
+
+    // Back to the left edge: all styled again.
+    await drag.moveTo(left + const Offset(2, 160));
+    await tester.pump();
+    expect(find.text('ORIGINAL'), findsNothing);
+    expect(find.text('8-BIT'), findsOneWidget);
+    await drag.up();
+  });
+
+  testWidgets('the divider stays where the finger left it', (tester) async {
+    await tester.pumpWidget(_host(_view()));
+    final left = tester.getTopLeft(find.byType(BeforeAfterView));
+    final drag = await tester.startGesture(left + const Offset(20, 150));
+    await drag.moveTo(left + const Offset(60, 150));
+    await drag.moveTo(left + const Offset(280, 150));
+    await drag.up();
+    await tester.pump();
+    expect(find.text('ORIGINAL'), findsOneWidget);
+    expect(find.text('8-BIT'), findsNothing);
   });
 
   testWidgets('while the style runs only the original shows', (tester) async {
-    await tester.pumpWidget(const Host(styledPath: null));
-    final host = tester.state<HostState>(find.byType(Host));
-    expect(find.text('ORIGINAL'), findsNothing, reason: 'nothing to compare');
-    await tester.fling(find.byType(PageView), const Offset(-250, 0), 1000);
-    await tester.tap(find.byType(PageView));
-    await tester.pumpAndSettle();
-    expect(host.showStyled, isTrue, reason: 'unchanged: no styled side yet');
-    expect(
-      tester.widget<PageView>(find.byType(PageView)).childrenDelegate,
-      isA<SliverChildListDelegate>().having(
-        (d) => d.children.length,
-        'pages',
-        1,
+    await tester.pumpWidget(_host(_view(styled: null)));
+    expect(find.byType(RevealCompare), findsNothing);
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.text('DRAG TO COMPARE'), findsNothing);
+  });
+
+  testWidgets('with no before picture there is nothing to drag', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(const RevealCompare(after: ColoredBox(color: Colors.green))),
+    );
+    expect(find.byIcon(Icons.swap_horiz_rounded), findsNothing);
+  });
+
+  testWidgets('the line and grip fade out after the finger lifts', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(_view()));
+    double opacityOfGrip() => tester
+        .widget<AnimatedOpacity>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.swap_horiz_rounded),
+                matching: find.byType(AnimatedOpacity),
+              )
+              .first,
+        )
+        .opacity;
+    final left = tester.getTopLeft(find.byType(BeforeAfterView));
+    final drag = await tester.startGesture(left + const Offset(100, 150));
+    await drag.moveTo(left + const Offset(140, 150));
+    await drag.moveTo(left + const Offset(200, 150));
+    await tester.pump();
+    expect(opacityOfGrip(), greaterThan(0));
+    await drag.up();
+    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(opacityOfGrip(), 0, reason: 'nothing left sitting on the picture');
+  });
+
+  testWidgets('the before picture waits its turn when asked to', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        const RevealCompare(
+          beforeDelay: Duration(seconds: 1),
+          before: Text('BEFORE-PIC'),
+          after: Text('AFTER-PIC'),
+        ),
       ),
     );
-  });
-
-  testWidgets('when the style is done the view slides to it', (tester) async {
-    await tester.pumpWidget(const Host(styledPath: null));
-    final host = tester.state<HostState>(find.byType(Host));
-    host.finishStyle('styled.png');
-    await tester.pumpAndSettle();
-    expect(find.text('8-BIT'), findsOneWidget);
-    final pages = tester.widget<PageView>(find.byType(PageView)).controller!;
-    expect(pages.page, 1);
-  });
-
-  testWidgets('holding shows the other side, letting go brings it back', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const Host());
-    final host = tester.state<HostState>(find.byType(Host));
-    expect(find.text('8-BIT'), findsOneWidget);
-
-    final hold = await tester.startGesture(
-      tester.getCenter(find.byType(PageView)),
-    );
-    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-    expect(find.text('ORIGINAL'), findsOneWidget);
-    expect(find.text('8-BIT'), findsNothing);
-    expect(host.showStyled, isTrue, reason: 'peeking does not switch sides');
-
-    await hold.up();
-    await tester.pumpAndSettle();
-    expect(find.text('8-BIT'), findsOneWidget);
-    expect(find.text('ORIGINAL'), findsNothing);
-    expect(host.showStyled, isTrue);
-  });
-
-  testWidgets('holding on the original peeks at the styled print', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const Host());
-    await tester.tap(find.byType(PageView));
-    await tester.pumpAndSettle();
-    expect(find.text('ORIGINAL'), findsOneWidget);
-
-    final hold = await tester.startGesture(
-      tester.getCenter(find.byType(PageView)),
-    );
-    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-    expect(find.text('8-BIT'), findsOneWidget);
-    await hold.up();
-    await tester.pumpAndSettle();
-    expect(find.text('ORIGINAL'), findsOneWidget);
-  });
-
-  testWidgets('the hold hint shows until the first hold', (tester) async {
-    await tester.pumpWidget(const Host());
-    expect(find.text('HOLD TO COMPARE'), findsOneWidget);
-    final hold = await tester.startGesture(
-      tester.getCenter(find.byType(PageView)),
-    );
-    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-    await hold.up();
-    await tester.pumpAndSettle();
-    expect(find.text('HOLD TO COMPARE'), findsNothing);
-  });
-
-  testWidgets('no hint and no peek while only the original exists', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const Host(styledPath: null));
-    expect(find.text('HOLD TO COMPARE'), findsNothing);
-    final hold = await tester.startGesture(
-      tester.getCenter(find.byType(PageView)),
-    );
-    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-    expect(find.text('ORIGINAL'), findsNothing);
-    await hold.up();
+    expect(find.text('BEFORE-PIC'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 1100));
+    expect(find.text('BEFORE-PIC'), findsOneWidget);
   });
 }

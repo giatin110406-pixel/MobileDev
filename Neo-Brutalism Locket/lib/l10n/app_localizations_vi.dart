@@ -269,6 +269,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get composerAllFriends => 'TẤT CẢ BẠN BÈ';
 
   @override
+  String get composerAllShort => 'Tất cả';
+
+  @override
   String get composerSend => 'GỬI';
 
   @override
@@ -1036,6 +1039,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holdToCompare => 'GIỮ ĐỂ SO SÁNH';
+
+  @override
+  String get dragToCompare => 'KÉO ĐỂ SO SÁNH';
 
   @override
   String get styleWorking8bit => 'ĐANG MÀI PIXEL…';

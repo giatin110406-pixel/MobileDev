@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 /// Turns a path in a private storage bucket into a URL the phone can load.
 abstract interface class MediaUrls {
@@ -32,6 +36,70 @@ class SupabaseMediaUrls implements MediaUrls {
       path,
       key,
     ).whenComplete(() => _pending.remove(key));
+  }
+
+  bool _fresh(String key) {
+    final cached = _cache[key];
+    return cached != null &&
+        cached.expires.isAfter(DateTime.now().add(const Duration(minutes: 5)));
+  }
+
+  final _warmed = <String>{};
+
+  /// Signs all of [paths] in ONE request and starts downloading them into the
+  /// picture cache, a few at a time, so they are on the phone before anyone
+  /// scrolls to them. Paths already warmed are skipped. Never throws.
+  Future<void> warm(String bucket, Iterable<String> paths) async {
+    final todo = <String>[
+      for (final path in paths)
+        if (_warmed.add('$bucket/$path')) path,
+    ];
+    if (todo.isEmpty) return;
+    final need = [
+      for (final path in todo)
+        if (!_fresh('$bucket/$path')) path,
+    ];
+    if (need.isNotEmpty) {
+      try {
+        final signed = await Backend.client.storage
+            .from(bucket)
+            .createSignedUrlsResult(need, lifetime.inSeconds);
+        final expires = DateTime.now().add(lifetime);
+        for (final item in signed) {
+          if (item is sb.SignedUrlSuccess) {
+            _cache['$bucket/${item.path}'] = (
+              url: item.signedUrl,
+              expires: expires,
+            );
+          }
+        }
+      } catch (_) {
+        // Not warmed after all: forget it so a later call can try again.
+        for (final path in todo) {
+          _warmed.remove('$bucket/$path');
+        }
+        return;
+      }
+    }
+    // Download in the background, three at a time, in the order given.
+    final queue = List.of(todo);
+    Future<void> worker() async {
+      while (queue.isNotEmpty) {
+        final path = queue.removeAt(0);
+        final cached = _cache['$bucket/$path'];
+        if (cached == null) continue;
+        try {
+          await DefaultCacheManager().getSingleFile(
+            cached.url,
+            key: '$bucket/$path',
+          );
+        } catch (_) {
+          // The picture widget will fetch it itself when it is shown.
+        }
+      }
+    }
+
+    unawaited(Future.wait([worker(), worker(), worker()]));
   }
 
   Future<String?> _sign(String bucket, String path, String key) async {
@@ -205,4 +273,10 @@ class _RemoteImageState extends State<RemoteImage> {
       },
     );
   }
+}
+
+/// Warms the pictures at [paths] in the `media` bucket when [urls] can (see
+/// [SupabaseMediaUrls.warm]); does nothing for other sources.
+void warmMedia(MediaUrls? urls, Iterable<String> paths) {
+  if (urls is SupabaseMediaUrls) unawaited(urls.warm('media', paths));
 }

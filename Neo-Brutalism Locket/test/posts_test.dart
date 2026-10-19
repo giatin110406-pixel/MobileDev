@@ -194,6 +194,39 @@ void main() {
 
     tearDown(() => dir.deleteSync(recursive: true));
 
+    test(
+      'the original shot is queued beside the styled one and cleaned up',
+      () async {
+        final original = File('${dir.path}/original.jpg')
+          ..writeAsBytesSync([1, 2, 3]);
+        final box = outbox();
+        await box.enqueue(
+          source: source,
+          caption: 'hi',
+          style: StyleType.pixel8bit,
+          original: original,
+        );
+        final queued = (await box.pending()).single;
+        expect(queued.originalFile, isNotNull);
+        expect(File(queued.originalFile!).existsSync(), isTrue);
+        // It survives being saved and loaded again (the app may be closed).
+        expect(
+          PendingPost.fromJson(queued.toJson()).originalFile,
+          queued.originalFile,
+        );
+
+        await box.flush();
+        expect(posts.sent.single.originalFile, queued.originalFile);
+        expect(File(queued.originalFile!).existsSync(), isFalse);
+      },
+    );
+
+    test('a post with no original has nothing to compare', () async {
+      final box = outbox();
+      await box.enqueue(source: source, caption: '');
+      expect((await box.pending()).single.originalFile, isNull);
+    });
+
     int filesInOutbox() {
       final folder = Directory('${dir.path}/outbox');
       return folder.existsSync() ? folder.listSync().length : 0;

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/posts/interactions_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/post_models.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
@@ -201,6 +202,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncMusic();
       _scheduleViewed();
+      _warmAhead();
     });
   }
 
@@ -249,6 +251,23 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
     } else {
       _music.play(QuestMusic.trackFor(style, entry!.id));
     }
+  }
+
+  /// The next few pictures start coming while this one is looked at.
+  void _warmAhead() {
+    final ahead = widget.entries
+        .skip(_page + 1)
+        .take(4)
+        .map((entry) => entry.remote)
+        .whereType<RemotePost>()
+        .toList();
+    warmMedia(MediaUrlsScope.maybeOf(context), [
+      for (final post in ahead) ?post.thumbPath,
+      for (final post in ahead)
+        if (!post.isVideo) post.mediaPath,
+      for (final post in ahead)
+        if (!post.isVideo) ?post.originalPath,
+    ]);
   }
 
   bool get _anyMusic => widget.entries.any((entry) => entry.musicStyle != null);
@@ -325,6 +344,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                       _page = page;
                       _syncMusic();
                       _scheduleViewed();
+                      _warmAhead();
                     },
                     itemBuilder: (context, index) =>
                         _buildPage(widget.entries[index]),
@@ -580,6 +600,16 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
     children: [
       if (post.isVideo)
         RemoteVideo(path: post.mediaPath, thumbPath: post.thumbPath)
+      else if (post.originalPath != null)
+        // Drag across the picture to see it before and after its style.
+        RevealCompare(
+          beforeDelay: const Duration(milliseconds: 1500),
+          before: RemoteImage(
+            path: post.originalPath!,
+            previewPath: post.thumbPath,
+          ),
+          after: RemoteImage(path: post.mediaPath, previewPath: post.thumbPath),
+        )
       else
         RemoteImage(path: post.mediaPath, previewPath: post.thumbPath),
       Positioned(

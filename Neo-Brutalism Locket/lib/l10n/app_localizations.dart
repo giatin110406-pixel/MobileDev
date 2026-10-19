@@ -584,6 +584,12 @@ abstract class AppLocalizations {
   /// **'TẤT CẢ BẠN BÈ'**
   String get composerAllFriends;
 
+  /// No description provided for @composerAllShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get composerAllShort;
+
   /// No description provided for @composerSend.
   ///
   /// In vi, this message translates to:
@@ -1957,6 +1963,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'GIỮ ĐỂ SO SÁNH'**
   String get holdToCompare;
+
+  /// No description provided for @dragToCompare.
+  ///
+  /// In vi, this message translates to:
+  /// **'KÉO ĐỂ SO SÁNH'**
+  String get dragToCompare;
 
   /// No description provided for @styleWorking8bit.
   ///
