@@ -179,29 +179,87 @@ List<FrameSlot> layoutGallery(
 double corridorLength(List<FrameSlot> slots) =>
     slots.fold(Corridor.startZ, (end, slot) => math.max(end, slot.z1));
 
-/// Looking down the corridor from [cameraZ] onto a screen of [size].
+/// A point of the corridor as (x, y, z).
+typedef Point3 = (double, double, double);
+
+/// Looking from [cameraZ] onto a screen of [size]. The visitor looks down the corridor
+/// ([yaw] 0), or has turned to the right (positive) or left (negative) by [yaw] radians,
+/// like turning the head to look at a wall; at a quarter turn (pi / 2) the wall is
+/// straight ahead. [cameraY] is the height of the eyes (0 is the usual level).
 class Projection {
-  Projection(this.size, this.cameraZ)
+  Projection(this.size, this.cameraZ, {this.yaw = 0, this.cameraY = 0})
     : cx = size.width / 2,
       cy = size.height * 0.46,
-      focal = size.width * 0.85;
+      focal = size.width * 0.85,
+      _cos = math.cos(yaw),
+      _sin = math.sin(yaw);
 
   final Size size;
   final double cameraZ;
+  final double yaw;
+  final double cameraY;
+  final double _cos;
+  final double _sin;
 
-  /// The vanishing point (where the corridor ends, in the picture).
+  /// The vanishing point (where the corridor ends, in the picture), when looking down
+  /// the corridor.
   final double cx;
   final double cy;
   final double focal;
 
   Offset get vanishingPoint => Offset(cx, cy);
 
+  /// A point of the corridor seen from the visitor: x to the right, y down, z ahead.
+  Point3 _toCamera(double x, double y, double z) {
+    final dz = z - cameraZ;
+    return (x * _cos - dz * _sin, y - cameraY, x * _sin + dz * _cos);
+  }
+
+  Offset _screen(Point3 c) =>
+      Offset(cx + focal * c.$1 / c.$3, cy + focal * c.$2 / c.$3);
+
   /// The screen position of a point of the corridor, or null if it is behind
   /// (or too close to) the visitor.
   Offset? point(double x, double y, double z) {
-    final depth = z - cameraZ;
-    if (depth < Corridor.near) return null;
-    return Offset(cx + focal * x / depth, cy + focal * y / depth);
+    final c = _toCamera(x, y, z);
+    if (c.$3 < Corridor.near) return null;
+    return _screen(c);
+  }
+
+  /// The outline on the screen of a flat shape of the corridor given by its corners,
+  /// cut off where it comes closer than the visitor's nose. Empty if none of it is in
+  /// front of the visitor.
+  List<Offset> polygon(List<Point3> corners) {
+    final camera = [for (final c in corners) _toCamera(c.$1, c.$2, c.$3)];
+    final kept = <Point3>[];
+    for (var i = 0; i < camera.length; i++) {
+      final a = camera[i];
+      final b = camera[(i + 1) % camera.length];
+      final aIn = a.$3 >= Corridor.near;
+      final bIn = b.$3 >= Corridor.near;
+      if (aIn) kept.add(a);
+      if (aIn != bIn) kept.add(_cut(a, b));
+    }
+    return [for (final c in kept) _screen(c)];
+  }
+
+  /// A line of the corridor between two points, cut off the same way, or null if all of
+  /// it is behind the visitor.
+  (Offset, Offset)? segment(Point3 from, Point3 to) {
+    var a = _toCamera(from.$1, from.$2, from.$3);
+    var b = _toCamera(to.$1, to.$2, to.$3);
+    final aIn = a.$3 >= Corridor.near;
+    final bIn = b.$3 >= Corridor.near;
+    if (!aIn && !bIn) return null;
+    if (!aIn) a = _cut(a, b);
+    if (!bIn) b = _cut(b, a);
+    return (_screen(a), _screen(b));
+  }
+
+  /// The point of the line from [a] to [b] that is exactly at the near distance.
+  Point3 _cut(Point3 a, Point3 b) {
+    final t = (Corridor.near - a.$3) / (b.$3 - a.$3);
+    return (a.$1 + (b.$1 - a.$1) * t, a.$2 + (b.$2 - a.$2) * t, Corridor.near);
   }
 
   /// The four corners of a frame on its wall, in picture order: top-left,
@@ -323,15 +381,21 @@ bool pointInQuad(Offset point, List<Offset> quad) {
   return true;
 }
 
-/// The frames to draw now, farthest first (so nearer ones paint over them).
-List<FrameSlot> visibleSlots(List<FrameSlot> slots, double cameraZ) {
+/// The frames to draw now, farthest first (so nearer ones paint over them). When the
+/// visitor has turned to look at a wall, frames [behind] him (in metres) count too.
+List<FrameSlot> visibleSlots(
+  List<FrameSlot> slots,
+  double cameraZ, {
+  double behind = 0,
+}) {
   final visible = [
     for (final slot in slots)
-      if (slot.z0 - cameraZ >= Corridor.near &&
+      if (slot.z0 - cameraZ >= Corridor.near - behind &&
           slot.z0 - cameraZ <= Corridor.far)
         slot,
   ];
-  visible.sort((a, b) => b.z0.compareTo(a.z0));
+  double away(FrameSlot slot) => ((slot.z0 + slot.z1) / 2 - cameraZ).abs();
+  visible.sort((a, b) => away(b).compareTo(away(a)));
   return visible;
 }
 

@@ -1447,6 +1447,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get galleryFocusDetails => 'CHẤM ĐIỂM & BÌNH LUẬN';
+
+  @override
+  String get galleryFocusLeave => 'ĐI TIẾP';
+
+  @override
   String corridorSemantics(int count) {
     return 'Hành lang triển lãm với $count bức tranh. Vuốt lên để đi tới, chạm một bức để xem. Dùng nút Xem dạng lưới để duyệt bằng danh sách.';
   }

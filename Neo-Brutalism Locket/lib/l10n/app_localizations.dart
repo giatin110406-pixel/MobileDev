@@ -2642,6 +2642,18 @@ abstract class AppLocalizations {
   /// **'Bài số {seq}, nhóm {group}'**
   String galleryEntrySemantics(int seq, String group);
 
+  /// No description provided for @galleryFocusDetails.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHẤM ĐIỂM & BÌNH LUẬN'**
+  String get galleryFocusDetails;
+
+  /// No description provided for @galleryFocusLeave.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐI TIẾP'**
+  String get galleryFocusLeave;
+
   /// No description provided for @corridorSemantics.
   ///
   /// In vi, this message translates to:

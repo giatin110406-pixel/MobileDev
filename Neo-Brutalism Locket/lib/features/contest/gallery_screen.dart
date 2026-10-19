@@ -179,6 +179,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             entries: _store.entries,
             cache: _cache,
             onOpen: _open,
+            caption: widget.title,
             onNearEnd: _store.hasMore ? _store.loadMore : null,
           ),
         // With no entry yet the corridor is still there, with blank canvases on

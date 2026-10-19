@@ -75,6 +75,8 @@ void main() {
     required bool lite,
     String? writeTo,
     int count = 100,
+    double yaw = 0,
+    double eye = 0,
   }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
@@ -89,6 +91,8 @@ void main() {
       }
     });
     final camera = ValueNotifier<double>(cameraZ);
+    final turn = ValueNotifier<double>(yaw);
+    final height = ValueNotifier<double>(eye);
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.ltr,
@@ -97,6 +101,8 @@ void main() {
             child: CustomPaint(
               painter: CorridorPainter(
                 camera: camera,
+                yaw: turn,
+                eye: height,
                 entries: entries,
                 slots: slots,
                 cache: cache,
@@ -124,7 +130,37 @@ void main() {
     }
     await tester.pumpWidget(const SizedBox());
     camera.dispose();
+    turn.dispose();
+    height.dispose();
     cache.dispose();
+  }
+
+  // The visitor has stopped and turned to look at one painting (angles in degrees).
+  for (final (name, define, degrees) in const [
+    (
+      'a quarter of the way round',
+      String.fromEnvironment('GALLERY_TURN1_PNG'),
+      25,
+    ),
+    ('halfway round', String.fromEnvironment('GALLERY_TURN2_PNG'), 55),
+    ('facing the painting', String.fromEnvironment('GALLERY_FACE_PNG'), 90),
+  ]) {
+    testWidgets('looking at a painting: $name', (tester) async {
+      // The second entry hangs on the right wall, in the top row.
+      final slot = layoutGallery(7).firstWhere((s) => s.index == 1);
+      final z = (slot.z0 + slot.z1) / 2;
+      final share = degrees / 90;
+      final angle = degrees * 3.141592653589793 / 180 * slot.side;
+      await shoot(
+        tester,
+        cameraZ: z - 3 * (1 - share),
+        lite: false,
+        count: 7,
+        yaw: angle,
+        eye: (slot.yTop + slot.yBottom) / 2 * share,
+        writeTo: define.isEmpty ? null : define,
+      );
+    });
   }
 
   // Pictures of the Gallery, written when the paths are given (see docs/).
