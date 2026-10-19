@@ -28,6 +28,13 @@ abstract final class Corridor {
   /// Space left free between two frames on a wall.
   static const gap = 0.14;
 
+  /// The first frames, near the entrance, lie outside the screen when the visitor
+  /// stands at the start (the wall there is wider than the view). A frame is wholly
+  /// in view from the start when it begins at least this far in: the wall edge is at
+  /// x = focal * wallX / z, so it needs z >= 0.85 * 1.6 / 0.5 = 2.72, for any screen.
+  /// Entries only take frames from here on, so every entry can be seen.
+  static const firstEntryZ = 2.8;
+
   /// The height range of the wall that frames may use (skirting and crown
   /// moulding take the rest).
   static const wallTop = -1.45;
@@ -159,13 +166,18 @@ List<FrameSlot> _wall(int side, double until) {
   return slots;
 }
 
+/// Whether an entry may hang in [slot]: a frame that suits a painting, and one the
+/// visitor can see from the entrance.
+bool _canHold(FrameSlot slot) =>
+    _fitsEntry(slot.width, slot.height) && slot.z0 >= Corridor.firstEntryZ;
+
 /// The walls of the Gallery: a salon wall of frames on both sides, one above the
 /// other and side by side, in many sizes, all the way down the corridor. It is the
 /// same wall whatever the entries are, so the corridor looks like a gallery even when
 /// nothing has been submitted: every frame is a blank canvas.
 ///
-/// Entries then take the frames that suit a painting (big enough, not a thin strip),
-/// from the entrance to the end, left and right as they come, in the order they
+/// Entries then take the frames that suit a painting (big enough, not a thin strip)
+/// and that are in view from the entrance, from there to the end, left and right as they come, in the order they
 /// were accepted. The wall is made long enough for [entryCount] entries and [spare]
 /// frames more (and for at least [atLeast] in all), so there is always more wall.
 List<FrameSlot> layoutGallery(
@@ -178,7 +190,7 @@ List<FrameSlot> layoutGallery(
   List<FrameSlot> all;
   while (true) {
     all = [..._wall(-1, until), ..._wall(1, until)];
-    final fit = all.where((s) => _fitsEntry(s.width, s.height)).length;
+    final fit = all.where((s) => _canHold(s)).length;
     if (fit >= wanted || until > 400) break;
     until += 6;
   }
@@ -186,7 +198,7 @@ List<FrameSlot> layoutGallery(
   final suitable =
       [
         for (var i = 0; i < all.length; i++)
-          if (_fitsEntry(all[i].width, all[i].height)) i,
+          if (_canHold(all[i])) i,
       ]..sort((a, b) {
         final byDistance = all[a].z0.compareTo(all[b].z0);
         return byDistance != 0
