@@ -99,6 +99,8 @@ def create_app(runner: Runner | None = None, token: str | None = None,
     app.state.manager = manager
     app.state.verifier = verifier
     app.state.models_ready = False
+    # Why the models could not be loaded (shown by /v1/health instead of only in the log).
+    app.state.warmup_error = None
     app.state.gpu_info = {}
 
     @app.on_event("startup")
@@ -113,7 +115,11 @@ def create_app(runner: Runner | None = None, token: str | None = None,
                 warmup()
                 app.state.models_ready = True
             except Exception as error:  # noqa: BLE001
+                import traceback
+
+                traceback.print_exc()
                 print("warm-up failed:", error, flush=True)
+                app.state.warmup_error = f"{type(error).__name__}: {error}"[:1500]
 
         threading.Thread(target=load, daemon=True, name="warmup").start()
 
@@ -124,6 +130,7 @@ def create_app(runner: Runner | None = None, token: str | None = None,
     @app.get("/v1/health")
     def health() -> dict:
         info: dict = {"ok": True, "version": VERSION, "models_ready": app.state.models_ready,
+                      "warmup_error": app.state.warmup_error,
                       "styles": sorted(SUPPORTED_STYLES), "verify": True, "gpu": None, "vram_free_mb": None}
         # Never touch CUDA while a job runs: it can stall and make the phone time out.
         if manager.busy:

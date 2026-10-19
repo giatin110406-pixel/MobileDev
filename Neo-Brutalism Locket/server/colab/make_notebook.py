@@ -112,16 +112,28 @@ def health(base="http://127.0.0.1:8765"):
         return None
 
 
-def wait_ready(proc, seconds=600):
+def log_tail(chars=2500):
+    path = WORK / "server.log"
+    return path.read_text(errors="replace")[-chars:] if path.exists() else "(no log yet)"
+
+
+def wait_ready(proc, seconds=1500):
     deadline = time.time() + seconds
+    last_note = time.time()
     while time.time() < deadline:
         info = health()
         if info and info.get("models_ready"):
             return info
+        if info and info.get("warmup_error"):
+            raise RuntimeError("models failed to load: " + info["warmup_error"] + "\\n--- server.log ---\\n" + log_tail())
         if proc.poll() is not None:
-            raise RuntimeError("server exited:\\n" + (WORK / "server.log").read_text()[-2000:])
+            raise RuntimeError("server exited:\\n" + log_tail())
+        if time.time() - last_note > 60:
+            last_note = time.time()
+            print(f"still loading models ({int(deadline - time.time())} s left)... last log line:",
+                  log_tail(300).strip().splitlines()[-1:] or "-")
         time.sleep(5)
-    raise TimeoutError("models did not load in time, see /content/server.log")
+    raise TimeoutError("models did not load in time. Last log:\\n" + log_tail())
 
 
 server = start_server()

@@ -271,6 +271,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           FirebasePushGateway(
             devices: SupabaseDeviceRepository(),
             onData: (data) => updater.applyData(data),
+            onNotice: _showPushBanner,
           );
       _pushSubscription = push.taps.listen(_onPushTap);
       // Before signing out: stop pushes to this phone (still signed in then)
@@ -529,8 +530,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final newest = posts.take(12).toList();
     warmMedia(_mediaUrls, [
       for (final post in newest) ?post.thumbPath,
-      for (final post in newest)
-        if (!post.isVideo) post.mediaPath,
+      for (final post in newest) post.mediaPath,
       for (final post in newest)
         if (!post.isVideo) ?post.originalPath,
     ]);
@@ -1025,6 +1025,69 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     } on SafetyFailure catch (failure) {
       if (mounted) _notify(safetyFailureText(l10n, failure));
     }
+  }
+
+  /// A push arrived while the app is open: Android shows nothing then, so show
+  /// it as a banner here, with a way into what it is about. Not when the person
+  /// is already looking at that very chat.
+  void _showPushBanner(PushNotice notice) {
+    if (!mounted) return;
+    final tap = notice.tap;
+    if (tap != null &&
+        tap.type == 'message' &&
+        _tabIndex == 2 &&
+        _activeFriend != null &&
+        _activeFriend!.id == tap.fromId) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 5),
+          backgroundColor: NeoColors.ink,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (notice.title.isNotEmpty)
+                Text(
+                  notice.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: NeoColors.surface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              if (notice.body.isNotEmpty)
+                Text(
+                  notice.body,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: NeoColors.surface,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+          action: tap == null
+              ? null
+              : SnackBarAction(
+                  label: l10n.pushOpen,
+                  textColor: NeoColors.green,
+                  onPressed: () => _onPushTap(tap),
+                ),
+        ),
+      );
   }
 
   /// A notification was tapped: take the person to what it is about.

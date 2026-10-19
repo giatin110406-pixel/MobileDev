@@ -40,6 +40,19 @@ PushTap? parsePushTap(Map<String, dynamic>? data) {
   );
 }
 
+/// A push that arrived while the app is open. Android only draws a
+/// notification itself when the app is in the background, so the app shows this
+/// one in its own banner.
+class PushNotice {
+  const PushNotice({required this.title, required this.body, this.tap});
+
+  final String title;
+  final String body;
+
+  /// Where tapping it should go; null for a type this app does not know.
+  final PushTap? tap;
+}
+
 /// Where the phone's push token is kept on the server.
 abstract interface class DeviceRepository {
   Future<void> register(String token, String platform);
@@ -74,13 +87,17 @@ abstract interface class PushGateway {
 }
 
 class FirebasePushGateway implements PushGateway {
-  FirebasePushGateway({required this.devices, this.onData});
+  FirebasePushGateway({required this.devices, this.onData, this.onNotice});
 
   final DeviceRepository devices;
 
   /// Receives the data of every message that arrives while the app is open
   /// (the widget updates come this way).
   final void Function(Map<String, dynamic> data)? onData;
+
+  /// Called for every message that has a visible part (title and text) and
+  /// arrives while the app is open.
+  final void Function(PushNotice notice)? onNotice;
   final _taps = StreamController<PushTap>.broadcast();
   final _subscriptions = <StreamSubscription<Object?>>[];
   String? _token;
@@ -103,9 +120,19 @@ class FirebasePushGateway implements PushGateway {
       _subscriptions
         ..add(messaging.onTokenRefresh.listen(_register))
         ..add(
-          FirebaseMessaging.onMessage.listen(
-            (message) => onData?.call(message.data),
-          ),
+          FirebaseMessaging.onMessage.listen((message) {
+            onData?.call(message.data);
+            final shown = message.notification;
+            if (shown != null && onNotice != null) {
+              onNotice!(
+                PushNotice(
+                  title: shown.title ?? '',
+                  body: shown.body ?? '',
+                  tap: parsePushTap(message.data),
+                ),
+              );
+            }
+          }),
         )
         ..add(
           FirebaseMessaging.onMessageOpenedApp.listen(

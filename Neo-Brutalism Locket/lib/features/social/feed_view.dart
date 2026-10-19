@@ -263,8 +263,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
         .toList();
     warmMedia(MediaUrlsScope.maybeOf(context), [
       for (final post in ahead) ?post.thumbPath,
-      for (final post in ahead)
-        if (!post.isVideo) post.mediaPath,
+      for (final post in ahead) post.mediaPath,
       for (final post in ahead)
         if (!post.isVideo) ?post.originalPath,
     ]);
