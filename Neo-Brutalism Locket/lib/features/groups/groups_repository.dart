@@ -24,7 +24,8 @@ class Group {
   final DateTime createdAt;
   final String? avatarPath;
 
-  static const columns = 'id, name, avatar_path, rules, max_members, created_at';
+  static const columns =
+      'id, name, avatar_path, rules, max_members, created_at';
 
   factory Group.fromRow(Map<String, dynamic> row) => Group(
     id: row['id'] as String,
@@ -379,10 +380,11 @@ class SupabaseGroupsRepository implements GroupsRepository {
       final invite = GroupInvite(
         id: row['id'] as String,
         groupId: row['group_id'] as String,
-        groupName: (row['group'] as Map<String, dynamic>?)?['name'] as String? ??
-            '?',
+        groupName:
+            (row['group'] as Map<String, dynamic>?)?['name'] as String? ?? '?',
         person: Person.fromRow(
-          (isIncoming ? row['inviter'] : row['invitee']) as Map<String, dynamic>,
+          (isIncoming ? row['inviter'] : row['invitee'])
+              as Map<String, dynamic>,
         ),
         incoming: isIncoming,
         createdAt: DateTime.parse(row['created_at'] as String).toLocal(),
@@ -449,10 +451,8 @@ class SupabaseGroupsRepository implements GroupsRepository {
 
   @override
   Future<void> kick(String groupId, String userId) => _guard(
-    () => _db.rpc(
-      'kick_member',
-      params: {'p_group': groupId, 'p_user': userId},
-    ),
+    () =>
+        _db.rpc('kick_member', params: {'p_group': groupId, 'p_user': userId}),
   );
 
   @override

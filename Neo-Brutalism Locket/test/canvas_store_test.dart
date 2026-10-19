@@ -197,73 +197,84 @@ void main() {
       expect(store.colorIndexAt(1, 1), 0);
     });
 
-    test('rejects cells outside the canvas and colours outside the palette',
-        () async {
-      final store = await ready(FakeCanvas());
-      expect(store.paint(4, 0, 1), isFalse);
-      expect(store.paint(0, -1, 1), isFalse);
-      expect(store.paint(0, 0, 9), isFalse);
-    });
+    test(
+      'rejects cells outside the canvas and colours outside the palette',
+      () async {
+        final store = await ready(FakeCanvas());
+        expect(store.paint(4, 0, 1), isFalse);
+        expect(store.paint(0, -1, 1), isFalse);
+        expect(store.paint(0, 0, 9), isFalse);
+      },
+    );
 
-    test('sends at most 10 pixels per batch, each batch with its own id',
-        () async {
-      final repo = FakeCanvas(ink: 20);
-      final store = await ready(repo, batchDelay: const Duration(hours: 1));
-      for (var i = 0; i < 12; i++) {
-        store.paint(i % 4, i ~/ 4, 1);
-      }
-      await store.flushNow();
-      expect(repo.paints.map((p) => p.pixels.length), [10, 2]);
-      expect(repo.paints.map((p) => p.batch).toSet().length, 2);
-      expect(store.ink, 8);
-    });
+    test(
+      'sends at most 10 pixels per batch, each batch with its own id',
+      () async {
+        final repo = FakeCanvas(ink: 20);
+        final store = await ready(repo, batchDelay: const Duration(hours: 1));
+        for (var i = 0; i < 12; i++) {
+          store.paint(i % 4, i ~/ 4, 1);
+        }
+        await store.flushNow();
+        expect(repo.paints.map((p) => p.pixels.length), [10, 2]);
+        expect(repo.paints.map((p) => p.batch).toSet().length, 2);
+        expect(store.ink, 8);
+      },
+    );
 
-    test('when the server refuses, my pixels go back to what they were',
-        () async {
-      final repo = FakeCanvas(ink: 5)
-        ..failures.add(const CanvasFailure(CanvasFailureKind.insufficientInk));
-      final store = await ready(repo, batchDelay: const Duration(hours: 1));
-      store.paint(3, 3, 2);
-      await store.flushNow();
-      await settle();
-      expect(store.colorIndexAt(3, 3), 0);
-      expect(store.isPending(3, 3), isFalse);
-      expect(store.lastFailure, CanvasFailureKind.insufficientInk);
-    });
+    test(
+      'when the server refuses, my pixels go back to what they were',
+      () async {
+        final repo = FakeCanvas(
+          ink: 5,
+        )..failures.add(const CanvasFailure(CanvasFailureKind.insufficientInk));
+        final store = await ready(repo, batchDelay: const Duration(hours: 1));
+        store.paint(3, 3, 2);
+        await store.flushNow();
+        await settle();
+        expect(store.colorIndexAt(3, 3), 0);
+        expect(store.isPending(3, 3), isFalse);
+        expect(store.lastFailure, CanvasFailureKind.insufficientInk);
+      },
+    );
   });
 
   group('connection trouble', () {
-    test('a dropped connection retries the same batch and then succeeds',
-        () async {
-      final repo = FakeCanvas(ink: 5)
-        ..failures.addAll([
-          const CanvasFailure(CanvasFailureKind.network),
-          const CanvasFailure(CanvasFailureKind.network),
-        ]);
-      final store = await ready(repo, batchDelay: const Duration(hours: 1));
-      store.paint(0, 0, 1);
-      await store.flushNow();
-      expect(repo.paints.length, 3);
-      expect(repo.paints.map((p) => p.batch).toSet().length, 1);
-      expect(store.offline, isFalse);
-      expect(repo.pixels[0], 1);
-    });
-
-    test('staying down makes the canvas view-only and undoes the pixel',
-        () async {
-      final repo = FakeCanvas(ink: 5)
-        ..failures.addAll([
-          for (var i = 0; i < 3; i++)
+    test(
+      'a dropped connection retries the same batch and then succeeds',
+      () async {
+        final repo = FakeCanvas(ink: 5)
+          ..failures.addAll([
             const CanvasFailure(CanvasFailureKind.network),
-        ]);
-      final store = await ready(repo, batchDelay: const Duration(hours: 1));
-      store.paint(0, 0, 1);
-      await store.flushNow();
-      expect(store.offline, isTrue);
-      expect(store.canPaint, isFalse);
-      expect(store.colorIndexAt(0, 0), 0);
-      expect(store.paint(1, 0, 1), isFalse);
-    });
+            const CanvasFailure(CanvasFailureKind.network),
+          ]);
+        final store = await ready(repo, batchDelay: const Duration(hours: 1));
+        store.paint(0, 0, 1);
+        await store.flushNow();
+        expect(repo.paints.length, 3);
+        expect(repo.paints.map((p) => p.batch).toSet().length, 1);
+        expect(store.offline, isFalse);
+        expect(repo.pixels[0], 1);
+      },
+    );
+
+    test(
+      'staying down makes the canvas view-only and undoes the pixel',
+      () async {
+        final repo = FakeCanvas(ink: 5)
+          ..failures.addAll([
+            for (var i = 0; i < 3; i++)
+              const CanvasFailure(CanvasFailureKind.network),
+          ]);
+        final store = await ready(repo, batchDelay: const Duration(hours: 1));
+        store.paint(0, 0, 1);
+        await store.flushNow();
+        expect(store.offline, isTrue);
+        expect(store.canPaint, isFalse);
+        expect(store.colorIndexAt(0, 0), 0);
+        expect(store.paint(1, 0, 1), isFalse);
+      },
+    );
   });
 
   group('other people painting', () {

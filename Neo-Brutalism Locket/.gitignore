@@ -62,3 +62,6 @@ env/*.json
 
 # Firebase config for push notifications (see supabase/PUSH_SETUP.md)
 android/app/google-services.json
+
+# Colab upload staging (built by server/colab/pack_code.py)
+server/colab/_staging/

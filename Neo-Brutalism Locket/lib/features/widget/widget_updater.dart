@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -56,7 +57,9 @@ class WidgetUpdater {
     if (previous != null && previous != file.path) {
       try {
         await File(previous).delete();
-      } catch (_) {}
+      } catch (e, st) {
+        AppLog.warn('widget_updater', e, st);
+      }
     }
     await preferences.setString(_shownKey, post.postId);
     await preferences.setInt(_shownAtKey, post.createdAtMs);
@@ -104,7 +107,9 @@ class WidgetUpdater {
     if (file != null) {
       try {
         await File(file).delete();
-      } catch (_) {}
+      } catch (e, st) {
+        AppLog.warn('widget_updater', e, st);
+      }
     }
   }
 

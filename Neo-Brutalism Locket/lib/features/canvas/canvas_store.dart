@@ -227,8 +227,10 @@ class CanvasStore extends ChangeNotifier {
   void _scheduleFlush() {
     if (_sending) return;
     _flushTimer?.cancel();
-    _flushTimer = Timer(_queue.length >= maxBatch ? Duration.zero : batchDelay,
-        () => unawaited(_flush()));
+    _flushTimer = Timer(
+      _queue.length >= maxBatch ? Duration.zero : batchDelay,
+      () => unawaited(_flush()),
+    );
   }
 
   Future<void> _flush() async {

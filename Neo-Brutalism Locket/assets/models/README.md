@@ -14,3 +14,10 @@ fails on Android ("ORT_NOT_IMPLEMENTED ... Gelu ... float16"). `quest_labels.jso
 text embeddings of every quest description, so only the image side runs on the phone. All three are produced by
 `server/eval/export_quest_model.py`; never edit them by hand. int8 quantisation was tried and breaks the model
 (recall 3%), so do not use it. Licence of the weights: Apple ML Research (apple-amlr), verify before any public release.
+
+# 8-bit face and background models
+
+`face_landmark.tflite` (MediaPipe Face Mesh, 468 landmarks) and `selfie_segmentation.tflite` (MediaPipe
+Selfie Segmentation, general) are copied from the `mediapipe` Python package (Apache-2.0). The 8-bit engine uses
+the mesh to draw eyes, brows and mouth deliberately and the segmentation to flatten the background; both fall back
+silently to the plain pipeline when a model cannot run.

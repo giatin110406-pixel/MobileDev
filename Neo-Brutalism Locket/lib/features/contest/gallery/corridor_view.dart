@@ -53,9 +53,10 @@ class _CorridorViewState extends State<CorridorView>
   late final ValueNotifier<double> _camera = ValueNotifier(
     widget.initialCameraZ,
   );
-  late final AnimationController _motion = AnimationController.unbounded(
-    vsync: this,
-  )..addListener(_onMotion);
+  // Created in initState, not lazily: a lazy `late final` would first be built
+  // inside dispose() when nobody touched it, and a ticker cannot be created
+  // from a deactivated element.
+  late final AnimationController _motion;
   late List<FrameSlot> _slots = _layOut();
   bool _lite = false;
   final List<int> _frameMicros = [];
@@ -69,6 +70,8 @@ class _CorridorViewState extends State<CorridorView>
   @override
   void initState() {
     super.initState();
+    _motion = AnimationController.unbounded(vsync: this)
+      ..addListener(_onMotion);
     SchedulerBinding.instance.addTimingsCallback(_onTimings);
   }
 
@@ -216,7 +219,7 @@ class _CorridorViewState extends State<CorridorView>
                     valueListenable: _camera,
                     builder: (context, z, _) => NeoLabel(
                       _position(z),
-                      color: NeoColors.yellow,
+                      color: NeoColors.green,
                       icon: Icons.directions_walk,
                     ),
                   ),

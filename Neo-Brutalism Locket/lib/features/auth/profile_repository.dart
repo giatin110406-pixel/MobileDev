@@ -1,3 +1,4 @@
+import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'dart:typed_data';
 
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
@@ -191,7 +192,9 @@ class SupabaseProfileRepository implements ProfileRepository {
         if (files.isNotEmpty) {
           await storage.remove([for (final f in files) '$userId/${f.name}']);
         }
-      } catch (_) {}
+      } catch (e, st) {
+        AppLog.warn('profile_repository', e, st);
+      }
     }
     await _db.rpc('delete_my_account');
   }
