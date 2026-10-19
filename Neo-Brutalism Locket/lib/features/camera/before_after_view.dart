@@ -41,9 +41,19 @@ class _RevealCompareState extends State<RevealCompare> {
   double _split = 0;
   bool _dragged = false;
 
-  void _moveTo(double dx, double width) {
-    if (width <= 0) return;
-    setState(() => _split = (dx / width).clamp(0.0, 1.0));
+  /// A finger is down: the handle shrinks and fades so the picture shows.
+  bool _dragging = false;
+
+  /// Where the handle sits on the line, as a share of the height. It rides with
+  /// the finger and rests low, away from the middle of the picture.
+  double _knobY = 0.74;
+
+  void _moveTo(Offset at, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    setState(() {
+      _split = (at.dx / size.width).clamp(0.0, 1.0);
+      _knobY = (at.dy / size.height).clamp(0.12, 0.88);
+    });
   }
 
   @override
@@ -54,19 +64,22 @@ class _RevealCompareState extends State<RevealCompare> {
       child: LayoutBuilder(
         builder: (context, box) {
           final width = box.maxWidth;
+          final size = box.biggest;
           final x = _split * width;
-          // The round handle stays on the picture even when the divider is at
-          // an edge.
-          final handleX = x.clamp(22.0, width - 22.0);
+          // The handle stays on the picture even when the divider is at an edge.
+          final handleX = x.clamp(14.0, width - 14.0);
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onHorizontalDragStart: (details) {
               Haptics.light();
               _dragged = true;
-              _moveTo(details.localPosition.dx, width);
+              _dragging = true;
+              _moveTo(details.localPosition, size);
             },
             onHorizontalDragUpdate: (details) =>
-                _moveTo(details.localPosition.dx, width),
+                _moveTo(details.localPosition, size),
+            onHorizontalDragEnd: (_) => setState(() => _dragging = false),
+            onHorizontalDragCancel: () => setState(() => _dragging = false),
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -75,11 +88,13 @@ class _RevealCompareState extends State<RevealCompare> {
                   clipper: _LeftOf(x),
                   child: SizedBox.expand(child: before),
                 ),
+                // The dividing line: thin, with a light edge so it reads on dark
+                // and bright pictures alike.
                 Positioned(
-                  left: x.clamp(1.5, width - 1.5) - 1.5,
+                  left: x.clamp(1.0, width - 1.0) - 1,
                   top: 0,
                   bottom: 0,
-                  width: 3,
+                  width: 2,
                   child: const IgnorePointer(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -91,31 +106,30 @@ class _RevealCompareState extends State<RevealCompare> {
                     ),
                   ),
                 ),
+                // A small grip, not a big button: see-through while dragging.
                 Positioned(
-                  left: handleX - 20,
-                  top: 0,
-                  bottom: 0,
-                  width: 40,
+                  left: handleX - 14,
+                  top: _knobY * size.height - 14,
+                  width: 28,
+                  height: 28,
                   child: IgnorePointer(
-                    child: Center(
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: NeoColors.green,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: NeoColors.ink, width: 3),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: NeoColors.ink,
-                              offset: Offset(2, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.swap_horiz_rounded,
-                          size: 22,
-                          color: NeoColors.ink,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 120),
+                      opacity: _dragging ? 0.45 : 0.92,
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 120),
+                        scale: _dragging ? 0.75 : 1,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: NeoColors.surface,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: NeoColors.ink, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.swap_horiz_rounded,
+                            size: 16,
+                            color: NeoColors.ink,
+                          ),
                         ),
                       ),
                     ),
