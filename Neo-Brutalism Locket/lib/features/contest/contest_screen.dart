@@ -5,7 +5,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
-import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_backdrops.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/hall_of_fame_screen.dart';
@@ -137,7 +137,10 @@ class _ContestScreenState extends State<ContestScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: StarryNight(child: SafeArea(child: content)),
+      body: ContestBackdrop(
+        themeTitle: widget.store.theme?.titleEn,
+        child: SafeArea(child: content),
+      ),
     );
   }
 

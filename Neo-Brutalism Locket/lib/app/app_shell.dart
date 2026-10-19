@@ -14,7 +14,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
-import 'package:neo_brutalism_locket/features/contest/starry_night.dart';
+import 'package:neo_brutalism_locket/features/contest/contest_backdrops.dart';
 import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
@@ -1486,10 +1486,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 140),
             child: isContestTab
-                ? const StarryNight(
-                    key: ValueKey('contest-bg'),
-                    child: SizedBox.expand(),
-                  )
+                ? _contestBackground()
                 // An empty ColoredBox shrinks to nothing inside the switcher's
                 // loose Stack, which left the window's black showing through.
                 : const ColoredBox(
@@ -1503,6 +1500,26 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ],
     );
     return _withScopes(body);
+  }
+
+  /// The contest tab's background: this week's theme, painted.
+  Widget _contestBackground() {
+    final store = _contestStore;
+    if (store == null) {
+      return const ContestBackdrop(
+        key: ValueKey('contest-bg'),
+        child: SizedBox.expand(),
+      );
+    }
+    return ListenableBuilder(
+      key: const ValueKey('contest-bg'),
+      listenable: store,
+      builder: (context, _) => ContestBackdrop(
+        key: ValueKey('contest-bg-${store.theme?.titleEn}'),
+        themeTitle: store.theme?.titleEn,
+        child: const SizedBox.expand(),
+      ),
+    );
   }
 
   /// What every page of the app needs below it: where pictures come from, and the
