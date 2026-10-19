@@ -739,6 +739,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedLabel => 'FEED';
 
   @override
+  String get feedFilterEveryone => 'Everyone';
+
+  @override
+  String get feedFilterMine => 'Just me';
+
+  @override
+  String get feedFilterTitle => 'Show posts from';
+
+  @override
   String zoomSemantics(String level) {
     return 'Zoom $level';
   }

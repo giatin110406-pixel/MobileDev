@@ -158,3 +158,42 @@ class StreakChip extends StatelessWidget {
     );
   }
 }
+
+/// A small round icon button for the status row, drawn like the streak and
+/// Sunbit pills beside it.
+class StatusIconButton extends StatelessWidget {
+  const StatusIconButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.fill = NeoColors.green,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final Color fill;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: GestureDetector(
+      onTap: Haptics.tap(onPressed),
+      child: Container(
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: fill,
+          shape: BoxShape.circle,
+          border: Border.all(color: NeoColors.ink, width: 2),
+          boxShadow: const [
+            BoxShadow(color: NeoColors.ink, offset: Offset(2, 2)),
+          ],
+        ),
+        child: Icon(icon, size: 16, color: NeoColors.ink),
+      ),
+    ),
+  );
+}

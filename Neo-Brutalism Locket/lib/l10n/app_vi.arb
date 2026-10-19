@@ -370,6 +370,9 @@
   "flashTooltip": "Đổi chế độ flash",
   "openFeedLabel": "Mở bảng tin",
   "feedLabel": "BẢNG TIN",
+  "feedFilterEveryone": "Mọi người",
+  "feedFilterMine": "Chỉ mình tôi",
+  "feedFilterTitle": "Xem bài đăng của",
   "zoomSemantics": "Thu phóng {level}",
   "@zoomSemantics": {
     "placeholders": {

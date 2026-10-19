@@ -364,6 +364,9 @@
   "flashTooltip": "Change flash mode",
   "openFeedLabel": "Open feed",
   "feedLabel": "FEED",
+  "feedFilterEveryone": "Everyone",
+  "feedFilterMine": "Just me",
+  "feedFilterTitle": "Show posts from",
   "zoomSemantics": "Zoom {level}",
   "@zoomSemantics": {
     "placeholders": {

@@ -1406,6 +1406,24 @@ abstract class AppLocalizations {
   /// **'BẢNG TIN'**
   String get feedLabel;
 
+  /// No description provided for @feedFilterEveryone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi người'**
+  String get feedFilterEveryone;
+
+  /// No description provided for @feedFilterMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ mình tôi'**
+  String get feedFilterMine;
+
+  /// No description provided for @feedFilterTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem bài đăng của'**
+  String get feedFilterTitle;
+
   /// No description provided for @zoomSemantics.
   ///
   /// In vi, this message translates to:

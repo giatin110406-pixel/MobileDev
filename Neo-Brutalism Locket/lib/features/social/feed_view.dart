@@ -134,7 +134,11 @@ class FeedScreen extends StatefulWidget {
     this.onPostMenu,
     this.activity = const {},
     this.initialPage = 0,
+    this.filterPill,
   });
+
+  /// Replaces the FEED title in the header: the whose-posts picker.
+  final Widget? filterPill;
 
   /// The page to start on (opening a post from the history grid).
   final int initialPage;
@@ -263,16 +267,19 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  AppLocalizations.of(context).feedLabel,
-                  style: const TextStyle(
-                    color: NeoColors.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                child: widget.filterPill != null
+                    ? Center(child: widget.filterPill)
+                    : Text(
+                        AppLocalizations.of(context).feedLabel,
+                        style: const TextStyle(
+                          color: NeoColors.ink,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
               ),
-              if (_anyMusic && widget.onMuteChanged != null) ...[
+              const SizedBox(width: 12),
+              if (_anyMusic && widget.onMuteChanged != null)
                 NeoIconButton(
                   icon: widget.musicMuted
                       ? Icons.volume_off_rounded
@@ -284,8 +291,9 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                       ? NeoColors.switchOff
                       : NeoColors.green,
                   onPressed: () => widget.onMuteChanged!(!widget.musicMuted),
-                ),
-              ],
+                )
+              else
+                const SizedBox(width: 40),
             ],
           ),
           const SizedBox(height: 14),
@@ -346,25 +354,28 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                   borderWidth: 2,
                   radius: _radius,
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (post != null)
-                      _postCard(post)
-                    else if (entry.remote != null)
-                      _remoteCard(entry.remote!)
-                    else if (entry.quest != null)
-                      _questCard(entry.quest!)
-                    else
-                      _printImage(entry.print!),
-                    if (entry.musicStyle != null)
-                      Positioned(
-                        top: 16,
-                        left: 16,
-                        child: QuestStyleTag(style: entry.musicStyle!),
-                      ),
-                  ],
+                foregroundDecoration: neoPanelOutline(radius: _radius),
+                child: NeoPanelClip(
+                  radius: _radius,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (post != null)
+                        _postCard(post)
+                      else if (entry.remote != null)
+                        _remoteCard(entry.remote!)
+                      else if (entry.quest != null)
+                        _questCard(entry.quest!)
+                      else
+                        _printImage(entry.print!),
+                      if (entry.musicStyle != null)
+                        Positioned(
+                          top: 16,
+                          left: 16,
+                          child: QuestStyleTag(style: entry.musicStyle!),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
