@@ -793,16 +793,16 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildQuestModeHeader(Quest quest) {
     return Container(
-      height: 52,
-      padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+      height: 68,
+      padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       decoration: NeoTheme.panel(color: questStyleColor(quest.style)),
       child: Row(
         children: [
           Text(
             quest.emoji,
-            style: const TextStyle(fontFamily: NeoFont.display, fontSize: 22),
+            style: const TextStyle(fontFamily: NeoFont.display, fontSize: 28),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -814,7 +814,7 @@ class CameraTabState extends State<CameraTab> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: NeoColors.ink,
-                    fontSize: 9,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -827,7 +827,7 @@ class CameraTabState extends State<CameraTab> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: NeoColors.ink,
-                    fontSize: 15,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
