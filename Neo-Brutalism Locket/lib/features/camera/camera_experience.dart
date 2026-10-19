@@ -17,7 +17,10 @@ import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
 import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
+import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
+import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
+import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
@@ -48,6 +51,8 @@ class CameraTab extends StatefulWidget {
     required this.onOpenQuestSheet,
     required this.onQuestPassed,
     this.onSendPrint,
+    this.onPostDraft,
+    this.friends = const [],
     this.onPhotoRemoved,
     this.onVideoRecorded,
     this.header,
@@ -74,6 +79,15 @@ class CameraTab extends StatefulWidget {
   /// queued; the shot is then removed from this phone. Null without an
   /// account: shots are kept on the phone instead.
   final Future<bool> Function(NeoPhoto photo)? onSendPrint;
+
+  /// Post the shot just taken with what the person chose in the popup (caption,
+  /// labels, who gets it). True when it was sent or queued. Null without an
+  /// account: shots are kept on the phone and no popup opens.
+  final Future<bool> Function(NeoPhoto photo, ComposerResult result)?
+  onPostDraft;
+
+  /// Who the post can go to (shown in the popup).
+  final List<Friend> friends;
 
   /// A shot was thrown away or posted and is no longer on this phone.
   final ValueChanged<NeoPhoto>? onPhotoRemoved;
@@ -103,9 +117,16 @@ class CameraTabState extends State<CameraTab> {
   bool _showOriginal = false;
   bool _showPrint = false;
 
-  /// The stamp the user picked for the post animation; null = the one the
-  /// post earns (see [printStampFor]).
-  PrintStamp? _stampChoice;
+  /// Bumped on every setState so the popup after a shot redraws with the camera
+  /// (the style finishing, the progress moving).
+  final ValueNotifier<int> _sheetTick = ValueNotifier(0);
+
+  @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+    _sheetTick.value++;
+  }
+
   double _progress = 0;
 
   // Zoom: the lens limits, the current level, and the level a pinch began at.
@@ -139,11 +160,6 @@ class CameraTabState extends State<CameraTab> {
   /// (an older print opened from the history is not a draft).
   String? _draftId;
 
-  bool get _draftMode =>
-      widget.onSendPrint != null &&
-      _draftId != null &&
-      _activePhoto?.id == _draftId;
-
   /// Taking, checking or styling a photo right now.
   bool get busy => _processing;
 
@@ -155,6 +171,7 @@ class CameraTabState extends State<CameraTab> {
 
   @override
   void dispose() {
+    _sheetTick.dispose();
     _countdownTimer?.cancel();
     _recordTimer?.cancel();
     _camera?.dispose();
@@ -196,27 +213,172 @@ class CameraTabState extends State<CameraTab> {
   /// Back to the live camera. A draft stays on screen until it is posted
   /// or thrown away.
   void closePrint() {
-    if (_showPrint && !_draftMode) setState(() => _showPrint = false);
+    if (_showPrint) setState(() => _showPrint = false);
   }
 
   /// HỦY: the shot is deleted and the camera is back.
   void _discardPrint(NeoPhoto photo) => _removeShot(photo);
 
-  /// ĐĂNG: pick who gets it; once sent (or queued) the draft goes away.
-  Future<void> _postPrint(NeoPhoto photo) async {
-    final send = widget.onSendPrint;
-    if (send == null) return;
-    final posted = await send(photo);
+  /// The shot just taken: a popup over the camera to restyle it, caption it,
+  /// label it and pick who gets it. Closing it any way but POST throws the shot
+  /// away, like the X.
+  Future<void> _openDraftSheet(NeoPhoto photo) async {
+    final result = await showModalBottomSheet<ComposerResult>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: NeoColors.paper,
+      shape: const RoundedRectangleBorder(
+        side: BorderSide(color: NeoColors.ink, width: 2),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => ValueListenableBuilder<int>(
+        valueListenable: _sheetTick,
+        builder: (context, _, _) => _buildDraftSheet(context),
+      ),
+    );
+    if (!mounted) return;
+    final current = _activePhoto;
+    if (result == null) {
+      if (current != null && current.id == photo.id) _discardPrint(current);
+      return;
+    }
+    await _postDraft(current ?? photo, result);
+  }
+
+  Future<void> _postDraft(NeoPhoto photo, ComposerResult result) async {
+    final post = widget.onPostDraft;
+    if (post == null) return;
+    final posted = await post(photo, result);
     if (!posted || !mounted) return;
-    // The post is sent; the stamp and print are only a show over it.
+    // The post is sent; the stamp and print are only a show over it. Who gets
+    // it picks the stamp: everyone is APPROVED, some friends is TOP SECRET.
     await playPrintPost(
       context,
       photo: photo,
-      stamp:
-          _stampChoice ??
-          printStampFor(quest: false, streak: widget.player.streak),
+      stamp: printStampFor(quest: false, private: result.recipients != null),
     );
     if (mounted) _removeShot(photo);
+  }
+
+  Widget _buildDraftSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final photo = _activePhoto;
+    if (photo == null) return const SizedBox.shrink();
+    final ready = photo.status == ProcessingStatus.done;
+    final processed = photo.processedPath;
+    final styledPath =
+        ready &&
+            processed != null &&
+            processed != photo.originalPath &&
+            photo.styleType != StyleType.none
+        ? processed
+        : null;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop();
+      },
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  NeoIconButton(
+                    icon: Icons.close,
+                    tooltip: l10n.printDiscard,
+                    fill: NeoColors.coral,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n.composerTitle,
+                      style: const TextStyle(
+                        color: NeoColors.ink,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  _statusBadge(photo),
+                ],
+              ),
+              const SizedBox(height: 14),
+              PostComposerForm(
+                friends: widget.friends,
+                canPost: ready && !_processing,
+                previewBuilder: (context, overlay) => Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 0.78,
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Container(
+                        decoration: NeoTheme.panel(
+                          color: NeoColors.surface,
+                          radius: _squareRadius,
+                        ),
+                        foregroundDecoration: neoPanelOutline(
+                          radius: _squareRadius,
+                        ),
+                        child: NeoPanelClip(
+                          radius: _squareRadius,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              BeforeAfterView(
+                                key: ValueKey('draft-before-after-${photo.id}'),
+                                originalPath: photo.originalPath,
+                                styledPath: styledPath,
+                                styleLabel:
+                                    (photo.styleType == null
+                                        ? null
+                                        : styleName(l10n, photo.styleType!)) ??
+                                    l10n.editLabel,
+                                showStyled: !_showOriginal,
+                                onChanged: (styled) =>
+                                    setState(() => _showOriginal = !styled),
+                              ),
+                              Positioned(
+                                top: 14,
+                                right: 14,
+                                child: OverlayLabels(overlay: overlay),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                afterPreview: Column(
+                  children: [
+                    _buildStylePill(photo: photo),
+                    if (_processing &&
+                        photo.status == ProcessingStatus.pending) ...[
+                      const SizedBox(height: 10),
+                      NeoProgress(
+                        value: _progress <= 0 ? null : _progress,
+                        label: styleWorkingLabel(l10n, photo.styleType),
+                      ),
+                    ],
+                  ],
+                ),
+                onSubmit: (result) => Navigator.of(context).pop(result),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _removeShot(NeoPhoto photo) {
@@ -563,16 +725,19 @@ class CameraTabState extends State<CameraTab> {
       styleType: _selectedStyleType,
     );
     if (!mounted) return;
+    final draft = widget.onPostDraft != null;
     setState(() {
       _activePhoto = photo;
       _draftId = photo.id;
       _showOriginal = true;
-      _showPrint = true;
-      _stampChoice = null;
+      // With an account the options pop up over the camera; without one the
+      // print page opens as before.
+      _showPrint = !draft;
     });
     PrintSound.warmUp();
     widget.onPhotoChanged(photo);
     _processPhoto(photo);
+    if (draft) unawaited(_openDraftSheet(photo));
   }
 
   Future<void> _processPhoto(NeoPhoto photo) async {
@@ -1321,13 +1486,9 @@ class CameraTabState extends State<CameraTab> {
           Row(
             children: [
               NeoIconButton(
-                icon: _draftMode ? Icons.close : Icons.arrow_back,
-                tooltip: _draftMode
-                    ? AppLocalizations.of(context).printDiscard
-                    : AppLocalizations.of(context).backToCameraTooltip,
-                onPressed: _draftMode
-                    ? () => _discardPrint(photo)
-                    : () => setState(() => _showPrint = false),
+                icon: Icons.arrow_back,
+                tooltip: AppLocalizations.of(context).backToCameraTooltip,
+                onPressed: () => setState(() => _showPrint = false),
                 fill: NeoColors.green,
               ),
               const SizedBox(width: 12),
@@ -1420,10 +1581,6 @@ class CameraTabState extends State<CameraTab> {
             ),
           ],
           const SizedBox(height: 12),
-          if (_draftMode && widget.onSendPrint != null) ...[
-            _stampPicker(),
-            const SizedBox(height: 12),
-          ],
           if (photo.status == ProcessingStatus.failed &&
               photo.failureReason != null) ...[
             Text(
@@ -1469,25 +1626,7 @@ class CameraTabState extends State<CameraTab> {
                         variant: NeoButtonVariant.primary,
                         onPressed: _processing ? null : _retryProcessing,
                       ),
-                    if (_draftMode) ...[
-                      NeoButton(
-                        label: AppLocalizations.of(context).printDiscard,
-                        icon: Icons.delete_outline,
-                        variant: NeoButtonVariant.accent,
-                        onPressed: () => _discardPrint(photo),
-                      ),
-                      NeoButton(
-                        label: AppLocalizations.of(context).printPost,
-                        icon: Icons.send_rounded,
-                        variant: NeoButtonVariant.primary,
-                        // While the style is applied there is nothing to send.
-                        onPressed:
-                            _processing ||
-                                photo.status == ProcessingStatus.pending
-                            ? null
-                            : () => _postPrint(photo),
-                      ),
-                    ] else ...[
+                    ...[
                       if (widget.onSendPrint != null &&
                           photo.status != ProcessingStatus.pending)
                         NeoButton(
@@ -1514,13 +1653,6 @@ class CameraTabState extends State<CameraTab> {
       ),
     );
   }
-
-  Widget _stampPicker() => StampPicker(
-    selected:
-        _stampChoice ??
-        printStampFor(quest: false, streak: widget.player.streak),
-    onChanged: (stamp) => setState(() => _stampChoice = stamp),
-  );
 
   Widget _statusBadge(NeoPhoto photo) => switch (photo.status) {
     ProcessingStatus.pending => NeoLabel(

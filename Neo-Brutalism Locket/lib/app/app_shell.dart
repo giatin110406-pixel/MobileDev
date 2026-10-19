@@ -647,6 +647,25 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     );
   }
 
+  /// The shot just taken, with the caption, labels and recipients chosen in the
+  /// popup over the camera: queue it.
+  Future<bool> _postDraft(NeoPhoto photo, ComposerResult result) async {
+    final store = _friendsStore;
+    if (store == null) return false;
+    final processed = photo.status == ProcessingStatus.done
+        ? photo.processedPath
+        : null;
+    final path = processed ?? photo.originalPath;
+    return _queuePost(
+      file: File(path),
+      caption: result.caption,
+      style: processed == null ? StyleType.none : photo.styleType,
+      overlay: result.overlay,
+      recipients: result.recipients,
+      friendCount: result.recipients?.length ?? store.friends.length,
+    );
+  }
+
   /// A clip from the camera: caption, labels and who gets it, then queue it.
   Future<void> _sendVideo(File video) async {
     final store = _friendsStore;
@@ -1416,6 +1435,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           onOpenQuestSheet: _openQuestSheet,
                           onQuestPassed: _openQuestPost,
                           onSendPrint: _online ? _sendPrint : null,
+                          onPostDraft: _online ? _postDraft : null,
+                          friends: _friendsStore?.friends ?? const [],
                           onPhotoRemoved: _onPhotoRemoved,
                           onVideoRecorded: _online ? _sendVideo : null,
                           header: _homeHeader(),
