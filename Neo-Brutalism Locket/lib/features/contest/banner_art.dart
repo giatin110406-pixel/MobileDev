@@ -51,8 +51,9 @@ const contestBannerPrefix = 'contest_';
 bool isContestBanner(String? id) =>
     id != null && id.startsWith(contestBannerPrefix);
 
-/// A banner made of a winning painting: the square painting is repeated across the
-/// banner, every other copy mirrored so the copies join up.
+/// A banner made of a winning painting. A painting in the shape of a banner fills it;
+/// a squarer one (older canvases were square) is repeated across the banner, every
+/// other copy mirrored so the copies join up.
 class ContestBannerView extends StatelessWidget {
   const ContestBannerView({
     required this.itemId,
@@ -97,6 +98,26 @@ class BannerArtPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty || art.width == 0 || art.height == 0) return;
+    if (art.width >= 2 * art.height) {
+      // A painting in the shape of a banner (a canvas is) fills it: one picture, its
+      // cells stretched a hair if the banner is not exactly that shape.
+      final cellW = size.width / art.width;
+      final cellH = size.height / art.height;
+      final fill = Paint();
+      for (var y = 0; y < art.height; y++) {
+        for (var x = 0; x < art.width; x++) {
+          final index = art.pixels[y * art.width + x];
+          fill.color = Color(
+            art.palette[index < art.palette.length ? index : 0],
+          );
+          canvas.drawRect(
+            Rect.fromLTWH(x * cellW, y * cellH, cellW + 0.5, cellH + 0.5),
+            fill,
+          );
+        }
+      }
+      return;
+    }
     final tile = size.height;
     final cell = tile / art.height;
     final tileWidth = cell * art.width;

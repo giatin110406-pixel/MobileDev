@@ -201,7 +201,7 @@ def main() -> int:
         h.section("Canvas")
         status, canvas = h.rpc(o["token"], "get_canvas", {"p_canvas": canvas_id})
         h.check("O reads the canvas",
-                status == 200 and canvas["width"] == 32 and len(pixels_of(canvas)) == 1024
+                status == 200 and canvas["width"] == 40 and canvas["height"] == 16 and len(pixels_of(canvas)) == 640
                 and len(canvas["palette"]) == 16 and canvas["ink_balance"] == 10, str(canvas)[:200])
         h.rpc_refused(x["token"], "get_canvas", {"p_canvas": canvas_id}, "not_found",
                       "X cannot read the canvas")
@@ -224,7 +224,8 @@ def main() -> int:
         h.check("painting the colour already there costs nothing",
                 status == 200 and same["painted"] == 0 and same["ink_balance"] == 7, f"{same}")
         for label, pixels, code in [
-            ("a pixel outside the canvas", [{"x": 32, "y": 0, "c": 1}], "bad_pixel"),
+            ("a pixel outside the canvas", [{"x": 40, "y": 0, "c": 1}], "bad_pixel"),
+            ("a pixel below the canvas", [{"x": 0, "y": 16, "c": 1}], "bad_pixel"),
             ("a colour outside the palette", [{"x": 0, "y": 1, "c": 16}], "bad_pixel"),
             ("a negative coordinate", [{"x": -1, "y": 0, "c": 1}], "bad_pixel"),
             ("11 pixels in one batch", [{"x": i, "y": 3, "c": 1} for i in range(11)], "too_many_pixels"),
@@ -263,7 +264,7 @@ def main() -> int:
         last = [e for e in events if (e["x"], e["y"]) == (5, 5)][-1]
         status, canvas = h.rpc(o["token"], "get_canvas", {"p_canvas": canvas_id})
         h.check("the cell shows the colour of the later paint",
-                pixels_of(canvas)[5 * 32 + 5] == last["color"], f"{pixels_of(canvas)[5 * 32 + 5]} vs {last}")
+                pixels_of(canvas)[5 * 40 + 5] == last["color"], f"{pixels_of(canvas)[5 * 40 + 5]} vs {last}")
         status, tail = h.rpc(o["token"], "get_canvas_events", {"p_canvas": canvas_id, "p_since_version": 3})
         h.check("events can be fetched from a version on", status == 200 and [e["version"] for e in tail] == [4, 5],
                 f"{tail}")
@@ -286,19 +287,22 @@ def main() -> int:
                 f"{status} {restored}")
         status, canvas = h.rpc(o["token"], "get_canvas", {"p_canvas": canvas_id})
         h.check("the cell goes back to what the other painter painted",
-                pixels_of(canvas)[5 * 32 + 5] == (2 if loser is f else 3), f"{pixels_of(canvas)[5 * 32 + 5]}")
+                pixels_of(canvas)[5 * 40 + 5] == (2 if loser is f else 3), f"{pixels_of(canvas)[5 * 40 + 5]}")
         status, balance = h.rpc(f["token"], "get_ink_balance")
         h.check("a rollback does not refund Ink", balance == 9, f"{balance}")
 
         status, new_id = h.rpc(o["token"], "new_canvas",
                                {"p_group": gid, "p_size": 16, "p_palette": "vangogh"})
-        h.check("the owner starts a new 16x16 canvas", status == 200 and isinstance(new_id, str), str(new_id))
+        h.check("the owner starts a new canvas 16 cells tall (and 40 wide)", status == 200 and isinstance(new_id, str), str(new_id))
+        h.rpc_refused(o["token"], "new_canvas", {"p_group": gid, "p_size": 32, "p_palette": "vangogh"},
+                      "bad_size", "only the banner-shaped sizes (12, 16 and 20 tall) are allowed")
         h.rpc_refused(o["token"], "paint_pixels",
                       {"p_canvas": canvas_id, "p_batch": h._uuid(), "p_pixels": [{"x": 9, "y": 9, "c": 1}]},
                       "canvas_locked", "the old canvas is archived and cannot be painted")
         status, fresh = h.rpc(o["token"], "get_canvas", {"p_canvas": new_id})
-        h.check("the new canvas is empty and 16x16",
-                status == 200 and fresh["width"] == 16 and set(pixels_of(fresh)) == {0}, str(fresh)[:120])
+        h.check("the new canvas is empty and 40x16, the shape of a banner",
+                status == 200 and fresh["width"] == 40 and fresh["height"] == 16
+                and set(pixels_of(fresh)) == {0}, str(fresh)[:120])
         status, active = h.rpc(o["token"], "get_group_canvas", {"p_group": gid})
         h.check("the group's active canvas is the new one", active == new_id, f"{active}")
 

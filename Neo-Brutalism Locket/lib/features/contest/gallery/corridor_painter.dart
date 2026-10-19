@@ -511,7 +511,7 @@ class CorridorPainter extends CustomPainter {
       return;
     }
 
-    final picture = view.artQuad(slot);
+    final picture = view.artQuad(slot, aspect: entry.width / entry.height);
     if (picture == null) return;
     if (decor.plaque.isNotEmpty && depth < 9) {
       overlay.add((c) => _plate(c, view, slot, entry, decor.plaque));

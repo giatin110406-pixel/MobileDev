@@ -1,34 +1,39 @@
 {
  "theme": {
-  "brief_en": "A swirling sky above a sleeping village (1889).",
-  "brief_vi": "Bầu trời xoáy tròn trên ngôi làng yên ngủ (1889).",
+  "brief_en": "A vase of glowing yellow sunflowers (1888).",
+  "brief_vi": "Bình hoa hướng dương vàng rực (1888).",
   "category": "vangogh",
-  "title_en": "The Starry Night",
-  "title_vi": "Đêm đầy sao",
+  "title_en": "Sunflowers",
+  "title_vi": "Hoa hướng dương",
   "palette_id": "vangogh"
  },
  "contest": {
-  "id": "1ca7219a-cd50-47ef-894d-ad18fc3b4660",
-  "phase": "judging",
-  "ends_at": "2026-10-11T17:00:00+00:00",
-  "opens_at": "2026-10-09T17:00:00+00:00",
-  "week_key": "2026-W41",
-  "starts_at": "2026-10-04T17:00:00+00:00",
+  "id": "9e4db993-ffcb-4b96-9112-6878b5b57fd5",
+  "phase": "upcoming",
+  "ends_at": "2026-10-25T17:00:00+00:00",
+  "opens_at": "2026-10-23T17:00:00+00:00",
+  "week_key": "2026-W43",
+  "starts_at": "2026-10-18T17:00:00+00:00",
   "max_entries": 100,
-  "accepted_count": 0,
-  "submit_closes_at": "2026-10-11T05:00:00+00:00"
+  "accepted_count": 21,
+  "submit_closes_at": "2026-10-25T05:00:00+00:00"
  },
  "my_entry": null,
  "my_votes": 0,
- "previous": null,
- "server_now": "2026-10-11T08:52:03.088031+00:00",
+ "previous": {
+  "id": "ad7552ed-c975-42ca-8931-5dfaed24f400",
+  "title_en": "The 1980s Arcade Cabinet",
+  "title_vi": "Máy arcade 1980",
+  "week_key": "2026-W42"
+ },
+ "server_now": "2026-10-19T09:44:18.785446+00:00",
  "participant": false,
  "owner_groups": [
   {
-   "id": "f7220daf-9d7d-45cb-8787-e37609a7000e",
+   "id": "3a485417-cec4-4638-8dfb-d390874673dc",
    "name": "E2E Team A",
    "submitted": false
   }
  ],
- "votes_needed": 0
+ "votes_needed": 10
 }

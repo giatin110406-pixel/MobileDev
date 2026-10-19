@@ -17,15 +17,16 @@ const _palette = [
   0xFF7B3B2A, 0xFFD9C7A0, 0xFF5E5240, 0xFF171717,
 ];
 
-/// A different little picture for every entry (stripes, rings, checks).
+/// A different little picture for every entry (stripes, rings, checks), in the shape
+/// of a canvas: 40 x 16 cells.
 GalleryEntry sample(int seq) {
-  const n = 32;
-  final pixels = Uint8List(n * n);
-  for (var y = 0; y < n; y++) {
-    for (var x = 0; x < n; x++) {
-      final dx = x - 15.5, dy = y - 15.5;
+  const w = 40, h = 16;
+  final pixels = Uint8List(w * h);
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      final dx = x - 19.5, dy = y - 7.5;
       final ring = (dx * dx + dy * dy) ~/ (30 + seq % 5 * 10);
-      pixels[y * n + x] = switch (seq % 3) {
+      pixels[y * w + x] = switch (seq % 3) {
         0 => (ring + seq) % 16,
         1 => ((x ~/ 4) + (y ~/ 4) * 2 + seq) % 16,
         _ => ((x + y + seq) ~/ 3) % 16,
@@ -37,8 +38,8 @@ GalleryEntry sample(int seq) {
     contestId: 'c1',
     seq: seq,
     groupName: 'Group $seq',
-    width: n,
-    height: n,
+    width: w,
+    height: h,
     palette: _palette,
     pixels: pixels,
     submittedAt: DateTime(2026, 10, 10),

@@ -43,10 +43,10 @@ void main() {
     expect(page.entries.map((e) => e.seq), [1, 2, 3]);
     expect(page.nextAfter, isNull);
     for (final entry in page.entries) {
-      expect(entry.width, 32);
-      expect(entry.height, 32);
+      expect(entry.width, 40);
+      expect(entry.height, 16);
       expect(entry.palette.length, 16);
-      expect(entry.pixels.length, 1024);
+      expect(entry.pixels.length, 640);
       expect(entry.groupName, startsWith('E2E Team'));
       expect(entry.rank, isNull); // scores are hidden until the results
     }
@@ -61,7 +61,7 @@ void main() {
     expect(detail.participant, isTrue);
     expect(detail.reactions, isA<Map<String, int>>());
     expect(detail.commentCount, 1);
-    expect(detail.entry.pixels.length, 1024);
+    expect(detail.entry.pixels.length, 640);
   });
 
   test('comments', () {
@@ -88,7 +88,7 @@ void main() {
       '3.2778',
     ]);
     expect(results.winners.every((w) => w.voteCount == 4), isTrue);
-    expect(results.winners.first.pixels.length, 1024);
+    expect(results.winners.first.pixels.length, 640);
   });
 
   test('the Hall of Fame', () {
@@ -122,10 +122,10 @@ void main() {
     final art = BannerArt.fromJson(
       fixture('banner_art') as Map<String, dynamic>,
     );
-    expect(art.width, 32);
-    expect(art.height, 32);
+    expect(art.width, 40);
+    expect(art.height, 16);
     expect(art.palette.length, 16);
-    expect(art.pixels.length, 1024);
+    expect(art.pixels.length, 640);
     expect(art.groupName, 'E2E Team A');
   });
 }

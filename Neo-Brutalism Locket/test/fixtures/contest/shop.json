@@ -1,41 +1,41 @@
 [
  {
-  "id": "contest_cc5afb49-a0e4-47f7-bda0-e738ab0c990f",
+  "id": "contest_faae659a-0abb-460b-9252-cd0a1dd67aae",
   "rank": 1,
   "owned": false,
   "price": 300,
   "theme": "vanGogh",
   "title": "E2E Team A",
   "rarity": "legendary",
-  "ends_at": "2026-10-13T08:52:47.080605+00:00",
+  "ends_at": "2026-10-21T09:44:59.678824+00:00",
   "title_en": "The Starry Night",
   "title_vi": "Đêm đầy sao",
-  "week_key": "E2E-one-1e106a"
+  "week_key": "E2E-one-98400b"
  },
  {
-  "id": "contest_95c5da48-63a5-4e72-b2eb-4d766e7b7b99",
+  "id": "contest_f7fb5180-7783-4c66-98eb-b7c5fee0709d",
   "rank": 2,
   "owned": false,
   "price": 220,
   "theme": "vanGogh",
   "title": "E2E Team B",
   "rarity": "rare",
-  "ends_at": "2026-10-13T08:52:47.080605+00:00",
+  "ends_at": "2026-10-21T09:44:59.678824+00:00",
   "title_en": "The Starry Night",
   "title_vi": "Đêm đầy sao",
-  "week_key": "E2E-one-1e106a"
+  "week_key": "E2E-one-98400b"
  },
  {
-  "id": "contest_d59180ef-a806-42de-8eb0-7b490fc8ff21",
+  "id": "contest_66956364-8655-4a12-a4e7-4ba8dc1e1b7c",
   "rank": 3,
   "owned": false,
   "price": 150,
   "theme": "vanGogh",
   "title": "E2E Team C",
   "rarity": "rare",
-  "ends_at": "2026-10-13T08:52:47.080605+00:00",
+  "ends_at": "2026-10-21T09:44:59.678824+00:00",
   "title_en": "The Starry Night",
   "title_vi": "Đêm đầy sao",
-  "week_key": "E2E-one-1e106a"
+  "week_key": "E2E-one-98400b"
  }
 ]

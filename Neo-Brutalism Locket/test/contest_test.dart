@@ -648,10 +648,8 @@ void main() {
   });
 
   group('corridor geometry', () {
-    bool suits(FrameSlot s) =>
-        math.min(s.width, s.height) >= 0.89 &&
-        s.width / s.height >= 0.65 &&
-        s.width / s.height <= 1.55;
+    // An entry may hang where the visitor can see it from the entrance.
+    bool suits(FrameSlot s) => s.z0 >= Corridor.firstEntryZ;
 
     test('the wall is the same every time and every entry has one frame', () {
       final a = layoutGallery(100);
@@ -683,25 +681,28 @@ void main() {
       },
     );
 
-    test('entries hang from the entrance outwards, in the order accepted', () {
+    test('entries fill the wall a column at a time, in the order accepted', () {
       final slots = layoutGallery(60).where((s) => !s.isBlank).toList()
         ..sort((x, y) => x.index.compareTo(y.index));
+      expect(slots.length, 60);
       for (var i = 1; i < slots.length; i++) {
         final before = slots[i - 1], after = slots[i];
-        expect(
-          after.z0 > before.z0 ||
-              (after.z0 == before.z0 && after.side >= before.side),
-          isTrue,
-          reason: 'entry $i hangs before entry ${i - 1}',
-        );
+        // Nearer column first, then the higher frame, then the left wall.
+        final order = [
+          after.z0.compareTo(before.z0),
+          after.yTop.compareTo(before.yTop),
+          after.side.compareTo(before.side),
+        ].firstWhere((c) => c != 0, orElse: () => 0);
+        expect(order, greaterThanOrEqualTo(0), reason: 'entry $i out of order');
       }
       // Both walls get paintings.
       expect(slots.any((s) => s.side < 0), isTrue);
       expect(slots.any((s) => s.side > 0), isTrue);
     });
 
-    test('a painting only goes in a frame that suits it', () {
+    test('every frame is the shape of a banner, and entries hang in view', () {
       for (final slot in layoutGallery(100)) {
+        expect(slot.width / slot.height, closeTo(Corridor.frameAspect, 1e-9));
         if (!slot.isBlank) expect(suits(slot), isTrue);
       }
     });
@@ -738,7 +739,7 @@ void main() {
       }
     });
 
-    test('the walls are covered like a salon wall, not dotted with frames', () {
+    test('the walls are well covered with frames, not dotted with them', () {
       final slots = layoutGallery(60);
       const length = 20.0;
       for (final side in const [-1, 1]) {
@@ -753,22 +754,31 @@ void main() {
       }
     });
 
-    test('the frames come in many sizes, and some hang above one another', () {
+    test('the frames are all one size, three to a column, evenly spaced', () {
       final slots = layoutGallery(100);
       final sizes = {
         for (final s in slots)
-          '${s.width.toStringAsFixed(2)}x${s.height.toStringAsFixed(2)}',
+          '${s.width.toStringAsFixed(3)}x${s.height.toStringAsFixed(3)}',
       };
-      expect(sizes.length, greaterThanOrEqualTo(6));
-      var stacked = 0;
-      for (final a in slots) {
-        for (final b in slots) {
-          if (identical(a, b) || a.side != b.side) continue;
-          if (a.z0 == b.z0 && a.yBottom < b.yTop) stacked++;
+      expect(sizes.length, 1);
+      for (final side in const [-1, 1]) {
+        final starts = {
+          for (final s in slots.where((s) => s.side == side))
+            s.z0.toStringAsFixed(3),
+        }.map(double.parse).toList()..sort();
+        for (var i = 1; i < starts.length; i++) {
+          expect(
+            starts[i] - starts[i - 1],
+            closeTo(Corridor.frameWidth + Corridor.gap, 1e-3),
+          );
+        }
+        for (final z0 in starts) {
+          final column = slots.where(
+            (s) => s.side == side && (s.z0 - z0).abs() < 1e-3,
+          );
+          expect(column.length, Corridor.frameRows);
         }
       }
-      expect(stacked, greaterThan(0));
-      expect({for (final s in slots) s.style}.length, greaterThanOrEqualTo(4));
     });
 
     test('more entries only add wall at the far end, the near wall stays', () {
@@ -806,19 +816,27 @@ void main() {
       },
     );
 
-    test('a painting is a square in the middle of its frame', () {
+    test('a painting keeps its own shape in the middle of its frame', () {
       final view = Projection(const Size(400, 800), 0);
       final slot = layoutGallery(10).firstWhere((s) => !s.isBlank);
       final outer = view.wallQuad(slot)!;
-      final art = view.artQuad(slot)!;
-      final centre = Offset(
-        art.map((p) => p.dx).reduce((x, y) => x + y) / 4,
-        art.map((p) => p.dy).reduce((x, y) => x + y) / 4,
-      );
-      expect(pointInQuad(centre, outer), isTrue);
-      for (final corner in art) {
-        expect(pointInQuad(corner, outer), isTrue);
+      double span(List<Offset> quad) =>
+          quad.map((p) => p.dx).reduce(math.max) -
+          quad.map((p) => p.dx).reduce(math.min);
+      final square = view.artQuad(slot)!;
+      final wide = view.artQuad(slot, aspect: Corridor.frameAspect)!;
+      for (final art in [square, wide]) {
+        final centre = Offset(
+          art.map((p) => p.dx).reduce((x, y) => x + y) / 4,
+          art.map((p) => p.dy).reduce((x, y) => x + y) / 4,
+        );
+        expect(pointInQuad(centre, outer), isTrue);
+        for (final corner in art) {
+          expect(pointInQuad(corner, outer), isTrue);
+        }
       }
+      // A wide painting fills more of the frame's length than a square one.
+      expect(span(wide), greaterThan(span(square)));
     });
 
     test('a point far down the corridor lands on the vanishing point', () {

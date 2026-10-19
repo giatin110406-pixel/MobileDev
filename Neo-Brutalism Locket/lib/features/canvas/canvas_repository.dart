@@ -5,6 +5,14 @@ import 'dart:typed_data';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
+/// A canvas is as wide as a profile banner: [canvasAspect] times as wide as it is
+/// tall. These are the heights (in cells) the owner can choose for a new canvas.
+const canvasAspect = 2.5;
+const canvasHeights = [12, 16, 20];
+
+/// The width in cells of a canvas that is [height] cells tall.
+int canvasWidthFor(int height) => height * 5 ~/ 2;
+
 /// A group's canvas: one palette index per cell, row by row.
 class CanvasData {
   const CanvasData({
@@ -166,7 +174,8 @@ abstract interface class CanvasRepository {
     List<PixelPatch> pixels,
   );
 
-  /// Owner only: archives the current canvas and starts an empty one.
+  /// Owner only: archives the current canvas and starts an empty one. [size] is its
+  /// height in cells (one of [canvasHeights]); the width is [canvasWidthFor] that.
   Future<String> newCanvas(
     String groupId, {
     required int size,
