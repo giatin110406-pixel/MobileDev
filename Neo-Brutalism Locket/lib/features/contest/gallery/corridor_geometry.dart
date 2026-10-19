@@ -28,10 +28,24 @@ abstract final class Corridor {
   /// Space left free between two frames on a wall.
   static const gap = 0.14;
 
+  /// The first frames, near the entrance, lie outside the screen when the visitor
+  /// stands at the start (the wall there is wider than the view). A frame is wholly
+  /// in view from the start when it begins at least this far in: the wall edge is at
+  /// x = focal * wallX / z, so it needs z >= 0.85 * 1.6 / 0.5 = 2.72, for any screen.
+  /// Entries only take frames from here on, so every entry can be seen.
+  static const firstEntryZ = 2.8;
+
   /// The height range of the wall that frames may use (skirting and crown
   /// moulding take the rest).
   static const wallTop = -1.45;
   static const wallBottom = 1.1;
+
+  /// Every frame has the shape of a profile banner: 2.5 times as wide as it is tall.
+  /// Three frames, one above the other, fill the height of the wall.
+  static const frameAspect = 2.5;
+  static const frameWidth = 1.8;
+  static const frameHeight = frameWidth / frameAspect;
+  static const frameRows = 3;
 }
 
 /// Where one frame hangs: on the left (-1) or right (+1) wall, between z0 and
@@ -80,94 +94,53 @@ class FrameSlot {
   );
 }
 
-int _hash(int a, int b) {
-  var hash = (a * 73856093) ^ (b * 19349663);
-  hash &= 0xFFFFFDF5;
-  // Mix the bits so that neighbouring numbers do not get patterns.
-  hash ^= hash >> 16;
-  hash = (hash * 0x85EBCA6B) & 0xFFFFFDF5;
-  hash ^= hash >> 13;
-  hash = (hash * 0xC2B2AE35) & 0xFFFFFDF5;
-  hash ^= hash >> 16;
-  return hash;
-}
+/// An entry may hang in [slot] when the visitor can see it from the entrance.
+bool _canHold(FrameSlot slot) => slot.z0 >= Corridor.firstEntryZ;
 
-/// A column of the salon wall: as wide as [width], with frames of the given
-/// heights one above the other.
-class _Column {
-  const _Column(this.width, this.heights);
-
-  final double width;
-  final List<double> heights;
-}
-
-/// The kinds of column, in the order they are picked from. Every column fits the
-/// height of the wall (2.55 m) with a small gap between the frames.
-const _columns = [
-  _Column(0.95, [2.3]), // a tall portrait
-  _Column(1.7, [1.7]), // a big landscape
-  _Column(1.15, [1.12, 1.12]), // two, one above the other
-  _Column(0.8, [0.7, 0.7, 0.7]), // three small ones
-  _Column(1.6, [1.05, 1.05]), // two wide ones
-  _Column(1.9, [2.0]), // a large one
-  _Column(0.9, [1.0, 1.25]), // two uneven ones
-  _Column(0.8, [0.7, 0.7, 0.7]), // (small ones are common on a salon wall)
-  _Column(1.15, [1.12, 1.12]),
-];
-
-/// A frame can show an entry when it is big enough to see and not a thin
-/// strip: the painting is square.
-bool _fitsEntry(double width, double height) {
-  final ratio = width / height;
-  return math.min(width, height) >= 0.89 && ratio >= 0.65 && ratio <= 1.55;
-}
-
-/// Frames of one wall, from the entrance up to [until] metres, always the same for
-/// the same wall: asking for a longer wall only adds columns at the far end.
+/// The frames of one wall, from the entrance up to [until] metres: columns of
+/// [Corridor.frameRows] frames, one above the other, all the same shape and size and
+/// evenly spaced. Always the same for the same wall: asking for a longer wall only
+/// adds columns at the far end.
 List<FrameSlot> _wall(int side, double until) {
+  const rows = Corridor.frameRows;
+  const wallHeight = Corridor.wallBottom - Corridor.wallTop;
+  const stack = rows * Corridor.frameHeight + (rows - 1) * Corridor.gap;
+  const top = Corridor.wallTop + (wallHeight - stack) / 2;
   final slots = <FrameSlot>[];
   var z = Corridor.startZ;
-  var k = 0;
-  const wallHeight = Corridor.wallBottom - Corridor.wallTop;
+  var column = 0;
   while (z < until) {
-    final hash = _hash(side + 7, k);
-    final column = _columns[hash % _columns.length];
-    final gaps = (column.heights.length - 1) * Corridor.gap;
-    final total = column.heights.fold(0.0, (sum, h) => sum + h) + gaps;
-    // The stack hangs in the middle of the wall, a touch up or down.
-    final slack = wallHeight - total;
-    final jitter = (((hash >> 5) % 11) - 5) / 5 * math.min(slack / 2, 0.12);
-    var y = Corridor.wallTop + slack / 2 + jitter;
-    for (var row = 0; row < column.heights.length; row++) {
-      final h = column.heights[row];
+    for (var row = 0; row < rows; row++) {
+      final y = top + row * (Corridor.frameHeight + Corridor.gap);
       slots.add(
         FrameSlot(
           index: -1,
           side: side,
           z0: z,
-          z1: z + column.width,
+          z1: z + Corridor.frameWidth,
           yTop: y,
-          yBottom: y + h,
-          style: _hash(hash, row + 3) % 5,
+          yBottom: y + Corridor.frameHeight,
+          // The colour of the frame changes from one column to the next.
+          style: column % 5,
         ),
       );
-      y += h + Corridor.gap;
     }
-    z += column.width + Corridor.gap;
-    k++;
+    z += Corridor.frameWidth + Corridor.gap;
+    column++;
   }
   return slots;
 }
 
-/// The walls of the Gallery: a salon wall of frames on both sides, one above the
-/// other and side by side, in many sizes, all the way down the corridor. It is the
-/// same wall whatever the entries are, so the corridor looks like a gallery even when
+/// The walls of the Gallery: rows of frames in the shape of a banner on both sides,
+/// all the same size and evenly spaced, all the way down the corridor. It is the same
+/// wall whatever the entries are, so the corridor looks like a gallery even when
 /// nothing has been submitted: every frame is a blank canvas.
 ///
-/// Entries then take the frames that suit a painting (big enough, not a thin strip),
-/// from the entrance to the end, left and right as they come, in the order they
-/// were accepted. The wall is made long enough for [entryCount] entries and [spare]
-/// frames more (and for at least [atLeast] in all), so there is always more wall.
+/// Entries take the frames in order, a column at a time from the entrance on (top to
+/// bottom, the left wall before the right), in the order they were accepted, but only
+/// frames that are in view from the entrance. The wall is made long enough for
+/// [entryCount] entries and [spare] frames more (and for at least [atLeast] in all), so
+/// there is always more wall.
 List<FrameSlot> layoutGallery(
   int entryCount, {
   int atLeast = 36,
@@ -178,25 +151,27 @@ List<FrameSlot> layoutGallery(
   List<FrameSlot> all;
   while (true) {
     all = [..._wall(-1, until), ..._wall(1, until)];
-    final fit = all.where((s) => _fitsEntry(s.width, s.height)).length;
+    final fit = all.where(_canHold).length;
     if (fit >= wanted || until > 400) break;
     until += 6;
   }
-  // The frames that can hold an entry, nearest first (left before right).
-  final suitable =
+  final order =
       [
         for (var i = 0; i < all.length; i++)
-          if (_fitsEntry(all[i].width, all[i].height)) i,
+          if (_canHold(all[i])) i,
       ]..sort((a, b) {
         final byDistance = all[a].z0.compareTo(all[b].z0);
-        return byDistance != 0
-            ? byDistance
-            : all[a].side.compareTo(all[b].side);
+        if (byDistance != 0) return byDistance;
+        final byRow = all[a].yTop.compareTo(all[b].yTop);
+        return byRow != 0 ? byRow : all[a].side.compareTo(all[b].side);
       });
-  for (var entry = 0; entry < entryCount && entry < suitable.length; entry++) {
-    all[suitable[entry]] = all[suitable[entry]].withEntry(entry);
+  for (var entry = 0; entry < entryCount && entry < order.length; entry++) {
+    all[order[entry]] = all[order[entry]].withEntry(entry);
   }
-  all.sort((a, b) => a.z0.compareTo(b.z0));
+  all.sort((a, b) {
+    final byDistance = a.z0.compareTo(b.z0);
+    return byDistance != 0 ? byDistance : a.yTop.compareTo(b.yTop);
+  });
   return all;
 }
 
@@ -204,29 +179,87 @@ List<FrameSlot> layoutGallery(
 double corridorLength(List<FrameSlot> slots) =>
     slots.fold(Corridor.startZ, (end, slot) => math.max(end, slot.z1));
 
-/// Looking down the corridor from [cameraZ] onto a screen of [size].
+/// A point of the corridor as (x, y, z).
+typedef Point3 = (double, double, double);
+
+/// Looking from [cameraZ] onto a screen of [size]. The visitor looks down the corridor
+/// ([yaw] 0), or has turned to the right (positive) or left (negative) by [yaw] radians,
+/// like turning the head to look at a wall; at a quarter turn (pi / 2) the wall is
+/// straight ahead. [cameraY] is the height of the eyes (0 is the usual level).
 class Projection {
-  Projection(this.size, this.cameraZ)
+  Projection(this.size, this.cameraZ, {this.yaw = 0, this.cameraY = 0})
     : cx = size.width / 2,
       cy = size.height * 0.46,
-      focal = size.width * 0.85;
+      focal = size.width * 0.85,
+      _cos = math.cos(yaw),
+      _sin = math.sin(yaw);
 
   final Size size;
   final double cameraZ;
+  final double yaw;
+  final double cameraY;
+  final double _cos;
+  final double _sin;
 
-  /// The vanishing point (where the corridor ends, in the picture).
+  /// The vanishing point (where the corridor ends, in the picture), when looking down
+  /// the corridor.
   final double cx;
   final double cy;
   final double focal;
 
   Offset get vanishingPoint => Offset(cx, cy);
 
+  /// A point of the corridor seen from the visitor: x to the right, y down, z ahead.
+  Point3 _toCamera(double x, double y, double z) {
+    final dz = z - cameraZ;
+    return (x * _cos - dz * _sin, y - cameraY, x * _sin + dz * _cos);
+  }
+
+  Offset _screen(Point3 c) =>
+      Offset(cx + focal * c.$1 / c.$3, cy + focal * c.$2 / c.$3);
+
   /// The screen position of a point of the corridor, or null if it is behind
   /// (or too close to) the visitor.
   Offset? point(double x, double y, double z) {
-    final depth = z - cameraZ;
-    if (depth < Corridor.near) return null;
-    return Offset(cx + focal * x / depth, cy + focal * y / depth);
+    final c = _toCamera(x, y, z);
+    if (c.$3 < Corridor.near) return null;
+    return _screen(c);
+  }
+
+  /// The outline on the screen of a flat shape of the corridor given by its corners,
+  /// cut off where it comes closer than the visitor's nose. Empty if none of it is in
+  /// front of the visitor.
+  List<Offset> polygon(List<Point3> corners) {
+    final camera = [for (final c in corners) _toCamera(c.$1, c.$2, c.$3)];
+    final kept = <Point3>[];
+    for (var i = 0; i < camera.length; i++) {
+      final a = camera[i];
+      final b = camera[(i + 1) % camera.length];
+      final aIn = a.$3 >= Corridor.near;
+      final bIn = b.$3 >= Corridor.near;
+      if (aIn) kept.add(a);
+      if (aIn != bIn) kept.add(_cut(a, b));
+    }
+    return [for (final c in kept) _screen(c)];
+  }
+
+  /// A line of the corridor between two points, cut off the same way, or null if all of
+  /// it is behind the visitor.
+  (Offset, Offset)? segment(Point3 from, Point3 to) {
+    var a = _toCamera(from.$1, from.$2, from.$3);
+    var b = _toCamera(to.$1, to.$2, to.$3);
+    final aIn = a.$3 >= Corridor.near;
+    final bIn = b.$3 >= Corridor.near;
+    if (!aIn && !bIn) return null;
+    if (!aIn) a = _cut(a, b);
+    if (!bIn) b = _cut(b, a);
+    return (_screen(a), _screen(b));
+  }
+
+  /// The point of the line from [a] to [b] that is exactly at the near distance.
+  Point3 _cut(Point3 a, Point3 b) {
+    final t = (Corridor.near - a.$3) / (b.$3 - a.$3);
+    return (a.$1 + (b.$1 - a.$1) * t, a.$2 + (b.$2 - a.$2) * t, Corridor.near);
   }
 
   /// The four corners of a frame on its wall, in picture order: top-left,
@@ -244,28 +277,24 @@ class Projection {
     );
   }
 
-  /// The corners of the square a painting takes inside its frame: centred, as big
-  /// as fits after the frame ([frame]) and the mat ([mat]), both shares of the
-  /// frame's shorter side.
+  /// The corners of a painting inside its frame: centred, as big as fits after the
+  /// frame ([frame]) and the mat ([mat]), both shares of the frame's shorter side,
+  /// and keeping the painting's own shape ([aspect]: its width over its height).
   List<Offset>? artQuad(
     FrameSlot slot, {
-    double frame = 0.06,
-    double mat = 0.08,
+    double aspect = 1,
+    double frame = 0.05,
+    double mat = 0.05,
   }) {
     final m = slot.size;
-    final innerW = slot.width - 2 * m * frame;
-    final innerH = slot.height - 2 * m * frame;
-    final side = math.min(innerW, innerH) - 2 * m * mat;
-    if (side <= 0) return null;
+    final innerW = slot.width - 2 * m * (frame + mat);
+    final innerH = slot.height - 2 * m * (frame + mat);
+    if (innerW <= 0 || innerH <= 0 || aspect <= 0) return null;
+    final h = math.min(innerH, innerW / aspect);
+    final w = h * aspect;
     final zc = (slot.z0 + slot.z1) / 2;
     final yc = (slot.yTop + slot.yBottom) / 2;
-    return _quad(
-      slot.side,
-      zc - side / 2,
-      zc + side / 2,
-      yc - side / 2,
-      yc + side / 2,
-    );
+    return _quad(slot.side, zc - w / 2, zc + w / 2, yc - h / 2, yc + h / 2);
   }
 
   List<Offset>? _quad(
@@ -352,15 +381,21 @@ bool pointInQuad(Offset point, List<Offset> quad) {
   return true;
 }
 
-/// The frames to draw now, farthest first (so nearer ones paint over them).
-List<FrameSlot> visibleSlots(List<FrameSlot> slots, double cameraZ) {
+/// The frames to draw now, farthest first (so nearer ones paint over them). When the
+/// visitor has turned to look at a wall, frames [behind] him (in metres) count too.
+List<FrameSlot> visibleSlots(
+  List<FrameSlot> slots,
+  double cameraZ, {
+  double behind = 0,
+}) {
   final visible = [
     for (final slot in slots)
-      if (slot.z0 - cameraZ >= Corridor.near &&
+      if (slot.z0 - cameraZ >= Corridor.near - behind &&
           slot.z0 - cameraZ <= Corridor.far)
         slot,
   ];
-  visible.sort((a, b) => b.z0.compareTo(a.z0));
+  double away(FrameSlot slot) => ((slot.z0 + slot.z1) / 2 - cameraZ).abs();
+  visible.sort((a, b) => away(b).compareTo(away(a)));
   return visible;
 }
 

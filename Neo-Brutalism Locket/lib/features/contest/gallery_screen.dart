@@ -179,6 +179,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             entries: _store.entries,
             cache: _cache,
             onOpen: _open,
+            caption: widget.title,
             onNearEnd: _store.hasMore ? _store.loadMore : null,
           ),
         // With no entry yet the corridor is still there, with blank canvases on
@@ -273,10 +274,10 @@ class GalleryGrid extends StatelessWidget {
     return GridView.builder(
       padding: const EdgeInsets.all(14),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 170,
+        maxCrossAxisExtent: 260,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 0.82,
+        childAspectRatio: 1.3,
       ),
       itemCount: entries.length,
       itemBuilder: (context, index) {

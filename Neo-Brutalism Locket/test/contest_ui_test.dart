@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -263,41 +265,172 @@ void main() {
       await leave(tester);
     });
 
-    testWidgets('tapping a framed picture in the corridor opens it', (
-      tester,
-    ) async {
-      await open(tester, 6);
+    CorridorPainter painterOf(WidgetTester tester) =>
+        tester.widget<CustomPaint>(corridor).painter as CorridorPainter;
+
+    /// Taps the first entry whose frame can be seen in full at the entrance and returns
+    /// its number.
+    Future<int> tapAFrame(WidgetTester tester, int entries) async {
       final topLeft = tester.getTopLeft(corridor);
       final size = tester.getSize(corridor);
-      final slots = layoutGallery(6);
       final view = Projection(size, 0);
-      // The first entry whose frame can be seen in full at the entrance.
-      Offset? centre;
-      var wanted = 0;
-      for (final slot in slots.where((s) => !s.isBlank)) {
+      for (final slot in layoutGallery(entries).where((s) => !s.isBlank)) {
         final quad = view.wallQuad(slot)!;
-        final c = Offset(
-          quad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
-          quad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
-        );
         final onScreen = quad.every(
           (p) =>
               p.dx > 0 && p.dx < size.width && p.dy > 0 && p.dy < size.height,
         );
-        if (onScreen) {
-          centre = c;
-          wanted = slot.index;
-          break;
-        }
+        if (!onScreen) continue;
+        final centre = Offset(
+          quad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
+          quad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
+        );
+        await tester.tapAt(topLeft + centre);
+        return slot.index;
       }
-      expect(centre, isNotNull);
-      await tester.tapAt(topLeft + centre!);
+      fail('no frame in full view');
+    }
+
+    testWidgets('tapping a framed picture turns the visitor to face it', (
+      tester,
+    ) async {
+      await open(tester, 6);
+      final painter = painterOf(tester);
+      expect(painter.yaw.value, 0);
+      final wanted = await tapAFrame(tester, 6);
+      // Nothing opens: the visitor stays in the corridor and turns toward the wall.
+      await tester.pump();
+      expect(find.byType(EntryDetailScreen), findsNothing);
+      await tester.pump(const Duration(milliseconds: 700));
+      expect(painter.yaw.value.abs(), greaterThan(0));
+      expect(painter.yaw.value.abs(), lessThan(math.pi / 2));
+      await tester.pumpAndSettle();
+      // Facing the wall, a quarter turn.
+      expect(painter.yaw.value.abs(), closeTo(math.pi / 2, 1e-9));
+      expect(corridor, findsOneWidget);
+      // The card with its name has popped up.
+      expect(find.text('Group ${wanted + 1}'), findsOneWidget);
+      expect(find.text('#${wanted + 1}'), findsOneWidget);
+      expect(find.text('RATE & COMMENT'), findsOneWidget);
+      expect(find.text('KEEP WALKING'), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('the card shows only once the visitor has turned', (
+      tester,
+    ) async {
+      await open(tester, 6);
+      await tapAFrame(tester, 6);
+      await tester.pump(const Duration(milliseconds: 300));
+      // Still walking up to it: the card is not there to press.
+      final details = find.text('RATE & COMMENT');
+      final hidden = tester.widget<Opacity>(
+        find.ancestor(of: details, matching: find.byType(Opacity)).first,
+      );
+      expect(hidden.opacity, 0);
+      await tester.pumpAndSettle();
+      final shown = tester.widget<Opacity>(
+        find.ancestor(of: details, matching: find.byType(Opacity)).first,
+      );
+      expect(shown.opacity, 1);
+      await leave(tester);
+    });
+
+    testWidgets('the visitor walks on, back to where he was', (tester) async {
+      await open(tester, 6);
+      final painter = painterOf(tester);
+      await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('KEEP WALKING'));
+      await tester.pumpAndSettle();
+      expect(painter.yaw.value, 0);
+      expect(painter.camera.value, 0);
+      expect(find.text('KEEP WALKING'), findsNothing);
+      expect(find.text('RATE & COMMENT'), findsNothing);
+      // And he can look at another one.
+      await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      expect(find.text('KEEP WALKING'), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('the card opens the painting to rate and comment', (
+      tester,
+    ) async {
+      await open(tester, 6);
+      final wanted = await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('RATE & COMMENT'));
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsOneWidget);
       expect(find.text('Group ${wanted + 1}'), findsWidgets);
       await tester.tap(find.byTooltip('Back').last);
       await tester.pumpAndSettle();
       expect(find.byType(EntryDetailScreen), findsNothing);
+      // Back in the gallery, still facing the painting.
+      expect(find.text('KEEP WALKING'), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('tapping the painting itself opens it too', (tester) async {
+      await open(tester, 6);
+      final wanted = await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      final painter = painterOf(tester);
+      final slot = layoutGallery(6).firstWhere((s) => s.index == wanted);
+      final quad = Projection(
+        tester.getSize(corridor),
+        painter.camera.value,
+        yaw: painter.yaw.value,
+        cameraY: painter.eye.value,
+      ).wallQuad(slot)!;
+      final centre = Offset(
+        quad.map((p) => p.dx).reduce((a, b) => a + b) / 4,
+        quad.map((p) => p.dy).reduce((a, b) => a + b) / 4,
+      );
+      await tester.tapAt(tester.getTopLeft(corridor) + centre);
+      await tester.pumpAndSettle();
+      expect(find.byType(EntryDetailScreen), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('tapping beside the painting walks on', (tester) async {
+      await open(tester, 6);
+      await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      await tester.tapAt(tester.getTopLeft(corridor) + const Offset(4, 4));
+      await tester.pumpAndSettle();
+      expect(painterOf(tester).yaw.value, 0);
+      expect(find.byType(EntryDetailScreen), findsNothing);
+      await leave(tester);
+    });
+
+    testWidgets('the back button walks on before it leaves the Gallery', (
+      tester,
+    ) async {
+      await open(tester, 6);
+      await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      final widgetsApp = tester.state<State>(find.byType(WidgetsApp));
+      // ignore: avoid_dynamic_calls
+      await (widgetsApp as dynamic).didPopRoute();
+      await tester.pumpAndSettle();
+      expect(painterOf(tester).yaw.value, 0);
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('swiping does not move a visitor who is looking', (
+      tester,
+    ) async {
+      await open(tester, 6);
+      final painter = painterOf(tester);
+      await tapAFrame(tester, 6);
+      await tester.pumpAndSettle();
+      final stopped = painter.camera.value;
+      await tester.drag(corridor, const Offset(0, -200));
+      await tester.pumpAndSettle();
+      expect(painter.camera.value, stopped);
       await leave(tester);
     });
 

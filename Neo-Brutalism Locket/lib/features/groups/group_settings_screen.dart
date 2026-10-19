@@ -676,7 +676,7 @@ class _NewCanvasDialog extends StatefulWidget {
 }
 
 class _NewCanvasDialogState extends State<_NewCanvasDialog> {
-  int _size = 32;
+  int _size = 16;
   String _palette = 'eightbit';
 
   @override
@@ -705,9 +705,9 @@ class _NewCanvasDialogState extends State<_NewCanvasDialog> {
           Wrap(
             spacing: 8,
             children: [
-              for (final size in const [16, 24, 32])
+              for (final size in canvasHeights)
                 ChoiceChip(
-                  label: Text('$size×$size'),
+                  label: Text('${canvasWidthFor(size)}×$size'),
                   selected: _size == size,
                   onSelected: Haptics.tapWith(
                     (_) => setState(() => _size = size),
