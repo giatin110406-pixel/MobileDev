@@ -22,6 +22,9 @@ class ModelRegistry:
         self._depth = None
         self._face_pipe = None
         self._offloaded = False
+        self._embeds: dict = {}
+        self._stash: dict = {}
+        self._slot_kind = "main"
 
     # -- diffusion pipeline -------------------------------------------------
     def pipe(self):
@@ -64,6 +67,7 @@ class ModelRegistry:
                 pipe.vae.enable_tiling()
                 self._place(pipe)
                 self._pipe = pipe
+            self._activate("main")
             return self._pipe
 
     def face_pipe(self):
@@ -75,17 +79,61 @@ class ModelRegistry:
                 from diffusers.models.controlnets.multicontrolnet import MultiControlNetModel
 
                 main = self.pipe()
+                slot = main.controlnet.nets[1]
                 face_net = ControlNetModel.from_pretrained(
                     self.cfg["controlnet_face"], subfolder="diffusion_sd15",
                     torch_dtype=self.dtype, variant="fp16")
-                if self.device == "cuda" and not self._offloaded:
-                    face_net.to("cuda")
+                # depth and face ControlNets have the same architecture: one net stays on the
+                # GPU and `_activate` overwrites its weights in place (no allocation or free)
+                self._stash = {
+                    "main": {k: v.detach().cpu().clone() for k, v in slot.state_dict().items()},
+                    "face": {k: v.detach().cpu() for k, v in face_net.state_dict().items()},
+                }
+                self._slot_kind = "main"
+                del face_net
                 components = dict(main.components)
-                components["controlnet"] = MultiControlNetModel([main.controlnet.nets[0], face_net])
+                components["controlnet"] = MultiControlNetModel([main.controlnet.nets[0], slot])
                 pipe = StableDiffusionControlNetImg2ImgPipeline(
                     **components, requires_safety_checker=False)
                 self._face_pipe = pipe
+            self._activate("face")
             return self._face_pipe
+
+    def _activate(self, kind: str) -> None:
+        """Three ControlNets (~0.7 GB each) plus the UNet do not fit a 6 GB card (the driver then
+        spills to system RAM and every step is 3x slower), and moving nets between CPU and GPU
+        faulted the driver after a few photos. The face pass needs the same architecture as the
+        depth net, so the one GPU-resident net is re-filled in place from a CPU copy."""
+        if self._pipe is None or self._slot_kind == kind or kind not in self._stash:
+            return
+        self._pipe.controlnet.nets[1].load_state_dict(self._stash[kind])
+        self._slot_kind = kind
+
+    def ip_embeds(self, name: str, image) -> list:
+        """IP-Adapter embeddings of a style reference, computed once and cached (memory + disk),
+        so the 1.2 GB CLIP-ViT-H image encoder can stay off the GPU."""
+        with _lock:
+            path = config.STYLES_DIR / "van_gogh" / name
+            key = f"{path.stem}-{int(path.stat().st_mtime)}"
+            if key not in self._embeds:
+                cache = config.WEIGHTS_DIR / "ip_embeds" / f"{key}.pt"
+                if cache.exists():
+                    self._embeds[key] = torch.load(cache)
+                else:
+                    pipe = self.pipe()
+                    on_gpu = self.device == "cuda" and not self._offloaded
+                    if on_gpu:
+                        pipe.image_encoder.to("cuda")
+                    with torch.no_grad():
+                        embeds = pipe.prepare_ip_adapter_image_embeds(
+                            image, None, self.device, 1, True)
+                    if on_gpu:
+                        pipe.image_encoder.to("cpu")
+                    embeds = [e.to("cpu") for e in embeds]
+                    cache.parent.mkdir(parents=True, exist_ok=True)
+                    torch.save(embeds, cache)
+                    self._embeds[key] = embeds
+            return [e.to(self.device, self.dtype) for e in self._embeds[key]]
 
     def _place(self, pipe) -> None:
         if self.device != "cuda":
@@ -95,6 +143,7 @@ class ModelRegistry:
             self._offloaded = True
         else:
             pipe.to("cuda")
+            pipe.image_encoder.to("cpu")   # only needed to build ip_embeds, then cached
 
     def enable_offload(self) -> None:
         """Called after a CUDA OOM: rebuild the pipeline with CPU offload."""
@@ -102,6 +151,8 @@ class ModelRegistry:
             self._offloaded = True
             self._pipe = None
             self._face_pipe = None
+            self._stash = {}
+            self._slot_kind = "main"
             self.free()
 
     # -- preprocessors ------------------------------------------------------
