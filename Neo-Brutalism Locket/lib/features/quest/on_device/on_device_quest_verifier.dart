@@ -2,11 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/ort_image_encoder.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/quest_preprocess.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/quest_scoring.dart';
+import 'package:neo_brutalism_locket/features/quest/on_device/screen_recapture.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_verifier.dart';
 
-Float32List _preprocess((Uint8List, int) job) =>
-    preprocessQuestPhoto(job.$1, job.$2);
+/// One decode feeds both checks. The pixel-grid test needs the camera's full
+/// resolution, so it runs before the picture is shrunk for the model; when it
+/// already says "screen" the model input is skipped.
+({Float32List? planes, double moire}) _analyze((Uint8List, int) job) {
+  final decoded = decodeQuestPhoto(job.$1);
+  final moire = moireStrength(decoded);
+  return (
+    planes: moire >= moireReject ? null : questPlanes(decoded, job.$2),
+    moire: moire,
+  );
+}
 
 /// Decides whether a photo shows the quest subject, on the phone: no laptop
 /// and no network. The image goes through MobileCLIP2-S0 and is compared with
@@ -33,10 +43,18 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
       if (!labels.quests.containsKey(quest.id)) {
         throw const QuestCheckUnavailable(QuestCheckError.questUnknown);
       }
-      final planes = await compute(_preprocess, (jpeg, labels.inputSize));
+      final seen = await compute(_analyze, (jpeg, labels.inputSize));
+      final planes = seen.planes;
+      if (planes == null) {
+        _remember('screen grid ${seen.moire.toStringAsFixed(1)}');
+        return false;
+      }
       final embedding = await _encoder.encode(planes, labels.inputSize);
       final score = scoreQuestPhoto(embedding, labels, quest.id);
-      _remember('${score.top} ${(score.score * 100).round()}%');
+      _remember(
+        '${score.top} ${(score.score * 100).round()}%'
+        ' · grid ${seen.moire.toStringAsFixed(1)}',
+      );
       return score.match;
     } on QuestCheckUnavailable {
       rethrow;

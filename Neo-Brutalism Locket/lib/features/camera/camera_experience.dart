@@ -413,7 +413,7 @@ class CameraTabState extends State<CameraTab> {
       await oldCamera?.dispose();
       final nextCamera = CameraController(
         _cameras[nextIndex],
-        ResolutionPreset.high,
+        ResolutionPreset.veryHigh,
         enableAudio: false,
       );
       _camera = nextCamera;

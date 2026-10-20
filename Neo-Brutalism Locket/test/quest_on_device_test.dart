@@ -217,7 +217,7 @@ void main() {
       final checker = verifier(encoder);
       expect(checker.lastDiagnosis, isNull);
       await checker.check(photo(dog), quest('px_dog'));
-      expect(checker.lastDiagnosis, matches(r'^.+ \d+%$'));
+      expect(checker.lastDiagnosis, matches(r'^.+ \d+% · grid \d+\.\d$'));
       expect(checker.lastDiagnosis, startsWith(dog['top'] as String));
     });
 
