@@ -44,6 +44,58 @@ SWEEP = {
     "id10": ["identity.enabled=true", "identity.strength=1.0"],
 }
 
+# van-gogh-style-face-plan.md, Phase S: Van Gogh technique without the Starry Night palette
+S1 = ["main.prompt=post-impressionist oil painting, thick impasto, short broken directional "
+      "brushstrokes, bold dark contour lines, visible canvas texture, {subject}, keeping the "
+      "original person's face and features",
+      "main.negative_portrait_extra=swirls, starry night, cobalt blue sky"]
+REFS = ['references.bright_scene=["harvest.jpg", "irises.jpg", "bedroom_arles.jpg", '
+        '"sunflowers.jpg", "wheatfield_cypresses.jpg", "almond_blossom.jpg"]',
+        'references.dark_scene=["cafe_terrace_night.jpg", "starry_night_rhone.jpg"]',
+        'references.sky=["starry_night.jpg", "wheatfield_cypresses.jpg"]',
+        "sky_threshold=0.35"]
+PORTRAIT_A = ['references.portrait=["la_mousme.jpg", "armand_roulin.jpg", "camille_roulin.jpg"]']
+PORTRAIT_B = ['references.portrait=["irises.jpg", "almond_blossom.jpg", "harvest.jpg"]']
+SWEEP.update({
+    "cur": [],
+    "s1": S1,
+    "s2a": S1 + REFS + PORTRAIT_A,
+    "s2b": S1 + REFS + PORTRAIT_B,
+    "s2a_ip04": S1 + REFS + PORTRAIT_A + ["main.ip_adapter_scale_portrait=0.4"],
+    "s2b_ip04": S1 + REFS + PORTRAIT_B + ["main.ip_adapter_scale_portrait=0.4"],
+    "s2a_ca05": S1 + REFS + PORTRAIT_A + ["main.color_anchor=0.5"],
+})
+
+
+# portrait references with thick brush work and no painted face (Irises, Almond Blossom, The
+# Harvest) + colour anchored to the photo, so hair stays hair-coloured (s2a: green hair from the
+# Roulin portraits' green background; cur: blue hair from the single wheat-field reference)
+SWEEP.update({
+    "pa": S1 + REFS + PORTRAIT_B + ["main.color_anchor=0.6"],
+    "pb": S1 + REFS + PORTRAIT_B + ["main.color_anchor=1.0"],
+})
+
+
+# Phase F (faces): `pa` + crop from the original photo + strength/reference influence that fall
+# with face size (60-90 px faces were re-invented by the model: different person)
+FACE_RAMP = ["face.hires=true", "face.px_small=80", "face.px_full=250",
+             "face.strength_small=0.3", "face.ip_small=0.15"]
+SWEEP.update({
+    "g1": SWEEP["pa"] + FACE_RAMP,
+    "g2": SWEEP["pa"] + FACE_RAMP + ["face.tone_match=0.8", "face.max_shape_dev=0.25"],
+})
+
+
+# Face pass: the style reference must not paint on faces (blue dabs on chin/cheek); brush
+# texture on skin comes from the oil filter, which cannot move a feature; hair is taken from the
+# face pass too for small faces.
+SWEEP.update({
+    "k1": SWEEP["g1"] + ["face.ip_adapter_scale=0.2"],
+    "k2": SWEEP["g1"] + ["face.ip_adapter_scale=0.2", "face.skin_paint=0.7"],
+    "k3": SWEEP["g1"] + ["face.ip_adapter_scale=0.2", "face.skin_paint=0.7",
+                         "face.mask_grow_small=1.5", "face.mask_feather_small=0.08"],
+})
+
 
 def main() -> None:
     base = config.load_yaml("van_gogh.yaml")

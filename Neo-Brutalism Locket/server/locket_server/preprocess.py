@@ -32,6 +32,22 @@ def mean_luma(image: Image.Image) -> float:
     return float(gray.mean())
 
 
+def sky_fraction(image: Image.Image) -> float:
+    """Share of the top third that looks like open sky: bright, smooth, blue or near-white."""
+    import cv2
+
+    rgb = np.asarray(image.convert("RGB").resize((192, 192), Image.BOX), np.float32) / 255.0
+    top = rgb[:64]
+    gray = top.mean(axis=2)
+    texture = np.abs(cv2.Laplacian(gray, cv2.CV_32F, ksize=3))
+    texture = cv2.GaussianBlur(texture, (0, 0), 2.0)
+    r, g, b = top[..., 0], top[..., 1], top[..., 2]
+    bluish = (b > r + 0.04) & (b >= g - 0.02)
+    whitish = (top.max(axis=2) - top.min(axis=2) < 0.08) & (gray > 0.75) & (b > r + 0.01)
+    sky = (gray > 0.35) & (texture < 0.04) & (bluish | whitish)
+    return float(sky.mean())
+
+
 @dataclass
 class Face:
     x: int

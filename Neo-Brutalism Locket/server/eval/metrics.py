@@ -32,25 +32,100 @@ def _clip():
         model.eval()
         with torch.no_grad():
             text = model.encode_text(tokenizer(
-                ["an oil painting by Vincent van Gogh", "a photograph"]))
+                ["an oil painting by Vincent van Gogh", "a photograph",
+                 "a post-impressionist oil painting with thick short brushstrokes",
+                 "The Starry Night by Vincent van Gogh, swirling blue and yellow sky"]))
             text = text / text.norm(dim=-1, keepdim=True)
         _state["clip"] = (model, preprocess, text)
     return _state["clip"]
 
 
+def _clip_sims(result: Image.Image):
+    import torch
+
+    model, preprocess, text = _clip()
+    with torch.no_grad():
+        feat = model.encode_image(preprocess(result.convert("RGB")).unsqueeze(0))
+        feat = feat / feat.norm(dim=-1, keepdim=True)
+        return (feat @ text.T)[0]
+
+
 def clip_style(result: Image.Image) -> float | None:
     """Higher = looks more like a Van Gogh painting than a photograph."""
     try:
-        import torch
-
-        model, preprocess, text = _clip()
-        with torch.no_grad():
-            feat = model.encode_image(preprocess(result.convert("RGB")).unsqueeze(0))
-            feat = feat / feat.norm(dim=-1, keepdim=True)
-            sims = (feat @ text.T)[0]
+        sims = _clip_sims(result)
         return float(sims[0] - sims[1])
     except Exception as error:  # noqa: BLE001
         _state.setdefault("clip_error", str(error))
+        return None
+
+
+def style_generic(result: Image.Image) -> float | None:
+    """Higher = Van Gogh technique without copying one painting; low = 'Starry Night filter'."""
+    try:
+        sims = _clip_sims(result)
+        return float(sims[2] - sims[3])
+    except Exception as error:  # noqa: BLE001
+        _state.setdefault("clip_error", str(error))
+        return None
+
+
+def palette_shift(original: Image.Image, result: Image.Image, size: int = 32) -> float:
+    """Mean CIE76 delta-E between heavily downsized photo and result. Brush strokes vanish at
+    32 px, so this measures colours replaced (black hair painted cobalt), not texture."""
+    from skimage.color import rgb2lab
+
+    def lab(im: Image.Image) -> np.ndarray:
+        small = im.convert("RGB").resize((size, size), Image.BOX)
+        return rgb2lab(np.asarray(small, np.float32) / 255.0)
+
+    return float(np.linalg.norm(lab(original) - lab(result), axis=2).mean())
+
+
+def _hf_energy(gray: np.ndarray) -> np.ndarray:
+    import cv2
+
+    return np.abs(gray - cv2.GaussianBlur(gray, (0, 0), 1.5))
+
+
+def face_seam(original: Image.Image, result: Image.Image, size: int = 512) -> float | None:
+    """How much smoother the face is than the painting around it, relative to the photo.
+    log(texture outside / inside) in the result minus the same in the photo: 0 = the face is
+    painted like its surroundings, > 0 = a smooth 'pasted photo' face. None without a face."""
+    try:
+        import cv2
+
+        from locket_server import face_landmarks, preprocess
+
+        original = original.convert("RGB").resize((size, size), Image.LANCZOS)
+        result = result.convert("RGB").resize((size, size), Image.LANCZOS)
+        faces = preprocess.detect_faces(original, 0.5)
+        if not faces:
+            return None
+        face = faces[0]
+        cx, cy = face.x + face.w / 2, face.y + face.h / 2
+        half = max(face.w, face.h) * 0.9
+        box = (int(max(cx - half, 0)), int(max(cy - half, 0)),
+               int(min(cx + half, size)), int(min(cy + half, size)))
+        crop_mask = face_landmarks.face_mask(original.crop(box), 1.0, 0.0)
+        if crop_mask is None:
+            return None
+        mask = np.zeros((size, size), np.uint8)
+        mask[box[1]:box[3], box[0]:box[2]] = (np.asarray(crop_mask) > 127).astype(np.uint8)
+        ring_px = max(3, int(max(face.w, face.h) * 0.2))
+        kernel = np.ones((ring_px, ring_px), np.uint8)
+        inside = cv2.erode(mask, np.ones((5, 5), np.uint8)).astype(bool)
+        ring = (cv2.dilate(mask, kernel) - mask).astype(bool)
+        if inside.sum() < 50 or ring.sum() < 50:
+            return None
+
+        def gap(im: Image.Image) -> float:
+            energy = _hf_energy(np.asarray(im.convert("L"), np.float32))
+            return float(np.log((energy[ring].mean() + 1e-3) / (energy[inside].mean() + 1e-3)))
+
+        return gap(result) - gap(original)
+    except Exception as error:  # noqa: BLE001
+        _state.setdefault("seam_error", str(error))
         return None
 
 
@@ -98,3 +173,34 @@ def face_similarity(original: Image.Image, result: Image.Image) -> float | None:
 
 def last_errors() -> dict:
     return {k: v for k, v in _state.items() if k.endswith("_error")}
+
+
+def face_tone_shift(original: Image.Image, result: Image.Image, size: int = 512) -> float | None:
+    """How far the skin tone moved: CIE76 distance of the mean Lab colour inside each face
+    (inner 60 % of the detection box) between photo and result. ~5 = same person under a brush,
+    > 15 = different skin tone. Mean over detected faces; None without a face."""
+    try:
+        from skimage.color import rgb2lab
+
+        from locket_server import preprocess
+
+        original = original.convert("RGB").resize((size, size), Image.LANCZOS)
+        result = result.convert("RGB").resize((size, size), Image.LANCZOS)
+        faces = preprocess.detect_faces(original, 0.5)
+        if not faces:
+            return None
+        lab_a = rgb2lab(np.asarray(original, np.float32) / 255.0)
+        lab_b = rgb2lab(np.asarray(result, np.float32) / 255.0)
+        values = []
+        for f in faces[:4]:
+            cx, cy, half = f.x + f.w / 2, f.y + f.h / 2, max(f.w, f.h) * 0.3
+            x0, x1 = int(max(cx - half, 0)), int(min(cx + half, size))
+            y0, y1 = int(max(cy - half, 0)), int(min(cy + half, size))
+            if x1 - x0 < 4 or y1 - y0 < 4:
+                continue
+            values.append(float(np.linalg.norm(
+                lab_a[y0:y1, x0:x1].reshape(-1, 3).mean(0) - lab_b[y0:y1, x0:x1].reshape(-1, 3).mean(0))))
+        return float(np.mean(values)) if values else None
+    except Exception as error:  # noqa: BLE001
+        _state.setdefault("tone_error", str(error))
+        return None

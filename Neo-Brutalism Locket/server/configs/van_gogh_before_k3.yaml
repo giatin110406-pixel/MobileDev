@@ -1,0 +1,67 @@
+# Starting parameters; Phase 2b (eval sweep) overwrites the winners here.
+base_model: Lykon/dreamshaper-8
+controlnet_lineart: lllyasviel/control_v11p_sd15_lineart
+controlnet_depth: lllyasviel/control_v11f1p_sd15_depth
+controlnet_face: CrucibleAI/ControlNetMediaPipeFace
+depth_model: depth-anything/Depth-Anything-V2-Small-hf
+annotators: lllyasviel/Annotators
+
+working_size: 640
+output_size: 1024
+offload: auto            # auto = try full GPU, fall back to CPU offload on OOM
+
+main:
+  strength: 0.6
+  steps: 22
+  guidance: 7.0
+  lineart_scale: 0.75
+  depth_scale: 0.45
+  control_guidance_end: 0.85
+  ip_adapter_scale: 0.6
+  # No artist name in the prompt: SD ties "van Gogh" to his own bearded face.
+  prompt: >-
+    expressive post-impressionist oil painting, thick impasto brushstrokes, swirling energetic
+    strokes, vibrant cobalt blue and chrome yellow, visible canvas texture, {subject},
+    keeping the original person's face and features
+  negative_prompt: >-
+    photo, photorealistic, 3d render, smooth skin, blurry, lowres, deformed face,
+    asymmetric eyes, extra fingers, text, watermark, signature, frame, van gogh self portrait,
+    red beard, orange beard, different person, makeup, lipstick, blush, beauty filter
+
+face:
+  enabled: true
+  min_confidence: 0.6
+  expand: 1.8
+  size: 512
+  init: source            # repaint the face from the PHOTO so its shape is kept
+  max_faces: 4            # largest first; each face costs one extra pass
+  eye_detail: 0.7         # photo's brightness detail restored in eyes/brows only (natural, not cartoon eyes)
+  eye_radius: 0.012
+  landmarks: true         # face-landmark ControlNet pins eyes/brows/lips, so a high strength is safe
+  landmark_scale: 1.0
+  strength: 0.55          # eval h1; 0.65 (h2) drifts too far (eye colour / mouth changed)
+  steps: 25
+  lineart_scale: 0.5
+  ip_adapter_scale: 0.5
+  mask_grow: 1.08         # paste mask = hull of the real face-mesh outline, not an ellipse
+  mask_feather: 0.04
+  feather_sigma_fraction: 0.08   # fallbacks used when no mesh is found
+  paste_scale: 0.6
+  prompt_extra: same person, natural face, painterly
+
+identity:
+  enabled: false         # superseded by face.init=source (eval g1: face_sim 0.825, natural faces)
+  strength: 0.8           # 1.0 + colour detail + big mask looked like a photo (and re-photo'd nearby objects)
+  luma_only: true         # only brightness detail is restored, colours stay painted
+  mask_w: 0.42            # ellipse half-width / half-height as a fraction of the face box
+  mask_h: 0.5
+  radius_fraction: 0.05   # blur radius as a fraction of the face size
+  feather_fraction: 0.15
+
+references:
+  # Never use a painted face as reference: IP-Adapter copies it onto the subject.
+  portrait: wheatfield_cypresses.jpg
+  bright_scene: wheatfield_cypresses.jpg
+  dark_scene: cafe_terrace_night.jpg
+  sky: starry_night.jpg
+dark_luma_threshold: 0.35

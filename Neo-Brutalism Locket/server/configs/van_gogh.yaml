@@ -1,4 +1,6 @@
 # Starting parameters; Phase 2b (eval sweep) overwrites the winners here.
+# 2026-10-20: variant "k3" of eval/sweep.py (van-gogh-style-face-plan.md) adopted. The previous
+# values are kept in van_gogh_before_k3.yaml (the config the app ran until then).
 base_model: Lykon/dreamshaper-8
 controlnet_lineart: lllyasviel/control_v11p_sd15_lineart
 controlnet_depth: lllyasviel/control_v11f1p_sd15_depth
@@ -18,15 +20,20 @@ main:
   depth_scale: 0.45
   control_guidance_end: 0.85
   ip_adapter_scale: 0.6
-  # No artist name in the prompt: SD ties "van Gogh" to his own bearded face.
+  # No artist name in the prompt: SD ties "van Gogh" to his own bearded face. No colour names
+  # either: "cobalt blue / chrome yellow / swirling" made every photo a Starry Night (black hair
+  # turned blue); colours now follow the photo (see color_anchor).
   prompt: >-
-    expressive post-impressionist oil painting, thick impasto brushstrokes, swirling energetic
-    strokes, vibrant cobalt blue and chrome yellow, visible canvas texture, {subject},
+    post-impressionist oil painting, thick impasto, short broken directional brushstrokes,
+    bold dark contour lines, visible canvas texture, {subject},
     keeping the original person's face and features
   negative_prompt: >-
     photo, photorealistic, 3d render, smooth skin, blurry, lowres, deformed face,
     asymmetric eyes, extra fingers, text, watermark, signature, frame, van gogh self portrait,
     red beard, orange beard, different person, makeup, lipstick, blush, beauty filter
+  negative_portrait_extra: swirls, starry night, cobalt blue sky   # added when a face is found
+  color_anchor: 0.6      # pull the painting's local colour 60 % back to the photo's (hair stays hair-coloured)
+  color_anchor_radius: 0.03
 
 face:
   enabled: true
@@ -39,15 +46,25 @@ face:
   eye_radius: 0.012
   landmarks: true         # face-landmark ControlNet pins eyes/brows/lips, so a high strength is safe
   landmark_scale: 1.0
-  strength: 0.55          # eval h1; 0.65 (h2) drifts too far (eye colour / mouth changed)
+  strength: 0.55          # eval h1 (2026-10-06); 0.65 drifts too far (eye colour / mouth changed)
   steps: 25
   lineart_scale: 0.5
-  ip_adapter_scale: 0.5
+  ip_adapter_scale: 0.2   # k3: was 0.5; the style reference dropped blue dabs on chins and cheeks
   mask_grow: 1.08         # paste mask = hull of the real face-mesh outline, not an ellipse
   mask_feather: 0.04
   feather_sigma_fraction: 0.08   # fallbacks used when no mesh is found
   paste_scale: 0.6
   prompt_extra: same person, natural face, painterly
+  # Faces of 60-90 px (groups, far away) were re-invented by the model: another person. The
+  # smaller the face (width in the ORIGINAL photo), the less the model may change it.
+  hires: true             # crop the face from the original photo, not the 640 px copy
+  px_small: 80            # <= 80 px: the *_small values below
+  px_full: 250            # >= 250 px: the normal values above; linear in between
+  strength_small: 0.3
+  ip_small: 0.15
+  mask_grow_small: 1.5    # small faces: take hair and neck from the face pass too
+  mask_feather_small: 0.08
+  skin_paint: 0.7         # oil filter on skin only (never eyes/brows/lips): brush texture, no feature moves
 
 identity:
   enabled: false         # superseded by face.init=source (eval g1: face_sim 0.825, natural faces)
@@ -59,9 +76,12 @@ identity:
   feather_fraction: 0.15
 
 references:
-  # Never use a painted face as reference: IP-Adapter copies it onto the subject.
-  portrait: wheatfield_cypresses.jpg
-  bright_scene: wheatfield_cypresses.jpg
-  dark_scene: cafe_terrace_night.jpg
-  sky: starry_night.jpg
+  # Never use a painted face as reference: IP-Adapter copies it onto the subject. A list is
+  # picked per photo by its hash. All files are in styles/van_gogh/ (sources: SOURCES.md).
+  portrait: [irises.jpg, almond_blossom.jpg, harvest.jpg]
+  bright_scene: [harvest.jpg, irises.jpg, bedroom_arles.jpg, sunflowers.jpg,
+                 wheatfield_cypresses.jpg, almond_blossom.jpg]
+  dark_scene: [cafe_terrace_night.jpg, starry_night_rhone.jpg]
+  sky: [starry_night.jpg, wheatfield_cypresses.jpg]
 dark_luma_threshold: 0.35
+sky_threshold: 0.35       # top third at least 35 % open sky -> the sky references

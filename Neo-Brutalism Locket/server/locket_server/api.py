@@ -65,9 +65,12 @@ def default_runner() -> Runner:
 
         from PIL import Image
 
-        from .van_gogh import stylize_van_gogh
+        from .van_gogh import _load_reference, stylize_van_gogh
 
         registry, cfg = registry_and_cfg()
+        for refs in cfg["references"].values():   # IP-Adapter embeddings of every painting
+            for name in refs if isinstance(refs, list) else [refs]:
+                registry.ip_embeds(name, _load_reference(cfg, name))
         buffer = io.BytesIO()
         Image.linear_gradient("L").resize((96, 96)).convert("RGB").save(buffer, format="PNG")
         stylize_van_gogh(registry, cfg, buffer.getvalue(), seed=0)

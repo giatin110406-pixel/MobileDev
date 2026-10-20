@@ -90,6 +90,40 @@ def eye_mask(image: Image.Image, grow: float = 1.35, feather_fraction: float = 0
     return mask.filter(ImageFilter.GaussianBlur(max(1.5, min(rgb.size) * feather_fraction)))
 
 
+# eye corners and lids, brows, nose bridge/tip, mouth corners and lips, chin, face sides
+SHAPE_POINTS = (33, 133, 159, 145, 362, 263, 386, 374, 70, 105, 300, 334, 168, 1, 61, 291, 13, 14,
+                152, 234, 454)
+
+
+def face_points(image: Image.Image) -> np.ndarray | None:
+    """Pixel coordinates of all face-mesh landmarks of the largest face, or None."""
+    import mediapipe as mp
+
+    rgb = image.convert("RGB")
+    with mp.solutions.face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1,
+                                         refine_landmarks=True,
+                                         min_detection_confidence=0.5) as mesh:
+        found = mesh.process(np.asarray(rgb)).multi_face_landmarks
+    if not found:
+        return None
+    width, height = rgb.size
+    return np.array([(p.x * width, p.y * height) for p in found[0].landmark], np.float32)
+
+
+def shape_deviation(reference: np.ndarray, candidate: np.ndarray) -> float:
+    """Largest displacement of the key feature points after removing position, scale and
+    rotation (Procrustes), as a fraction of the distance between the eye centres."""
+    a = reference[list(SHAPE_POINTS)].astype(np.float64)
+    b = candidate[list(SHAPE_POINTS)].astype(np.float64)
+    a0, b0 = a - a.mean(axis=0), b - b.mean(axis=0)
+    u, s, vt = np.linalg.svd(b0.T @ a0)
+    rotation = u @ vt
+    scale = s.sum() / (b0 ** 2).sum()
+    aligned = b0 @ rotation * scale
+    eyes = np.linalg.norm(reference[[33, 133]].mean(axis=0) - reference[[362, 263]].mean(axis=0))
+    return float(np.linalg.norm(aligned - a0, axis=1).max() / max(eyes, 1.0))
+
+
 def feature_mask(image: Image.Image, eye_grow: float = 1.7, feather_fraction: float = 0.012):
     """Eyes, brows and lips (hulls, grown): the parts that must NOT get a paint filter."""
     import cv2
