@@ -7,7 +7,13 @@ import 'package:image/image.dart' as img;
 /// one after another, each value 0..1. The model has no mean/std step.
 ///
 /// Throws [FormatException] when [jpeg] is not an image.
-Float32List preprocessQuestPhoto(Uint8List jpeg, int size) {
+Float32List preprocessQuestPhoto(Uint8List jpeg, int size) =>
+    questPlanes(decodeQuestPhoto(jpeg), size);
+
+/// Decodes [jpeg] at the camera's own resolution.
+///
+/// Throws [FormatException] when it is not an image.
+img.Image decodeQuestPhoto(Uint8List jpeg) {
   final img.Image? decoded;
   try {
     decoded = img.decodeImage(jpeg);
@@ -16,6 +22,11 @@ Float32List preprocessQuestPhoto(Uint8List jpeg, int size) {
     throw const FormatException('not an image');
   }
   if (decoded == null) throw const FormatException('not an image');
+  return decoded;
+}
+
+/// The model input for an already decoded photo; see [preprocessQuestPhoto].
+Float32List questPlanes(img.Image decoded, int size) {
   final scale =
       size / (decoded.width < decoded.height ? decoded.width : decoded.height);
   final width = (decoded.width * scale).round().clamp(size, 1 << 16);
