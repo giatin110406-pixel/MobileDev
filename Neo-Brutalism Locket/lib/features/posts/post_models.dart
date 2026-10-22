@@ -94,6 +94,7 @@ class PendingPost {
     this.questId,
     this.overlay,
     this.recipients,
+    this.embedding,
     this.attempts = 0,
   });
 
@@ -119,6 +120,10 @@ class PendingPost {
 
   /// Friend ids, or null for all friends.
   final List<String>? recipients;
+
+  /// What the photo shows, for search (base64 float16, see
+  /// lib/features/search/photo_embedding.dart); null when it could not be made.
+  final String? embedding;
   final DateTime createdAt;
 
   /// Failed tries that were not just a missing connection.
@@ -143,6 +148,7 @@ class PendingPost {
     questId: questId,
     overlay: overlay,
     recipients: recipients,
+    embedding: embedding,
     attempts: attempts + 1,
   );
 
@@ -158,6 +164,7 @@ class PendingPost {
     'questId': questId,
     'overlay': overlay,
     'recipients': recipients,
+    'embedding': embedding,
     'createdAt': createdAt.toIso8601String(),
     'attempts': attempts,
   };
@@ -174,6 +181,7 @@ class PendingPost {
     questId: json['questId'] as String?,
     overlay: (json['overlay'] as Map?)?.cast<String, dynamic>(),
     recipients: (json['recipients'] as List?)?.cast<String>(),
+    embedding: json['embedding'] as String?,
     createdAt: DateTime.parse(json['createdAt'] as String),
     attempts: json['attempts'] as int? ?? 0,
   );

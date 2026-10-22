@@ -1,8 +1,7 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
+import 'package:neo_brutalism_locket/features/image_engine/scene_guess.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 import 'package:neo_brutalism_locket/features/image_engine/van_gogh_style_engine.dart';
@@ -12,6 +11,9 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 /// a style-prediction net turns the reference painting into a 100-d vector,
 /// and a style-transform net applies that vector to the photo.
 ///
+/// The reference painting follows the kind of photo ([vanGoghStylesByScene]);
+/// Starry Night only for skies, or when the scene could not be guessed.
+///
 /// Any failure (missing asset, unexpected tensors, runtime error) falls back
 /// to [fallback] so the capture flow never breaks.
 class MagentaVanGoghBackend implements VanGoghBackend {
@@ -20,14 +22,21 @@ class MagentaVanGoghBackend implements VanGoghBackend {
     this.transformModelPath = 'assets/models/magenta_style_transform.tflite',
     this.styleImagePath = 'assets/styles/van_gogh_starry_night.jpg',
     this.styleStrength = 0.85,
+    this.guessScene = guessPhotoScene,
     this.fallback = const MockVanGoghBackend(),
   });
 
   final String predictModelPath;
   final String transformModelPath;
+
+  /// Used when the scene is unknown.
   final String styleImagePath;
 
-  /// 0..1 blend of stylized output over the original. Lower keeps faces safer.
+  /// Null when the guess failed; [styleImagePath] is used then.
+  final Future<PhotoScene?> Function(Uint8List photo) guessScene;
+
+  /// 0..1 share of the painting's light and dark applied to the photo.
+  /// Lower keeps faces safer.
   final double styleStrength;
   final VanGoghBackend fallback;
 
@@ -39,7 +48,10 @@ class MagentaVanGoghBackend implements VanGoghBackend {
     try {
       final predictModel = await rootBundle.load(predictModelPath);
       final transformModel = await rootBundle.load(transformModelPath);
-      final styleImage = await rootBundle.load(styleImagePath);
+      final scene = await guessScene(originalBytes);
+      final styleImage = await rootBundle.load(
+        scene == null ? styleImagePath : vanGoghStyleFor(scene, originalBytes),
+      );
       final png = await compute(
         _runMagenta,
         _MagentaRequest(
@@ -69,6 +81,43 @@ class MagentaVanGoghBackend implements VanGoghBackend {
       return StyleResult(result.png, result.source, note: 'magenta:failed');
     }
   }
+}
+
+/// Public-domain paintings, 256 px (server/styles/van_gogh/SOURCES.md). Soft
+/// paintings for faces so skin does not turn into blue swirls.
+const vanGoghStylesByScene = <PhotoScene, List<String>>{
+  PhotoScene.portrait: [
+    'assets/styles/van_gogh_almond_blossom.jpg',
+    'assets/styles/van_gogh_irises.jpg',
+  ],
+  PhotoScene.group: [
+    'assets/styles/van_gogh_almond_blossom.jpg',
+    'assets/styles/van_gogh_irises.jpg',
+  ],
+  PhotoScene.day: [
+    'assets/styles/van_gogh_harvest.jpg',
+    'assets/styles/van_gogh_sunflowers.jpg',
+    'assets/styles/van_gogh_wheatfield_cypresses.jpg',
+    'assets/styles/van_gogh_bedroom_arles.jpg',
+  ],
+  PhotoScene.night: [
+    'assets/styles/van_gogh_cafe_terrace_night.jpg',
+    'assets/styles/van_gogh_starry_night_rhone.jpg',
+  ],
+  PhotoScene.sky: [
+    'assets/styles/van_gogh_starry_night.jpg',
+    'assets/styles/van_gogh_wheatfield_cypresses.jpg',
+  ],
+};
+
+/// The painting for [scene]; the same photo always gets the same one.
+String vanGoghStyleFor(PhotoScene scene, Uint8List photo) {
+  final choices = vanGoghStylesByScene[scene]!;
+  var hash = photo.length;
+  for (var i = 0; i < photo.length; i += 4093) {
+    hash = (hash * 31 + photo[i]) & 0x3fffffff;
+  }
+  return choices[hash % choices.length];
 }
 
 class _MagentaRequest {
@@ -161,13 +210,16 @@ Uint8List _transform(_MagentaRequest request, Float32List bottleneck) {
       for (var x = 0; x < width; x++) {
         final o = (y * width + x) * 3;
         final original = input.getPixel(x, y);
-        result.setPixelRgb(
-          x,
-          y,
-          _blend(output[o], original.r, s),
-          _blend(output[o + 1], original.g, s),
-          _blend(output[o + 2], original.b, s),
+        final painted = paintedPixel(
+          output[o],
+          output[o + 1],
+          output[o + 2],
+          original.r,
+          original.g,
+          original.b,
+          s,
         );
+        result.setPixelRgb(x, y, painted.r, painted.g, painted.b);
       }
     }
     return Uint8List.fromList(img.encodePng(result, level: 3));
@@ -221,10 +273,29 @@ Float32List _fromBytes(Uint8List bytes) {
   return copy.buffer.asFloat32List(0, copy.length ~/ 4);
 }
 
-int _blend(double stylized, num original, double strength) {
-  final styled = stylized.clamp(0.0, 1.0) * 255.0;
-  return math.max(
-    0,
-    math.min(255, (styled * strength + original * (1 - strength)).round()),
+/// One output pixel: only the painting's light and dark (its brush strokes)
+/// is taken, the colour stays the photo's. The model's own colours come from
+/// the reference painting (blue faces from Starry Night), so they are dropped:
+/// the photo's pixel moves by the change in brightness, [strength] of it.
+/// [sr]..[sb] are the model output (0..1), [r]..[b] the photo (0..255).
+@visibleForTesting
+({int r, int g, int b}) paintedPixel(
+  double sr,
+  double sg,
+  double sb,
+  num r,
+  num g,
+  num b,
+  double strength,
+) {
+  double luma(num red, num green, num blue) =>
+      0.299 * red + 0.587 * green + 0.114 * blue;
+  final painted = luma(
+    sr.clamp(0.0, 1.0) * 255.0,
+    sg.clamp(0.0, 1.0) * 255.0,
+    sb.clamp(0.0, 1.0) * 255.0,
   );
+  final shift = (painted - luma(r, g, b)) * strength;
+  int channel(num value) => (value + shift).round().clamp(0, 255);
+  return (r: channel(r), g: channel(g), b: channel(b));
 }

@@ -100,15 +100,19 @@ class StylizeClient {
   Future<Uint8List> stylize(
     Uint8List bytes, {
     String style = 'van_gogh',
+    String? scene,
     StyleProgress? onProgress,
   }) async {
     final deadline = DateTime.now().add(timeout);
     final request = http.MultipartRequest('POST', _uri('/v1/jobs'))
       ..headers.addAll(_headers)
-      ..fields['style'] = style
-      ..files.add(
-        http.MultipartFile.fromBytes('image', bytes, filename: 'photo.jpg'),
-      );
+      ..fields['style'] = style;
+    // The phone's guess of the kind of photo; the server picks its reference
+    // painting from it (older servers ignore the field).
+    if (scene != null) request.fields['scene'] = scene;
+    request.files.add(
+      http.MultipartFile.fromBytes('image', bytes, filename: 'photo.jpg'),
+    );
     final submitted = await _guard(() async {
       final streamed = await _client
           .send(request)

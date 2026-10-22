@@ -48,6 +48,11 @@ import 'package:neo_brutalism_locket/features/friends/friends_widgets.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:neo_brutalism_locket/features/camera/camera_experience.dart';
+import 'package:neo_brutalism_locket/core/app_log.dart';
+import 'package:neo_brutalism_locket/features/search/embedding_backfill.dart';
+import 'package:neo_brutalism_locket/features/search/photo_search.dart';
+import 'package:neo_brutalism_locket/features/search/search_backend.dart';
+import 'package:neo_brutalism_locket/features/search/photo_embedding.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
@@ -203,6 +208,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   PostOutbox? _outbox;
   MediaUrls? _mediaUrls;
   Timer? _outboxTimer;
+
+  /// Gives my older posts their search vectors, once, a while after start.
+  Timer? _backfillTimer;
+
+  /// Photo search in the history tab (signed in, real backend only).
+  PhotoSearch? _photoSearch;
   StreamSubscription<Uri>? _linkSubscription;
 
   /// True with a real account: friends come from the server.
@@ -289,8 +300,30 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       )..addListener(_onPostsChanged);
       _outbox =
           widget.outbox ??
-          PostOutbox(repository: posts.repository, userId: session.user.id);
+          PostOutbox(
+            repository: posts.repository,
+            userId: session.user.id,
+            embedPhoto: embedPhotoForSearch,
+          );
       _mediaUrls = widget.mediaUrls ?? SupabaseMediaUrls();
+      if (widget.postsRepository == null && Backend.isReady) {
+        final backfill = EmbeddingBackfill(
+          SupabaseBackfillSource(myId: session.user.id),
+          embed: embedPhotoForSearch,
+        );
+        _backfillTimer = Timer(const Duration(seconds: 30), backfill.run);
+        _photoSearch = PhotoSearch(
+          myId: session.user.id,
+          backend: SupabaseSearchBackend(myId: session.user.id),
+        );
+        // The Vietnamese pack (ML Kit, ~30 MB) cannot ship in the app: fetch
+        // it quietly on Wi-Fi so it is there by the first search.
+        unawaited(
+          _photoSearch!
+              .prepareLanguagePack(wifiOnly: true)
+              .catchError((Object e) => AppLog.warn('photo_search', e)),
+        );
+      }
       WidgetsBinding.instance.addObserver(this);
       _syncPosts();
       _outboxTimer = Timer.periodic(
@@ -313,6 +346,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       widget.session?.beforeSignOut = null;
     }
     _outboxTimer?.cancel();
+    _backfillTimer?.cancel();
+    _photoSearch?.close();
     _postsStore
       ?..removeListener(_onPostsChanged)
       ..removeListener(_onPostsLoaded)
@@ -1525,6 +1560,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           repository: _repository,
                           styleEngineFactory: _styleEngineFactory,
                           questVerifier: _questVerifier,
+                          embedPhoto: _online ? null : embedPhotoForSearch,
                           onPhotoChanged: _onPhotoChanged,
                           onOpenFeed: _openFeed,
                           onOpenQuestSheet: _openQuestSheet,
@@ -1991,6 +2027,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                   failed: posts?.failed ?? false,
                   onLoadMore: posts?.loadMore,
                   onRefresh: _syncPosts,
+                  search: _photoSearch,
                 ),
         ),
       ],

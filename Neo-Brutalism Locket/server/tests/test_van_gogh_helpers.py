@@ -90,3 +90,16 @@ def test_upscale_check_catches_one_garbage_block():
     a = np.asarray(big).copy()
     a[440:600, 360:620] = rng.integers(0, 255, (160, 260, 3))
     assert oc.upscale_broken(Image.fromarray(a), small)
+
+
+def test_phone_scene_replaces_the_rules_but_not_a_face():
+    # a lit street at night is "bright" for the rules; the phone saw night
+    assert pick_reference(CFG, False, 0.6, scene="night") == "night.jpg"
+    assert pick_reference(CFG, False, 0.6, sky=0.1, scene="sky") == "sky.jpg"
+    # a white wall at the top looks like sky to the rules; the phone saw a room
+    assert pick_reference(CFG, False, 0.6, sky=0.9, scene="day") == "day.jpg"
+    # a face found by the server still means the portrait set
+    assert pick_reference(CFG, True, 0.2, 0, scene="night") == "a.jpg"
+    # portrait/group without a face, unknown or missing values: the old rules
+    for scene in ("portrait", "group", "beach", None):
+        assert pick_reference(CFG, False, 0.2, scene=scene) == "night.jpg"

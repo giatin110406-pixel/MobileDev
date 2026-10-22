@@ -85,10 +85,15 @@ class NeoPhoto {
 }
 
 class PhotoRepository {
+  PhotoRepository({this.folder});
+
+  /// Where the photos folder goes (the app's documents folder by default).
+  final Directory? folder;
+
   static const _metadataKey = 'neo_photos_v1';
 
   Future<Directory> _photoDirectory() async {
-    final documents = await getApplicationDocumentsDirectory();
+    final documents = folder ?? await getApplicationDocumentsDirectory();
     final directory = Directory(
       '${documents.path}${Platform.pathSeparator}photos',
     );
@@ -164,5 +169,34 @@ class PhotoRepository {
         // Already gone.
       }
     }
+    final vectors = await loadEmbeddings();
+    if (vectors.remove(photo.id) != null) await _saveEmbeddings(vectors);
   }
+
+  /// Search vectors of the shots on this phone (photo id -> base64 float16,
+  /// see lib/features/search/photo_embedding.dart), in one file next to the
+  /// photos: too big for SharedPreferences.
+  Future<File> _vectorsFile() async => File(
+    '${(await _photoDirectory()).path}${Platform.pathSeparator}search_vectors.json',
+  );
+
+  Future<Map<String, String>> loadEmbeddings() async {
+    try {
+      final file = await _vectorsFile();
+      if (!file.existsSync()) return {};
+      return (jsonDecode(await file.readAsString()) as Map<String, dynamic>)
+          .cast<String, String>();
+    } catch (_) {
+      return {}; // a damaged file is rebuilt as shots are taken
+    }
+  }
+
+  Future<void> saveEmbedding(String photoId, String embedding) async {
+    final vectors = await loadEmbeddings();
+    vectors[photoId] = embedding;
+    await _saveEmbeddings(vectors);
+  }
+
+  Future<void> _saveEmbeddings(Map<String, String> vectors) async =>
+      (await _vectorsFile()).writeAsString(jsonEncode(vectors), flush: true);
 }

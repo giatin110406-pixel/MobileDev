@@ -251,6 +251,53 @@ void main() {
       expect(filesInOutbox(), 0, reason: 'files are removed once sent');
     });
 
+    test('the search vector is made from the shot before its style, and '
+        'survives the app being closed', () async {
+      final seen = <List<int>>[];
+      final original = File('${dir.path}/original.jpg')
+        ..writeAsBytesSync([1, 2, 3]);
+      final box = PostOutbox(
+        repository: posts,
+        userId: 'u1',
+        folder: dir,
+        encode: fakeEncode,
+        embedPhoto: (photo) async {
+          seen.add(photo);
+          return 'VECTOR';
+        },
+      );
+      await box.enqueue(
+        source: source,
+        caption: '',
+        style: StyleType.vanGogh,
+        original: original,
+      );
+      expect(seen.single, [1, 2, 3]);
+
+      final reopened = PostOutbox(
+        repository: posts,
+        userId: 'u1',
+        folder: dir,
+        encode: fakeEncode,
+      );
+      expect((await reopened.pending()).single.embedding, 'VECTOR');
+      await reopened.flush();
+      expect(posts.sent.single.embedding, 'VECTOR');
+    });
+
+    test('no vector when none can be made; the post still goes out', () async {
+      final box = PostOutbox(
+        repository: posts,
+        userId: 'u1',
+        folder: dir,
+        encode: fakeEncode,
+        embedPhoto: (_) async => null,
+      );
+      await box.enqueue(source: source, caption: '');
+      expect(await box.flush(), 1);
+      expect(posts.sent.single.embedding, isNull);
+    });
+
     test('pixel-art posts are encoded losslessly', () async {
       final box = outbox();
       await box.enqueue(

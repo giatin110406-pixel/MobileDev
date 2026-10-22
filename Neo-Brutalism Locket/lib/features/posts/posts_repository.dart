@@ -138,21 +138,29 @@ class SupabasePostsRepository implements PostsRepository {
         ),
       );
     }
-    await _db.rpc(
-      'create_post',
-      params: {
-        'p_id': post.id,
-        'p_kind': post.kind,
-        'p_media_path': mediaPath,
-        'p_thumb_path': thumbPath,
-        'p_caption': post.caption,
-        'p_style': post.style?.name,
-        'p_quest_id': post.questId,
-        'p_overlay': post.overlay,
-        'p_recipients': post.recipients,
-        'p_original_path': originalPath,
-      },
-    );
+    final params = <String, Object?>{
+      'p_id': post.id,
+      'p_kind': post.kind,
+      'p_media_path': mediaPath,
+      'p_thumb_path': thumbPath,
+      'p_caption': post.caption,
+      'p_style': post.style?.name,
+      'p_quest_id': post.questId,
+      'p_overlay': post.overlay,
+      'p_recipients': post.recipients,
+      'p_original_path': originalPath,
+      if (post.embedding != null) 'p_embedding': post.embedding,
+    };
+    try {
+      await _db.rpc('create_post', params: params);
+    } on sb.PostgrestException catch (error) {
+      // A database without 20261022000001_post_embeddings has no
+      // p_embedding: post without the vector rather than not at all.
+      if (error.code != 'PGRST202' || !params.containsKey('p_embedding')) {
+        rethrow;
+      }
+      await _db.rpc('create_post', params: params..remove('p_embedding'));
+    }
   });
 
   Future<T> _guard<T>(Future<T> Function() call) async {

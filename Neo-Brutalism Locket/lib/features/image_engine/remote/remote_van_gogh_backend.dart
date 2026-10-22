@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:neo_brutalism_locket/features/image_engine/magenta_van_gogh_backend.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/remote_stylize.dart';
+import 'package:neo_brutalism_locket/features/image_engine/scene_guess.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_server_config.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
 import 'package:neo_brutalism_locket/features/image_engine/van_gogh_style_engine.dart';
@@ -16,6 +17,7 @@ class RemoteVanGoghBackend implements VanGoghBackend {
     this.httpClient,
     this.fallback = const MagentaVanGoghBackend(),
     this.pollInterval = const Duration(seconds: 1),
+    this.guessScene = guessPhotoScene,
   });
 
   final StylizeServerConfigStore store;
@@ -23,14 +25,19 @@ class RemoteVanGoghBackend implements VanGoghBackend {
   final VanGoghBackend fallback;
   final Duration pollInterval;
 
+  /// Sent to the server as a hint for its reference painting; null = no hint.
+  final Future<PhotoScene?> Function(Uint8List photo) guessScene;
+
   @override
   Future<StyleResult> process(
     Uint8List originalBytes, {
     StyleProgress? onProgress,
   }) async {
+    final scene = await guessScene(originalBytes);
     final attempt = await tryRemoteStylize(
       originalBytes,
       style: 'van_gogh',
+      scene: scene?.name,
       store: store,
       httpClient: httpClient,
       pollInterval: pollInterval,

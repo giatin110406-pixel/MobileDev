@@ -122,6 +122,8 @@ void main() {
       'legal_text.dart',
       'shop_catalog.dart',
       'social_repository.dart',
+      // Debug builds only, for the developer (archive-ai-search-plan.md A6).
+      'search_model_check.dart',
     };
 
     // A literal given straight to something the user reads.

@@ -2547,4 +2547,41 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get hcUnknown =>
       'Không có thông tin rung trên thiết bị này (chỉ Android cung cấp).';
+
+  @override
+  String get searchHint => 'Tìm ảnh: “chó ở biển”, “với Lan năm ngoái”…';
+
+  @override
+  String get searchNeedsModel =>
+      'Để tìm bằng tiếng Việt, máy cần gói tiếng Việt một lần (khoảng 30 MB). App tự tải gói này khi có Wi-Fi; bạn cũng có thể tải ngay bây giờ. Sau đó tìm được cả khi không có mạng, và câu bạn gõ không rời khỏi điện thoại.';
+
+  @override
+  String get searchDownload => 'TẢI GÓI TIẾNG VIỆT';
+
+  @override
+  String get searchDownloading => 'ĐANG TẢI GÓI TIẾNG VIỆT…';
+
+  @override
+  String get searchDownloadFailed =>
+      'Tải không được. Kiểm tra mạng rồi thử lại.';
+
+  @override
+  String get searchNoResults => 'Không tìm thấy ảnh nào.';
+
+  @override
+  String get searchFailed => 'Tìm không được. Thử lại sau.';
+
+  @override
+  String get searchMine => 'CỦA TÔI';
+
+  @override
+  String get searchClear => 'Xóa tìm kiếm';
+
+  @override
+  String searchResults(int count) {
+    return '$count ẢNH';
+  }
+
+  @override
+  String get searchMaybe => 'CÓ THỂ LIÊN QUAN';
 }

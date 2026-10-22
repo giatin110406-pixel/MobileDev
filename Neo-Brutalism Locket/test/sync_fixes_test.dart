@@ -221,5 +221,21 @@ void main() {
       expect(File(drop.processedPath!).existsSync(), isFalse);
       expect(File(keep.originalPath).existsSync(), isTrue);
     });
+
+    test('search vectors are kept per shot and forgotten with it', () async {
+      final repository = PhotoRepository(folder: dir);
+      final keep = shot('1');
+      final drop = shot('2');
+      await repository.upsert(keep);
+      await repository.upsert(drop);
+      await repository.saveEmbedding('1', 'V1');
+      await repository.saveEmbedding('2', 'V2');
+      expect(await PhotoRepository(folder: dir).loadEmbeddings(), {
+        '1': 'V1',
+        '2': 'V2',
+      });
+      await repository.delete(drop);
+      expect(await repository.loadEmbeddings(), {'1': 'V1'});
+    });
   });
 }
