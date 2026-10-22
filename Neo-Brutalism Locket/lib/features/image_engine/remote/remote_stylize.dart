@@ -18,6 +18,7 @@ class RemoteAttempt {
 Future<RemoteAttempt> tryRemoteStylize(
   Uint8List bytes, {
   required String style,
+  String? scene,
   StylizeServerConfigStore store = const StylizeServerConfigStore(),
   http.Client? httpClient,
   Duration pollInterval = const Duration(seconds: 1),
@@ -40,6 +41,7 @@ Future<RemoteAttempt> tryRemoteStylize(
       final png = await client.stylize(
         bytes,
         style: style,
+        scene: scene,
         onProgress: onProgress,
       );
       return RemoteAttempt.success(png);

@@ -174,3 +174,20 @@ def test_health_reports_why_the_models_could_not_load():
             assert "no space left on device" in body["warmup_error"]
     finally:
         del fake_runner.warmup
+
+
+def test_scene_hint_reaches_the_runner():
+    seen = {}
+
+    def runner(style, data, params, stage_cb):
+        seen.update(params)
+        return fake_runner(style, data, params, stage_cb)
+
+    with TestClient(create_app(runner=runner, token=TOKEN)) as c:
+        job_id = c.post("/v1/jobs", headers=HEADERS, data={"style": "van_gogh", "scene": "night"},
+                        files={"image": ("a.png", png_bytes(), "image/png")}).json()["job_id"]
+        assert wait_done(c, job_id)["state"] == "done"
+        assert seen["scene"] == "night"
+        job_id = submit(c).json()["job_id"]
+        wait_done(c, job_id)
+        assert seen["scene"] is None

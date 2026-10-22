@@ -4537,6 +4537,72 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Không có thông tin rung trên thiết bị này (chỉ Android cung cấp).'**
   String get hcUnknown;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm ảnh: “chó ở biển”, “với Lan năm ngoái”…'**
+  String get searchHint;
+
+  /// No description provided for @searchNeedsModel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để tìm bằng tiếng Việt, máy cần gói tiếng Việt một lần (khoảng 30 MB). App tự tải gói này khi có Wi-Fi; bạn cũng có thể tải ngay bây giờ. Sau đó tìm được cả khi không có mạng, và câu bạn gõ không rời khỏi điện thoại.'**
+  String get searchNeedsModel;
+
+  /// No description provided for @searchDownload.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẢI GÓI TIẾNG VIỆT'**
+  String get searchDownload;
+
+  /// No description provided for @searchDownloading.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG TẢI GÓI TIẾNG VIỆT…'**
+  String get searchDownloading;
+
+  /// No description provided for @searchDownloadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải không được. Kiểm tra mạng rồi thử lại.'**
+  String get searchDownloadFailed;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy ảnh nào.'**
+  String get searchNoResults;
+
+  /// No description provided for @searchFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm không được. Thử lại sau.'**
+  String get searchFailed;
+
+  /// No description provided for @searchMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'CỦA TÔI'**
+  String get searchMine;
+
+  /// No description provided for @searchClear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa tìm kiếm'**
+  String get searchClear;
+
+  /// No description provided for @searchResults.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ẢNH'**
+  String searchResults(int count);
+
+  /// No description provided for @searchMaybe.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÓ THỂ LIÊN QUAN'**
+  String get searchMaybe;
 }
 
 class _AppLocalizationsDelegate

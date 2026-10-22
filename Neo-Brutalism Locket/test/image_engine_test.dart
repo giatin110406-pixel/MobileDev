@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image/image.dart' as img;
 import 'package:neo_brutalism_locket/features/image_engine/pixel_8bit_style_engine.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/remote_van_gogh_backend.dart';
+import 'package:neo_brutalism_locket/features/image_engine/scene_guess.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_result.dart';
@@ -153,11 +154,12 @@ void main() {
       img.encodePng(_solidImage(4, 4, 1, 2, 3)),
     );
 
-    RemoteVanGoghBackend backendWith(http.Client client) =>
+    RemoteVanGoghBackend backendWith(http.Client client, {PhotoScene? scene}) =>
         RemoteVanGoghBackend(
           httpClient: client,
           fallback: const MockVanGoghBackend(),
           pollInterval: Duration.zero,
+          guessScene: (_) async => scene,
         );
 
     void configure({bool set = true}) => SharedPreferences.setMockInitialValues(
@@ -203,6 +205,28 @@ void main() {
       expect(result.png, equals(laptopPng));
       expect(result.note, isNull);
       expect(stages, contains('painting'));
+    });
+
+    test('sends the phone\'s scene guess, and none when unknown', () async {
+      configure();
+      final sent = <String>[];
+      final spy = MockClient((request) async {
+        if (request.method == 'POST') {
+          sent.add(latin1.decode(request.bodyBytes));
+          return http.Response(jsonEncode({'job_id': 'abc'}), 202);
+        }
+        if (request.url.path.endsWith('/result')) {
+          return http.Response.bytes(laptopPng, 200);
+        }
+        return http.Response(jsonEncode({'state': 'done'}), 200);
+      });
+
+      await backendWith(spy, scene: PhotoScene.night).process(photoBytes);
+      await backendWith(spy).process(photoBytes);
+
+      expect(sent, hasLength(2));
+      expect(sent[0], contains('name="scene"\r\n\r\nnight'));
+      expect(sent[1], isNot(contains('name="scene"')));
     });
 
     test('survives a few lost polls while the laptop keeps painting', () async {

@@ -16,13 +16,22 @@ def _noop(_stage: str, _fraction: float) -> None:
     return None
 
 
+# The phone's scene guess (lib/features/image_engine/scene_guess.dart) -> reference set. It
+# replaces the brightness / sky rules, which were measured worse (eval.export_scene_labels).
+PHONE_SCENES = {"night": "dark_scene", "sky": "sky", "day": "bright_scene"}
+
+
 def pick_reference(cfg: dict, has_face: bool, luma: float, seed: int = 0,
-                   sky: float = 0.0) -> str:
+                   sky: float = 0.0, scene: str | None = None) -> str:
     """Scene type -> reference set; a set is a list, picked by seed (same photo, same painting).
-    The sky set (Starry Night) only when `sky_threshold` is set and the top is mostly sky."""
+    A found face always means the portrait set. Otherwise the phone's `scene` decides when it
+    sent one; without it, the sky set (Starry Night) only when `sky_threshold` is set and the
+    top is mostly sky."""
     refs = cfg["references"]
     if has_face:
         key = "portrait"
+    elif scene in PHONE_SCENES and PHONE_SCENES[scene] in refs:
+        key = PHONE_SCENES[scene]
     elif luma < cfg["dark_luma_threshold"]:
         key = "dark_scene"
     elif cfg.get("sky_threshold") is not None and sky >= cfg["sky_threshold"]:
@@ -205,7 +214,8 @@ def identity_blend(painted: Image.Image, source: Image.Image, faces, strength: f
 
 
 def stylize_van_gogh(registry, cfg: dict, data: bytes, *, seed: int | None = None,
-                     stage_cb: StageCallback = _noop, timings: dict | None = None) -> Image.Image:
+                     scene: str | None = None, stage_cb: StageCallback = _noop,
+                     timings: dict | None = None) -> Image.Image:
     timings = timings if timings is not None else {}
 
     def lap(name: str, start: float) -> None:
@@ -224,7 +234,7 @@ def stylize_van_gogh(registry, cfg: dict, data: bytes, *, seed: int | None = Non
     sky = preprocess.sky_fraction(source) if cfg.get("sky_threshold") is not None else 0.0
     # picked by the photo's hash, not `seed`: the eval runs every photo with one fixed seed
     reference_name = pick_reference(cfg, bool(faces), preprocess.mean_luma(source),
-                                    preprocess.seed_from_bytes(data), sky)
+                                    preprocess.seed_from_bytes(data), sky, scene)
     timings["reference"] = reference_name
     reference = registry.ip_embeds(reference_name, _load_reference(cfg, reference_name))
     lineart = preprocess.make_lineart(registry, source)
