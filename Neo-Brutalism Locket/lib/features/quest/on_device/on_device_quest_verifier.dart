@@ -25,7 +25,7 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
   OnDeviceQuestVerifier({
     QuestImageEncoder? encoder,
     Future<QuestLabels> Function()? loadLabels,
-  }) : _encoder = encoder ?? OrtQuestImageEncoder(),
+  }) : _encoder = encoder ?? OrtQuestImageEncoder.shared,
        _loadLabels = loadLabels ?? QuestLabels.load;
 
   final QuestImageEncoder _encoder;
@@ -36,7 +36,7 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
   String? lastDiagnosis;
 
   @override
-  Future<bool> check(Uint8List jpeg, Quest quest) async {
+  Future<QuestVerdict> check(Uint8List jpeg, Quest quest) async {
     lastDiagnosis = null;
     try {
       final labels = await (_labels ??= _loadLabels());
@@ -47,7 +47,7 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
       final planes = seen.planes;
       if (planes == null) {
         _remember('screen grid ${seen.moire.toStringAsFixed(1)}');
-        return false;
+        return QuestVerdict.screenRecapture;
       }
       final embedding = await _encoder.encode(planes, labels.inputSize);
       final score = scoreQuestPhoto(embedding, labels, quest.id);
@@ -55,7 +55,8 @@ class OnDeviceQuestVerifier implements QuestVerifier, QuestDiagnostics {
         '${score.top} ${(score.score * 100).round()}%'
         ' · grid ${seen.moire.toStringAsFixed(1)}',
       );
-      return score.match;
+      if (score.screen) return QuestVerdict.screenRecapture;
+      return score.match ? QuestVerdict.match : QuestVerdict.wrongSubject;
     } on QuestCheckUnavailable {
       rethrow;
     } on FormatException catch (error) {

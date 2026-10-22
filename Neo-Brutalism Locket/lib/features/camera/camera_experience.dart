@@ -343,9 +343,9 @@ class CameraTabState extends State<CameraTab> {
       final day = widget.player.today;
       final shot = await camera.takePicture();
       final bytes = await compute(cropToSquareJpeg, await shot.readAsBytes());
-      final bool match;
+      final QuestVerdict verdict;
       try {
-        match = await widget.questVerifier.check(bytes, quest);
+        verdict = await widget.questVerifier.check(bytes, quest);
       } on QuestCheckUnavailable catch (error) {
         if (mounted) {
           _notify(
@@ -354,15 +354,18 @@ class CameraTabState extends State<CameraTab> {
         }
         return;
       }
-      if (!match) {
+      if (verdict != QuestVerdict.match) {
         await widget.player.recordFailedAttempt();
         final left = widget.player.attemptsLeft;
         if (left == 0) {
           if (mounted) setState(() => _questModeQuest = null);
           await _showOutOfTries();
         } else if (mounted) {
+          final l10n = AppLocalizations.of(context);
           _notify(
-            AppLocalizations.of(context).wrongTriesLeft(left, _debugSuffix()),
+            verdict == QuestVerdict.screenRecapture
+                ? l10n.screenTriesLeft(left, _debugSuffix())
+                : l10n.wrongTriesLeft(left, _debugSuffix()),
           );
         }
         return;

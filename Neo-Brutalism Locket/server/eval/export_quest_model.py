@@ -26,7 +26,7 @@ import open_clip
 import torch
 
 from eval.quest_catalog import read_quests
-from locket_server.verify import MATCH_SCORE, TEMPLATES, build_labels
+from locket_server.verify import MATCH_SCORE, SCREEN_REJECT, TEMPLATES, build_labels, screen_labels
 
 MODEL = "MobileCLIP2-S0"
 PRETRAINED = "dfndr2b"
@@ -127,7 +127,8 @@ def main() -> None:
             if label not in index:
                 index[label] = len(order)
                 order.append(label)
-        per_quest[quest_id] = {"positives": len(positives), "labels": [index[l] for l in labels]}
+        per_quest[quest_id] = {"positives": len(positives), "labels": [index[l] for l in labels],
+                               "screens": len(screen_labels(positives))}
 
     with torch.no_grad():
         prompts = [t.format(label) for label in order for t in TEMPLATES]
@@ -142,6 +143,7 @@ def main() -> None:
         "dim": int(feats.shape[1]),
         "logitScale": float(model.logit_scale.exp()),
         "matchScore": MATCH_SCORE,
+        "screenReject": SCREEN_REJECT,
         "labels": order,
         "quests": per_quest,
     }, ensure_ascii=False, indent=1), encoding="utf-8")

@@ -1931,6 +1931,11 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.';
 
   @override
+  String screenTriesLeft(int left, String debug) {
+    return 'ĐÂY LÀ ẢNH CHỤP MÀN HÌNH, HÃY CHỤP VẬT THẬT · CÒN $left LƯỢT THỬ$debug';
+  }
+
+  @override
   String wrongTriesLeft(int left, String debug) {
     return 'KHÔNG ĐÚNG · CÒN $left LƯỢT THỬ$debug';
   }

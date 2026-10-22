@@ -206,7 +206,7 @@ void main() {
       final encoder = FakeEncoder(vectorOf(dog['embedding'] as List<dynamic>));
       expect(
         await verifier(encoder).check(photo(dog), quest('px_dog')),
-        isTrue,
+        QuestVerdict.match,
       );
       expect(encoder.lastSize, bank.inputSize);
       expect(encoder.lastLength, 3 * bank.inputSize * bank.inputSize);
@@ -248,7 +248,7 @@ void main() {
         await verifier(
           encoder,
         ).check(photo(wrong), quest(wrong['quest'] as String)),
-        isFalse,
+        QuestVerdict.wrongSubject,
       );
     });
 

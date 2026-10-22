@@ -14,6 +14,9 @@ class OrtQuestImageEncoder implements QuestImageEncoder {
   OrtQuestImageEncoder({OnnxRuntime? runtime})
     : _runtime = runtime ?? OnnxRuntime();
 
+  /// One loaded model for the whole app (the quest check and the scene guess).
+  static final shared = OrtQuestImageEncoder();
+
   final OnnxRuntime _runtime;
   Future<OrtSession>? _session;
 

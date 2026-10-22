@@ -110,7 +110,8 @@ def main() -> None:
             for i, _ in items:
                 logits = meta["logitScale"] * (tf @ feats[i])
                 e = np.exp(logits - logits.max())
-                out[(quest, i)] = decide((e / e.sum()).tolist(), names, n_pos).match
+                out[(quest, i)] = decide((e / e.sum()).tolist(), names, n_pos,
+                                      meta["quests"][quest].get("screens", 0)).match
         return out
 
     reference = None

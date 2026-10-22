@@ -67,7 +67,8 @@ def main() -> None:
         names = [meta["labels"][k] for k in ids]
         logits = meta["logitScale"] * (text[ids] @ embedding)
         e = np.exp(logits - logits.max())
-        verdict = decide((e / e.sum()).tolist(), names, meta["quests"][quest]["positives"])
+        verdict = decide((e / e.sum()).tolist(), names, meta["quests"][quest]["positives"],
+                         meta["quests"][quest].get("screens", 0))
         grid = planes[0][:, 16::32, 16::32]  # 8 x 8 samples per channel
         goldens.append({
             "file": name, "quest": quest, "shouldShow": positive,

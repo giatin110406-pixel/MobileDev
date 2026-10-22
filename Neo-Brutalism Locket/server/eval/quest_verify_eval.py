@@ -28,7 +28,7 @@ import torch
 from PIL import Image
 
 from eval.quest_catalog import read_quests
-from locket_server.verify import MATCH_SCORE, TEMPLATES, build_labels, decide
+from locket_server.verify import MATCH_SCORE, TEMPLATES, build_labels, decide, screen_labels
 
 # quest id -> COCO class index (0-based, the 80-class order)
 COCO_QUESTS = {
@@ -130,7 +130,7 @@ def evaluate(model_spec: str, images, cases, quests, device: str):
             for i, is_pos in items:
                 logits = model.logit_scale.exp() * feats[i] @ tf.T
                 probs = logits.softmax(dim=-1).tolist()
-                match = decide(probs, labels, len(positives)).match
+                match = decide(probs, labels, len(positives), len(screen_labels(positives))).match
                 if is_pos:
                     tp += match; fn += not match
                 else:

@@ -31,11 +31,24 @@ enum QuestCheckError {
   deviceFailed,
 }
 
+/// What a quest check decided. Both refusals cost a try, but the player is
+/// told apart why.
+enum QuestVerdict {
+  /// The photo shows the subject.
+  match,
+
+  /// A real photo of something else.
+  wrongSubject,
+
+  /// A photo of a screen or a print: someone is cheating.
+  screenRecapture,
+}
+
 /// Decides whether a photo shows the quest subject.
 abstract interface class QuestVerifier {
-  /// True when [jpeg] shows [quest]'s subject. Throws [QuestCheckUnavailable]
+  /// What [jpeg] shows with respect to [quest]. Throws [QuestCheckUnavailable]
   /// when there is no answer.
-  Future<bool> check(Uint8List jpeg, Quest quest);
+  Future<QuestVerdict> check(Uint8List jpeg, Quest quest);
 }
 
 /// A verifier that can say what it saw in the last photo. Only debug builds
@@ -58,7 +71,7 @@ class LaptopQuestVerifier implements QuestVerifier {
   final http.Client? httpClient;
 
   @override
-  Future<bool> check(Uint8List jpeg, Quest quest) async {
+  Future<QuestVerdict> check(Uint8List jpeg, Quest quest) async {
     final config = await store.load();
     if (!config.isConfigured) {
       throw const QuestCheckUnavailable(QuestCheckError.needsLaptop);
@@ -70,7 +83,7 @@ class LaptopQuestVerifier implements QuestVerifier {
         positives: quest.positives,
         negatives: quest.negatives,
       );
-      return result.match;
+      return result.match ? QuestVerdict.match : QuestVerdict.wrongSubject;
     } on StylizeException catch (error) {
       throw QuestCheckUnavailable(QuestCheckError.laptopFailed, error.message);
     } finally {

@@ -1229,6 +1229,17 @@
   "newDayQuest": "ĐÃ SANG NGÀY MỚI · CÓ NHIỆM VỤ MỚI!",
   "outOfTriesTitle": "HẾT LƯỢT HÔM NAY",
   "outOfTriesBody": "Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.",
+  "screenTriesLeft": "ĐÂY LÀ ẢNH CHỤP MÀN HÌNH, HÃY CHỤP VẬT THẬT · CÒN {left} LƯỢT THỬ{debug}",
+  "@screenTriesLeft": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "debug": {
+        "type": "String"
+      }
+    }
+  },
   "wrongTriesLeft": "KHÔNG ĐÚNG · CÒN {left} LƯỢT THỬ{debug}",
   "@wrongTriesLeft": {
     "placeholders": {
