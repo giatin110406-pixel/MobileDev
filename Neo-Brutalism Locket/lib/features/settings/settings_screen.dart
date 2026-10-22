@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
@@ -10,6 +11,7 @@ import 'package:neo_brutalism_locket/features/image_engine/remote/server_setting
 import 'package:neo_brutalism_locket/features/notifications/push_service.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
+import 'package:neo_brutalism_locket/features/search/search_model_check.dart';
 import 'package:neo_brutalism_locket/features/settings/haptics_check.dart';
 import 'package:neo_brutalism_locket/features/settings/legal_text.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -191,6 +193,12 @@ class SettingsScreen extends StatelessWidget {
                     label: AppLocalizations.of(context).settingsHapticsTest,
                     onTap: () => showHapticsCheck(context),
                   ),
+                  if (kDebugMode)
+                    _row(
+                      icon: Icons.manage_search,
+                      label: searchModelCheckTitle,
+                      onTap: () => showSearchModelCheck(context),
+                    ),
                 ]),
                 _heading(l10n.settingsLanguage),
                 _card([

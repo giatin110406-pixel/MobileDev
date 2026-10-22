@@ -31,6 +31,7 @@ class PostOutbox extends ChangeNotifier {
     this.folder,
     this.encode = encodePhotoForUpload,
     this.videoThumbnail = makeVideoThumbnail,
+    this.embedPhoto,
   });
 
   final PostsRepository repository;
@@ -48,6 +49,10 @@ class PostOutbox extends ChangeNotifier {
 
   /// A JPEG still of a video for the grid and the widget (null if none).
   final Future<Uint8List?> Function(String videoPath) videoThumbnail;
+
+  /// The search vector of a photo (base64), or null. Null function: posts
+  /// carry no vector.
+  final Future<String?> Function(Uint8List photo)? embedPhoto;
 
   List<PendingPost>? _items;
   bool _flushing = false;
@@ -96,9 +101,15 @@ class PostOutbox extends ChangeNotifier {
     List<String>? recipients,
     File? original,
   }) async {
+    final sourceBytes = await source.readAsBytes();
     final encoded = await encode(
-      await source.readAsBytes(),
+      sourceBytes,
       lossless: style == StyleType.pixel8bit,
+    );
+    // Made from the shot before its style: CLIP sees an 8-bit or painted
+    // picture as "pixel art" / "a painting", not as what it shows.
+    final embedding = await embedPhoto?.call(
+      original == null ? sourceBytes : await original.readAsBytes(),
     );
     final dir = await _dir();
     final id = newUuid();
@@ -136,6 +147,7 @@ class PostOutbox extends ChangeNotifier {
         questId: questId,
         overlay: overlay,
         recipients: recipients,
+        embedding: embedding,
         createdAt: DateTime.now(),
       ),
     );
@@ -158,11 +170,13 @@ class PostOutbox extends ChangeNotifier {
     final mediaFile = '$base.mp4';
     await video.copy(mediaFile);
     String? thumbFile;
+    String? embedding;
     try {
       final thumb = await videoThumbnail(mediaFile);
       if (thumb != null) {
         thumbFile = '${base}_thumb.jpg';
         await File(thumbFile).writeAsBytes(thumb, flush: true);
+        embedding = await embedPhoto?.call(thumb); // the first frame stands in
       }
     } catch (_) {
       // A video without a still is fine; the grid shows an icon instead.
@@ -178,6 +192,7 @@ class PostOutbox extends ChangeNotifier {
         caption: caption.trim(),
         overlay: overlay,
         recipients: recipients,
+        embedding: embedding,
         createdAt: DateTime.now(),
       ),
     );

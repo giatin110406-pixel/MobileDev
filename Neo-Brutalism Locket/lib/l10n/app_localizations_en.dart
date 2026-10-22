@@ -2570,4 +2570,42 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hcUnknown =>
       'No vibration information on this device (only Android reports it).';
+
+  @override
+  String get searchHint =>
+      'Search photos: “dog at the beach”, “with Lan last year”…';
+
+  @override
+  String get searchNeedsModel =>
+      'To search in Vietnamese, the phone needs the Vietnamese pack once (about 30 MB). The app fetches it on Wi-Fi by itself; you can also get it now. After that it works offline, and what you type never leaves the phone.';
+
+  @override
+  String get searchDownload => 'GET THE VIETNAMESE PACK';
+
+  @override
+  String get searchDownloading => 'DOWNLOADING THE VIETNAMESE PACK…';
+
+  @override
+  String get searchDownloadFailed =>
+      'The download failed. Check the connection and try again.';
+
+  @override
+  String get searchNoResults => 'No photos found.';
+
+  @override
+  String get searchFailed => 'Search failed. Try again later.';
+
+  @override
+  String get searchMine => 'MINE';
+
+  @override
+  String get searchClear => 'Clear search';
+
+  @override
+  String searchResults(int count) {
+    return '$count PHOTOS';
+  }
+
+  @override
+  String get searchMaybe => 'MAYBE RELATED';
 }

@@ -57,9 +57,15 @@ class CameraTab extends StatefulWidget {
     this.onPhotoRemoved,
     this.onVideoRecorded,
     this.header,
+    this.embedPhoto,
   });
 
   final PlayerStore player;
+
+  /// The search vector of a shot kept on this phone (no account: the archive
+  /// is searched on the phone). Null: shots get no vector here; posted shots
+  /// get theirs in the outbox.
+  final Future<String?> Function(Uint8List photo)? embedPhoto;
 
   /// Prints on this device, newest first (owned by the shell).
   final List<NeoPhoto> photos;
@@ -616,6 +622,17 @@ class CameraTabState extends State<CameraTab> {
     PrintSound.warmUp();
     widget.onPhotoChanged(photo);
     _processPhoto(photo);
+    final embed = widget.embedPhoto;
+    if (embed != null) unawaited(_saveVector(photo.id, bytes, embed));
+  }
+
+  Future<void> _saveVector(
+    String photoId,
+    Uint8List bytes,
+    Future<String?> Function(Uint8List) embed,
+  ) async {
+    final vector = await embed(bytes);
+    if (vector != null) await widget.repository.saveEmbedding(photoId, vector);
   }
 
   Future<void> _processPhoto(NeoPhoto photo) async {

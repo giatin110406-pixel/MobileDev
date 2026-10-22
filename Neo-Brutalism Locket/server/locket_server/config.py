@@ -19,6 +19,9 @@ def _load_env_file() -> None:
 
 
 _load_env_file()
+# The server has no screen. Without this, a notebook host (Colab) passes down a matplotlib
+# backend that only exists in its own Python, and importing mediapipe fails.
+os.environ["MPLBACKEND"] = "Agg"
 os.environ.setdefault("HF_HOME", r"D:\hf-cache")
 os.environ.setdefault("TORCH_HOME", r"D:\torch-cache")
 

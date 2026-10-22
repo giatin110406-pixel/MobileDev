@@ -55,7 +55,8 @@ def default_runner() -> Runner:
         if style == "van_gogh":
             from .van_gogh import stylize_van_gogh
 
-            return stylize_van_gogh(registry, cfg, data, seed=params.get("seed"), stage_cb=stage_cb)
+            return stylize_van_gogh(registry, cfg, data, seed=params.get("seed"),
+                                    scene=params.get("scene"), stage_cb=stage_cb)
         raise ValueError(f"style '{style}' is not available")
 
     def warmup() -> None:
@@ -157,6 +158,7 @@ def create_app(runner: Runner | None = None, token: str | None = None,
         image: UploadFile = File(...),
         style: str = Form(...),
         seed: int | None = Form(default=None),
+        scene: str | None = Form(default=None),   # the phone's guess: portrait/group/night/sky/day
     ) -> dict:
         if style not in SUPPORTED_STYLES:
             raise HTTPException(status_code=400, detail=f"unsupported style '{style}'")
@@ -168,7 +170,7 @@ def create_app(runner: Runner | None = None, token: str | None = None,
         except Exception:  # noqa: BLE001
             raise HTTPException(status_code=400, detail="not a valid image") from None
         try:
-            job_id = manager.submit(style, data, {"seed": seed})
+            job_id = manager.submit(style, data, {"seed": seed, "scene": scene})
         except QueueFull:
             raise HTTPException(status_code=429, detail="server busy, try again shortly") from None
         return {"job_id": job_id}
