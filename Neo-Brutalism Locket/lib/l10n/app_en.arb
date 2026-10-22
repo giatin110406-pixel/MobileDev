@@ -1223,6 +1223,17 @@
   "newDayQuest": "NEW DAY · NEW QUEST!",
   "outOfTriesTitle": "NO TRIES LEFT TODAY",
   "outOfTriesBody": "Not quite. You used all 3 tries today. A new quest arrives at 00:00.",
+  "screenTriesLeft": "THAT IS A SCREEN, NOT THE REAL THING · {left} TRIES LEFT{debug}",
+  "@screenTriesLeft": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "debug": {
+        "type": "String"
+      }
+    }
+  },
   "wrongTriesLeft": "NOT QUITE · {left} TRIES LEFT{debug}",
   "@wrongTriesLeft": {
     "placeholders": {

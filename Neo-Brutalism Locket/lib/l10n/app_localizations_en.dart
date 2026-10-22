@@ -1943,6 +1943,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not quite. You used all 3 tries today. A new quest arrives at 00:00.';
 
   @override
+  String screenTriesLeft(int left, String debug) {
+    return 'THAT IS A SCREEN, NOT THE REAL THING · $left TRIES LEFT$debug';
+  }
+
+  @override
   String wrongTriesLeft(int left, String debug) {
     return 'NOT QUITE · $left TRIES LEFT$debug';
   }

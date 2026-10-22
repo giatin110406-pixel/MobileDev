@@ -12,9 +12,17 @@ const questVectorsAsset = 'assets/quest_model/quest_labels.bin';
 /// One quest's labels: the first [positives] of [labelIds] are the accepted
 /// descriptions, the rest are everything it must beat.
 class QuestLabelSet {
-  const QuestLabelSet({required this.positives, required this.labelIds});
+  const QuestLabelSet({
+    required this.positives,
+    required this.labelIds,
+    this.screens = 0,
+  });
 
   final int positives;
+
+  /// How many of the last [labelIds] describe the subject shown on a screen
+  /// or print (a recapture), not the subject itself.
+  final int screens;
   final List<int> labelIds;
 }
 
@@ -29,6 +37,7 @@ class QuestLabels {
     required this.matchScore,
     required this.inputSize,
     required this.quests,
+    this.screenReject = 1,
   });
 
   /// Reads the two exported files. [vectors] is little-endian float32,
@@ -51,12 +60,15 @@ class QuestLabels {
       dimension: dimension,
       logitScale: (data['logitScale'] as num).toDouble(),
       matchScore: (data['matchScore'] as num).toDouble(),
+      screenReject: (data['screenReject'] as num?)?.toDouble() ?? 1,
       inputSize: data['inputSize'] as int,
       quests: {
         for (final entry in (data['quests'] as Map<String, dynamic>).entries)
           entry.key: QuestLabelSet(
             positives:
                 (entry.value as Map<String, dynamic>)['positives'] as int,
+            screens:
+                (entry.value as Map<String, dynamic>)['screens'] as int? ?? 0,
             labelIds: [
               for (final id
                   in (entry.value as Map<String, dynamic>)['labels']
@@ -83,6 +95,10 @@ class QuestLabels {
   final int dimension;
   final double logitScale;
   final double matchScore;
+
+  /// A photo whose screen/print descriptions share this much probability is
+  /// refused even when it shows the subject (someone photographing a monitor).
+  final double screenReject;
   final int inputSize;
   final Map<String, QuestLabelSet> quests;
 }
@@ -94,9 +110,15 @@ class QuestScore {
     required this.match,
     required this.score,
     required this.top,
+    this.screen = false,
   });
 
+  /// True when the subject is there and the photo is accepted.
   final bool match;
+
+  /// True when the photo looks like a screen or print: refused as cheating,
+  /// whatever it shows.
+  final bool screen;
   final double score;
   final String top;
 }
@@ -134,14 +156,20 @@ QuestScore scoreQuestPhoto(
   }
   var top = 0;
   var accepted = 0.0;
+  var onScreen = 0.0;
   for (var k = 0; k < logits.length; k++) {
     final probability = logits[k] / total;
     logits[k] = probability;
     if (probability > logits[top]) top = k;
     if (k < set.positives) accepted += probability;
+    if (k >= logits.length - set.screens) onScreen += probability;
   }
+  final onScreenPhoto = onScreen >= bank.screenReject;
   return QuestScore(
-    match: top < set.positives || accepted >= bank.matchScore,
+    match:
+        (top < set.positives || accepted >= bank.matchScore) &&
+        !onScreenPhoto,
+    screen: onScreenPhoto,
     score: accepted,
     top: bank.labels[set.labelIds[top]],
   );

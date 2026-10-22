@@ -3476,6 +3476,12 @@ abstract class AppLocalizations {
   /// **'Không đúng. Bạn đã dùng hết 3 lượt thử hôm nay. Nhiệm vụ mới sẽ đến lúc 00:00.'**
   String get outOfTriesBody;
 
+  /// No description provided for @screenTriesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÂY LÀ ẢNH CHỤP MÀN HÌNH, HÃY CHỤP VẬT THẬT · CÒN {left} LƯỢT THỬ{debug}'**
+  String screenTriesLeft(int left, String debug);
+
   /// No description provided for @wrongTriesLeft.
   ///
   /// In vi, this message translates to:

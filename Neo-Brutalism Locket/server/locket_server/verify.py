@@ -57,8 +57,34 @@ class VerifyResult:
 Verifier = Callable[[bytes, list[str], list[str]], VerifyResult]
 
 
-def build_labels(positives: list[str], negatives: list[str]) -> list[str]:
-    """Positives first, then distractors that do not repeat a positive."""
+# Anti-recapture: someone shows the quest subject on a laptop and photographs the screen. The labels
+# below are appended after everything else; when together they take SCREEN_REJECT of the probability
+# the photo is refused even if the subject itself is recognised.
+SCREEN_REJECT = 0.7
+SCREEN_TEMPLATES = (
+    "{} displayed on a computer monitor",
+    "{} on a laptop screen",
+    "{} on a phone screen",
+    "{} on a tv screen",
+    "a photo of a screen showing {}",
+    "a printed picture of {}",
+)
+SCREEN_GENERIC = (
+    "a computer monitor displaying a picture",
+    "a photo of a screen with visible pixels and moire pattern",
+    "a screenshot",
+    "a picture shown on a display",
+)
+
+
+def screen_labels(positives: list[str]) -> list[str]:
+    """Labels for 'a screen/print showing the subject'; the first positive is the plain name."""
+    subject = positives[0].strip() if positives else "an object"
+    return [t.format(subject) for t in SCREEN_TEMPLATES] + list(SCREEN_GENERIC)
+
+
+def build_labels(positives: list[str], negatives: list[str], screens: bool = True) -> list[str]:
+    """Positives first, then distractors that do not repeat a positive, then the screen labels."""
     seen = {p.strip().lower() for p in positives}
     labels = [p.strip() for p in positives]
     for label in (*negatives, *GENERIC_DISTRACTORS):
@@ -66,14 +92,18 @@ def build_labels(positives: list[str], negatives: list[str]) -> list[str]:
         if key and key not in seen:
             seen.add(key)
             labels.append(label.strip())
+    if screens:
+        labels.extend(screen_labels(positives))
     return labels
 
 
-def decide(probs: list[float], labels: list[str], positive_count: int) -> VerifyResult:
+def decide(probs: list[float], labels: list[str], positive_count: int,
+           screen_count: int = 0) -> VerifyResult:
     top_index = max(range(len(probs)), key=probs.__getitem__)
     score = float(sum(probs[:positive_count]))
+    screen = float(sum(probs[len(probs) - screen_count:])) if screen_count else 0.0
     return VerifyResult(
-        match=top_index < positive_count or score >= MATCH_SCORE,
+        match=(top_index < positive_count or score >= MATCH_SCORE) and screen < SCREEN_REJECT,
         score=round(score, 4),
         top=labels[top_index],
     )
@@ -122,14 +152,14 @@ def clip_verifier() -> Verifier:
             feat = feat / feat.norm(dim=-1, keepdim=True)
             logits = s["model"].logit_scale.exp() * feat @ text_features(s, labels).T
             probs = logits.softmax(dim=-1)[0].tolist()
-        return decide(probs, labels, len(positives))
+        return decide(probs, labels, len(positives), len(screen_labels(positives)))
 
     def warmup() -> None:
         import torch
 
         s = model()
         with torch.no_grad():
-            text_features(s, list(GENERIC_DISTRACTORS))
+            text_features(s, list(GENERIC_DISTRACTORS) + list(SCREEN_GENERIC))
 
     verify.warmup = warmup  # type: ignore[attr-defined]
     return verify
