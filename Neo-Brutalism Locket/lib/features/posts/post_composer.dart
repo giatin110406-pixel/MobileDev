@@ -143,7 +143,7 @@ class PostComposerScreen extends StatelessWidget {
                 NeoIconButton(
                   icon: Icons.arrow_back,
                   tooltip: l10n.cancel,
-                  fill: NeoColors.green,
+                  fill: NeoColors.accent,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(width: 12),
@@ -392,7 +392,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
         if (noFriends)
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: NeoTheme.panel(color: NeoColors.green),
+            decoration: NeoTheme.panel(color: NeoColors.accent),
             child: Text(
               l10n.composerNoFriends,
               style: const TextStyle(
@@ -458,7 +458,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? NeoColors.green : NeoColors.surface,
+          color: selected ? NeoColors.accent : NeoColors.surface,
           border: Border.all(color: NeoColors.ink, width: 2),
           borderRadius: BorderRadius.circular(999),
           boxShadow: const [
@@ -519,7 +519,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
                       bottom: -4,
                       child: CircleAvatar(
                         radius: 10,
-                        backgroundColor: NeoColors.green,
+                        backgroundColor: NeoColors.accent,
                         child: Icon(
                           Icons.check,
                           size: 14,

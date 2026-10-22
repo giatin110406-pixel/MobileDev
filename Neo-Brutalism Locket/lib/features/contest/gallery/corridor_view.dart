@@ -356,7 +356,7 @@ class _CorridorViewState extends State<CorridorView>
                           valueListenable: _camera,
                           builder: (context, z, _) => NeoLabel(
                             _position(z),
-                            color: NeoColors.green,
+                            color: NeoColors.accent,
                             icon: Icons.directions_walk,
                           ),
                         ),
@@ -408,7 +408,7 @@ class _CorridorViewState extends State<CorridorView>
               children: [
                 Row(
                   children: [
-                    NeoLabel('#${entry.seq}', color: NeoColors.yellow),
+                    NeoLabel('#${entry.seq}', color: NeoColors.teal),
                     if (widget.caption != null) ...[
                       const SizedBox(width: 8),
                       Flexible(

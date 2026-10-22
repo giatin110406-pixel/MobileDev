@@ -229,7 +229,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFDF5),
+                color: const Color(0xFFF8EED2),
                 border: Border.all(color: const Color(0xFF000000), width: 8),
                 boxShadow: const [
                   BoxShadow(
@@ -334,7 +334,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      decoration: NeoTheme.panel(color: NeoColors.green),
+      decoration: NeoTheme.panel(color: NeoColors.accent),
       child: Row(
         children: [
           const Icon(Icons.emoji_events, size: 30),
@@ -431,7 +431,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: mine == emoji ? NeoColors.green : NeoColors.surface,
+                color: mine == emoji ? NeoColors.accent : NeoColors.surface,
                 border: Border.all(color: NeoColors.ink, width: 2),
                 borderRadius: BorderRadius.circular(999),
               ),
@@ -452,7 +452,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     margin: const EdgeInsets.only(bottom: 8),
     padding: const EdgeInsets.all(10),
     decoration: NeoTheme.panel(
-      color: comment.mine ? NeoColors.green : NeoColors.surface,
+      color: comment.mine ? NeoColors.accent : NeoColors.surface,
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,7 +518,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         NeoIconButton(
           icon: Icons.send,
           tooltip: AppLocalizations.of(context).sendTooltip,
-          fill: NeoColors.green,
+          fill: NeoColors.accent,
           onPressed: _store.sending ? null : _send,
         ),
       ],

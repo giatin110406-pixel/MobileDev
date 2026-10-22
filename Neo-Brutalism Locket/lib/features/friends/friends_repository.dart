@@ -38,12 +38,12 @@ class Person {
   );
 
   static const _colors = [
-    0xFFFF6B6B,
-    0xFFFFD23F,
-    0xFFFFD23F,
-    0xFFFFD23F,
-    0xFFFFD23F,
-    0xFFFF6B6B,
+    0xFFFF6F61,
+    0xFFF5D06F,
+    0xFFF5D06F,
+    0xFFF5D06F,
+    0xFFF5D06F,
+    0xFFFF6F61,
   ];
 
   /// The shape the existing friend screens use. The avatar colour comes from

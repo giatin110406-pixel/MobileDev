@@ -1045,9 +1045,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get holdToCompare => 'HOLD TO COMPARE';
 
   @override
-  String get dragToCompare => 'DRAG TO COMPARE';
-
-  @override
   String get pushOpen => 'OPEN';
 
   @override

@@ -11,19 +11,19 @@ void main() {
       label: 'CHỤP',
       outlineIcon: Icons.photo_camera_outlined,
       filledIcon: Icons.photo_camera,
-      activeColor: NeoColors.green,
+      activeColor: NeoColors.accent,
     ),
     const NeoBottomNavTab(
       label: 'BẠN BÈ',
       outlineIcon: Icons.people_alt_outlined,
       filledIcon: Icons.people_alt,
-      activeColor: NeoColors.green,
+      activeColor: NeoColors.accent,
     ),
     const NeoBottomNavTab(
       label: 'HỘP THƯ',
       outlineIcon: Icons.chat_bubble_outline,
       filledIcon: Icons.chat_bubble,
-      activeColor: NeoColors.green,
+      activeColor: NeoColors.accent,
     ),
     const NeoBottomNavTab(
       label: 'LỊCH SỬ',

@@ -24,8 +24,8 @@ extension RarityLabel on Rarity {
 
   Color get color => switch (this) {
     Rarity.common => NeoColors.surface,
-    Rarity.rare => NeoColors.green,
-    Rarity.legendary => NeoColors.yellow,
+    Rarity.rare => NeoColors.accent,
+    Rarity.legendary => NeoColors.teal,
   };
 }
 

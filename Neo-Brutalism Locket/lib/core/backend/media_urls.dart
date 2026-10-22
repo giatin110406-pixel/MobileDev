@@ -242,7 +242,7 @@ class _RemoteImageState extends State<RemoteImage> {
     tooltip: AppLocalizations.of(context).retryTooltip,
     onPressed: _retry,
     style: IconButton.styleFrom(
-      backgroundColor: const Color(0xFFFFFDF5),
+      backgroundColor: const Color(0xFFF8EED2),
       foregroundColor: const Color(0xFF000000),
       side: const BorderSide(color: Color(0xFF000000), width: 2),
     ),

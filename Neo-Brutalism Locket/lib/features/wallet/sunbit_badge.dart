@@ -82,7 +82,7 @@ class _SunbitBadgeState extends State<SunbitBadge>
           child: Container(
             padding: const EdgeInsets.fromLTRB(6, 4, 10, 4),
             decoration: BoxDecoration(
-              color: NeoColors.green,
+              color: NeoColors.accent,
               border: Border.all(color: NeoColors.ink, width: 2),
               borderRadius: BorderRadius.circular(999),
               boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
@@ -156,7 +156,7 @@ class StatusIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
-    this.fill = NeoColors.green,
+    this.fill = NeoColors.accent,
   });
 
   final IconData icon;

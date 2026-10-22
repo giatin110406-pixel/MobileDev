@@ -70,7 +70,7 @@ class GroupsScreen extends StatelessWidget {
                   ),
                   NeoLabel(
                     l10n.groupsCount(store.groups.length),
-                    color: NeoColors.green,
+                    color: NeoColors.accent,
                   ),
                 ],
               ),
@@ -354,7 +354,7 @@ class _InviteTileState extends State<_InviteTile> {
     final invite = widget.invite;
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: NeoTheme.panel(color: NeoColors.green),
+      decoration: NeoTheme.panel(color: NeoColors.accent),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

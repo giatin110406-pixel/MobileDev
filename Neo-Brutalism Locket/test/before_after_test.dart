@@ -23,13 +23,13 @@ Widget _view({String? styled = 'styled.png'}) => BeforeAfterView(
 );
 
 void main() {
-  testWidgets('opens on the finished print with a hint to drag', (
+  testWidgets('opens on the finished print, with no hint on it', (
     tester,
   ) async {
     await tester.pumpWidget(_host(_view()));
     expect(find.text('8-BIT'), findsOneWidget);
     expect(find.text('ORIGINAL'), findsNothing);
-    expect(find.text('DRAG TO COMPARE'), findsOneWidget);
+    expect(find.text('DRAG TO COMPARE'), findsNothing);
   });
 
   testWidgets('the finger decides how much of each side shows', (tester) async {
@@ -43,7 +43,6 @@ void main() {
     await tester.pump();
     expect(find.text('ORIGINAL'), findsOneWidget);
     expect(find.text('8-BIT'), findsOneWidget);
-    expect(find.text('DRAG TO COMPARE'), findsNothing);
 
     // Far right: almost all original, the style's name steps aside.
     await drag.moveTo(left + const Offset(285, 160));
@@ -75,7 +74,6 @@ void main() {
     await tester.pumpWidget(_host(_view(styled: null)));
     expect(find.byType(RevealCompare), findsNothing);
     expect(find.byType(Image), findsOneWidget);
-    expect(find.text('DRAG TO COMPARE'), findsNothing);
   });
 
   testWidgets('with no before picture there is nothing to drag', (

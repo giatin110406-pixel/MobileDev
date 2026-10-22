@@ -11,20 +11,20 @@ import 'package:neo_brutalism_locket/features/contest/gallery/entry_image_cache.
 /// outlines.
 abstract final class CorridorColors {
   static const ink = Color(0xFF000000);
-  static const wall = Color(0xFFFFD23F); // yellow
+  static const wall = Color(0xFFF5D06F); // yellow
   static const wallFar = Color(0xFFE5B52E);
-  static const trim = Color(0xFFFF6B6B); // skirting and crown moulding
-  static const ceiling = Color(0xFFFFFDF5);
-  static const floor = Color(0xFFFFFDF5); // paper
+  static const trim = Color(0xFFFF6F61); // skirting and crown moulding
+  static const ceiling = Color(0xFFF8EED2);
+  static const floor = Color(0xFFF8EED2); // paper
   static const floorAlt = Color(0xFFECE8DA);
-  static const runner = Color(0xFFFF6B6B);
+  static const runner = Color(0xFFFF6F61);
   static const runnerBorder = Color(0xFF000000);
-  static const runnerMotif = Color(0xFFFFD23F);
-  static const blankCanvas = Color(0xFFFFFDF5);
+  static const runnerMotif = Color(0xFFF5D06F);
+  static const blankCanvas = Color(0xFFF8EED2);
   static const frame = Color(0xFF000000);
-  static const mat = Color(0xFFFFFDF5);
-  static const light = Color(0xFFFFD23F);
-  static const doorLeaf = Color(0xFFFF6B6B); // coral
+  static const mat = Color(0xFFF8EED2);
+  static const light = Color(0xFFF5D06F);
+  static const doorLeaf = Color(0xFFFF6F61); // coral
 }
 
 /// The colours of one hall: the Gallery and the Hall of Fame look different.
@@ -101,10 +101,10 @@ class FrameDecor {
 
 const _frameLooks = [
   FrameDecor(frame: Color(0xFF000000)), // ink
-  FrameDecor(frame: Color(0xFFFFD23F)), // yellow
-  FrameDecor(frame: Color(0xFFFF6B6B)), // coral
-  FrameDecor(frame: Color(0xFFFFFDF5)), // off-white
-  FrameDecor(frame: Color(0xFFFFD23F)), // yellow
+  FrameDecor(frame: Color(0xFFF5D06F)), // yellow
+  FrameDecor(frame: Color(0xFFFF6F61)), // coral
+  FrameDecor(frame: Color(0xFFF8EED2)), // off-white
+  FrameDecor(frame: Color(0xFFF5D06F)), // yellow
 ];
 
 /// The colour and mat of a Gallery frame, from the number the layout gave it.

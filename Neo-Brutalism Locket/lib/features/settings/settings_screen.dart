@@ -62,7 +62,7 @@ class SettingsScreen extends StatelessWidget {
                     NeoIconButton(
                       icon: Icons.arrow_back,
                       tooltip: l10n.cancel,
-                      fill: NeoColors.green,
+                      fill: NeoColors.accent,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const SizedBox(width: 12),
@@ -100,7 +100,7 @@ class SettingsScreen extends StatelessWidget {
                   SwitchListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14),
                     activeThumbColor: NeoColors.ink,
-                    activeTrackColor: NeoColors.green,
+                    activeTrackColor: NeoColors.accent,
                     title: Text(l10n.settingsAllowRequests, style: _labelStyle),
                     subtitle: Text(
                       l10n.settingsAllowRequestsHint,
@@ -505,7 +505,7 @@ class _NotificationSwitchesState extends State<_NotificationSwitches> {
     ) => SwitchListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14),
       activeThumbColor: NeoColors.ink,
-      activeTrackColor: NeoColors.green,
+      activeTrackColor: NeoColors.accent,
       title: Text(label, style: SettingsScreen._labelStyle),
       value: value,
       onChanged: Haptics.tapWith(
@@ -746,7 +746,7 @@ class LegalScreen extends StatelessWidget {
                 NeoIconButton(
                   icon: Icons.arrow_back,
                   tooltip: l10n.cancel,
-                  fill: NeoColors.green,
+                  fill: NeoColors.accent,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(width: 12),
@@ -766,7 +766,7 @@ class LegalScreen extends StatelessWidget {
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: NeoTheme.panel(color: NeoColors.green),
+              decoration: NeoTheme.panel(color: NeoColors.accent),
               child: Text(
                 l10n.legalDraftNote,
                 style: const TextStyle(

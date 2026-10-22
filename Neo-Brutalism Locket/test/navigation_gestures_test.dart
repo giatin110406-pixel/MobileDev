@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neo_brutalism_locket/app/app_shell.dart';
 import 'package:neo_brutalism_locket/app/neo_bottom_nav.dart';
+import 'package:neo_brutalism_locket/app/shutter_flight.dart';
 import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/camera_experience.dart';
@@ -293,29 +294,67 @@ void main() {
       final camera = tester.state<CameraTabState>(find.byType(CameraTab));
       NeoBottomNav nav() =>
           tester.widget<NeoBottomNav>(find.byType(NeoBottomNav));
-      expect(nav().selectedIndex, 0);
-      for (var i = 1; i < 5; i++) {
-        await tester.drag(find.byType(NeoBottomNav), const Offset(-70, 0));
-        await tester.pumpAndSettle();
-        expect(nav().selectedIndex, i);
-      }
+      Finder inBar(Finder finder) =>
+          find.descendant(of: find.byType(NeoBottomNav), matching: finder);
+      // Three tabs, the camera in the middle, and the app opens on it: its
+      // button is up as the shutter, so the archive shows in its place.
+      expect(nav().tabs, hasLength(3));
+      expect(nav().selectedIndex, 1);
+      expect(nav().prominentDocked, isTrue);
+      expect(inBar(find.byTooltip('PRINTS')), findsOneWidget);
+      expect(inBar(find.byTooltip('SHOOT')), findsNothing);
+      // No inbox (chats live in the friends tab) and no shop (on the profile).
+      expect(inBar(find.byIcon(Icons.chat_bubble_outline)), findsNothing);
+      expect(inBar(find.byIcon(Icons.storefront_outlined)), findsNothing);
+
       await tester.drag(find.byType(NeoBottomNav), const Offset(-70, 0));
-      expect(nav().selectedIndex, 4);
-      for (var i = 3; i >= 0; i--) {
+      await tester.pumpAndSettle();
+      expect(nav().selectedIndex, 2);
+      expect(nav().prominentDocked, isFalse);
+      await tester.drag(find.byType(NeoBottomNav), const Offset(-70, 0));
+      await tester.pumpAndSettle();
+      expect(nav().selectedIndex, 2);
+      for (var i = 1; i >= 0; i--) {
         await tester.drag(find.byType(NeoBottomNav), const Offset(70, 0));
         await tester.pumpAndSettle();
         expect(nav().selectedIndex, i);
       }
-      await tester.tap(
-        find.descendant(
-          of: find.byType(NeoBottomNav),
-          matching: find.byIcon(Icons.chat_bubble_outline),
-        ),
-      );
+      await tester.drag(find.byType(NeoBottomNav), const Offset(70, 0));
+      await tester.pumpAndSettle();
+      expect(nav().selectedIndex, 0);
+
+      // From one tab to another away from the camera nothing flies.
+      await tester.tap(find.byTooltip('CONTEST'));
+      await tester.pump();
+      expect(find.byType(ShutterFlight), findsNothing);
       await tester.pumpAndSettle();
       expect(nav().selectedIndex, 2);
+
+      // Back to the camera, the bar's button flies up and becomes the
+      // shutter, showing the archive behind it.
+      await tester.tap(find.byTooltip('SHOOT'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(ShutterFlight), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.byType(ShutterFlight), findsNothing);
+      expect(nav().prominentDocked, isTrue);
+      expect(nav().selectedIndex, 1);
+
+      // The archive: the shutter flies back down over its place.
+      await tester.tap(inBar(find.byTooltip('PRINTS')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(ShutterFlight), findsOneWidget);
+      expect(nav().prominentDocked, isTrue, reason: 'not landed yet');
+      await tester.pumpAndSettle();
+      expect(find.byType(ShutterFlight), findsNothing);
+      expect(nav().prominentDocked, isFalse);
+      expect(nav().selectedIndex, 3, reason: 'the archive is not a bar tab');
+      expect(inBar(find.byTooltip('SHOOT')), findsOneWidget);
       await tester.tap(find.byTooltip('SHOOT'));
       await tester.pumpAndSettle();
+      expect(nav().selectedIndex, 1);
       expect(
         tester.state<CameraTabState>(find.byType(CameraTab)),
         same(camera),
@@ -332,9 +371,9 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final colors = [
-        NeoColors.green,
-        NeoColors.green,
-        NeoColors.green,
+        NeoColors.accent,
+        NeoColors.accent,
+        NeoColors.accent,
         NeoColors.coral,
         NeoColors.coral,
       ];

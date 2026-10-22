@@ -58,9 +58,18 @@ class CameraTab extends StatefulWidget {
     this.onVideoRecorded,
     this.header,
     this.embedPhoto,
+    this.shutterKey,
+    this.hideShutter = false,
   });
 
   final PlayerStore player;
+
+  /// On the shutter, so the menu's SHOOT button can fly to it.
+  final Key? shutterKey;
+
+  /// The shutter is still on its way (flying up from the menu): keep its place
+  /// empty until it lands.
+  final bool hideShutter;
 
   /// The search vector of a shot kept on this phone (no account: the archive
   /// is searched on the phone). Null: shots get no vector here; posted shots
@@ -733,11 +742,6 @@ class CameraTabState extends State<CameraTab> {
     await _processPhoto(pending);
   }
 
-  void _setCameraStyle(StyleType styleType) {
-    if (_processing) return;
-    setState(() => _selectedStyleType = styleType);
-  }
-
   Future<void> _toggleFlash() async {
     final camera = _camera;
     if (camera == null) return;
@@ -780,34 +784,32 @@ class CameraTabState extends State<CameraTab> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: 54, child: widget.header),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           _questMode
               ? _buildQuestModeHeader(_questModeQuest!)
               : QuestStrip(
                   store: widget.player,
                   onTap: widget.onOpenQuestSheet,
                 ),
-          const SizedBox(height: 14),
-          Expanded(
-            child: Center(
-              child: AspectRatio(aspectRatio: 1, child: _buildViewfinder()),
-            ),
-          ),
           const SizedBox(height: 10),
-          _questMode
-              ? Center(
-                  child: StyleChip(
-                    style: _questModeQuest!.style,
-                    text: AppLocalizations.of(context).styleBadge(
-                      styleName(
-                        AppLocalizations.of(context),
-                        _questModeQuest!.style,
-                      ),
-                    ),
-                    icon: Icons.lock_outline,
+          Expanded(child: _bigSquare(_buildViewfinder())),
+          // The style is picked after the shot, on the draft; only a quest's
+          // locked style is shown up front.
+          if (_questMode) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: StyleChip(
+                style: _questModeQuest!.style,
+                text: AppLocalizations.of(context).styleBadge(
+                  styleName(
+                    AppLocalizations.of(context),
+                    _questModeQuest!.style,
                   ),
-                )
-              : _buildStylePill(),
+                ),
+                icon: Icons.lock_outline,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           _buildCaptureControls(),
           const SizedBox(height: 6),
@@ -851,6 +853,28 @@ class CameraTabState extends State<CameraTab> {
     );
   }
 
+  /// How far the square may reach into the page's side padding.
+  static const double _squareBleed = 10;
+
+  /// A 1:1 square as big as the space allows, reaching [_squareBleed] into
+  /// the side padding so it is wider than the controls around it.
+  Widget _bigSquare(Widget child) => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.maxWidth + 2 * _squareBleed;
+      final side = width < constraints.maxHeight
+          ? width
+          : constraints.maxHeight;
+      // Loosen the minimums too: the Column hands down a tight box, which
+      // would otherwise stretch the square to fill it.
+      return OverflowBox(
+        minWidth: 0,
+        minHeight: 0,
+        maxWidth: width,
+        child: SizedBox.square(dimension: side, child: child),
+      );
+    },
+  );
+
   /// The page right after a shot: the same layout as the live camera, with the
   /// picture where the viewfinder was, X / POST / Aa where the shutter was, and
   /// who gets it where the feed link was.
@@ -858,129 +882,149 @@ class CameraTabState extends State<CameraTab> {
     final l10n = AppLocalizations.of(context);
     final photo = _activePhoto!;
     final composer = _composer!;
-    final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
+    // The Scaffold above consumes the keyboard inset in this subtree's
+    // MediaQuery, so the typing layout keys off the caption's focus instead.
     final ready = photo.status == ProcessingStatus.done && !_processing;
     final canSend = ready && composer.hasRecipients && !_posting;
     return ListenableBuilder(
-      listenable: composer,
+      listenable: Listenable.merge([composer, composer.captionFocus]),
       builder: (context, _) => GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                height: 54,
-                child: Row(
-                  children: [
-                    const Expanded(child: SizedBox()),
-                    Text(
-                      l10n.composerTitle,
-                      style: const TextStyle(
-                        fontFamily: NeoFont.display,
-                        color: NeoColors.ink,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: _statusBadge(photo),
-                      ),
-                    ),
-                  ],
+        // While typing, the keyboard just covers the controls: the picture
+        // keeps its full square (never squeezed) and sits at the top, with the
+        // caption on it staying visible above the keyboard.
+        child: composer.captionFocus.hasFocus
+            ? Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  18 - _squareBleed,
+                  12,
+                  18 - _squareBleed,
+                  0,
                 ),
-              ),
-              if (!keyboard) ...[
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 68,
-                  child: Center(
-                    child: Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        _draftChip(
-                          label: '${l10n.overlayTime} ${composer.time}',
-                          icon: Icons.schedule,
-                          selected: composer.showTime,
-                          onTap: composer.toggleTime,
-                        ),
-                        _draftChip(
-                          label: composer.findingPlace
-                              ? l10n.overlayFindingPlace
-                              : composer.place == null
-                              ? l10n.overlayPlace
-                              : '${l10n.overlayPlace}: ${composer.place}',
-                          icon: Icons.place_outlined,
-                          selected: composer.place != null,
-                          onTap: composer.findingPlace
-                              ? () {}
-                              : () => composer.togglePlace(_placeProblem),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-              Expanded(
-                child: Center(
+                child: OverflowBox(
+                  alignment: Alignment.topCenter,
+                  minHeight: 0,
+                  maxHeight: double.infinity,
                   child: AspectRatio(
                     aspectRatio: 1,
                     child: _draftViewfinder(photo, composer),
                   ),
                 ),
-              ),
-              if (!keyboard) ...[
-                const SizedBox(height: 10),
-                if (_processing && photo.status == ProcessingStatus.pending)
-                  NeoProgress(
-                    value: _progress <= 0 ? null : _progress,
-                    label: styleWorkingLabel(l10n, photo.styleType),
-                  )
-                else
-                  _buildStylePill(photo: photo),
-              ],
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: NeoIconButton(
-                        icon: Icons.close,
-                        tooltip: l10n.printDiscard,
-                        fill: NeoColors.coral,
-                        size: 54,
-                        onPressed: _posting ? null : () => _discardPrint(photo),
+              )
+            : Padding(
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: 54,
+                      child: Row(
+                        children: [
+                          const Expanded(child: SizedBox()),
+                          Text(
+                            l10n.composerTitle,
+                            style: const TextStyle(
+                              fontFamily: NeoFont.display,
+                              color: NeoColors.ink,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: _statusBadge(photo),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  _sendButton(enabled: canSend, busy: _posting),
-                  Expanded(
-                    child: Center(
-                      child: NeoIconButton(
-                        icon: Icons.text_fields_rounded,
-                        tooltip: l10n.composerCaptionHint,
-                        fill: NeoColors.surface,
-                        size: 54,
-                        onPressed: composer.captionFocus.requestFocus,
+                    if (!composer.captionFocus.hasFocus) ...[
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 68,
+                        child: Center(
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              _draftChip(
+                                label: '${l10n.overlayTime} ${composer.time}',
+                                icon: Icons.schedule,
+                                selected: composer.showTime,
+                                onTap: composer.toggleTime,
+                              ),
+                              _draftChip(
+                                label: composer.findingPlace
+                                    ? l10n.overlayFindingPlace
+                                    : composer.place == null
+                                    ? l10n.overlayPlace
+                                    : '${l10n.overlayPlace}: ${composer.place}',
+                                icon: Icons.place_outlined,
+                                selected: composer.place != null,
+                                onTap: composer.findingPlace
+                                    ? () {}
+                                    : () => composer.togglePlace(_placeProblem),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
+                    ],
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: _bigSquare(_draftViewfinder(photo, composer)),
                     ),
-                  ),
-                ],
+                    if (!composer.captionFocus.hasFocus) ...[
+                      const SizedBox(height: 8),
+                      if (_processing &&
+                          photo.status == ProcessingStatus.pending)
+                        NeoProgress(
+                          value: _progress <= 0 ? null : _progress,
+                          label: styleWorkingLabel(l10n, photo.styleType),
+                        )
+                      else
+                        _buildStylePill(photo: photo),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: NeoIconButton(
+                              icon: Icons.close,
+                              tooltip: l10n.printDiscard,
+                              fill: NeoColors.coral,
+                              size: 54,
+                              onPressed: _posting
+                                  ? null
+                                  : () => _discardPrint(photo),
+                            ),
+                          ),
+                        ),
+                        _sendButton(enabled: canSend, busy: _posting),
+                        Expanded(
+                          child: Center(
+                            child: NeoIconButton(
+                              icon: Icons.text_fields_rounded,
+                              tooltip: l10n.composerCaptionHint,
+                              fill: NeoColors.surface,
+                              size: 54,
+                              onPressed: composer.captionFocus.requestFocus,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (!composer.captionFocus.hasFocus) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(height: 78, child: _recipientsRow(composer)),
+                    ],
+                  ],
+                ),
               ),
-              if (!keyboard) ...[
-                const SizedBox(height: 10),
-                SizedBox(height: 78, child: _recipientsRow(composer)),
-              ],
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -1100,7 +1144,7 @@ class CameraTabState extends State<CameraTab> {
       builder: (context, pressed) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? NeoColors.green : NeoColors.surface,
+          color: selected ? NeoColors.accent : NeoColors.surface,
           border: Border.all(color: NeoColors.ink, width: 2),
           borderRadius: BorderRadius.circular(999),
           boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
@@ -1135,7 +1179,7 @@ class CameraTabState extends State<CameraTab> {
         width: 78,
         height: 78,
         decoration: BoxDecoration(
-          color: enabled ? NeoColors.green : NeoColors.switchOff,
+          color: enabled ? NeoColors.accent : NeoColors.switchOff,
           shape: BoxShape.circle,
           border: Border.all(color: NeoColors.ink, width: 3),
           boxShadow: enabled ? NeoPress.shadow(pressed) : const [],
@@ -1198,7 +1242,7 @@ class CameraTabState extends State<CameraTab> {
                         width: 20,
                         height: 20,
                         decoration: BoxDecoration(
-                          color: NeoColors.green,
+                          color: NeoColors.accent,
                           shape: BoxShape.circle,
                           border: Border.all(color: NeoColors.ink, width: 2),
                         ),
@@ -1235,7 +1279,7 @@ class CameraTabState extends State<CameraTab> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: NeoColors.green,
+              color: NeoColors.accent,
               shape: BoxShape.circle,
               border: Border.all(color: NeoColors.ink, width: 2),
             ),
@@ -1344,6 +1388,7 @@ class CameraTabState extends State<CameraTab> {
   Widget _buildViewfinder() {
     final camera = _camera;
     return TabSwipeExclusion(
+      key: const ValueKey('viewfinder'),
       child: Container(
         decoration: NeoTheme.panel(
           color: NeoColors.surface,
@@ -1383,7 +1428,7 @@ class CameraTabState extends State<CameraTab> {
                           )
                         : NeoLabel(
                             AppLocalizations.of(context).checkingPhoto,
-                            color: NeoColors.green,
+                            color: NeoColors.accent,
                             icon: Icons.search,
                           ),
                   ),
@@ -1406,7 +1451,7 @@ class CameraTabState extends State<CameraTab> {
                     height: 96,
                     alignment: Alignment.center,
                     decoration: NeoTheme.panel(
-                      color: NeoColors.green,
+                      color: NeoColors.accent,
                       radius: 999,
                     ),
                     child: Text(
@@ -1484,7 +1529,7 @@ class CameraTabState extends State<CameraTab> {
     },
     tooltip: AppLocalizations.of(context).flashTooltip,
     active: _flashMode != FlashMode.off,
-    activeColor: NeoColors.green,
+    activeColor: NeoColors.accent,
     onPressed: _toggleFlash,
   );
 
@@ -1542,7 +1587,7 @@ class CameraTabState extends State<CameraTab> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: level == nearest
-                            ? NeoColors.green
+                            ? NeoColors.accent
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(999),
                       ),
@@ -1566,24 +1611,19 @@ class CameraTabState extends State<CameraTab> {
     );
   }
 
-  /// The style control right under the photo: one pill, swiped left/right
-  /// between NO STYLE, 8-BIT and VAN GOGH. On the camera it sets the style for
-  /// the next shot; on a print it re-styles that photo.
-  Widget _buildStylePill({NeoPhoto? photo}) {
-    return Center(
-      child: StylePill(
-        value: photo?.styleType ?? _selectedStyleType,
-        enabled: !_processing,
-        onChanged: (styleType) => photo == null
-            ? _setCameraStyle(styleType)
-            : _applyStyleToPhoto(photo, styleType),
-      ),
-    );
-  }
+  /// The style control right under a shot: one pill, swiped left/right
+  /// between NO STYLE, 8-BIT and VAN GOGH, re-styling that photo.
+  Widget _buildStylePill({required NeoPhoto photo}) => Center(
+    child: StylePill(
+      value: photo.styleType ?? _selectedStyleType,
+      enabled: !_processing,
+      onChanged: (styleType) => _applyStyleToPhoto(photo, styleType),
+    ),
+  );
 
   Widget _buildCameraFallback() {
     return ColoredBox(
-      color: NeoColors.green,
+      color: NeoColors.accent,
       child: Center(
         // Scales down when the square is short (small phones, quest strip).
         child: FittedBox(
@@ -1598,7 +1638,7 @@ class CameraTabState extends State<CameraTab> {
                   height: 82,
                   alignment: Alignment.center,
                   decoration: NeoTheme.panel(
-                    color: NeoColors.green,
+                    color: NeoColors.accent,
                     borderWidth: 2,
                     radius: 999,
                   ),
@@ -1666,14 +1706,20 @@ class CameraTabState extends State<CameraTab> {
                   ),
                 ),
         ),
-        _shutterButton(),
+        KeyedSubtree(
+          key: widget.shutterKey,
+          child: Opacity(
+            opacity: widget.hideShutter ? 0 : 1,
+            child: _shutterButton(),
+          ),
+        ),
         Expanded(
           child: Center(
             child: NeoIconButton(
               icon: Icons.flip_camera_ios_outlined,
               tooltip: AppLocalizations.of(context).switchCameraTooltip,
               onPressed: _flipCamera,
-              fill: NeoColors.green,
+              fill: NeoColors.accent,
               size: 54,
             ),
           ),
@@ -1737,7 +1783,7 @@ class CameraTabState extends State<CameraTab> {
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: _recording ? NeoColors.coral : NeoColors.green,
+              color: _recording ? NeoColors.coral : NeoColors.accent,
               shape: BoxShape.circle,
               border: Border.all(color: NeoColors.surface, width: 2),
             ),
@@ -1792,7 +1838,7 @@ class CameraTabState extends State<CameraTab> {
                 icon: Icons.arrow_back,
                 tooltip: AppLocalizations.of(context).backToCameraTooltip,
                 onPressed: () => setState(() => _showPrint = false),
-                fill: NeoColors.green,
+                fill: NeoColors.accent,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1957,12 +2003,12 @@ class CameraTabState extends State<CameraTab> {
   Widget _statusBadge(NeoPhoto photo) => switch (photo.status) {
     ProcessingStatus.pending => NeoLabel(
       AppLocalizations.of(context).statusInking,
-      color: NeoColors.green,
+      color: NeoColors.accent,
       icon: Icons.hourglass_top,
     ),
     ProcessingStatus.done => NeoLabel(
       AppLocalizations.of(context).statusReady,
-      color: NeoColors.green,
+      color: NeoColors.accent,
       icon: Icons.check,
     ),
     ProcessingStatus.failed => NeoLabel(

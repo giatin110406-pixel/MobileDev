@@ -291,7 +291,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                     if (owner)
                       NeoLabel(
                         AppLocalizations.of(context).ownerBadge,
-                        color: NeoColors.green,
+                        color: NeoColors.accent,
                       ),
                   ],
                 ),
@@ -576,7 +576,7 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
     padding: const EdgeInsets.only(bottom: 10),
     child: Container(
       padding: const EdgeInsets.all(10),
-      decoration: NeoTheme.panel(color: NeoColors.green),
+      decoration: NeoTheme.panel(color: NeoColors.accent),
       child: Row(
         children: [
           PersonBadge(person: invite.person),

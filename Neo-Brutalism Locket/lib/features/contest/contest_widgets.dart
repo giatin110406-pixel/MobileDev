@@ -40,11 +40,11 @@ String phaseLabel(AppLocalizations l10n, ContestPhase phase) => switch (phase) {
 };
 
 Color phaseColor(ContestPhase phase) => switch (phase) {
-  ContestPhase.upcoming => NeoColors.green,
-  ContestPhase.open => NeoColors.green,
-  ContestPhase.judging => NeoColors.green,
+  ContestPhase.upcoming => NeoColors.accent,
+  ContestPhase.open => NeoColors.accent,
+  ContestPhase.judging => NeoColors.accent,
   ContestPhase.closed => NeoColors.coral,
-  ContestPhase.finalized => NeoColors.green,
+  ContestPhase.finalized => NeoColors.accent,
 };
 
 /// "1d 03:12:09" or "03:12:09".
