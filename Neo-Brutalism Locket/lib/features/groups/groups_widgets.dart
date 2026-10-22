@@ -62,11 +62,11 @@ String systemMessageText(
 };
 
 const _badgeColors = [
-  NeoColors.green,
+  NeoColors.accent,
   NeoColors.coral,
   NeoColors.surface,
   NeoColors.coral,
-  NeoColors.green,
+  NeoColors.accent,
   NeoColors.surface,
 ];
 
@@ -207,7 +207,7 @@ class _Segment extends StatelessWidget {
         child: Container(
           height: 44,
           decoration: BoxDecoration(
-            color: selected ? NeoColors.green : NeoColors.surface,
+            color: selected ? NeoColors.accent : NeoColors.surface,
             border: Border.all(color: NeoColors.ink, width: 2),
             borderRadius: BorderRadius.circular(8),
             boxShadow: selected

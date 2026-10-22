@@ -428,7 +428,7 @@ class _ContestScreenState extends State<ContestScreen> {
         Container(
           padding: const EdgeInsets.all(14),
           margin: const EdgeInsets.only(bottom: 10),
-          decoration: NeoTheme.panel(color: NeoColors.green),
+          decoration: NeoTheme.panel(color: NeoColors.accent),
           child: Text(
             AppLocalizations.of(
               context,

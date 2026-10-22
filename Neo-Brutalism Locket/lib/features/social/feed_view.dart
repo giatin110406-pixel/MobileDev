@@ -292,7 +292,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
               NeoIconButton(
                 icon: Icons.keyboard_arrow_down,
                 tooltip: AppLocalizations.of(context).backToCameraTooltip,
-                fill: NeoColors.green,
+                fill: NeoColors.accent,
                 onPressed: widget.onClose,
               ),
               const SizedBox(width: 12),
@@ -319,7 +319,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                       : AppLocalizations.of(context).musicOff,
                   fill: widget.musicMuted
                       ? NeoColors.switchOff
-                      : NeoColors.green,
+                      : NeoColors.accent,
                   onPressed: () => widget.onMuteChanged!(!widget.musicMuted),
                 )
               else
@@ -332,7 +332,7 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
                 ? Center(
                     child: NeoLabel(
                       AppLocalizations.of(context).noPostsYet,
-                      color: NeoColors.green,
+                      color: NeoColors.accent,
                     ),
                   )
                 : PageView.builder(
@@ -714,7 +714,7 @@ class ActivityStrip extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: NeoLabel(
                 '${reaction.emoji} ${nameOf(reaction.userId)}',
-                color: NeoColors.green,
+                color: NeoColors.accent,
               ),
             ),
         ],
@@ -732,7 +732,7 @@ class QuestStyleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NeoLabel(
     '♪ ${style.label}',
-    color: style == StyleType.vanGogh ? NeoColors.green : NeoColors.coral,
+    color: style == StyleType.vanGogh ? NeoColors.accent : NeoColors.coral,
   );
 }
 
@@ -745,7 +745,7 @@ class QuestTitleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    decoration: NeoTheme.panel(color: NeoColors.green, radius: 999),
+    decoration: NeoTheme.panel(color: NeoColors.accent, radius: 999),
     child: Text(
       '${quest.emoji}  ${quest.storyTitleFor(vietnamese: isVietnamese(context))}',
       maxLines: 1,

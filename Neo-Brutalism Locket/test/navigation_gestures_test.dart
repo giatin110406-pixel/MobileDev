@@ -332,9 +332,9 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final colors = [
-        NeoColors.green,
-        NeoColors.green,
-        NeoColors.green,
+        NeoColors.accent,
+        NeoColors.accent,
+        NeoColors.accent,
         NeoColors.coral,
         NeoColors.coral,
       ];

@@ -15,7 +15,7 @@ class InkBadge extends StatelessWidget {
       child: ExcludeSemantics(
         child: NeoLabel(
           AppLocalizations.of(context).inkAmountLabel(amount),
-          color: NeoColors.green,
+          color: NeoColors.accent,
           icon: Icons.water_drop,
         ),
       ),

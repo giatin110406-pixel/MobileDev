@@ -139,7 +139,7 @@ class _HapticsCheckDialogState extends State<HapticsCheckDialog> {
           color: good == null
               ? NeoColors.surface
               : good
-              ? NeoColors.green
+              ? NeoColors.accent
               : NeoColors.coral,
         ),
       ],

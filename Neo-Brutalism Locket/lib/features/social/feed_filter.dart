@@ -96,7 +96,7 @@ class FeedFilterPill extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: value.isEveryone ? NeoColors.green : NeoColors.coral,
+          color: value.isEveryone ? NeoColors.accent : NeoColors.coral,
           shape: BoxShape.circle,
           border: Border.all(color: NeoColors.ink, width: 2),
         ),

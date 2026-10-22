@@ -132,7 +132,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     tooltip: _grid
                         ? AppLocalizations.of(context).galleryViewCorridor
                         : AppLocalizations.of(context).galleryViewGrid,
-                    fill: NeoColors.green,
+                    fill: NeoColors.accent,
                     onPressed: () => setState(() => _grid = !_grid),
                   ),
                 ],
@@ -331,5 +331,5 @@ class GalleryGrid extends StatelessWidget {
 /// The colours of the frames in the grid view (the same as in the corridor).
 abstract final class CorridorFrameColors {
   static const frame = Color(0xFF000000);
-  static const mat = Color(0xFFFFFDF5);
+  static const mat = Color(0xFFF8EED2);
 }

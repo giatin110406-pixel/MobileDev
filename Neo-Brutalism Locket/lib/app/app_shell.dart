@@ -1083,7 +1083,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               ? null
               : SnackBarAction(
                   label: l10n.pushOpen,
-                  textColor: NeoColors.green,
+                  textColor: NeoColors.accent,
                   onPressed: () => _onPushTap(tap),
                 ),
         ),
@@ -1566,31 +1566,31 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               label: l10n.tabShoot,
               outlineIcon: Icons.photo_camera_outlined,
               filledIcon: Icons.photo_camera,
-              activeColor: NeoColors.green,
+              activeColor: NeoColors.accent,
             ),
             NeoBottomNavTab(
               label: l10n.tabFriends,
               outlineIcon: Icons.people_alt_outlined,
               filledIcon: Icons.people_alt,
-              activeColor: NeoColors.green,
+              activeColor: NeoColors.accent,
             ),
             NeoBottomNavTab(
               label: l10n.tabInbox,
               outlineIcon: Icons.chat_bubble_outline,
               filledIcon: Icons.chat_bubble,
-              activeColor: NeoColors.green,
+              activeColor: NeoColors.accent,
             ),
             NeoBottomNavTab(
               label: l10n.tabContest,
               outlineIcon: Icons.emoji_events_outlined,
               filledIcon: Icons.emoji_events,
-              activeColor: NeoColors.green,
+              activeColor: NeoColors.accent,
             ),
             NeoBottomNavTab(
               label: _online ? l10n.historyTab : l10n.tabPrints,
               outlineIcon: Icons.grid_view_outlined,
               filledIcon: Icons.grid_view_rounded,
-              activeColor: NeoColors.green,
+              activeColor: NeoColors.accent,
             ),
           ],
         ),
@@ -1938,7 +1938,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             height: 36,
             alignment: Alignment.center,
             decoration: NeoTheme.panel(
-              color: selected ? NeoColors.green : NeoColors.surface,
+              color: selected ? NeoColors.accent : NeoColors.surface,
               pressed: pressed,
             ),
             child: Text(

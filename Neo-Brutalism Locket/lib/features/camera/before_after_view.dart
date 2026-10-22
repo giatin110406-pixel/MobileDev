@@ -220,7 +220,7 @@ class _RevealCompareState extends State<RevealCompare> {
                     child: IgnorePointer(
                       child: NeoLabel(
                         widget.afterLabel!,
-                        color: NeoColors.green,
+                        color: NeoColors.accent,
                       ),
                     ),
                   ),
@@ -233,7 +233,7 @@ class _RevealCompareState extends State<RevealCompare> {
                       child: Center(
                         child: NeoLabel(
                           AppLocalizations.of(context).dragToCompare,
-                          color: NeoColors.green,
+                          color: NeoColors.accent,
                           icon: Icons.touch_app_outlined,
                         ),
                       ),

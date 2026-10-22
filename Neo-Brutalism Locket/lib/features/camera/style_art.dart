@@ -18,7 +18,7 @@ class StyleArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (style == StyleType.none) return const ColoredBox(color: Colors.white);
+    if (style == StyleType.none) return const ColoredBox(color: Color(0xFFF8EED2));
     return Stack(
       fit: StackFit.expand,
       children: [

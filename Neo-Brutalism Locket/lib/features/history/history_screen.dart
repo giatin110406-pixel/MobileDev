@@ -181,7 +181,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Container(
           padding: EdgeInsets.fromLTRB(leading == null ? 12 : 4, 4, 12, 4),
           decoration: BoxDecoration(
-            color: selected ? NeoColors.green : NeoColors.surface,
+            color: selected ? NeoColors.accent : NeoColors.surface,
             border: Border.all(color: NeoColors.ink, width: 2),
             borderRadius: BorderRadius.circular(999),
           ),
@@ -239,7 +239,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     padding: const EdgeInsets.only(top: 18),
     child: Container(
       padding: const EdgeInsets.all(20),
-      decoration: NeoTheme.panel(color: NeoColors.green),
+      decoration: NeoTheme.panel(color: NeoColors.accent),
       child: Text(
         widget.failed ? l10n.historyLoadFailed : l10n.historyEmpty,
         textAlign: TextAlign.center,
@@ -323,8 +323,8 @@ class _Tile extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: style == StyleType.vanGogh
-                        ? NeoColors.green
-                        : NeoColors.green,
+                        ? NeoColors.accent
+                        : NeoColors.accent,
                     border: Border.all(color: NeoColors.ink, width: 1.5),
                     borderRadius: BorderRadius.circular(999),
                   ),

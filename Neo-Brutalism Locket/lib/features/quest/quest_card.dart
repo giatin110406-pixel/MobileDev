@@ -21,7 +21,7 @@ QuestStatus questStatusOf(PlayerStore store) {
 }
 
 Color questStyleColor(StyleType style) =>
-    style == StyleType.vanGogh ? NeoColors.green : NeoColors.coral;
+    style == StyleType.vanGogh ? NeoColors.accent : NeoColors.coral;
 
 /// One line on the camera screen: today's subject and how it is going. Tap it
 /// for the story and the start button.
@@ -48,7 +48,7 @@ class QuestStrip extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
           decoration: NeoTheme.panel(
             color: status == QuestStatus.done
-                ? NeoColors.green
+                ? NeoColors.accent
                 : NeoColors.surface,
             pressed: pressed,
           ),

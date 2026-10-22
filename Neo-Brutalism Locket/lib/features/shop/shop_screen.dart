@@ -115,7 +115,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       NeoIconButton(
                         icon: Icons.arrow_back,
                         tooltip: AppLocalizations.of(context).backTooltip,
-                        fill: NeoColors.green,
+                        fill: NeoColors.accent,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 12),
@@ -213,7 +213,7 @@ class _ShopScreenState extends State<ShopScreen> {
           height: 40,
           alignment: Alignment.center,
           decoration: NeoTheme.panel(
-            color: selected ? NeoColors.green : NeoColors.surface,
+            color: selected ? NeoColors.accent : NeoColors.surface,
           ),
           child: Text(
             AppLocalizations.of(context).shopKindLabel(kind),
@@ -475,7 +475,7 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
     decoration: BoxDecoration(
-      color: inUse ? NeoColors.green : NeoColors.surface,
+      color: inUse ? NeoColors.accent : NeoColors.surface,
       border: Border.all(color: NeoColors.ink, width: 2),
       borderRadius: BorderRadius.circular(999),
       boxShadow: inUse
@@ -545,7 +545,7 @@ class _ShopCard extends StatelessWidget {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                color: NeoColors.green,
+                color: NeoColors.accent,
                 shape: BoxShape.circle,
                 border: Border.all(color: NeoColors.ink, width: 3),
                 boxShadow: const [
@@ -718,7 +718,7 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
             children: [
               Row(
                 children: [
-                  NeoLabel(item.theme.label, color: NeoColors.green),
+                  NeoLabel(item.theme.label, color: NeoColors.accent),
                   const SizedBox(width: 8),
                   RarityChip(rarity: item.rarity),
                   const Spacer(),

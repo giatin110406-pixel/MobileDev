@@ -352,7 +352,7 @@ class _PixelRingFrame extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     _paintPixelRing(canvas, size, const [
-      Color(0xFF4ECDC4),
+      Color(0xFF84D0C8),
       Color(0xFF45B7D1),
       Color(0xFFA388EE),
     ]);
@@ -496,7 +496,7 @@ class _PlainBanner extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = NeoColors.yellow);
+    canvas.drawRect(Offset.zero & size, Paint()..color = NeoColors.teal);
     final stripe = Paint()..color = NeoColors.coral.withValues(alpha: 0.55);
     for (var x = -size.height; x < size.width; x += 28) {
       canvas.drawPath(
@@ -869,7 +869,7 @@ class _SpaceBanner extends CustomPainter {
     paintSprite(
       canvas,
       _shipRows,
-      const {'c': Color(0xFF4ECDC4)},
+      const {'c': Color(0xFF84D0C8)},
       origin: Offset(size.width * 0.46, size.height - 18),
       cell: cell,
     );

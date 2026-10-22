@@ -14,9 +14,9 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 /// The colour of a winner's pedestal: gold, off-white and coral for first, second
 /// and third.
 Color hallFrameColor(int? rank) => switch (rank) {
-  1 => const Color(0xFFFFD23F),
-  2 => const Color(0xFFFFFDF5),
-  _ => const Color(0xFFFF6B6B),
+  1 => const Color(0xFFF5D06F),
+  2 => const Color(0xFFF8EED2),
+  _ => const Color(0xFFFF6F61),
 };
 
 /// The Hall of Fame: a podium with the three winners of a week, first place in
@@ -209,7 +209,7 @@ class _HallOfFameScreenState extends State<HallOfFameScreen> {
             label: l10n.hallPodiumSemantics(weekName),
             child: Container(
               padding: const EdgeInsets.fromLTRB(12, 22, 12, 0),
-              decoration: NeoTheme.panel(color: NeoColors.green),
+              decoration: NeoTheme.panel(color: NeoColors.accent),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [

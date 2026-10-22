@@ -109,7 +109,7 @@ class RequestsSection extends StatelessWidget {
           _RequestTile(
             request: request,
             caption: l10n.friendsIncoming,
-            color: NeoColors.green,
+            color: NeoColors.accent,
             actions: [
               NeoButton(
                 label: l10n.friendsAccept,

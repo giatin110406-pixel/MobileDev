@@ -1083,7 +1083,7 @@ class CameraTabState extends State<CameraTab> {
       builder: (context, pressed) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? NeoColors.green : NeoColors.surface,
+          color: selected ? NeoColors.accent : NeoColors.surface,
           border: Border.all(color: NeoColors.ink, width: 2),
           borderRadius: BorderRadius.circular(999),
           boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
@@ -1118,7 +1118,7 @@ class CameraTabState extends State<CameraTab> {
         width: 78,
         height: 78,
         decoration: BoxDecoration(
-          color: enabled ? NeoColors.green : NeoColors.switchOff,
+          color: enabled ? NeoColors.accent : NeoColors.switchOff,
           shape: BoxShape.circle,
           border: Border.all(color: NeoColors.ink, width: 3),
           boxShadow: enabled ? NeoPress.shadow(pressed) : const [],
@@ -1181,7 +1181,7 @@ class CameraTabState extends State<CameraTab> {
                         width: 20,
                         height: 20,
                         decoration: BoxDecoration(
-                          color: NeoColors.green,
+                          color: NeoColors.accent,
                           shape: BoxShape.circle,
                           border: Border.all(color: NeoColors.ink, width: 2),
                         ),
@@ -1218,7 +1218,7 @@ class CameraTabState extends State<CameraTab> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: NeoColors.green,
+              color: NeoColors.accent,
               shape: BoxShape.circle,
               border: Border.all(color: NeoColors.ink, width: 2),
             ),
@@ -1366,7 +1366,7 @@ class CameraTabState extends State<CameraTab> {
                           )
                         : NeoLabel(
                             AppLocalizations.of(context).checkingPhoto,
-                            color: NeoColors.green,
+                            color: NeoColors.accent,
                             icon: Icons.search,
                           ),
                   ),
@@ -1389,7 +1389,7 @@ class CameraTabState extends State<CameraTab> {
                     height: 96,
                     alignment: Alignment.center,
                     decoration: NeoTheme.panel(
-                      color: NeoColors.green,
+                      color: NeoColors.accent,
                       radius: 999,
                     ),
                     child: Text(
@@ -1467,7 +1467,7 @@ class CameraTabState extends State<CameraTab> {
     },
     tooltip: AppLocalizations.of(context).flashTooltip,
     active: _flashMode != FlashMode.off,
-    activeColor: NeoColors.green,
+    activeColor: NeoColors.accent,
     onPressed: _toggleFlash,
   );
 
@@ -1525,7 +1525,7 @@ class CameraTabState extends State<CameraTab> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: level == nearest
-                            ? NeoColors.green
+                            ? NeoColors.accent
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(999),
                       ),
@@ -1566,7 +1566,7 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildCameraFallback() {
     return ColoredBox(
-      color: NeoColors.green,
+      color: NeoColors.accent,
       child: Center(
         // Scales down when the square is short (small phones, quest strip).
         child: FittedBox(
@@ -1581,7 +1581,7 @@ class CameraTabState extends State<CameraTab> {
                   height: 82,
                   alignment: Alignment.center,
                   decoration: NeoTheme.panel(
-                    color: NeoColors.green,
+                    color: NeoColors.accent,
                     borderWidth: 2,
                     radius: 999,
                   ),
@@ -1656,7 +1656,7 @@ class CameraTabState extends State<CameraTab> {
               icon: Icons.flip_camera_ios_outlined,
               tooltip: AppLocalizations.of(context).switchCameraTooltip,
               onPressed: _flipCamera,
-              fill: NeoColors.green,
+              fill: NeoColors.accent,
               size: 54,
             ),
           ),
@@ -1720,7 +1720,7 @@ class CameraTabState extends State<CameraTab> {
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: _recording ? NeoColors.coral : NeoColors.green,
+              color: _recording ? NeoColors.coral : NeoColors.accent,
               shape: BoxShape.circle,
               border: Border.all(color: NeoColors.surface, width: 2),
             ),
@@ -1775,7 +1775,7 @@ class CameraTabState extends State<CameraTab> {
                 icon: Icons.arrow_back,
                 tooltip: AppLocalizations.of(context).backToCameraTooltip,
                 onPressed: () => setState(() => _showPrint = false),
-                fill: NeoColors.green,
+                fill: NeoColors.accent,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1940,12 +1940,12 @@ class CameraTabState extends State<CameraTab> {
   Widget _statusBadge(NeoPhoto photo) => switch (photo.status) {
     ProcessingStatus.pending => NeoLabel(
       AppLocalizations.of(context).statusInking,
-      color: NeoColors.green,
+      color: NeoColors.accent,
       icon: Icons.hourglass_top,
     ),
     ProcessingStatus.done => NeoLabel(
       AppLocalizations.of(context).statusReady,
-      color: NeoColors.green,
+      color: NeoColors.accent,
       icon: Icons.check,
     ),
     ProcessingStatus.failed => NeoLabel(

@@ -2,21 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 
 abstract final class NeoColors {
-  // Yellow is the ground; the rest is placed on it:
-  //   yellow    (50%) - the ground of every screen: the app's main colour
-  //   off-white (30%) - cards, the tab bar, sheets
-  //   green     (10%) - the thing to press or the thing selected: buttons,
-  //                     selected tab and chips, labels, my chat bubbles
-  //   coral     (10%) - alerts and unread counts (REC, errors, closed)
-  //   black             outlines, hard shadows and text
+  // Sand is the ground; the rest is placed on it:
+  //   sand   (60%) - the ground of every screen, and cards, tab bar, sheets
+  //   accent (25%) - the yellow: the thing selected or on (selected tab, switch
+  //                  and chips, labels, my chat bubbles)
+  //   teal   (10%) - the main action: primary buttons
+  //   coral        - alerts and unread counts (REC, errors, closed)
+  //   lime, peach, purple - extra folder / category tints
+  //   black        - outlines, hard shadows and text
   static const ink = Color(0xFF000000);
-  static const yellow = Color(0xFFFFD23F);
-  static const paper = yellow;
-  static const surface = Color(0xFFFFFDF5);
-  static const green = Color(0xFF88D498);
-  static const coral = Color(0xFFFF6B6B);
+  static const teal = Color(0xFF84D0C8);
+  static const paper = Color(0xFFF8EED2);
+  static const surface = Color(0xFFF8EED2);
+  static const accent = Color(0xFFF5D06F);
+  static const coral = Color(0xFFFF6F61);
+  static const lime = Color(0xFFA6D63B);
+  static const peach = Color(0xFFFDE5A1);
+  static const purple = Color(0xFF7C6CF0);
+  static const grey = Color(0xFF8E8E8E);
   static const muted = Color(0xFF5C5C5C);
-  static const switchOff = Color(0xFFECE8DA);
+  static const switchOff = Color(0xFFE9E5DC);
 }
 
 /// The two bundled font families: Space Grotesk for headings, numbers, labels
@@ -33,7 +38,7 @@ abstract final class NeoTheme {
     colorScheme: const ColorScheme.light(
       primary: NeoColors.ink,
       onPrimary: NeoColors.surface,
-      secondary: NeoColors.green,
+      secondary: NeoColors.accent,
       onSecondary: NeoColors.ink,
       surface: NeoColors.surface,
       onSurface: NeoColors.ink,
@@ -42,7 +47,7 @@ abstract final class NeoTheme {
     ),
     textSelectionTheme: const TextSelectionThemeData(
       cursorColor: NeoColors.ink,
-      selectionColor: NeoColors.green,
+      selectionColor: NeoColors.accent,
       selectionHandleColor: NeoColors.ink,
     ),
     splashFactory: NoSplash.splashFactory,
@@ -176,7 +181,7 @@ class _NeoButtonState extends State<NeoButton> {
   bool _pressed = false;
 
   Color get _fill => switch (widget.variant) {
-    NeoButtonVariant.primary => NeoColors.green,
+    NeoButtonVariant.primary => NeoColors.teal,
     NeoButtonVariant.secondary => NeoColors.surface,
     NeoButtonVariant.accent => NeoColors.surface,
     NeoButtonVariant.outline => NeoColors.surface,
@@ -295,7 +300,7 @@ class NeoSwitch extends StatelessWidget {
                 height: 28,
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: value ? NeoColors.yellow : NeoColors.switchOff,
+                  color: value ? NeoColors.accent : NeoColors.switchOff,
                   border: Border.all(color: NeoColors.ink, width: 2),
                   borderRadius: BorderRadius.circular(999),
                   boxShadow: const [
@@ -315,7 +320,7 @@ class NeoSwitch extends StatelessWidget {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: NeoColors.surface,
+                      color: value ? NeoColors.ink : NeoColors.surface,
                       border: Border.all(color: NeoColors.ink, width: 2),
                       shape: BoxShape.circle,
                     ),

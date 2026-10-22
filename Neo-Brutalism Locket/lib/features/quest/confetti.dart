@@ -32,10 +32,10 @@ class ConfettiState extends State<Confetti>
     final random = math.Random();
     const colors = [
       NeoColors.coral,
-      NeoColors.yellow,
+      NeoColors.teal,
       NeoColors.ink,
       NeoColors.coral,
-      NeoColors.yellow,
+      NeoColors.teal,
       NeoColors.ink,
     ];
     setState(() {
