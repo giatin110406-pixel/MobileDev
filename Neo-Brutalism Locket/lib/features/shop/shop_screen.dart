@@ -12,6 +12,7 @@ import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
+import 'package:neo_brutalism_locket/features/shop/rarity_badge.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_labels.dart';
 import 'package:neo_brutalism_locket/features/wallet/sunbit_badge.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -333,6 +334,7 @@ class _ShopScreenState extends State<ShopScreen> {
     final action = shopActionFor(state, item);
     return _ShopCard(
       equipped: action == ShopAction.unequip,
+      rarity: item.rarity,
       onTap: Haptics.tap(() => showShopItemSheet(context, widget.store, item)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -364,14 +366,6 @@ class _ShopScreenState extends State<ShopScreen> {
           const SizedBox(height: 6),
           Row(
             children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: RarityChip(rarity: item.rarity),
-                ),
-              ),
-              const SizedBox(width: 6),
               switch (action) {
                 ShopAction.unequip => _StatusPill(
                   inUse: true,
@@ -506,16 +500,19 @@ class _StatusPill extends StatelessWidget {
 
 /// A shop card. The item being worn gets a green ground, a thicker outline and a
 /// big tick stamped on its corner, so it reads at a glance without any text.
+/// Its [rarity] is a strap slung across the top left corner.
 class _ShopCard extends StatelessWidget {
   const _ShopCard({
     required this.equipped,
     required this.onTap,
     required this.child,
+    this.rarity,
   });
 
   final bool equipped;
   final VoidCallback? onTap;
   final Widget child;
+  final Rarity? rarity;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -525,15 +522,31 @@ class _ShopCard extends StatelessWidget {
       NeoPress(
         onTap: onTap,
         sunken: equipped,
-        builder: (context, pressed) => Container(
-          padding: const EdgeInsets.all(10),
-          decoration: NeoTheme.panel(
-            color: equipped ? const Color(0xFFD9F2DF) : NeoColors.surface,
-            borderWidth: equipped ? 3 : 2,
-            pressed: pressed,
-          ),
-          child: child,
-        ),
+        builder: (context, pressed) {
+          final border = equipped ? 3.0 : 2.0;
+          return Container(
+            decoration: NeoTheme.panel(
+              color: equipped ? const Color(0xFFD9F2DF) : NeoColors.surface,
+              borderWidth: border,
+              pressed: pressed,
+            ),
+            // The strap runs off the card's edges: cut it at the outline.
+            child: NeoPanelClip(
+              borderWidth: border,
+              child: Stack(
+                children: [
+                  Padding(padding: const EdgeInsets.all(10), child: child),
+                  if (rarity != null)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      child: RaritySash(rarity: rarity!),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
       if (equipped)
         Positioned(
@@ -561,31 +574,6 @@ class _ShopCard extends StatelessWidget {
           ),
         ),
     ],
-  );
-}
-
-class RarityChip extends StatelessWidget {
-  const RarityChip({super.key, required this.rarity});
-
-  final Rarity rarity;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-    decoration: BoxDecoration(
-      color: rarity.color,
-      border: Border.all(color: NeoColors.ink, width: 1.5),
-      borderRadius: BorderRadius.circular(999),
-    ),
-    child: Text(
-      AppLocalizations.of(context).shopRarityLabel(rarity),
-      style: const TextStyle(
-        color: NeoColors.ink,
-        fontSize: 8,
-        fontWeight: FontWeight.w900,
-        height: 1,
-      ),
-    ),
   );
 }
 
@@ -720,7 +708,13 @@ class _ShopItemSheetState extends State<_ShopItemSheet> {
                 children: [
                   NeoLabel(item.theme.label, color: NeoColors.accent),
                   const SizedBox(width: 8),
-                  RarityChip(rarity: item.rarity),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: RarityRibbon(rarity: item.rarity),
+                    ),
+                  ),
                   const Spacer(),
                   SunbitBadge(balance: state.balance),
                 ],
