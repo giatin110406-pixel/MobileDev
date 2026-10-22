@@ -1041,9 +1041,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get holdToCompare => 'GIỮ ĐỂ SO SÁNH';
 
   @override
-  String get dragToCompare => 'KÉO ĐỂ SO SÁNH';
-
-  @override
   String get pushOpen => 'MỞ';
 
   @override

@@ -92,6 +92,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
     expect(find.byType(QuestStrip), findsOneWidget);
+    // The viewfinder is always a 1:1 square.
+    final viewfinder = tester.getSize(find.byKey(const ValueKey('viewfinder')));
+    expect(viewfinder.width, greaterThan(200));
+    expect(viewfinder.height, viewfinder.width);
     // The viewfinder is just the picture: no LIVE / HOME LAPTOP / n PRINTS chips.
     expect(find.text('LIVE'), findsNothing);
     expect(find.text('HOME LAPTOP'), findsNothing);
@@ -123,7 +127,7 @@ void main() {
     expect(page.height, greaterThan(300));
     expect(find.text('SHOP'), findsOneWidget);
 
-    for (final tab in ['FRIENDS', 'INBOX', 'CONTEST']) {
+    for (final tab in ['FRIENDS', 'CONTEST']) {
       await tester.tap(find.byTooltip(tab));
       await tester.pumpAndSettle();
       final area = tester.getSize(

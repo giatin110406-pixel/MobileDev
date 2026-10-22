@@ -314,13 +314,13 @@ void main() {
       expect(find.byTooltip('Send message'), findsOneWidget);
     });
 
-    testWidgets('a message from someone not loaded yet opens the inbox', (
+    testWidgets('a message from someone not loaded yet opens the friends tab', (
       tester,
     ) async {
       final push = await pumpShell(tester);
       push.tap(const PushTap(type: 'message', fromId: 'id-unknown'));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('INBOX'), findsOneWidget);
+      expect(find.text('ONLINE'), findsOneWidget);
       expect(find.byTooltip('Send message'), findsNothing);
     });
 

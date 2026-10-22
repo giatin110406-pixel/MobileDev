@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 import 'package:neo_brutalism_locket/app/neo_bottom_nav.dart';
+import 'package:neo_brutalism_locket/app/shutter_flight.dart';
 import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
@@ -188,7 +189,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   List<PocketMessage> _messages = [];
   List<FriendPost> _posts = [];
   PocketFriend? _activeFriend;
-  int _tabIndex = 0;
+  int _tabIndex = _cameraTab;
   bool _showFeed = false;
   FriendsStore? _friendsStore;
   GroupsStore? _groupsStore;
@@ -341,6 +342,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _flight?.remove();
     _pushSubscription?.cancel();
     if (widget.session?.beforeSignOut == _beforeSignOut) {
       widget.session?.beforeSignOut = null;
@@ -590,7 +592,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   void _onChatChanged() {
     final open = _activeFriend;
     // A message arrives in the conversation that is on screen: it is read.
-    if (open != null && _tabIndex == 2) _chat?.markRead(open.id);
+    if (open != null && _tabIndex == _chatPage) _chat?.markRead(open.id);
     if (mounted) setState(() {});
   }
 
@@ -809,7 +811,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   /// is not loaded yet).
   Future<void> _openPostById(String postId) async {
     if (!mounted || widget.session == null) return;
-    _selectTab(0);
+    _selectTab(_cameraTab);
     var post = _postsStore?.posts.where((p) => p.id == postId).firstOrNull;
     if (post == null) {
       await _syncPosts();
@@ -840,7 +842,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         username == session.profile.username) {
       return;
     }
-    _selectTab(1);
+    _selectTab(_friendsTab);
     showAddFriendOnlineSheet(
       context,
       store: store,
@@ -914,7 +916,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (chat != null) {
       setState(() {
         _activeFriend = friend;
-        _tabIndex = 2;
+        _tabIndex = _chatPage;
       });
       chat.markRead(friend.id);
       // Anything that came in meanwhile (the listener marks it read).
@@ -927,7 +929,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _activeFriend = friend;
       _friends = snapshot.friends;
       _messages = snapshot.messages;
-      _tabIndex = 2;
+      _tabIndex = _chatPage;
     });
   }
 
@@ -1070,7 +1072,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final tap = notice.tap;
     if (tap != null &&
         tap.type == 'message' &&
-        _tabIndex == 2 &&
+        _tabIndex == _chatPage &&
         _activeFriend != null &&
         _activeFriend!.id == tap.fromId) {
       return;
@@ -1134,12 +1136,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         if (friend != null) {
           _openFriend(friend);
         } else {
-          _selectTab(2); // the inbox, if the friend list is not loaded yet
+          // The friend list is not loaded yet: their chat is listed there.
+          _selectTab(_friendsTab);
         }
       case 'friend_request' || 'friend_accepted':
-        _selectTab(1);
+        _selectTab(_friendsTab);
       default:
-        _selectTab(0);
+        _selectTab(_cameraTab);
         setState(() => _showFeed = true);
         _syncPosts();
     }
@@ -1389,7 +1392,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _messages = snapshot.messages;
       _posts = snapshot.posts;
       _activeFriend = null;
-      _tabIndex = 1;
+      _tabIndex = _friendsTab;
     });
   }
 
@@ -1432,34 +1435,106 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (remove != true || !mounted) return;
     try {
       await store.removeFriend(person);
-      if (mounted) setState(() => _tabIndex = 1);
+      if (mounted) setState(() => _tabIndex = _friendsTab);
     } on FriendsFailure catch (failure) {
       if (mounted) _notify(friendsFailureText(l10n, failure));
     }
   }
 
-  /// The archive is the fifth menu tab; the profile is a page behind the
-  /// avatar on the camera, not a menu tab: it sits after the five tabs.
-  static const _archiveTab = 4;
+  /// The three menu tabs, in the bar's order with the camera in the middle.
+  /// The archive hides behind the camera's button: it shows in the bar while
+  /// that button is up as the shutter. It, a chat (opened from a friend) and
+  /// the profile (behind the avatar on the camera) are pages, not menu tabs:
+  /// they sit after them.
+  static const _menuTabCount = 3;
+  static const _friendsTab = 0;
+  static const _cameraTab = 1;
+  static const _contestTab = 2;
+  static const _archiveTab = 3;
+  static const _chatPage = 4;
   static const _profilePage = 5;
 
   void _selectTab(int index) {
     Haptics.select();
+    final wasShooting = _shooting;
+    // Measured now: once the camera is off screen the shutter has no place.
+    final shutter = _rectOf(_shutterKey);
     setState(() {
       _tabIndex = index;
       _activeFriend = null;
-      if (index == 0) _showFeed = false;
+      if (index == _cameraTab) _showFeed = false;
     });
-    if (index == 0) _camera?.closePrint();
-    if (index != 0) _camera?.leaveQuestMode();
-    if (index == 1 || index == 2) _loadSocial();
+    if (index == _cameraTab) _camera?.closePrint();
+    if (index != _cameraTab) _camera?.leaveQuestMode();
+    if (index == _friendsTab) _loadSocial();
     if (index == _archiveTab) _loadArchive();
+    if (!wasShooting && _shooting) {
+      _flyShutter(up: true);
+    } else if (wasShooting && !_shooting && shutter != null) {
+      _flyShutter(up: false, from: shutter);
+    }
   }
 
-  /// Swiping moves between the five menu tabs; the archive page (opened from the
-  /// camera) is not one of them, so it is left with its back button.
+  /// The live camera is on screen, so the menu's SHOOT button is its shutter.
+  bool get _shooting => _tabIndex == _cameraTab && !_showFeed;
+
+  final _shutterKey = GlobalKey();
+  final _navShootKey = GlobalKey();
+
+  /// The SHOOT button is between the menu bar and the shutter: neither end
+  /// shows it until it lands.
+  bool _flying = false;
+  OverlayEntry? _flight;
+
+  Rect? _rectOf(GlobalKey key) {
+    final box = key.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) return null;
+    return box.localToGlobal(Offset.zero) & box.size;
+  }
+
+  /// Flies the SHOOT button up into the shutter ([up]) or the shutter back
+  /// down into the menu bar, from [from] (the shutter's place before it left).
+  void _flyShutter({required bool up, Rect? from}) {
+    if (MediaQuery.disableAnimationsOf(context)) return;
+    _flight?.remove();
+    _flight = null;
+    setState(() => _flying = true);
+    // Where the far end is is only known once the new tab is laid out.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final start = up ? _rectOf(_navShootKey) : from;
+      final end = _rectOf(up ? _shutterKey : _navShootKey);
+      if (start == null || end == null) {
+        _land(null);
+        return;
+      }
+      late final OverlayEntry entry;
+      entry = OverlayEntry(
+        builder: (_) => ShutterFlight(
+          from: start,
+          to: end,
+          up: up,
+          onDone: () => _land(entry),
+        ),
+      );
+      _flight = entry;
+      Overlay.of(context).insert(entry);
+    });
+  }
+
+  /// The flight [entry] is over (null: it never took off).
+  void _land(OverlayEntry? entry) {
+    // A newer flight took over: it lands by itself.
+    if (entry != null && entry != _flight) return;
+    _flight?.remove();
+    _flight = null;
+    if (mounted) setState(() => _flying = false);
+  }
+
+  /// Swiping moves between the menu tabs; the pages after them are left with
+  /// their back button.
   void _swipeTab(int index) {
-    if (_tabIndex >= _profilePage) return;
+    if (_tabIndex >= _menuTabCount) return;
     _selectTab(index);
   }
 
@@ -1471,7 +1546,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   /// Switches to the SHOOT tab's camera page.
   void _showCamera() {
     setState(() {
-      _tabIndex = 0;
+      _tabIndex = _cameraTab;
       _showFeed = false;
       _activeFriend = null;
     });
@@ -1496,43 +1571,40 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final cameraVisible = _tabIndex == 0 && !_showFeed;
+    final cameraVisible = _tabIndex == _cameraTab && !_showFeed;
     final page = switch (_tabIndex) {
-      0 when _showFeed => _feedScreen(
+      _cameraTab when _showFeed => _feedScreen(
         key: const ValueKey('feed'),
         entries: _filteredFeed(),
         filterPill: _filterPill(),
         onClose: () => setState(() => _showFeed = false),
       ),
-      0 => const SizedBox.shrink(key: ValueKey('camera')),
-      1 => _buildFriends(),
-      2 =>
-        _activeFriend == null
-            ? InboxScreen(
-                key: const ValueKey('inbox'),
-                friends: _friends,
-                messages: _allMessages,
-                onOpenFriend: _openFriend,
-              )
-            : ConversationScreen(
-                key: ValueKey('thread-${_activeFriend!.id}'),
-                friend: _activeFriend!,
-                messages: _allMessages
-                    .where((message) => message.friendId == _activeFriend!.id)
-                    .toList(),
-                onBack: () => setState(() => _activeFriend = null),
-                onSend: _sendSocialMessage,
-                onSendLatestPhoto: _sendLatestPrint,
-                onRemoveFriend: _removeActiveFriend,
-                posts: _posts,
-                onOpenProfile: () => _openFriendProfile(_activeFriend!),
-                allowPhoto: !_online,
-              ),
-      3 => _buildContestTab(),
+      _cameraTab => const SizedBox.shrink(key: ValueKey('camera')),
+      _friendsTab => _buildFriends(),
+      _chatPage when _activeFriend != null => ConversationScreen(
+        key: ValueKey('thread-${_activeFriend!.id}'),
+        friend: _activeFriend!,
+        messages: _allMessages
+            .where((message) => message.friendId == _activeFriend!.id)
+            .toList(),
+        onBack: () => setState(() {
+          _activeFriend = null;
+          _tabIndex = _friendsTab;
+        }),
+        onSend: _sendSocialMessage,
+        onSendLatestPhoto: _sendLatestPrint,
+        onRemoveFriend: _removeActiveFriend,
+        posts: _posts,
+        onOpenProfile: () => _openFriendProfile(_activeFriend!),
+        allowPhoto: !_online,
+      ),
+      // The chat's friend went away (e.g. removed): back on the friends list.
+      _chatPage => _buildFriends(),
+      _contestTab => _buildContestTab(),
       _archiveTab => _buildArchivePage(),
       _ => _buildProfilePage(),
     };
-    final isContestTab = _tabIndex == 3;
+    final isContestTab = _tabIndex == _contestTab;
     final scaffold = Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -1541,7 +1613,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             _buildStatusStrip(),
             Expanded(
               child: TabSwipeDetector(
-                tabCount: 5,
+                tabCount: _menuTabCount,
                 currentIndex: _tabIndex,
                 onSwipe: _swipeTab,
                 child: Stack(
@@ -1571,6 +1643,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           onPhotoRemoved: _onPhotoRemoved,
                           onVideoRecorded: _online ? _sendVideo : null,
                           header: _homeHeader(),
+                          shutterKey: _shutterKey,
+                          hideShutter: _flying,
                         ),
                       ),
                     ),
@@ -1591,41 +1665,46 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         ),
       ),
       bottomNavigationBar: TabSwipeDetector(
-        tabCount: 5,
+        tabCount: _menuTabCount,
         currentIndex: _tabIndex,
         onSwipe: _swipeTab,
         child: NeoBottomNav(
-          selectedIndex: _tabIndex,
-          onSelected: _selectTab,
+          // A chat belongs to the friends tab.
+          selectedIndex: _tabIndex == _chatPage ? _friendsTab : _tabIndex,
+          // With the camera's button up as the shutter, its place in the bar
+          // is the archive's.
+          onSelected: (index) => _selectTab(
+            index == _cameraTab && (_shooting || _flying) ? _archiveTab : index,
+          ),
+          prominentKey: _navShootKey,
+          prominentDocked: _shooting || _flying,
+          // In the order of the tab constants above.
           tabs: [
-            NeoBottomNavTab(
-              label: l10n.tabShoot,
-              outlineIcon: Icons.photo_camera_outlined,
-              filledIcon: Icons.photo_camera,
-              activeColor: NeoColors.accent,
-            ),
             NeoBottomNavTab(
               label: l10n.tabFriends,
               outlineIcon: Icons.people_alt_outlined,
               filledIcon: Icons.people_alt,
               activeColor: NeoColors.accent,
             ),
+            // Shooting is what the app is for: a big raised button, with the
+            // archive behind it.
             NeoBottomNavTab(
-              label: l10n.tabInbox,
-              outlineIcon: Icons.chat_bubble_outline,
-              filledIcon: Icons.chat_bubble,
+              label: l10n.tabShoot,
+              outlineIcon: Icons.photo_camera_outlined,
+              filledIcon: Icons.photo_camera,
               activeColor: NeoColors.accent,
+              prominent: true,
+              behind: NeoBottomNavTab(
+                label: _online ? l10n.historyTab : l10n.tabPrints,
+                outlineIcon: Icons.grid_view_outlined,
+                filledIcon: Icons.grid_view_rounded,
+                activeColor: NeoColors.accent,
+              ),
             ),
             NeoBottomNavTab(
               label: l10n.tabContest,
               outlineIcon: Icons.emoji_events_outlined,
               filledIcon: Icons.emoji_events,
-              activeColor: NeoColors.accent,
-            ),
-            NeoBottomNavTab(
-              label: _online ? l10n.historyTab : l10n.tabPrints,
-              outlineIcon: Icons.grid_view_outlined,
-              filledIcon: Icons.grid_view_rounded,
               activeColor: NeoColors.accent,
             ),
           ],
@@ -1869,7 +1948,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               NeoIconButton(
                 icon: Icons.arrow_back,
                 tooltip: l10n.backTooltip,
-                onPressed: () => _selectTab(0),
+                onPressed: () => _selectTab(_cameraTab),
               ),
             ],
           ),
@@ -1952,7 +2031,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               : ArchiveScreen(
                   photos: _photos,
                   onOpenPhoto: _openPhoto,
-                  onOpenCamera: () => _selectTab(0),
+                  onOpenCamera: () => _selectTab(_cameraTab),
                 ),
         ),
       ],
@@ -2015,7 +2094,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               ? ArchiveScreen(
                   photos: _photos,
                   onOpenPhoto: _openPhoto,
-                  onOpenCamera: () => _selectTab(0),
+                  onOpenCamera: () => _selectTab(_cameraTab),
                 )
               : HistoryScreen(
                   posts: posts?.posts ?? const [],

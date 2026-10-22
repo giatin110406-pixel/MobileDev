@@ -20,7 +20,6 @@ class RevealCompare extends StatefulWidget {
     this.before,
     this.beforeLabel,
     this.afterLabel,
-    this.showHint = false,
     this.beforeDelay = Duration.zero,
   });
 
@@ -30,9 +29,6 @@ class RevealCompare extends StatefulWidget {
   /// Names shown in the top corners while that side is visible (null: none).
   final String? beforeLabel;
   final String? afterLabel;
-
-  /// "Drag to compare" until the first drag.
-  final bool showHint;
 
   /// How long to wait before the "before" picture is put on screen (and starts
   /// loading, if it comes over the network): the finished picture should get
@@ -50,7 +46,6 @@ bool _learnedToDrag = false;
 class _RevealCompareState extends State<RevealCompare> {
   /// Share of the width, from the left, that shows the "before" side.
   double _split = 0;
-  bool _dragged = false;
 
   /// A finger is down: the handle shrinks and fades so the picture shows.
   bool _dragging = false;
@@ -121,7 +116,6 @@ class _RevealCompareState extends State<RevealCompare> {
             behavior: HitTestBehavior.opaque,
             onHorizontalDragStart: (details) {
               Haptics.light();
-              _dragged = true;
               _learnedToDrag = true;
               _dragging = true;
               _beforeReady = true;
@@ -224,21 +218,6 @@ class _RevealCompareState extends State<RevealCompare> {
                       ),
                     ),
                   ),
-                if (widget.showHint && !_dragged)
-                  Positioned(
-                    bottom: 12,
-                    left: 0,
-                    right: 0,
-                    child: IgnorePointer(
-                      child: Center(
-                        child: NeoLabel(
-                          AppLocalizations.of(context).dragToCompare,
-                          color: NeoColors.accent,
-                          icon: Icons.touch_app_outlined,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           );
@@ -305,7 +284,6 @@ class BeforeAfterView extends StatelessWidget {
       after: _picture(context, styled),
       beforeLabel: AppLocalizations.of(context).originalLabel,
       afterLabel: styleLabel,
-      showHint: true,
     );
   }
 }
