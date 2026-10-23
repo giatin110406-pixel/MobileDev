@@ -156,6 +156,15 @@ def test_verify_decision_rules():
     assert not result.match and result.top == "a wolf"
 
 
+def test_verify_refuses_a_photo_of_a_screen_showing_the_subject():
+    from locket_server.verify import decide
+
+    names = ["a dog", "a wolf", "a dog on a laptop screen"]
+    # The subject wins, but a screen/print description holds most of the probability.
+    assert not decide([0.25, 0.05, 0.70], names, 1, 1).match
+    assert decide([0.80, 0.05, 0.15], names, 1, 1).match
+
+
 def test_health_reports_why_the_models_could_not_load():
     """A failed warm-up used to show only in the log; /v1/health now says why."""
     def broken_warmup():

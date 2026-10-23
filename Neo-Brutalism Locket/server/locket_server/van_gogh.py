@@ -6,7 +6,7 @@ from typing import Callable
 import torch
 from PIL import Image, ImageDraw, ImageFilter
 
-from . import config, face_landmarks, output_check, preprocess
+from . import config, face_landmarks, impasto, output_check, preprocess
 from .upscale import upscale_x2
 
 StageCallback = Callable[[str, float], None]
@@ -412,5 +412,13 @@ def stylize_van_gogh(registry, cfg: dict, data: bytes, *, seed: int | None = Non
             big = painted.resize((painted.width * 2, painted.height * 2), Image.BICUBIC)
     result = big.resize((cfg["output_size"], cfg["output_size"]), Image.LANCZOS)
     lap("upscale", t)
+
+    imp = cfg.get("impasto", {})
+    if imp.get("strength", 0) > 0:
+        t = time.time()
+        out_size = cfg["output_size"]
+        keep = impasto.face_keep_mask(out_size, faces, out_size / size, imp.get("face_grow", 1.5))
+        result = impasto.apply(result, keep, imp["strength"], imp.get("face_strength", 0.2))
+        lap("impasto", t)
     stage_cb("done", 1.0)
     return result

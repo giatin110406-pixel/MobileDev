@@ -92,6 +92,24 @@ def test_upscale_check_catches_one_garbage_block():
     assert oc.upscale_broken(Image.fromarray(a), small)
 
 
+def test_impasto_changes_brightness_only_and_spares_faces():
+    import numpy as np
+    from PIL import Image
+    from types import SimpleNamespace
+    from locket_server import impasto
+
+    rng = np.random.default_rng(0)
+    base = Image.fromarray(np.clip(rng.normal(120, 40, (128, 128, 3)), 0, 255).astype(np.uint8)).filter(
+        __import__("PIL.ImageFilter", fromlist=["x"]).GaussianBlur(3))
+    face = SimpleNamespace(x=44, y=44, w=40, h=40)
+    keep = impasto.face_keep_mask(128, [face], 1.0)
+    assert keep[64, 64] < 0.05 and keep[2, 2] > 0.95
+    out = impasto.apply(base, keep, 1.1, 0.2)
+    assert out.size == base.size
+    diff = np.abs(np.asarray(out, float) - np.asarray(base, float)).mean(axis=2)
+    assert diff[2:20, 2:20].mean() > 3 * diff[56:72, 56:72].mean()
+
+
 def test_phone_scene_replaces_the_rules_but_not_a_face():
     # a lit street at night is "bright" for the rules; the phone saw night
     assert pick_reference(CFG, False, 0.6, scene="night") == "night.jpg"
