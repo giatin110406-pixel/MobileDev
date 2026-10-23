@@ -21,6 +21,14 @@ Leave the last cell running while people use the app; Runtime -> **Disconnect an
 - Teammates: either they use your address + token while your session runs, or they repeat the setup with their own Google account (send them `server.tar`).
 - Photos leave the phone for Google's and Cloudflare's servers (processed in memory, never saved). `/v1/verify` is not used there. Check Colab's terms of use before relying on this beyond a demo.
 
+### Eval notebook (`colab/locket_eval.ipynb`)
+Runs the photo-set comparison of two configs on the Colab GPU (the laptop GPU faults every few photos).
+It compares `configs/van_gogh_before_k3.yaml` (old) with `configs/van_gogh.yaml` (now) on the same engine and seed.
+1. `python colab/pack_code.py` (the tar now also holds the eval scripts) and upload `server.tar` to `MyDrive/locket/`.
+2. Upload the `.jpg` files of `server/eval/photos/` to `MyDrive/locket/eval_photos/` (the folder is git-ignored; 14 of the files are the owner's own photos and go to the owner's Google Drive).
+3. Upload `colab/locket_eval.ipynb` to Colab, T4 GPU, **Run all**. `SUBSET` in the second last cell limits it to a few photos for a quick look.
+Results land in `MyDrive/locket/eval_out/` (survive the session; running again resumes). The last cell prints per-tag tables (face_sim, palette_shift, ...), seconds per photo by number of faces, and shows contact sheets (original | old | new). The same comparison works on the laptop: `python -m eval.summary old new`.
+
 ## Run on the laptop
 
 Runs Van Gogh diffusion on the laptop GPU (SD 1.5 + lineart/depth ControlNet + IP-Adapter + face

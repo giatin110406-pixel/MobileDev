@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/ort_image_encoder.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/quest_preprocess.dart';
 
@@ -156,3 +157,12 @@ class SceneGuesser {
 /// it as a default.
 Future<PhotoScene?> guessPhotoScene(Uint8List photo) =>
     SceneGuesser.shared.guess(photo);
+
+/// The style worth offering for a scene, or null when both styles suit it.
+/// Groups: Van Gogh repaints small faces into other people, 8-bit keeps them.
+/// Night and sky: the lights and skies are what Van Gogh painted best.
+StyleType? suggestedStyle(PhotoScene scene) => switch (scene) {
+  PhotoScene.group => StyleType.pixel8bit,
+  PhotoScene.night || PhotoScene.sky => StyleType.vanGogh,
+  PhotoScene.portrait || PhotoScene.day => null,
+};

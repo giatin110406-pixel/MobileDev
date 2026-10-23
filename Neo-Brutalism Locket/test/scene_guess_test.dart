@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:neo_brutalism_locket/features/image_engine/magenta_van_gogh_backend.dart';
 import 'package:neo_brutalism_locket/features/image_engine/scene_guess.dart';
+import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/quest/on_device/ort_image_encoder.dart';
 
 /// Two dimensions, one description per axis: x = portrait, y = night (twice,
@@ -77,6 +78,14 @@ void main() {
       expect(bank.dimension, 512);
     },
   );
+
+  test('only clear cases suggest a style', () {
+    expect(suggestedStyle(PhotoScene.group), StyleType.pixel8bit);
+    expect(suggestedStyle(PhotoScene.night), StyleType.vanGogh);
+    expect(suggestedStyle(PhotoScene.sky), StyleType.vanGogh);
+    expect(suggestedStyle(PhotoScene.portrait), isNull);
+    expect(suggestedStyle(PhotoScene.day), isNull);
+  });
 
   test('each scene has its paintings; the same photo keeps its painting', () {
     final photo = _photo(40);

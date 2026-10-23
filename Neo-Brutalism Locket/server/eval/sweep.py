@@ -97,6 +97,17 @@ SWEEP.update({
 })
 
 
+# Clearer brush strokes (post-process on the finished painting, faces spared) and fewer steps.
+# The main pass already runs only steps * strength (13 of 22) and the face pass 14 of 25.
+IMPASTO = ["impasto.strength=1.1", "impasto.face_strength=0.2"]
+FAST = ["main.steps=16", "face.steps=18"]
+SWEEP.update({
+    "imp1": IMPASTO,
+    "fast1": FAST,
+    "imp1_fast1": IMPASTO + FAST,
+})
+
+
 def main() -> None:
     base = config.load_yaml("van_gogh.yaml")
     import os

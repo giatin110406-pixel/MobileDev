@@ -66,8 +66,13 @@ face:
   mask_feather_small: 0.08
   skin_paint: 0.7         # oil filter on skin only (never eyes/brows/lips): brush texture, no feature moves
 
+impasto:
+  strength: 0             # 0 = off. Brush-stroke relief after upscaling (CPU, ~0.8 s); eval variant imp1 uses 1.1
+  face_strength: 0.2      # share of the relief kept on faces (their identity must not change)
+  face_grow: 1.5
+
 identity:
-  enabled: false         # superseded by face.init=source (eval g1: face_sim 0.825, natural faces)
+  enabled: false        # superseded by face.init=source (eval g1: face_sim 0.825, natural faces)
   strength: 0.8           # 1.0 + colour detail + big mask looked like a photo (and re-photo'd nearby objects)
   luma_only: true         # only brightness detail is restored, colours stay painted
   mask_w: 0.42            # ellipse half-width / half-height as a fraction of the face box

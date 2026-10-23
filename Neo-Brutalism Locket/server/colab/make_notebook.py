@@ -1,6 +1,8 @@
-"""Regenerates colab/locket_server.ipynb from the cell sources below (edit them here, then run
-`python colab/make_notebook.py`). The notebook starts the stylize server on a Colab GPU and opens a
-public https address for the phone app."""
+"""Regenerates the two Colab notebooks from the cell sources below (edit them here, then run
+`python colab/make_notebook.py`):
+  locket_server.ipynb  starts the stylize server on a Colab GPU and opens a public https address
+                       for the phone app;
+  locket_eval.ipynb    runs the photo-set comparison (eval/) of two configs on the Colab GPU."""
 from __future__ import annotations
 
 import json
@@ -53,9 +55,7 @@ for line in (WORK / "server" / "requirements.txt").read_text(encoding="utf-8").s
 subprocess.run([sys.executable, "-m", "uv", "pip", "install", "--python", PY, *pins], check=True)
 print("libraries ready")'''
 
-MODELS = '''import time
-
-MODELS = WORK / "models"
+MODELS = '''MODELS = WORK / "models"
 WEIGHTS = {
     "RealESRGAN_x2plus.pth":
         "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth",
@@ -66,22 +66,9 @@ WEIGHTS = {
 
 if not MODELS.exists():
     if (DRIVE / "models.tar").exists():
-        # Drive is slow to read (a 6 GB file can take 5-15 min), and extractall prints nothing:
-        # unpack member by member so the cell shows how far it is.
-        print("restoring models from Drive (5-15 min, progress below)...")
+        print("restoring models from Drive (~2 min)...")
         MODELS.mkdir()
-        archive = DRIVE / "models.tar"
-        total = archive.stat().st_size
-        started = time.time()
-        next_note = 0.05
-        with tarfile.open(archive, "r:") as tar:
-            for member in tar:
-                tar.extract(member, MODELS, filter="data")
-                done = tar.fileobj.tell() / total
-                if done >= next_note:
-                    print(f"  {done:.0%} restored ({int(time.time() - started)} s)", flush=True)
-                    next_note = done + 0.05
-        print("restored in", int(time.time() - started), "s")
+        tarfile.open(DRIVE / "models.tar").extractall(MODELS, filter="data")
     else:
         print("first run: downloading ~6 GB of models (~5-10 min), saved to Drive for next time")
         (MODELS / "weights").mkdir(parents=True)
@@ -89,7 +76,6 @@ if not MODELS.exists():
             urllib.request.urlretrieve(url, MODELS / "weights" / name)
         env = dict(os.environ, HF_HOME=str(MODELS / "hf"), TORCH_HOME=str(MODELS / "torch"))
         subprocess.run([PY, "download_models.py"], cwd=WORK / "server", env=env, check=True)
-        print("saving the models to Drive for next time (a few minutes)...")
         with tarfile.open(DRIVE / "models.tar", "w") as tar:
             tar.add(MODELS / "hf", arcname="hf")
             tar.add(MODELS / "weights", arcname="weights")
@@ -110,10 +96,8 @@ except Exception:
 SERVER = '''import json
 import time
 
-# MPLBACKEND: Colab points matplotlib at its notebook backend, which the server's own Python
-# does not have; mediapipe imports matplotlib and would crash. The server has no screen anyway.
 ENV = dict(os.environ, LOCKET_TOKEN=TOKEN, HF_HOME=str(MODELS / "hf"),
-           TORCH_HOME=str(MODELS / "torch"), PYTHONWARNINGS="ignore", MPLBACKEND="Agg")
+           TORCH_HOME=str(MODELS / "torch"), PYTHONWARNINGS="ignore")
 
 
 def start_server():
@@ -216,6 +200,107 @@ while True:
         print(time.strftime("%H:%M"), "alive | gpu:", info.get("gpu"), "| free MB:", info.get("vram_free_mb"))'''
 
 
+EVAL_INTRO = """# Locket Van Gogh eval on Colab
+
+Runs the photo-set comparison: the config before k3 (`van_gogh_before_k3.yaml`) against the current
+`van_gogh.yaml`, on the same engine, same seed. Runtime -> **Change runtime type -> T4 GPU**, then **Run all**.
+
+One-time, in Google Drive `MyDrive/locket/`:
+- `server.tar` made by `python colab/pack_code.py` (it contains the eval code too);
+- a folder `eval_photos/` with the .jpg files of `server/eval/photos` (the owner's own photos
+  are private: they go to your Google Drive, nowhere else).
+
+Results (images, `results.json`, comparison sheets) are written to `MyDrive/locket/eval_out/` and survive the
+session: if Colab stops, **Run all** again and it resumes. Roughly 30-60 minutes for 2 x 62 photos
+(an estimate, not measured on Colab yet). The last cell prints the tables and shows the sheets."""
+
+EVAL_EXTRAS = '''# Metric libraries the server does not need (CLIP style score, face-embedding similarity).
+subprocess.run([sys.executable, "-m", "uv", "pip", "install", "--python", PY,
+                "ftfy", "regex", "timm", "tqdm", "requests"], check=True)
+subprocess.run([sys.executable, "-m", "uv", "pip", "install", "--python", PY, "--no-deps",
+                "open_clip_torch==3.3.0", "facenet-pytorch"], check=True)
+print("metric libraries ready")'''
+
+EVAL_PHOTOS = '''import collections
+import shutil
+
+# The folder name does not matter: use the folder under MyDrive/locket that holds the most .jpg files.
+folders = collections.Counter(p.parent for p in DRIVE.rglob("*") if p.suffix.lower() == ".jpg")
+assert folders, ("No .jpg file found under MyDrive/locket/. Upload the .jpg files of server/eval/photos "
+                 "there (any folder name). If you just uploaded or renamed them, run the Drive cell "
+                 "again. Colab sees: " + str(sorted(p.name for p in DRIVE.iterdir())))
+PHOTOS_DRIVE, photo_count = folders.most_common(1)[0]
+print("photos folder:", PHOTOS_DRIVE, "->", photo_count, ".jpg files")
+EVAL = WORK / "server" / "eval"
+if (EVAL / "photos").exists():
+    shutil.rmtree(EVAL / "photos")
+shutil.copytree(PHOTOS_DRIVE, EVAL / "photos")        # local copy: reading Drive per photo is slow
+OUT_DRIVE = DRIVE / "eval_out"
+OUT_DRIVE.mkdir(exist_ok=True)
+out = EVAL / "out"
+if out.is_symlink():
+    out.unlink()
+elif out.exists():
+    shutil.rmtree(out)
+os.symlink(OUT_DRIVE, out)                            # results live in Drive: a rerun resumes
+print(len(list((EVAL / "photos").glob("*.jpg"))), "photos; already in eval_out:",
+      sorted(p.name for p in OUT_DRIVE.iterdir()))'''
+
+EVAL_RUN = '''import collections
+
+ENV = dict(os.environ, HF_HOME=str(MODELS / "hf"), TORCH_HOME=str(MODELS / "torch"),
+           PYTHONWARNINGS="ignore", PYTHONUNBUFFERED="1", MPLBACKEND="Agg")  # Colab's own backend breaks mediapipe
+
+# "name:config file" = that whole config; a bare name = overrides from eval/sweep.py on van_gogh.yaml.
+# new = k3 (today's yaml, brush relief off); imp1 = + brush relief; fast1 = fewer steps; imp1_fast1 = both.
+VARIANTS = ["new:van_gogh.yaml", "imp1", "fast1", "imp1_fast1"]
+# None = all photos. For a quick first look, e.g.:
+# SUBSET = ["photo_02", "photo_08", "photo_12", "photo_17", "photo_31"]
+SUBSET = None
+
+env = dict(ENV)
+if SUBSET:
+    subset_dir = EVAL / "photos_subset"
+    shutil.rmtree(subset_dir, ignore_errors=True)
+    subset_dir.mkdir()
+    for name in SUBSET:
+        shutil.copy(EVAL / "photos" / f"{name}.jpg", subset_dir)
+    env["SWEEP_PHOTOS"] = str(subset_dir)
+
+SHOW = ("[", "SUMMARY", "Traceback") + tuple(v.split(":")[0] + " " for v in VARIANTS)
+
+
+def run_stream(cmd):
+    proc = subprocess.Popen(cmd, cwd=WORK / "server", env=env, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True)
+    tail = collections.deque(maxlen=40)
+    for line in proc.stdout:
+        tail.append(line.rstrip()[:200])
+        if line.startswith(SHOW) or "FAILED" in line:
+            print(line.rstrip()[:180])
+    code = proc.wait()
+    if any(line.startswith("Traceback") for line in tail):
+        print("--- last lines of the output (a chunk crashed) ---")
+        print(chr(10).join(tail))
+    return code
+
+
+print("exit code", run_stream([PY, "-m", "eval.sweep_chunked", *VARIANTS]))'''
+
+EVAL_SUMMARY = '''from IPython.display import Image, display
+
+for other in [v.split(":")[0] for v in VARIANTS][1:]:
+    print("=" * 30, "new vs", other)
+    done = subprocess.run([PY, "-m", "eval.summary", "new", other, "--sheets", "2"], cwd=WORK / "server",
+                          env=ENV, capture_output=True, text=True)
+    print(done.stdout)
+    if done.returncode:
+        print(done.stderr[-2000:])
+    for sheet in sorted((EVAL / "out").glob(f"compare_{other}_*.png")):
+        print(sheet.name)
+        display(Image(str(sheet)))'''
+
+
 def cell(kind: str, source: str) -> dict:
     base = {"cell_type": kind, "metadata": {}, "source": source.splitlines(keepends=True)}
     if kind == "code":
@@ -223,13 +308,9 @@ def cell(kind: str, source: str) -> dict:
     return base
 
 
-def main() -> None:
-    # Imports shared by every later cell live in the first code cell.
-    check = "import subprocess\nimport urllib.request\n\n" + CHECK.split("\n", 1)[1]
-    notebook = {
-        "cells": [cell("markdown", INTRO), cell("code", CHECK), cell("code", DRIVE),
-                  cell("code", INSTALL), cell("code", MODELS), cell("code", TOKEN),
-                  cell("code", SERVER), cell("code", TUNNEL), cell("code", KEEPALIVE)],
+def notebook(cells: list[dict]) -> dict:
+    return {
+        "cells": cells,
         "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
                      "language_info": {"name": "python"},
                      "accelerator": "GPU",
@@ -237,9 +318,23 @@ def main() -> None:
         "nbformat": 4,
         "nbformat_minor": 5,
     }
-    target = Path(__file__).with_name("locket_server.ipynb")
-    target.write_text(json.dumps(notebook, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def write(name: str, nb: dict) -> None:
+    target = Path(__file__).with_name(name)
+    target.write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print("wrote", target)
+
+
+def main() -> None:
+    write("locket_server.ipynb", notebook([
+        cell("markdown", INTRO), cell("code", CHECK), cell("code", DRIVE), cell("code", INSTALL),
+        cell("code", MODELS), cell("code", TOKEN), cell("code", SERVER), cell("code", TUNNEL),
+        cell("code", KEEPALIVE)]))
+    write("locket_eval.ipynb", notebook([
+        cell("markdown", EVAL_INTRO), cell("code", CHECK), cell("code", DRIVE), cell("code", INSTALL),
+        cell("code", EVAL_EXTRAS), cell("code", MODELS), cell("code", EVAL_PHOTOS),
+        cell("code", EVAL_RUN), cell("code", EVAL_SUMMARY)]))
 
 
 if __name__ == "__main__":
