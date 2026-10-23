@@ -1691,6 +1691,12 @@
   "searchMine": "MINE",
   "searchClear": "Clear search",
   "searchResults": "{count} PHOTOS",
-  "@searchResults": {"placeholders": {"count": {"type": "int"}}},
+  "@searchResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchMaybe": "MAYBE RELATED"
 }

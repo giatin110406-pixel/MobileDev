@@ -1697,6 +1697,12 @@
   "searchMine": "CỦA TÔI",
   "searchClear": "Xóa tìm kiếm",
   "searchResults": "{count} ẢNH",
-  "@searchResults": {"placeholders": {"count": {"type": "int"}}},
+  "@searchResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchMaybe": "CÓ THỂ LIÊN QUAN"
 }

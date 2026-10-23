@@ -46,9 +46,6 @@ k3) does the same partly; raising it to 1.0 needs a GPU eval run first.
   Server rules: night 4/4, sky 4/7, day 16/22, no group. The descriptions were tuned on these
   same 62 photos, so expect a little less on new photos.
 - A3-A6 done; `flutter analyze` clean, `flutter test` 630 passed, server tests 23 passed.
-- 2026-10-23: the A5 sticker is **not** in the merged version. The camera screen is being
-  reworked and the sticker's place (the style pill) changed under it; it will be added again on
-  the new camera screen. A3, A4 and A6 are in.
 - Not yet tried on a phone (speed of the extra encode, look of the sticker).
 
 ## 5. Not in scope
