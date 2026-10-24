@@ -1452,6 +1452,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final wasShooting = _shooting;
     // Measured now: once the camera is off screen the shutter has no place.
     final shutter = _rectOf(_shutterKey);
+    if (index != _tabIndex) {
+      _tabHistory.remove(index);
+      _tabHistory.add(_tabIndex);
+      if (_tabHistory.length > 8) _tabHistory.removeAt(0);
+    }
     setState(() {
       _tabIndex = index;
       _activeFriend = null;
@@ -1466,6 +1471,35 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     } else if (wasShooting && !_shooting && shutter != null) {
       _flyShutter(up: false, from: shutter);
     }
+  }
+
+  /// The tabs visited before this one, most recent last: the phone's back
+  /// button walks them instead of leaving the app.
+  final _tabHistory = <int>[];
+
+  /// Nothing left to go back to: the camera is the home page.
+  bool get _atHome =>
+      !_showFeed && _tabHistory.isEmpty && _tabIndex == _cameraTab;
+
+  void _goBack() {
+    if (_showFeed && _tabIndex == _cameraTab) {
+      setState(() => _showFeed = false);
+      return;
+    }
+    if (_tabIndex == _chatPage) {
+      setState(() {
+        _activeFriend = null;
+        _tabIndex = _friendsTab;
+      });
+      return;
+    }
+    final previous = _tabHistory.isNotEmpty ? _tabHistory.removeLast() : null;
+    // Back to a tab through the history must not push it again.
+    final saved = List<int>.of(_tabHistory);
+    _selectTab(previous ?? _cameraTab);
+    _tabHistory
+      ..clear()
+      ..addAll(saved);
   }
 
   /// The live camera is on screen, so the menu's SHOOT button is its shutter.
@@ -1724,7 +1758,15 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         scaffold,
       ],
     );
-    return _withScopes(body);
+    return _withScopes(
+      PopScope(
+        canPop: _atHome,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _goBack();
+        },
+        child: body,
+      ),
+    );
   }
 
   /// The contest tab's background: this week's theme, painted.
