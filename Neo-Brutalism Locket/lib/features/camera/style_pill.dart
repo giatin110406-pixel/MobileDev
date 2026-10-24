@@ -7,10 +7,11 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
 
-/// One small pill under the photo showing the current mode. Swipe it left for
-/// the next mode (NO STYLE -> 8-BIT -> VAN GOGH) and right to go back; each mode
-/// has its own background colour. Taps do nothing, so it is never switched by
-/// accident.
+/// The style picker under the photo: a strip of pills (NO STYLE, 8-BIT, VAN
+/// GOGH), the current one big in the middle and its neighbours smaller on
+/// either side, so the next style's name shows before you reach it. Swipe the
+/// strip, or tap a neighbour, to move; each pill has its own background.
+/// Tapping the current one does nothing, so it is never switched by accident.
 class StylePill extends StatefulWidget {
   const StylePill({
     super.key,
@@ -28,8 +29,13 @@ class StylePill extends StatefulWidget {
 }
 
 class _StylePillState extends State<StylePill> {
-  static const width = 184.0;
-  static const height = 44.0;
+  static const height = 56.0;
+
+  static const _currentSize = Size(128, 46);
+  static const _sideSize = Size(88, 34);
+
+  /// Distance between the centres of the current pill and a neighbour.
+  static const _spacing = 104.0;
 
   /// Drag distance (px) or fling speed (px/s) that counts as a swipe.
   static const _swipeDistance = 24.0;
@@ -37,17 +43,13 @@ class _StylePillState extends State<StylePill> {
 
   double _drag = 0;
 
-  /// +1 when the last change moved forward, -1 backward (slide direction).
-  int _direction = 1;
-
   bool get _hasNext => widget.value.index < StyleType.values.length - 1;
   bool get _hasPrevious => widget.value.index > 0;
 
-  void _step(int delta) {
+  void _move(int delta) {
     final index = widget.value.index + delta;
     if (index < 0 || index >= StyleType.values.length) return;
     Haptics.select();
-    setState(() => _direction = delta);
     widget.onChanged(StyleType.values[index]);
   }
 
@@ -56,9 +58,9 @@ class _StylePillState extends State<StylePill> {
     final drag = _drag;
     setState(() => _drag = 0);
     if (drag <= -_swipeDistance || velocity <= -_swipeVelocity) {
-      _step(1); // finger moved left: next mode
+      _move(1); // finger moved left: next mode
     } else if (drag >= _swipeDistance || velocity >= _swipeVelocity) {
-      _step(-1);
+      _move(-1);
     }
   }
 
@@ -80,8 +82,8 @@ class _StylePillState extends State<StylePill> {
           l10n,
           _hasPrevious ? values[style.index - 1] : style,
         ),
-        onIncrease: widget.enabled && _hasNext ? () => _step(1) : null,
-        onDecrease: widget.enabled && _hasPrevious ? () => _step(-1) : null,
+        onIncrease: widget.enabled && _hasNext ? () => _move(1) : null,
+        onDecrease: widget.enabled && _hasPrevious ? () => _move(-1) : null,
         child: Opacity(
           opacity: widget.enabled ? 1 : 0.55,
           child: GestureDetector(
@@ -95,96 +97,130 @@ class _StylePillState extends State<StylePill> {
             onHorizontalDragCancel: widget.enabled
                 ? () => setState(() => _drag = 0)
                 : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: width,
+            child: SizedBox(
               height: height,
+              child: ClipRect(
+                // Room for the hard shadows inside the clip.
+                clipBehavior: Clip.hardEdge,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final centre = constraints.maxWidth / 2;
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        for (final item in values)
+                          _item(item, centre: centre, current: style),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _item(
+    StyleType item, {
+    required double centre,
+    required StyleType current,
+  }) {
+    final l10n = AppLocalizations.of(context);
+    final offset = item.index - current.index;
+    final isCurrent = offset == 0;
+    final size = isCurrent ? _currentSize : _sideSize;
+    // Only the current pill and its two neighbours are shown.
+    final shown = offset.abs() <= 1;
+    final shift = _drag * 0.5;
+    return AnimatedPositioned(
+      key: ValueKey(item),
+      duration: _drag == 0 ? const Duration(milliseconds: 180) : Duration.zero,
+      curve: Curves.easeOut,
+      left: centre + offset * _spacing + shift - size.width / 2,
+      top: (height - size.height) / 2 - 2,
+      width: size.width,
+      height: size.height,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: !shown
+            ? 0
+            : isCurrent
+            ? 1
+            : 0.7,
+        child: IgnorePointer(
+          ignoring: !shown,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: widget.enabled && !isCurrent && shown
+                ? () => _move(offset)
+                : null,
+            child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(height / 2),
+                borderRadius: BorderRadius.circular(size.height / 2),
                 border: Border.all(color: NeoColors.ink, width: 2),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
                     color: NeoColors.ink,
-                    offset: Offset(3, 3),
+                    offset: isCurrent ? const Offset(3, 3) : const Offset(2, 2),
                     blurRadius: 0,
                   ),
                 ],
               ),
               child: NeoPanelClip(
-                radius: height / 2,
+                radius: size.height / 2,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    StyleArt(style: style),
-                    Row(
-                      children: [
-                        _chevron(Icons.chevron_left, visible: _hasPrevious),
-                        Expanded(
-                          child: ClipRect(
-                            child: Transform.translate(
-                              offset: Offset(_drag * 0.5, 0),
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 180),
-                                transitionBuilder: (child, animation) {
-                                  final incoming = child.key == ValueKey(style);
-                                  final from = incoming
-                                      ? _direction * 0.6
-                                      : 0.0;
-                                  return SlideTransition(
-                                    position: Tween(
-                                      begin: Offset(from, 0),
-                                      end: Offset.zero,
-                                    ).animate(animation),
-                                    child: FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                                child: Column(
-                                  key: ValueKey(style),
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      styleName(l10n, style),
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                        color: NeoColors.ink,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        for (final dot in values)
-                                          Container(
-                                            width: dot == style ? 12 : 5,
-                                            height: 5,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: dot == style
-                                                  ? NeoColors.ink
-                                                  : NeoColors.ink.withValues(
-                                                      alpha: 0.3,
-                                                    ),
-                                              borderRadius:
-                                                  BorderRadius.circular(3),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
+                    StyleArt(style: item, veil: isCurrent ? 0.82 : 0.7),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                styleName(l10n, item),
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: NeoColors.ink,
+                                  fontSize: isCurrent ? 12 : 10,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
-                            ),
+                              if (isCurrent) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    for (final dot in StyleType.values)
+                                      Container(
+                                        width: dot == item ? 12 : 5,
+                                        height: 5,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: dot == item
+                                              ? NeoColors.ink
+                                              : NeoColors.ink.withValues(
+                                                  alpha: 0.3,
+                                                ),
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        _chevron(Icons.chevron_right, visible: _hasNext),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -195,13 +231,4 @@ class _StylePillState extends State<StylePill> {
       ),
     );
   }
-
-  Widget _chevron(IconData icon, {required bool visible}) => SizedBox(
-    width: 26,
-    child: Icon(
-      icon,
-      size: 18,
-      color: visible ? NeoColors.ink : Colors.transparent,
-    ),
-  );
 }

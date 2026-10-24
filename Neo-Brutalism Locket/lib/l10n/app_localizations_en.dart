@@ -266,6 +266,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get composerTitle => 'POST';
 
   @override
+  String get styleApply => 'Apply style';
+
+  @override
+  String get postOptionsTooltip => 'Post options';
+
+  @override
+  String get optionsAlbums => 'ALBUMS';
+
+  @override
+  String get optionsNone => 'NONE';
+
+  @override
+  String get optionsCurrentPlace => 'CURRENT PLACE';
+
+  @override
+  String get postOptionsTitle => 'POST OPTIONS';
+
+  @override
   String get composerCaptionHint => 'Add a caption...';
 
   @override

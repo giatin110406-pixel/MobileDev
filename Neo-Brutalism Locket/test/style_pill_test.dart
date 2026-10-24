@@ -94,20 +94,31 @@ void main() {
     expect(changes, isEmpty);
   });
 
-  testWidgets('shows only the current mode, one pill', (tester) async {
+  testWidgets('shows the current mode and its neighbours by name', (
+    tester,
+  ) async {
     await pumpPill(tester, value: StyleType.pixel8bit);
     await tester.pumpAndSettle();
     expect(find.text('8-BIT'), findsOneWidget);
-    expect(find.text('VAN GOGH'), findsNothing);
-    expect(find.text('NO STYLE'), findsNothing);
+    expect(find.text('NO STYLE'), findsOneWidget);
+    expect(find.text('VAN GOGH'), findsOneWidget);
+  });
+
+  testWidgets('tapping a neighbour moves to it', (tester) async {
+    final changes = await pumpPill(tester);
+    await tester.tap(find.text('8-BIT'));
+    await tester.pumpAndSettle();
+    expect(changes, [StyleType.pixel8bit]);
   });
 
   testWidgets('every mode has its own background picture', (tester) async {
-    for (final style in StyleType.values) {
-      await pumpPill(tester, value: style);
-      await tester.pumpAndSettle();
-      expect(tester.widget<StyleArt>(find.byType(StyleArt)).style, style);
-    }
+    await pumpPill(tester, value: StyleType.pixel8bit);
+    await tester.pumpAndSettle();
+    final styles = tester
+        .widgetList<StyleArt>(find.byType(StyleArt))
+        .map((art) => art.style)
+        .toSet();
+    expect(styles, StyleType.values.toSet());
   });
 
   test('no-style engine returns the original file untouched', () async {

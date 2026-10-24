@@ -132,7 +132,10 @@ class CameraTabState extends State<CameraTab> {
   List<CameraDescription> _cameras = [];
   NeoPhoto? _activePhoto;
   FlashMode _flashMode = FlashMode.off;
-  StyleType _selectedStyleType = StyleType.pixel8bit;
+  StyleType _selectedStyleType = StyleType.none;
+
+  /// The style swiped to on the pill; the photo keeps its own until APPLY.
+  StyleType? _pendingStyle;
   String? _cameraMessage;
   int _cameraIndex = 0;
   bool _cameraLoading = true;
@@ -233,7 +236,8 @@ class CameraTabState extends State<CameraTab> {
     setState(() {
       if (photo.id != _draftId) _draftId = null;
       _activePhoto = photo;
-      _selectedStyleType = photo.styleType ?? StyleType.pixel8bit;
+      _selectedStyleType = photo.styleType ?? StyleType.none;
+      _pendingStyle = null;
       _showPrint = true;
     });
   }
@@ -290,6 +294,8 @@ class CameraTabState extends State<CameraTab> {
     setState(() {
       _showPrint = false;
       if (_activePhoto?.id == photo.id) _activePhoto = null;
+      _pendingStyle = null;
+      _selectedStyleType = StyleType.none;
       _processing = false;
     });
     widget.onPhotoRemoved?.call(photo);
@@ -659,6 +665,7 @@ class CameraTabState extends State<CameraTab> {
       _activePhoto = draft;
       _draftId = draft.id;
       _shotPreviewPath = null;
+      _pendingStyle = null;
       _showPrint = false;
     });
     return draft;
@@ -711,6 +718,7 @@ class CameraTabState extends State<CameraTab> {
       _activePhoto = photo;
       _draftId = photo.id;
       if (draft == null) _shotPreviewPath = null;
+      _pendingStyle = null;
       // With an account the shot stays on this page, in the viewfinder's place,
       // with its options below; without one the print page opens as before.
       _showPrint = !draftMode;
@@ -733,7 +741,7 @@ class CameraTabState extends State<CameraTab> {
 
   Future<void> _processPhoto(NeoPhoto photo) async {
     try {
-      final styleType = photo.styleType ?? StyleType.pixel8bit;
+      final styleType = photo.styleType ?? StyleType.none;
       final engine = widget.styleEngineFactory.create(styleType);
       if (mounted) {
         setState(() {
@@ -865,77 +873,93 @@ class CameraTabState extends State<CameraTab> {
   }
 
   Widget _buildCameraBody() {
+    return _shootLayout(
+      top: widget.header ?? const SizedBox.shrink(),
+      strip: _questMode
+          ? _buildQuestModeHeader(_questModeQuest!)
+          : QuestStrip(store: widget.player, onTap: widget.onOpenQuestSheet),
+      square: _buildViewfinder(),
+      // The style is picked after the shot, on the draft; only a quest's
+      // locked style is shown up front.
+      belowSquare: [
+        if (_questMode) ...[
+          const SizedBox(height: 8),
+          Center(
+            child: StyleChip(
+              style: _questModeQuest!.style,
+              text: AppLocalizations.of(context).styleBadge(
+                styleName(AppLocalizations.of(context), _questModeQuest!.style),
+              ),
+              icon: Icons.lock_outline,
+            ),
+          ),
+        ],
+      ],
+      controls: _buildCaptureControls(),
+      footer: Align(
+        alignment: Alignment.topCenter,
+        child: Semantics(
+          button: true,
+          label: AppLocalizations.of(context).openFeedLabel,
+          child: InkWell(
+            onTap: Haptics.tap(widget.onOpenFeed),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.keyboard_arrow_up,
+                    size: 18,
+                    color: NeoColors.ink,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    AppLocalizations.of(context).feedLabel,
+                    style: const TextStyle(
+                      color: NeoColors.ink,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The shoot page's frame, shared by the live camera and the shot just
+  /// taken: every slot keeps its size, so the square stays exactly where the
+  /// viewfinder was and only what fills the slots changes.
+  Widget _shootLayout({
+    required Widget top,
+    required Widget strip,
+    required Widget square,
+    List<Widget> belowSquare = const [],
+    required Widget controls,
+    required Widget footer,
+  }) {
     return Padding(
       padding: EdgeInsets.fromLTRB(18, context.s(12), 18, context.s(14)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: context.s(46), child: widget.header),
+          SizedBox(height: context.s(46), child: top),
           // Room for the header's hard shadows before the quest card.
           SizedBox(height: context.s(22)),
-          _questMode
-              ? _buildQuestModeHeader(_questModeQuest!)
-              : QuestStrip(
-                  store: widget.player,
-                  onTap: widget.onOpenQuestSheet,
-                ),
+          strip,
           SizedBox(height: context.s(20)),
-          Expanded(child: _bigSquare(_buildViewfinder())),
-          // The style is picked after the shot, on the draft; only a quest's
-          // locked style is shown up front.
-          if (_questMode) ...[
-            const SizedBox(height: 8),
-            Center(
-              child: StyleChip(
-                style: _questModeQuest!.style,
-                text: AppLocalizations.of(context).styleBadge(
-                  styleName(
-                    AppLocalizations.of(context),
-                    _questModeQuest!.style,
-                  ),
-                ),
-                icon: Icons.lock_outline,
-              ),
-            ),
-          ],
+          Expanded(child: _bigSquare(square)),
+          ...belowSquare,
           SizedBox(height: context.s(16)),
-          _buildCaptureControls(),
+          controls,
           const SizedBox(height: 6),
-          Center(
-            child: Semantics(
-              button: true,
-              label: AppLocalizations.of(context).openFeedLabel,
-              child: InkWell(
-                onTap: Haptics.tap(widget.onOpenFeed),
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 4,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.keyboard_arrow_up,
-                        size: 18,
-                        color: NeoColors.ink,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        AppLocalizations.of(context).feedLabel,
-                        style: const TextStyle(
-                          color: NeoColors.ink,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Tall enough for who gets the post on the draft.
+          SizedBox(height: context.s(64), child: footer),
         ],
       ),
     );
@@ -963,9 +987,10 @@ class CameraTabState extends State<CameraTab> {
     },
   );
 
-  /// The page right after a shot: the same layout as the live camera, with the
-  /// picture where the viewfinder was, X / POST / Aa where the shutter was, and
-  /// who gets it where the feed link was.
+  /// The page right after a shot, laid out by [_shootLayout] like the live
+  /// camera: the picture where the viewfinder was, the style pill where the
+  /// quest card was, X / POST / options where the shutter was, and who gets
+  /// it where the feed link was.
   Widget _buildDraftBody() {
     final l10n = AppLocalizations.of(context);
     final photo = _activePhoto!;
@@ -974,6 +999,10 @@ class CameraTabState extends State<CameraTab> {
     // MediaQuery, so the typing layout keys off the caption's focus instead.
     final ready = photo.status == ProcessingStatus.done && !_processing;
     final canSend = ready && composer.hasRecipients && !_posting;
+    final hasOptions =
+        composer.showTime ||
+        composer.place != null ||
+        composer.selectedAlbums.isNotEmpty;
     return ListenableBuilder(
       listenable: Listenable.merge([composer, composer.captionFocus]),
       builder: (context, _) => GestureDetector(
@@ -1000,132 +1029,270 @@ class CameraTabState extends State<CameraTab> {
                   ),
                 ),
               )
-            : Padding(
-                padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+            : _shootLayout(
+                top: Row(
                   children: [
-                    SizedBox(
-                      height: 54,
-                      child: Row(
-                        children: [
-                          const Expanded(child: SizedBox()),
-                          Text(
-                            l10n.composerTitle,
-                            style: const TextStyle(
-                              fontFamily: NeoFont.display,
-                              color: NeoColors.ink,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: _statusBadge(photo),
-                            ),
-                          ),
-                        ],
+                    const Expanded(child: SizedBox()),
+                    Text(
+                      l10n.composerTitle,
+                      style: const TextStyle(
+                        fontFamily: NeoFont.display,
+                        color: NeoColors.ink,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                    if (!composer.captionFocus.hasFocus) ...[
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        height: composer.albums.isEmpty ? 68 : 114,
-                        child: Center(
-                          child: Wrap(
-                            spacing: 10,
-                            runSpacing: 8,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              _draftChip(
-                                label: '${l10n.overlayTime} ${composer.time}',
-                                icon: Icons.schedule,
-                                selected: composer.showTime,
-                                onTap: composer.toggleTime,
-                              ),
-                              _draftChip(
-                                label: composer.findingPlace
-                                    ? l10n.overlayFindingPlace
-                                    : composer.place == null
-                                    ? l10n.overlayPlace
-                                    : '${l10n.overlayPlace}: ${composer.place}',
-                                icon: Icons.place_outlined,
-                                selected: composer.place != null,
-                                onTap: composer.findingPlace
-                                    ? () {}
-                                    : () => composer.togglePlace(_placeProblem),
-                              ),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _statusBadge(photo),
+                      ),
+                    ),
+                  ],
+                ),
+                // The quest card stays laid out (unseen) under the pill, so
+                // the slot is exactly as tall as on the live camera.
+                strip: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Visibility(
+                      visible: false,
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: QuestStrip(
+                        store: widget.player,
+                        onTap: widget.onOpenQuestSheet,
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Center(
+                        child:
+                            _processing &&
+                                photo.status == ProcessingStatus.pending
+                            ? NeoProgress(
+                                value: _progress <= 0 ? null : _progress,
+                                label: styleWorkingLabel(l10n, photo.styleType),
+                              )
+                            : _buildStylePill(photo: photo),
+                      ),
+                    ),
+                  ],
+                ),
+                square: _draftViewfinder(photo, composer),
+                controls: Row(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: NeoIconButton(
+                          icon: Icons.close,
+                          tooltip: l10n.printDiscard,
+                          fill: NeoColors.coral,
+                          size: 54,
+                          onPressed: _posting
+                              ? null
+                              : () => _discardPrint(photo),
+                        ),
+                      ),
+                    ),
+                    _sendButton(enabled: canSend, busy: _posting),
+                    Expanded(
+                      child: Center(
+                        child: NeoIconButton(
+                          icon: Icons.tune_rounded,
+                          tooltip: l10n.postOptionsTooltip,
+                          // Lit while any option is on.
+                          fill: hasOptions
+                              ? NeoColors.accent
+                              : NeoColors.surface,
+                          size: 54,
+                          onPressed: _posting
+                              ? null
+                              : () => _showPostOptions(composer),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                footer: _recipientsRow(composer),
+              ),
+      ),
+    );
+  }
+
+  /// The options button's popup over the lower half of the screen: the time
+  /// and place labels and the group albums, without leaving the page.
+  Future<void> _showPostOptions(ComposerController composer) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return FractionallySizedBox(
+          heightFactor: 0.5,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
+            decoration: NeoTheme.panel(radius: 16),
+            child: SafeArea(
+              top: false,
+              child: ListenableBuilder(
+                listenable: composer,
+                builder: (context, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      l10n.postOptionsTitle,
+                      style: const TextStyle(
+                        fontFamily: NeoFont.display,
+                        color: NeoColors.ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          _optionGroup(l10n.overlayTime, [
+                            _optionPill(
+                              label: l10n.optionsNone,
+                              selected: !composer.showTime,
+                              onTap: composer.showTime
+                                  ? composer.toggleTime
+                                  : null,
+                            ),
+                            _optionPill(
+                              icon: Icons.schedule,
+                              label: composer.time,
+                              selected: composer.showTime,
+                              onTap: composer.showTime
+                                  ? null
+                                  : composer.toggleTime,
+                            ),
+                          ]),
+                          _optionGroup(l10n.overlayPlace, [
+                            _optionPill(
+                              label: l10n.optionsNone,
+                              selected:
+                                  composer.place == null &&
+                                  !composer.findingPlace,
+                              onTap: composer.place != null
+                                  ? () => composer.togglePlace(_placeProblem)
+                                  : null,
+                            ),
+                            _optionPill(
+                              icon: Icons.place_outlined,
+                              label: composer.findingPlace
+                                  ? l10n.overlayFindingPlace
+                                  : composer.place ?? l10n.optionsCurrentPlace,
+                              selected:
+                                  composer.place != null ||
+                                  composer.findingPlace,
+                              onTap:
+                                  composer.place != null ||
+                                      composer.findingPlace
+                                  ? null
+                                  : () => composer.togglePlace(_placeProblem),
+                            ),
+                          ]),
+                          if (composer.albums.isNotEmpty)
+                            _optionGroup(l10n.optionsAlbums, [
                               for (final album in composer.albums)
-                                _draftChip(
-                                  label:
-                                      '${l10n.albumChipPrefix} ${album.name}',
+                                _optionPill(
                                   icon: Icons.photo_album_outlined,
+                                  label: album.name,
                                   selected: composer.selectedAlbums.contains(
                                     album.id,
                                   ),
                                   onTap: () => composer.toggleAlbum(album.id),
                                 ),
-                            ],
-                          ),
-                        ),
+                            ]),
+                        ],
                       ),
-                    ],
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: _bigSquare(_draftViewfinder(photo, composer)),
                     ),
-                    if (!composer.captionFocus.hasFocus) ...[
-                      const SizedBox(height: 8),
-                      if (_processing &&
-                          photo.status == ProcessingStatus.pending)
-                        NeoProgress(
-                          value: _progress <= 0 ? null : _progress,
-                          label: styleWorkingLabel(l10n, photo.styleType),
-                        )
-                      else
-                        _buildStylePill(photo: photo),
-                    ],
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: NeoIconButton(
-                              icon: Icons.close,
-                              tooltip: l10n.printDiscard,
-                              fill: NeoColors.coral,
-                              size: 54,
-                              onPressed: _posting
-                                  ? null
-                                  : () => _discardPrint(photo),
-                            ),
-                          ),
-                        ),
-                        _sendButton(enabled: canSend, busy: _posting),
-                        Expanded(
-                          child: Center(
-                            child: NeoIconButton(
-                              icon: Icons.text_fields_rounded,
-                              tooltip: l10n.composerCaptionHint,
-                              fill: NeoColors.surface,
-                              size: 54,
-                              onPressed: composer.captionFocus.requestFocus,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (!composer.captionFocus.hasFocus) ...[
-                      const SizedBox(height: 10),
-                      SizedBox(height: 78, child: _recipientsRow(composer)),
-                    ],
                   ],
                 ),
               ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
+
+  /// One category of the options popup: its name over a wrap of pills.
+  Widget _optionGroup(String title, List<Widget> pills) => Padding(
+    padding: const EdgeInsets.only(top: 10, bottom: 4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: NeoColors.muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.6,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(spacing: 10, runSpacing: 10, children: pills),
+      ],
+    ),
+  );
+
+  /// A pill in the options popup: sunken and yellow while chosen.
+  Widget _optionPill({
+    IconData? icon,
+    required String label,
+    required bool selected,
+    required VoidCallback? onTap,
+  }) => Semantics(
+    button: true,
+    selected: selected,
+    label: label,
+    child: NeoPress(
+      onTap: onTap,
+      offset: const Offset(2, 2),
+      sunken: selected,
+      builder: (context, pressed) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? NeoColors.accent : NeoColors.surface,
+          border: Border.all(color: NeoColors.ink, width: 2),
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: NeoPress.shadow(
+            pressed || selected,
+            offset: const Offset(2, 2),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 16, color: NeoColors.ink),
+              const SizedBox(width: 6),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: NeoColors.ink,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 
   void _placeProblem(PlaceProblem problem) {
     final l10n = AppLocalizations.of(context);
@@ -1230,45 +1397,6 @@ class CameraTabState extends State<CameraTab> {
     );
   }
 
-  Widget _draftChip({
-    required String label,
-    required IconData icon,
-    required bool selected,
-    required VoidCallback onTap,
-  }) => Semantics(
-    button: true,
-    selected: selected,
-    child: NeoPress(
-      onTap: onTap,
-      offset: const Offset(2, 2),
-      sunken: selected,
-      builder: (context, pressed) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected ? NeoColors.accent : NeoColors.surface,
-          border: Border.all(color: NeoColors.ink, width: 2),
-          borderRadius: BorderRadius.circular(999),
-          boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: NeoColors.ink),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: NeoColors.ink,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-
   /// The big round button where the shutter was: send the post.
   Widget _sendButton({required bool enabled, required bool busy}) => Semantics(
     button: true,
@@ -1301,6 +1429,8 @@ class CameraTabState extends State<CameraTab> {
   /// Where the feed link was: "All" and each friend, tap to pick who gets it.
   Widget _recipientsRow(ComposerController composer) {
     final l10n = AppLocalizations.of(context);
+    // Small enough that a name fits under it in the footer slot.
+    final avatarSize = context.s(40);
     if (widget.friends.isEmpty) {
       return Center(
         child: Text(
@@ -1327,7 +1457,7 @@ class CameraTabState extends State<CameraTab> {
         behavior: HitTestBehavior.opaque,
         onTap: Haptics.tap(onTap),
         child: SizedBox(
-          width: 72,
+          width: 66,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1356,7 +1486,7 @@ class CameraTabState extends State<CameraTab> {
                     ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 label,
                 maxLines: 1,
@@ -1377,8 +1507,8 @@ class CameraTabState extends State<CameraTab> {
       children: [
         item(
           avatar: Container(
-            width: 48,
-            height: 48,
+            width: avatarSize,
+            height: avatarSize,
             decoration: BoxDecoration(
               color: NeoColors.accent,
               shape: BoxShape.circle,
@@ -1394,7 +1524,7 @@ class CameraTabState extends State<CameraTab> {
           item(
             avatar: FriendAvatar(
               friend: friend.person.toPocketFriend(),
-              size: 48,
+              size: avatarSize,
               shadow: false,
             ),
             label: friend.person.displayName.split(' ').first,
@@ -1719,15 +1849,45 @@ class CameraTabState extends State<CameraTab> {
     );
   }
 
-  /// The style control right under a shot: one pill, swiped left/right
-  /// between NO STYLE, 8-BIT and VAN GOGH, re-styling that photo.
-  Widget _buildStylePill({required NeoPhoto photo}) => Center(
-    child: StylePill(
-      value: photo.styleType ?? _selectedStyleType,
-      enabled: !_processing,
-      onChanged: (styleType) => _applyStyleToPhoto(photo, styleType),
-    ),
-  );
+  /// The style control for a shot: one pill, swiped left/right between NO
+  /// STYLE, 8-BIT and VAN GOGH, and the APPLY button beside it. Swiping only
+  /// picks; the photo is re-styled when APPLY is pressed.
+  Widget _buildStylePill({required NeoPhoto photo}) {
+    final current = photo.styleType ?? _selectedStyleType;
+    final picked = _pendingStyle ?? current;
+    final canApply = !_processing && picked != current;
+    return Center(
+      child: Row(
+        children: [
+          Expanded(
+            child: StylePill(
+              value: picked,
+              enabled: !_processing,
+              onChanged: (styleType) =>
+                  setState(() => _pendingStyle = styleType),
+            ),
+          ),
+          const SizedBox(width: 10),
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 120),
+            opacity: canApply ? 1 : 0.4,
+            child: NeoIconButton(
+              icon: Icons.check_rounded,
+              tooltip: AppLocalizations.of(context).styleApply,
+              fill: NeoColors.accent,
+              size: 44,
+              onPressed: canApply
+                  ? () {
+                      setState(() => _pendingStyle = null);
+                      _applyStyleToPhoto(photo, picked);
+                    }
+                  : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildCameraFallback() {
     return ColoredBox(
