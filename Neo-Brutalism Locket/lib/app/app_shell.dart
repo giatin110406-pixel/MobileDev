@@ -510,19 +510,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   void _onGroupsChanged() {
     if (mounted) setState(() {});
+    // The widgets that follow a group need to know who is in it.
+    if (_groupsStore?.isLoaded ?? false) _refreshWidget();
   }
 
-  void _openContest() {
-    final contest = _contestStore;
-    final canvas = _canvasRepository;
-    if (contest == null || canvas == null) return;
-    Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) =>
-            ContestScreen(store: contest, canvases: canvas, safety: _safety),
-      ),
-    );
-  }
+  /// The groups banner leads to the same contest tab as the menu bar.
+  void _openContest() => _selectTab(_contestTab);
 
   void _openGroup(GroupSummary summary) {
     final groups = _groupsStore;
