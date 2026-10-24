@@ -15,6 +15,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
+import 'package:neo_brutalism_locket/features/camera/square_crop.dart';
 import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
 import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
@@ -175,6 +176,13 @@ class CameraTabState extends State<CameraTab> {
   /// (an older print opened from the history is not a draft).
   String? _draftId;
 
+  /// The camera's own file for the draft, shown (cover-cropped to the same
+  /// square) while the cropped copy is still being saved.
+  String? _shotPreviewPath;
+
+  /// The white blink on the viewfinder the moment the shutter is pressed.
+  bool _shutterFlash = false;
+
   /// Taking, checking or styling a photo right now.
   bool get busy => _processing;
 
@@ -267,6 +275,7 @@ class CameraTabState extends State<CameraTab> {
     _discarded.add(photo.id);
     if (_draftId == photo.id) {
       _draftId = null;
+      _shotPreviewPath = null;
       final composer = _composer;
       _composer = null;
       // After this frame: the page's text field is still listening until then.
@@ -357,7 +366,7 @@ class CameraTabState extends State<CameraTab> {
     try {
       final day = widget.player.today;
       final shot = await camera.takePicture();
-      final bytes = await compute(cropToSquareJpeg, await shot.readAsBytes());
+      final bytes = await cropShotToSquare(shot.path);
       final QuestVerdict verdict;
       try {
         verdict = await widget.questVerifier.check(bytes, quest);
@@ -575,17 +584,75 @@ class CameraTabState extends State<CameraTab> {
     final camera = _camera;
     if (camera == null || !camera.value.isInitialized || _processing) return;
 
-    setState(() => _processing = true);
+    setState(() {
+      _processing = true;
+      _shutterFlash = true;
+    });
+    Timer(const Duration(milliseconds: 90), () {
+      if (mounted) setState(() => _shutterFlash = false);
+    });
+    // With an account the draft page opens the moment the shutter is pressed,
+    // "developing" until the shot comes back; the square copy is then cut and
+    // saved behind it.
+    final draft = widget.onPostDraft != null ? _openDraft() : null;
     try {
       final shot = await camera.takePicture();
+      if (draft != null) {
+        if (_discarded.contains(draft.id)) {
+          // Thrown away while developing.
+          File(shot.path).delete().ignore();
+          return;
+        }
+        if (!mounted) return;
+        setState(() {
+          // The camera's file stands in until the square copy is saved (and
+          // is what a throw-away deletes meanwhile).
+          _activePhoto = NeoPhoto(
+            id: draft.id,
+            originalPath: shot.path,
+            createdAt: draft.createdAt,
+            status: draft.status,
+            styleType: draft.styleType,
+          );
+          _shotPreviewPath = shot.path;
+        });
+      }
       // Save exactly what the square viewfinder showed: a centred 1:1 crop.
-      final bytes = await compute(cropToSquareJpeg, await shot.readAsBytes());
-      await _startPrint(bytes);
+      final bytes = await cropShotToSquare(shot.path);
+      await _startPrint(bytes, draft: draft);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _processing = false);
+      if (draft != null) {
+        if (_discarded.contains(draft.id)) return;
+        _removeShot(draft);
+      } else {
+        setState(() => _processing = false);
+      }
       _notify(AppLocalizations.of(context).photoNotSaved);
     }
+  }
+
+  /// Opens the draft page at once, before the shot is even taken: its square
+  /// "develops" until [_shoot] hands it the camera's file, and [_startPrint]
+  /// fills in the saved photo under the same id.
+  NeoPhoto _openDraft() {
+    final now = DateTime.now();
+    final draft = NeoPhoto(
+      id: now.microsecondsSinceEpoch.toString(),
+      originalPath: '',
+      createdAt: now,
+      status: ProcessingStatus.pending,
+      styleType: _selectedStyleType,
+    );
+    _composer?.dispose();
+    _composer = ComposerController(friends: widget.friends);
+    setState(() {
+      _activePhoto = draft;
+      _draftId = draft.id;
+      _shotPreviewPath = null;
+      _showPrint = false;
+    });
+    return draft;
   }
 
   /// Lets the user pick any photo from the device instead of taking one. The
@@ -610,23 +677,31 @@ class CameraTabState extends State<CameraTab> {
 
   /// Saves square JPEG [bytes] as a new print with the selected style and
   /// starts processing it (shared by camera capture and gallery upload).
-  Future<void> _startPrint(Uint8List bytes) async {
+  /// [draft] is the page [_openDraft] already put up for this shot.
+  Future<void> _startPrint(Uint8List bytes, {NeoPhoto? draft}) async {
     final photo = await widget.repository.saveOriginal(
       bytes,
-      styleType: _selectedStyleType,
+      styleType: draft?.styleType ?? _selectedStyleType,
+      id: draft?.id,
     );
+    if (draft != null && _discarded.contains(draft.id)) {
+      // Thrown away while it was being saved.
+      await widget.repository.delete(photo);
+      return;
+    }
     if (!mounted) return;
-    final draft = widget.onPostDraft != null;
-    if (draft) {
+    final draftMode = widget.onPostDraft != null;
+    if (draftMode && draft == null) {
       _composer?.dispose();
       _composer = ComposerController(friends: widget.friends);
     }
     setState(() {
       _activePhoto = photo;
       _draftId = photo.id;
+      if (draft == null) _shotPreviewPath = null;
       // With an account the shot stays on this page, in the viewfinder's place,
       // with its options below; without one the print page opens as before.
-      _showPrint = !draft;
+      _showPrint = !draftMode;
     });
     PrintSound.warmUp();
     widget.onPhotoChanged(photo);
@@ -1063,16 +1138,19 @@ class CameraTabState extends State<CameraTab> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            BeforeAfterView(
-              key: ValueKey('draft-before-after-${photo.id}'),
-              originalPath: photo.originalPath,
-              styledPath: styledPath,
-              styleLabel:
-                  (photo.styleType == null
-                      ? null
-                      : styleName(l10n, photo.styleType!)) ??
-                  l10n.editLabel,
-            ),
+            if ((_shotPreviewPath ?? photo.originalPath).isEmpty)
+              _DevelopingShot(label: l10n.developingPhoto)
+            else
+              BeforeAfterView(
+                key: ValueKey('draft-before-after-${photo.id}'),
+                originalPath: _shotPreviewPath ?? photo.originalPath,
+                styledPath: styledPath,
+                styleLabel:
+                    (photo.styleType == null
+                        ? null
+                        : styleName(l10n, photo.styleType!)) ??
+                    l10n.editLabel,
+              ),
             // The picture's own badges take the top corners; the labels sit above
             // the caption.
             Positioned(
@@ -1412,6 +1490,13 @@ class CameraTabState extends State<CameraTab> {
                 )
               else
                 _buildCameraFallback(),
+              IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _shutterFlash ? 0.85 : 0,
+                  duration: const Duration(milliseconds: 120),
+                  child: const ColoredBox(color: Colors.white),
+                ),
+              ),
               // Only while something is going on: recording, or checking a quest
               // photo. The viewfinder is otherwise just the picture.
               if (_recording || _checkingQuest)
@@ -2017,4 +2102,49 @@ class CameraTabState extends State<CameraTab> {
       icon: Icons.warning_amber_rounded,
     ),
   };
+}
+
+/// The draft's square while the shot is still being taken: a print slowly
+/// coming up out of the dark, like an instant photo developing.
+class _DevelopingShot extends StatefulWidget {
+  const _DevelopingShot({required this.label});
+
+  final String label;
+
+  @override
+  State<_DevelopingShot> createState() => _DevelopingShotState();
+}
+
+class _DevelopingShotState extends State<_DevelopingShot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _pulse,
+    builder: (context, child) => ColoredBox(
+      color: Color.lerp(
+        NeoColors.ink,
+        NeoColors.ink.withValues(alpha: 0.55),
+        Curves.easeInOut.transform(_pulse.value),
+      )!,
+      child: child,
+    ),
+    child: Center(
+      child: NeoLabel(
+        widget.label,
+        color: NeoColors.accent,
+        icon: Icons.hourglass_top,
+      ),
+    ),
+  );
 }

@@ -357,6 +357,7 @@
     }
   },
   "photoNotSaved": "ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.",
+  "developingPhoto": "ĐANG RỬA ẢNH...",
   "photoOpenFailed": "KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.",
   "fallbackUsed": "ĐÃ DÙNG PHƯƠNG ÁN DỰ PHÒNG: {note}",
   "@fallbackUsed": {
