@@ -1407,7 +1407,7 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildQuestModeHeader(Quest quest) {
     return Container(
-      height: context.s(56),
+      height: context.s(68),
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       decoration: NeoTheme.panel(color: questStyleColor(quest.style)),
       child: Row(

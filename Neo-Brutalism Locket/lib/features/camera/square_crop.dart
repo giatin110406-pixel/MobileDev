@@ -16,10 +16,10 @@ const _channel = MethodChannel(
 Future<Uint8List> cropShotToSquare(String path) async {
   if (!kIsWeb && Platform.isAndroid) {
     try {
-      final bytes = await _channel.invokeMethod<Uint8List>('cropToSquareJpeg', {
-        'path': path,
-        'quality': 92,
-      });
+      final bytes = await _channel.invokeMethod<Uint8List>(
+        'cropToSquareJpeg',
+        {'path': path, 'quality': 92},
+      );
       if (bytes != null && bytes.isNotEmpty) return bytes;
     } catch (e, st) {
       AppLog.warn('square_crop', e, st);
