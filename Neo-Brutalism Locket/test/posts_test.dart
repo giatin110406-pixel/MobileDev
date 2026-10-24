@@ -19,6 +19,12 @@ import 'package:neo_brutalism_locket/features/social/feed_view.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+Uint8List jpeg(int w, int h) {
+  final image = img.Image(width: w, height: h);
+  img.fill(image, color: img.ColorRgb8(60, 120, 200));
+  return Uint8List.fromList(img.encodeJpg(image, quality: 90));
+}
+
 class FakePosts implements PostsRepository {
   FakePosts({List<RemotePost>? feed}) : feed = feed ?? [];
 
@@ -163,6 +169,20 @@ void main() {
       expect(out.mimeType, 'image/jpeg');
     });
 
+    test('an original within the limits is sent byte for byte', () async {
+      final bytes = jpeg(1200, 800);
+      expect(await originalForUpload(bytes), bytes);
+    });
+
+    test('a huge original is shrunk to 2560, a PNG becomes a JPEG', () async {
+      final big = img.decodeJpg(await originalForUpload(jpeg(3200, 1600)))!;
+      expect(big.width, maxOriginalSide);
+      expect(big.height, 1280);
+      final fromPng = await originalForUpload(sample(300, 300));
+      expect(fromPng[0], 0xFF);
+      expect(img.decodeJpg(fromPng), isNotNull);
+    });
+
     test('small pictures keep their size; pixel art stays PNG', () {
       final out = encodePhotoSync(sample(200, 200), true);
       final full = img.decodeImage(out.media)!;
@@ -198,7 +218,7 @@ void main() {
       'the original shot is queued beside the styled one and cleaned up',
       () async {
         final original = File('${dir.path}/original.jpg')
-          ..writeAsBytesSync([1, 2, 3]);
+          ..writeAsBytesSync(jpeg(1500, 1500));
         final box = outbox();
         await box.enqueue(
           source: source,
@@ -208,6 +228,11 @@ void main() {
         );
         final queued = (await box.pending()).single;
         expect(queued.originalFile, isNotNull);
+        // A shot within the limits goes up exactly as it was taken.
+        expect(
+          File(queued.originalFile!).readAsBytesSync(),
+          original.readAsBytesSync(),
+        );
         expect(File(queued.originalFile!).existsSync(), isTrue);
         // It survives being saved and loaded again (the app may be closed).
         expect(
@@ -220,6 +245,17 @@ void main() {
         expect(File(queued.originalFile!).existsSync(), isFalse);
       },
     );
+
+    test('album ids are queued with the post and survive a restart', () async {
+      final box = outbox();
+      await box.enqueue(source: source, caption: '', albumIds: ['a1', 'a2']);
+      final queued = (await box.pending()).single;
+      expect(queued.albumIds, ['a1', 'a2']);
+      expect(PendingPost.fromJson(queued.toJson()).albumIds, ['a1', 'a2']);
+      expect(queued.failedOnce().albumIds, ['a1', 'a2']);
+      await box.flush();
+      expect(posts.sent.single.albumIds, ['a1', 'a2']);
+    });
 
     test('a post with no original has nothing to compare', () async {
       final box = outbox();

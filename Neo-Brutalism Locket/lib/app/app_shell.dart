@@ -9,6 +9,8 @@ import 'package:neo_brutalism_locket/app/tab_swipe_detector.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
+import 'package:neo_brutalism_locket/features/albums/albums_repository.dart';
+import 'package:neo_brutalism_locket/features/albums/albums_store.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/banner_art.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
@@ -16,6 +18,7 @@ import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_widgets.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_backdrops.dart';
+import 'package:neo_brutalism_locket/features/export/media_export.dart';
 import 'package:neo_brutalism_locket/features/groups/group_home_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
@@ -26,6 +29,7 @@ import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
 import 'package:neo_brutalism_locket/features/settings/settings_screen.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/chat/chat_repository.dart';
 import 'package:neo_brutalism_locket/features/chat/chat_store.dart';
 import 'package:neo_brutalism_locket/features/history/history_screen.dart';
@@ -68,7 +72,6 @@ import 'package:neo_brutalism_locket/features/shop/shop_screen.dart';
 import 'package:neo_brutalism_locket/features/profile/player_avatar.dart';
 import 'package:neo_brutalism_locket/features/social/feed_filter.dart';
 import 'package:neo_brutalism_locket/features/social/feed_view.dart';
-import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/social/local_friend_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
@@ -98,6 +101,7 @@ class AppShell extends StatefulWidget {
     this.widgetUpdater,
     this.groupsRepository,
     this.canvasRepository,
+    this.albumsRepository,
     this.contestRepository,
   });
 
@@ -110,6 +114,7 @@ class AppShell extends StatefulWidget {
 
   /// The shared canvas on the server (same rule as [groupsRepository]).
   final CanvasRepository? canvasRepository;
+  final AlbumsRepository? albumsRepository;
 
   /// The home-screen widget (the phone's by default).
   final WidgetUpdater? widgetUpdater;
@@ -193,6 +198,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   bool _showFeed = false;
   FriendsStore? _friendsStore;
   GroupsStore? _groupsStore;
+  AlbumsStore? _albumsStore;
   CanvasRepository? _canvasRepository;
   ContestStore? _contestStore;
   ContestArtCache? _artCache;
@@ -245,6 +251,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _groupsStore = GroupsStore(groupsRepository)
           ..addListener(_onGroupsChanged)
           ..refresh();
+      }
+      final albumsRepository =
+          widget.albumsRepository ??
+          (Backend.isReady
+              ? SupabaseAlbumsRepository(myId: session.user.id)
+              : null);
+      if (albumsRepository != null) {
+        _albumsStore = AlbumsStore(albumsRepository)..refresh();
       }
       _canvasRepository =
           widget.canvasRepository ??
@@ -369,6 +383,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ?..removeListener(_onGroupsChanged)
       ..dispose();
     _contestStore?.dispose();
+    _albumsStore?.dispose();
     _dayTimer?.cancel();
     _player.removeListener(_onPlayerChanged);
     if (widget.playerStore == null) _player.dispose();
@@ -505,6 +520,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _friendsStore?.refresh();
       _groupsStore?.refresh();
       _contestStore?.refresh();
+      // A widget may have been placed or set to someone while away.
+      _refreshWidget();
     }
   }
 
@@ -531,6 +548,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           canvasRepository: canvas,
           myId: widget.session!.user.id,
           safety: _safety,
+          albums: _albumsStore,
+          mediaUrls: _mediaUrls,
         ),
       ),
     );
@@ -578,6 +597,17 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           myId: me,
           friendNames: {for (final f in _friends) f.id: f.name},
           urls: urls,
+          groups: [
+            for (final summary
+                in _groupsStore?.groups ?? const <GroupSummary>[])
+              WidgetGroup(
+                id: summary.group.id,
+                name: summary.group.name,
+                memberIds: {
+                  for (final member in summary.members) member.person.id,
+                },
+              ),
+          ],
         )
         .catchError((Object _) {});
   }
@@ -626,6 +656,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     List<String>? recipients,
     int? friendCount,
     File? original,
+    List<String> albumIds = const [],
   }) => _queueAndSend(
     (outbox) => outbox.enqueue(
       source: file,
@@ -635,6 +666,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       overlay: overlay,
       recipients: recipients,
       original: original,
+      albumIds: albumIds,
     ),
     recipients: recipients,
     friendCount: friendCount,
@@ -662,6 +694,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         if (count > 0) _notify(l10n.composerSentTo(count));
         await _postsStore?.refresh();
       }
+      // The albums count the new post once it is on the server.
+      if (!stillWaiting) unawaited(_albumsStore?.refresh());
       return true;
     } catch (_) {
       if (mounted) _notify(l10n.errUnknown);
@@ -680,8 +714,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final path = processed ?? photo.originalPath;
     final result = await Navigator.of(context).push<ComposerResult>(
       MaterialPageRoute(
-        builder: (context) =>
-            PostComposerScreen(imagePath: path, friends: store.friends),
+        builder: (context) => PostComposerScreen(
+          imagePath: path,
+          friends: store.friends,
+          albums: _albumsStore?.open ?? const [],
+        ),
       ),
     );
     if (result == null || !mounted) return false;
@@ -693,6 +730,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       recipients: result.recipients,
       friendCount: result.recipients?.length ?? store.friends.length,
       original: _originalToCompare(photo, processed),
+      albumIds: result.albumIds,
     );
   }
 
@@ -713,6 +751,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       recipients: result.recipients,
       friendCount: result.recipients?.length ?? store.friends.length,
       original: _originalToCompare(photo, processed),
+      albumIds: result.albumIds,
     );
   }
 
@@ -737,6 +776,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         builder: (context) => PostComposerScreen(
           imagePath: video.path,
           friends: store.friends,
+          albums: _albumsStore?.open ?? const [],
           isVideo: true,
         ),
       ),
@@ -748,6 +788,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         caption: result.caption,
         overlay: result.overlay,
         recipients: result.recipients,
+        albumIds: result.albumIds,
       ),
       recipients: result.recipients,
       friendCount: result.recipients?.length ?? store.friends.length,
@@ -1158,6 +1199,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             notifications:
                 widget.notificationPrefs ??
                 SupabaseNotificationPrefsRepository(userId: session.user.id),
+            accountExport: Backend.isReady
+                ? AccountExport(
+                    source: SupabaseMyPostsSource(myId: session.user.id),
+                    exporter: MediaExporter(_mediaUrls),
+                    username: session.profile.username ?? '',
+                  )
+                : null,
           );
           return _withScopes(page);
         },
@@ -1189,6 +1237,16 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               variant: NeoButtonVariant.accent,
               onPressed: () => Navigator.pop(context, 'save'),
             ),
+            if (post.originalPath != null && !post.isVideo) ...[
+              const SizedBox(height: 12),
+              NeoButton(
+                expand: true,
+                label: l10n.postMenuSaveOriginal,
+                icon: Icons.photo_outlined,
+                variant: NeoButtonVariant.outline,
+                onPressed: () => Navigator.pop(context, 'saveOriginal'),
+              ),
+            ],
             const SizedBox(height: 12),
             NeoButton(
               expand: true,
@@ -1225,6 +1283,11 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       case 'save':
         final ok = await actions.save(post.mediaPath);
         if (mounted) _notify(ok ? l10n.postSaved : l10n.postSaveFailed);
+      case 'saveOriginal':
+        final ok = await actions.save(post.originalPath!);
+        if (mounted) {
+          _notify(ok ? l10n.postOriginalSaved : l10n.postSaveFailed);
+        }
       case 'share':
         final ok = await actions.share(post.mediaPath, text: post.caption);
         if (!ok && mounted) _notify(l10n.postShareFailed);
@@ -1637,7 +1700,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       body: SafeArea(
         child: Column(
           children: [
-            _buildStatusStrip(),
+            // The camera page carries its own streak; no Sunbit while shooting.
+            if (!cameraVisible) _buildStatusStrip(),
             Expanded(
               child: TabSwipeDetector(
                 tabCount: _menuTabCount,
@@ -1667,6 +1731,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           onSendPrint: _online ? _sendPrint : null,
                           onPostDraft: _online ? _postDraft : null,
                           friends: _friendsStore?.friends ?? const [],
+                          albums: _albumsStore?.open ?? const [],
                           onPhotoRemoved: _onPhotoRemoved,
                           onVideoRecorded: _online ? _sendVideo : null,
                           header: _homeHeader(),
@@ -1935,10 +2000,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     activity: _interactions?.activity ?? const {},
   );
 
-  bool _historyOnDevice = false;
-
-  /// Tab 3 with an account: posts sent and received, or the prints kept on
-  /// this phone.
   /// The weekly contest as a menu tab (signed-in only: it lives on the server).
   Widget _buildContestTab() {
     final contest = _contestStore;
@@ -2015,7 +2076,16 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   /// profile avatar on the right.
   Widget _homeHeader() => Row(
     children: [
-      const Expanded(child: SizedBox()),
+      Expanded(
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: StreakChip(
+            streak: _player.streak,
+            onTap: _openQuestSheet,
+            round: true,
+          ),
+        ),
+      ),
       _filterPill(),
       Expanded(
         child: Align(
@@ -2026,7 +2096,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               onTap: Haptics.tap(() => _selectTab(_profilePage)),
               child: PlayerAvatar(
                 state: _player.state,
-                size: 54,
+                size: context.s(44),
                 remotePath: widget.session?.profile.avatarPath,
               ),
             ),
@@ -2039,6 +2109,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   /// The archive (posts and prints on this phone), a menu tab.
   Widget _buildArchivePage() {
     final l10n = AppLocalizations.of(context);
+    // Online, the history is the whole archive: your posts and your friends'.
+    if (_online) return _buildHistoryTab();
     return Column(
       key: const ValueKey('archive'),
       children: [
@@ -2074,77 +2146,19 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   }
 
   Widget _buildHistoryTab() {
-    final l10n = AppLocalizations.of(context);
     final posts = _postsStore;
-    Widget chip(String label, bool selected, VoidCallback onTap) => Expanded(
-      child: Semantics(
-        button: true,
-        selected: selected,
-        child: NeoPress(
-          onTap: onTap,
-          // The chosen chip stays pressed in.
-          sunken: selected,
-          builder: (context, pressed) => Container(
-            height: 36,
-            alignment: Alignment.center,
-            decoration: NeoTheme.panel(
-              color: selected ? NeoColors.accent : NeoColors.surface,
-              pressed: pressed,
-            ),
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: NeoColors.ink,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    return Column(
+    return HistoryScreen(
       key: const ValueKey('history'),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 10, 22, 0),
-          child: Row(
-            children: [
-              chip(
-                l10n.historyPosts,
-                !_historyOnDevice,
-                () => setState(() => _historyOnDevice = false),
-              ),
-              const SizedBox(width: 12),
-              chip(
-                l10n.historyOnDevice,
-                _historyOnDevice,
-                () => setState(() => _historyOnDevice = true),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _historyOnDevice
-              ? ArchiveScreen(
-                  photos: _photos,
-                  onOpenPhoto: _openPhoto,
-                  onOpenCamera: () => _selectTab(_cameraTab),
-                )
-              : HistoryScreen(
-                  posts: posts?.posts ?? const [],
-                  friends: _friends,
-                  myId: widget.session!.user.id,
-                  onOpen: _openHistoryPost,
-                  hasMore: posts?.hasMore ?? false,
-                  loadingMore: posts?.isLoadingMore ?? false,
-                  failed: posts?.failed ?? false,
-                  onLoadMore: posts?.loadMore,
-                  onRefresh: _syncPosts,
-                  search: _photoSearch,
-                ),
-        ),
-      ],
+      posts: posts?.posts ?? const [],
+      friends: _friends,
+      myId: widget.session!.user.id,
+      onOpen: _openHistoryPost,
+      hasMore: posts?.hasMore ?? false,
+      loadingMore: posts?.isLoadingMore ?? false,
+      failed: posts?.failed ?? false,
+      onLoadMore: posts?.loadMore,
+      onRefresh: _syncPosts,
+      search: _photoSearch,
     );
   }
 
@@ -2180,12 +2194,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         children: [
           StreakChip(streak: _player.streak, onTap: _openQuestSheet),
           const Spacer(),
-          StatusIconButton(
-            icon: Icons.dns_outlined,
-            tooltip: AppLocalizations.of(context).laptopSettingsTooltip,
-            onPressed: () => showServerSettingsSheet(context),
-          ),
-          const SizedBox(width: 10),
           SunbitBadge(
             balance: _player.balance,
             onTap: () => openShop(context, _player),

@@ -1705,5 +1705,146 @@
       }
     }
   },
-  "searchMaybe": "CÓ THỂ LIÊN QUAN"
+  "searchMaybe": "CÓ THỂ LIÊN QUAN",
+  "albumChipPrefix": "ALBUM:",
+  "groupTabAlbums": "ALBUM",
+  "albumsEmpty": "Chưa có album nào. Tạo album cho một chuyến đi hay một buổi tiệc: ảnh mọi người trong nhóm chụp những ngày đó sẽ gom về một chỗ.",
+  "albumNew": "TẠO ALBUM",
+  "albumNameLabel": "Tên album (ví dụ: Đà Lạt)",
+  "albumDatesLabel": "Ngày diễn ra",
+  "albumCreateButton": "TẠO",
+  "albumDateRange": "{from} – {to}",
+  "@albumDateRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "albumOpenNow": "ĐANG MỞ",
+  "albumPhotoCount": "{count} ảnh",
+  "@albumPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumEmptyItems": "Album chưa có ảnh nào.",
+  "albumAddMine": "THÊM ẢNH CỦA TÔI",
+  "albumAddNone": "Bạn không có ảnh nào trong những ngày này, hoặc đã thêm hết rồi.",
+  "albumAddHint": "Ảnh thêm vào album hiện cho mọi thành viên trong nhóm, kể cả người chưa là bạn của bạn.",
+  "albumAddConfirm": "THÊM {count} ẢNH",
+  "@albumAddConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumAdded": "Đã thêm {count} ảnh vào album.",
+  "@albumAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumDownloadSkipped": "{count} ảnh không tải được nên không có trong file.",
+  "@albumDownloadSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumDeleteTitle": "Xóa album này?",
+  "albumDeleteBody": "Album biến mất khỏi nhóm. Ảnh vẫn còn trong bài đăng của người chụp.",
+  "albumDelete": "XÓA ALBUM",
+  "albumRemovePhoto": "GỠ KHỎI ALBUM",
+  "albumPhotoRemoved": "Đã gỡ ảnh khỏi album.",
+  "albumLoadFailed": "Không tải được album.",
+  "albumBy": "Ảnh của {name}",
+  "@albumBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "albumErrName": "Tên album phải từ 1 đến 40 ký tự.",
+  "albumErrWindow": "Album kéo dài tối đa 31 ngày.",
+  "albumErrLimit": "Nhóm đã có 20 album. Hãy xóa bớt album cũ.",
+  "albumErrNotAllowed": "Bạn không có quyền làm việc này.",
+  "postMenuSaveOriginal": "LƯU ẢNH GỐC",
+  "postOriginalSaved": "Đã lưu ảnh gốc vào thư viện ảnh.",
+  "settingsData": "DỮ LIỆU CỦA BẠN",
+  "settingsExportData": "Xuất toàn bộ ảnh của tôi",
+  "settingsExportHint": "Tạo file zip gồm mọi ảnh bạn đã đăng, cả ảnh gốc trước khi tạo style, kèm danh sách chú thích.",
+  "exportProgress": "Đang chuẩn bị {done}/{total}…",
+  "@exportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "exportNothing": "Bạn chưa đăng ảnh nào.",
+  "exportFailed": "Không xuất được. Kiểm tra kết nối rồi thử lại.",
+  "groupTabOpenAlbums": "{count} đang mở",
+  "@groupTabOpenAlbums": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stripButton": "IN STRIP",
+  "stripPickHint": "Chạm 2–6 ảnh theo thứ tự muốn in ({count}/6)",
+  "@stripPickHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stripNext": "TIẾP",
+  "stripNoVideo": "Video không in được, hãy chọn ảnh.",
+  "stripTitle": "IN STRIP ẢNH",
+  "stripFrameLabel": "KHUNG",
+  "stripPaperLabel": "KHỔ IN",
+  "stripStyleClassicDark": "PHIM ĐEN",
+  "stripStyleClassicLight": "GIẤY TRẮNG",
+  "stripStyleNeo": "NEO",
+  "stripStylePixel": "8-BIT",
+  "stripStyleVanGogh": "VAN GOGH",
+  "stripPaperSheet": "10×15 CM (2 DẢI)",
+  "stripPaperStrip": "1 DẢI 5×15 CM",
+  "stripPaperSheetHint": "In ở tiệm ảnh khổ 10×15 cm, rồi cắt dọc ở giữa: được 2 dải giống hệt, như ở photobooth.",
+  "stripPaperStripHint": "Một dải 5×15 cm, 300 dpi.",
+  "stripUseOriginals": "Dùng ảnh gốc (trước khi tạo style)",
+  "stripTitleLabel": "Dòng chữ lớn",
+  "stripSubtitleLabel": "Dòng chữ nhỏ",
+  "stripSave": "LƯU VÀO MÁY",
+  "stripShare": "CHIA SẺ / IN",
+  "stripSaved": "Đã lưu strip vào thư viện ảnh.",
+  "stripLoadFailed": "Không tải được ảnh. Kiểm tra kết nối rồi thử lại.",
+  "stripTextLabel": "CHỮ TRÊN STRIP",
+  "stripZoomHint": "CHẠM ĐỂ PHÓNG TO",
+  "stripPaperGrid": "LƯỚI 2×3 (6 ẢNH)",
+  "stripPaperGridHint": "Một tờ 10×15 cm có 6 ô vuông (2 cột × 3 hàng), không cần cắt. Ô nào chưa có ảnh sẽ là thẻ trang trí.",
+  "stripOnlyThree": "Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả {count} ảnh.",
+  "@stripOnlyThree": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

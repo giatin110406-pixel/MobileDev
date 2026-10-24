@@ -100,6 +100,7 @@ class PostOutbox extends ChangeNotifier {
     Map<String, dynamic>? overlay,
     List<String>? recipients,
     File? original,
+    List<String> albumIds = const [],
   }) async {
     final sourceBytes = await source.readAsBytes();
     final encoded = await encode(
@@ -118,16 +119,16 @@ class PostOutbox extends ChangeNotifier {
     final thumbFile = '${base}_thumb.jpg';
     await File(mediaFile).writeAsBytes(encoded.media, flush: true);
     await File(thumbFile).writeAsBytes(encoded.thumb, flush: true);
-    // The shot before its style, to compare with: kept as a JPEG.
+    // The shot before its style, to compare with and to save: kept as a JPEG
+    // at the quality it was taken (see [originalForUpload]).
     String? originalFile;
     if (original != null) {
       try {
-        final before = await encode(
-          await original.readAsBytes(),
-          lossless: false,
+        originalFile = '${base}_orig.jpg';
+        await File(originalFile).writeAsBytes(
+          await originalForUpload(await original.readAsBytes()),
+          flush: true,
         );
-        originalFile = '${base}_orig.${before.extension}';
-        await File(originalFile).writeAsBytes(before.media, flush: true);
       } catch (e, st) {
         // No original is fine: the post just has nothing to compare.
         AppLog.warn('post_outbox', e, st);
@@ -148,6 +149,7 @@ class PostOutbox extends ChangeNotifier {
         overlay: overlay,
         recipients: recipients,
         embedding: embedding,
+        albumIds: albumIds,
         createdAt: DateTime.now(),
       ),
     );
@@ -163,6 +165,7 @@ class PostOutbox extends ChangeNotifier {
     required String caption,
     Map<String, dynamic>? overlay,
     List<String>? recipients,
+    List<String> albumIds = const [],
   }) async {
     final dir = await _dir();
     final id = newUuid();
@@ -193,6 +196,7 @@ class PostOutbox extends ChangeNotifier {
         overlay: overlay,
         recipients: recipients,
         embedding: embedding,
+        albumIds: albumIds,
         createdAt: DateTime.now(),
       ),
     );

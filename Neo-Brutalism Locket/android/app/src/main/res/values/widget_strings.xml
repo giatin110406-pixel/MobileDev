@@ -4,4 +4,7 @@
     <string name="widget_description">The newest photo a friend sent you.</string>
     <string name="widget_empty">Open Pocket Portrait to see your friends photos</string>
     <string name="widget_now">now</string>
+    <string name="widget_pick_title">Show photos from</string>
+    <string name="widget_all_friends">All friends</string>
+    <string name="widget_group_label">Group: %1$s</string>
 </resources>

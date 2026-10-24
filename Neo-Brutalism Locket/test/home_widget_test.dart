@@ -35,14 +35,38 @@ const post2 = '44444444-4444-4444-8444-444444444444';
 
 class FakeBridge implements WidgetBridge {
   final shown = <(WidgetPost, String)>[];
+
+  /// The source each entry of [shown] was for.
+  final shownFor = <String>[];
   var cleared = 0;
+  Iterable<String> clearedSources = const [];
+
+  /// What the placed widgets follow, besides everybody.
+  Set<String> active = {};
+  List<WidgetChoice> choices = [];
 
   @override
-  Future<void> show(WidgetPost post, String imagePath) async =>
-      shown.add((post, imagePath));
+  Future<void> show(
+    WidgetPost post,
+    String imagePath, {
+    String source = allSource,
+  }) async {
+    shown.add((post, imagePath));
+    shownFor.add(source);
+  }
 
   @override
-  Future<void> clear() async => cleared++;
+  Future<void> clear({Iterable<String> sources = const []}) async {
+    cleared++;
+    clearedSources = sources.toList();
+  }
+
+  @override
+  Future<Set<String>> activeSources() async => active;
+
+  @override
+  Future<void> publishChoices(List<WidgetChoice> choices) async =>
+      this.choices = choices;
 }
 
 class FakeUrls implements MediaUrls {
@@ -301,6 +325,202 @@ void main() {
       expect(File(path).existsSync(), isFalse);
       // The same post can be shown again for the next account.
       expect(await u.applyData(pushData()), isTrue);
+    });
+  });
+
+  group('a widget that follows one friend or one group', () {
+    const C = '55555555-5555-4555-8555-555555555555';
+    final friends = {A, C};
+
+    test('one friend: only their photos, and only if they are a friend', () {
+      final posts = [post('c1', C, minute: 5), post('a1', A, minute: 3)];
+      expect(
+        latestPostForSource(
+          posts,
+          friendSource(A),
+          myId: B,
+          friendIds: friends,
+        )?.id,
+        'a1',
+      );
+      expect(
+        latestPostForSource(
+          posts,
+          friendSource('stranger'),
+          myId: B,
+          friendIds: friends,
+        ),
+        isNull,
+      );
+    });
+
+    test(
+      'one group: photos of its members only, not mine or other friends',
+      () {
+        final posts = [
+          post('mine', B, minute: 9),
+          post('c1', C, minute: 5),
+          post('a1', A, minute: 3),
+        ];
+        final groups = {
+          'fam': {A, B},
+        };
+        expect(
+          latestPostForSource(
+            posts,
+            groupSource('fam'),
+            myId: B,
+            friendIds: friends,
+            groups: groups,
+          )?.id,
+          'a1',
+        );
+        expect(
+          latestPostForSource(
+            posts,
+            groupSource('nope'),
+            myId: B,
+            friendIds: friends,
+            groups: groups,
+          ),
+          isNull,
+        );
+        expect(
+          latestPostForSource(posts, 'x_1', myId: B, friendIds: friends),
+          isNull,
+          reason: 'an unknown kind of source shows nothing',
+        );
+      },
+    );
+
+    late Directory dir;
+    late FakeBridge bridge;
+    late List<Uri> downloads;
+
+    WidgetUpdater updater() => WidgetUpdater(
+      bridge: bridge,
+      directory: () async => dir,
+      client: MockClient((request) async {
+        downloads.add(request.url);
+        return http.Response.bytes([7, 7], 200);
+      }),
+    );
+
+    setUp(() {
+      dir = Directory.systemTemp.createTempSync('widget_sources');
+      bridge = FakeBridge();
+      downloads = [];
+    });
+
+    tearDown(() {
+      try {
+        dir.deleteSync(recursive: true);
+      } catch (_) {}
+    });
+
+    final fam = WidgetGroup(id: 'fam', name: 'Family', memberIds: {A, B});
+
+    test('the picker is told which friends and groups there are', () async {
+      await updater().refreshFromFeed(
+        posts: const [],
+        myId: B,
+        friendNames: {A: 'Ava', C: 'Cy'},
+        urls: FakeUrls(),
+        groups: [fam],
+      );
+      expect(
+        {for (final c in bridge.choices) c.key: c.label},
+        {
+          friendSource(A): 'Ava',
+          friendSource(C): 'Cy',
+          groupSource('fam'): 'Family',
+        },
+      );
+    });
+
+    test('pictures are fetched only for sources a widget follows', () async {
+      final urls = FakeUrls();
+      final posts = [post('c1', C, minute: 5), post('a1', A, minute: 3)];
+      await updater().refreshFromFeed(
+        posts: posts,
+        myId: B,
+        friendNames: {A: 'Ava', C: 'Cy'},
+        urls: urls,
+        groups: [fam],
+      );
+      expect(bridge.shownFor, [allSource], reason: 'no one follows a friend');
+      expect(bridge.shown.single.$1.postId, 'c1');
+
+      bridge.active = {friendSource(A), groupSource('fam')};
+      await updater().refreshFromFeed(
+        posts: posts,
+        myId: B,
+        friendNames: {A: 'Ava', C: 'Cy'},
+        urls: urls,
+        groups: [fam],
+      );
+      expect(bridge.shownFor.toSet(), {
+        allSource,
+        friendSource(A),
+        groupSource('fam'),
+      });
+      for (var i = 1; i < bridge.shown.length; i++) {
+        expect(bridge.shown[i].$1.postId, 'a1');
+        expect(bridge.shown[i].$1.authorId, A);
+      }
+      expect(
+        bridge.shown.map((e) => e.$2).toSet(),
+        hasLength(bridge.shown.length),
+        reason: 'each source has its own file',
+      );
+    });
+
+    test('a push reaches the widgets that follow its author', () async {
+      final u = updater();
+      bridge.active = {friendSource(A), friendSource(C), groupSource('fam')};
+      // The group is known from the last time the feed loaded.
+      await u.refreshFromFeed(
+        posts: const [],
+        myId: B,
+        friendNames: {A: 'Ava', C: 'Cy'},
+        urls: FakeUrls(),
+        groups: [fam],
+      );
+      await u.applyData({...pushData(), 'author_id': A});
+      expect(bridge.shownFor.toSet(), {
+        allSource,
+        friendSource(A),
+        groupSource('fam'),
+      });
+      expect(
+        downloads,
+        hasLength(1),
+        reason: 'the picture is downloaded once and copied',
+      );
+    });
+
+    test('a push without an author only reaches the main widget', () async {
+      bridge.active = {friendSource(A)};
+      await updater().applyData(pushData());
+      expect(bridge.shownFor, [allSource]);
+    });
+
+    test('signing out clears every source and its pictures', () async {
+      final u = updater();
+      bridge.active = {friendSource(A)};
+      await u.refreshFromFeed(
+        posts: [post('a1', A)],
+        myId: B,
+        friendNames: {A: 'Ava'},
+        urls: FakeUrls(),
+      );
+      final files = bridge.shown.map((e) => e.$2).toList();
+      expect(files, hasLength(2));
+      await u.clear();
+      expect(bridge.clearedSources, [friendSource(A)]);
+      for (final path in files) {
+        expect(File(path).existsSync(), isFalse);
+      }
     });
   });
 

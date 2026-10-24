@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/albums/albums_repository.dart';
 import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
 import 'package:neo_brutalism_locket/features/posts/video_views.dart';
@@ -11,9 +12,17 @@ import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// What the person chose in the composer.
 class ComposerResult {
-  const ComposerResult({required this.caption, this.recipients, this.overlay});
+  const ComposerResult({
+    required this.caption,
+    this.recipients,
+    this.overlay,
+    this.albumIds = const [],
+  });
 
   final String caption;
+
+  /// Group albums the person also put the post in.
+  final List<String> albumIds;
 
   /// Time / place labels to show on the post (null for none).
   final Map<String, dynamic>? overlay;
@@ -29,18 +38,26 @@ const maxCaptionLength = 80;
 class ComposerController extends ChangeNotifier {
   ComposerController({
     required this.friends,
+    this.albums = const [],
     this.placeLookup = const DevicePlaceLookup(),
     DateTime Function() clock = DateTime.now,
   }) : selected = {for (final friend in friends) friend.person.id},
        time = formatOverlayTime(clock());
 
   final List<Friend> friends;
+
+  /// Albums open right now (a photo taken now fits their dates).
+  final List<Album> albums;
   final PlaceLookup placeLookup;
   final caption = TextEditingController();
   final captionFocus = FocusNode();
 
   /// Friend ids that get the post.
   final Set<String> selected;
+
+  /// Albums the post is also added to. Empty to start with: putting a photo
+  /// in an album shows it to the whole group, friends or not.
+  final Set<String> selectedAlbums = {};
 
   /// The time label, fixed when the shot was taken.
   final String time;
@@ -73,6 +90,11 @@ class ComposerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleAlbum(String id) {
+    if (!selectedAlbums.remove(id)) selectedAlbums.add(id);
+    notifyListeners();
+  }
+
   /// Adds the place label, or removes it. [onProblem] hears why it failed.
   Future<void> togglePlace(
     void Function(PlaceProblem problem) onProblem,
@@ -98,6 +120,7 @@ class ComposerController extends ChangeNotifier {
     caption: caption.text.trim(),
     recipients: all ? null : selected.toList(),
     overlay: overlay.toJson(),
+    albumIds: selectedAlbums.toList(),
   );
 
   @override
@@ -115,6 +138,7 @@ class PostComposerScreen extends StatelessWidget {
     super.key,
     required this.imagePath,
     required this.friends,
+    this.albums = const [],
     this.initialCaption = '',
     this.isVideo = false,
     this.placeLookup = const DevicePlaceLookup(),
@@ -124,6 +148,7 @@ class PostComposerScreen extends StatelessWidget {
   /// The picture (or, with [isVideo], the MP4) to send.
   final String imagePath;
   final List<Friend> friends;
+  final List<Album> albums;
   final String initialCaption;
   final bool isVideo;
   final PlaceLookup placeLookup;
@@ -162,6 +187,7 @@ class PostComposerScreen extends StatelessWidget {
             const SizedBox(height: 16),
             PostComposerForm(
               friends: friends,
+              albums: albums,
               initialCaption: initialCaption,
               isVideo: isVideo,
               placeLookup: placeLookup,
@@ -234,6 +260,7 @@ class PostComposerForm extends StatefulWidget {
     required this.friends,
     required this.previewBuilder,
     required this.onSubmit,
+    this.albums = const [],
     this.afterPreview,
     this.canPost = true,
     this.initialCaption = '',
@@ -243,6 +270,9 @@ class PostComposerForm extends StatefulWidget {
   });
 
   final List<Friend> friends;
+
+  /// Albums open right now, each offered as a tick under the labels.
+  final List<Album> albums;
 
   /// Draws the picture; gets the labels chosen so far to lay on it.
   final Widget Function(BuildContext context, PostOverlay overlay)
@@ -274,6 +304,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
   bool _showTime = false;
   String? _place;
   bool _findingPlace = false;
+  final Set<String> _albums = {};
 
   @override
   void dispose() {
@@ -329,6 +360,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
         caption: _caption.text.trim(),
         recipients: _all ? null : _selected.toList(),
         overlay: _overlay.toJson(),
+        albumIds: _albums.toList(),
       ),
     );
   }
@@ -365,6 +397,14 @@ class _PostComposerFormState extends State<PostComposerForm> {
               selected: _place != null,
               onTap: _findingPlace ? () {} : _togglePlace,
             ),
+            for (final album in widget.albums)
+              _recipientChip(
+                label: '${l10n.albumChipPrefix} ${album.name}',
+                selected: _albums.contains(album.id),
+                onTap: () => setState(() {
+                  if (!_albums.remove(album.id)) _albums.add(album.id);
+                }),
+              ),
           ],
         ),
         const SizedBox(height: 14),

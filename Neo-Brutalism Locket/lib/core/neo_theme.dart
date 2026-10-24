@@ -12,6 +12,7 @@ abstract final class NeoColors {
   //   black        - outlines, hard shadows and text
   static const ink = Color(0xFF000000);
   static const teal = Color(0xFF84D0C8);
+  static const blue = Color(0xFF6DB3F2);
   static const paper = Color(0xFFF8EED2);
   static const surface = Color(0xFFF8EED2);
   static const accent = Color(0xFFF5D06F);

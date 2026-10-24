@@ -161,7 +161,26 @@ class SupabasePostsRepository implements PostsRepository {
       }
       await _db.rpc('create_post', params: params..remove('p_embedding'));
     }
+    await _addToAlbums(post);
   });
+
+  /// Puts the sent post in the albums chosen for it. A refusal (the album is
+  /// gone, the post fell outside its dates) is not worth losing the post for;
+  /// a dropped connection throws, so the whole send is tried again (every step
+  /// before is safe to repeat).
+  Future<void> _addToAlbums(PendingPost post) async {
+    for (final albumId in post.albumIds) {
+      try {
+        await _db.rpc(
+          'add_to_album',
+          params: {'p_album': albumId, 'p_post': post.id},
+        );
+      } on sb.PostgrestException catch (error) {
+        final code = int.tryParse(error.code ?? '');
+        if (code != null && code >= 500) rethrow;
+      }
+    }
+  }
 
   Future<T> _guard<T>(Future<T> Function() call) async {
     try {

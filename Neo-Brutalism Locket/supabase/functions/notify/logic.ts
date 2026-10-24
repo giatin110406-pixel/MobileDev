@@ -146,6 +146,8 @@ export function buildNotification(
 
 /** The parts of a post the widget needs. */
 export interface PostInfo {
+  /** Lets a widget showing one friend's photos know whether this is theirs. */
+  author_id?: string;
   kind: string;
   caption: string | null;
   thumb_path: string | null;
@@ -170,6 +172,7 @@ export function buildWidgetData(
   return {
     type: "widget_update",
     post_id: event.post_id ?? "",
+    author_id: post.author_id ?? "",
     name: actorName.trim(),
     caption: (post.caption ?? "").slice(0, 80),
     image_url: imageUrl,

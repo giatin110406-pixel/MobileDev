@@ -12,6 +12,7 @@ import 'package:neo_brutalism_locket/core/neo_progress.dart';
 import 'package:neo_brutalism_locket/core/print_sound.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
@@ -20,6 +21,7 @@ import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
 import 'package:neo_brutalism_locket/features/friends/friends_repository.dart';
 import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
+import 'package:neo_brutalism_locket/features/albums/albums_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
@@ -55,6 +57,7 @@ class CameraTab extends StatefulWidget {
     this.onSendPrint,
     this.onPostDraft,
     this.friends = const [],
+    this.albums = const [],
     this.onPhotoRemoved,
     this.onVideoRecorded,
     this.header,
@@ -105,6 +108,9 @@ class CameraTab extends StatefulWidget {
 
   /// Who the post can go to (shown in the popup).
   final List<Friend> friends;
+
+  /// Group albums open right now (shown in the popup as ticks).
+  final List<Album> albums;
 
   /// A shot was thrown away or posted and is no longer on this phone.
   final ValueChanged<NeoPhoto>? onPhotoRemoved;
@@ -645,7 +651,10 @@ class CameraTabState extends State<CameraTab> {
       styleType: _selectedStyleType,
     );
     _composer?.dispose();
-    _composer = ComposerController(friends: widget.friends);
+    _composer = ComposerController(
+      friends: widget.friends,
+      albums: widget.albums,
+    );
     setState(() {
       _activePhoto = draft;
       _draftId = draft.id;
@@ -693,7 +702,10 @@ class CameraTabState extends State<CameraTab> {
     final draftMode = widget.onPostDraft != null;
     if (draftMode && draft == null) {
       _composer?.dispose();
-      _composer = ComposerController(friends: widget.friends);
+      _composer = ComposerController(
+        friends: widget.friends,
+        albums: widget.albums,
+      );
     }
     setState(() {
       _activePhoto = photo;
@@ -854,19 +866,20 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildCameraBody() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+      padding: EdgeInsets.fromLTRB(18, context.s(12), 18, context.s(14)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: 54, child: widget.header),
-          const SizedBox(height: 14),
+          SizedBox(height: context.s(46), child: widget.header),
+          // Room for the header's hard shadows before the quest card.
+          SizedBox(height: context.s(22)),
           _questMode
               ? _buildQuestModeHeader(_questModeQuest!)
               : QuestStrip(
                   store: widget.player,
                   onTap: widget.onOpenQuestSheet,
                 ),
-          const SizedBox(height: 10),
+          SizedBox(height: context.s(20)),
           Expanded(child: _bigSquare(_buildViewfinder())),
           // The style is picked after the shot, on the draft; only a quest's
           // locked style is shown up front.
@@ -885,7 +898,7 @@ class CameraTabState extends State<CameraTab> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
+          SizedBox(height: context.s(16)),
           _buildCaptureControls(),
           const SizedBox(height: 6),
           Center(
@@ -1018,7 +1031,7 @@ class CameraTabState extends State<CameraTab> {
                     if (!composer.captionFocus.hasFocus) ...[
                       const SizedBox(height: 14),
                       SizedBox(
-                        height: 68,
+                        height: composer.albums.isEmpty ? 68 : 114,
                         child: Center(
                           child: Wrap(
                             spacing: 10,
@@ -1043,6 +1056,16 @@ class CameraTabState extends State<CameraTab> {
                                     ? () {}
                                     : () => composer.togglePlace(_placeProblem),
                               ),
+                              for (final album in composer.albums)
+                                _draftChip(
+                                  label:
+                                      '${l10n.albumChipPrefix} ${album.name}',
+                                  icon: Icons.photo_album_outlined,
+                                  selected: composer.selectedAlbums.contains(
+                                    album.id,
+                                  ),
+                                  onTap: () => composer.toggleAlbum(album.id),
+                                ),
                             ],
                           ),
                         ),
@@ -1384,7 +1407,7 @@ class CameraTabState extends State<CameraTab> {
 
   Widget _buildQuestModeHeader(Quest quest) {
     return Container(
-      height: 68,
+      height: context.s(68),
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       decoration: NeoTheme.panel(color: questStyleColor(quest.style)),
       child: Row(

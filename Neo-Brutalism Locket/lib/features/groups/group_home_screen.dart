@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/features/albums/albums_screen.dart';
+import 'package:neo_brutalism_locket/features/albums/albums_store.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_repository.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_store.dart';
 import 'package:neo_brutalism_locket/features/canvas/canvas_view.dart';
@@ -10,10 +13,11 @@ import 'package:neo_brutalism_locket/features/groups/group_chat_view.dart';
 import 'package:neo_brutalism_locket/features/groups/group_settings_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_repository.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
+import 'package:neo_brutalism_locket/features/groups/group_tabs.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
+import 'package:neo_brutalism_locket/features/posts/media_actions.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
-import 'package:neo_brutalism_locket/core/haptics.dart';
 
 /// One group: its chat and its canvas, side by side as two tabs.
 class GroupHomeScreen extends StatefulWidget {
@@ -24,6 +28,8 @@ class GroupHomeScreen extends StatefulWidget {
     required this.canvasRepository,
     required this.myId,
     this.safety,
+    this.albums,
+    this.mediaUrls,
     super.key,
   });
 
@@ -33,6 +39,10 @@ class GroupHomeScreen extends StatefulWidget {
   final CanvasRepository canvasRepository;
   final String myId;
   final SafetyRepository? safety;
+
+  /// The group's event albums; null (no ALBUM tab) when not available.
+  final AlbumsStore? albums;
+  final MediaUrls? mediaUrls;
 
   @override
   State<GroupHomeScreen> createState() => _GroupHomeScreenState();
@@ -48,7 +58,10 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
     widget.canvasRepository,
     groupId: widget.groupId,
   );
-  bool _showCanvas = false;
+  late final MediaActions _actions = MediaActions(widget.mediaUrls);
+
+  /// 0 chat, 1 canvas, 2 albums.
+  int _tab = 0;
   bool _closing = false;
 
   @override
@@ -56,6 +69,7 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
     super.initState();
     _chat.load();
     _canvas.load();
+    widget.albums?.refresh();
     widget.groups.addListener(_onGroupsChanged);
   }
 
@@ -78,6 +92,40 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
       Navigator.of(context).popUntil((route) => route.isFirst);
       showNeoSnack(context, AppLocalizations.of(context).gfNotMember);
     });
+  }
+
+  /// The tabs, each with what is going on in it: unread messages, my Ink,
+  /// albums open now.
+  List<GroupTabData> _tabs(BuildContext context, GroupSummary summary) {
+    final l10n = AppLocalizations.of(context);
+    final albums = widget.albums;
+    final now = DateTime.now();
+    final openAlbums = albums == null
+        ? 0
+        : albums.forGroup(widget.groupId).where((a) => a.isOpenAt(now)).length;
+    return [
+      GroupTabData(
+        label: 'CHAT',
+        icon: Icons.chat_bubble_outline,
+        color: NeoColors.accent,
+        badge: summary.unread,
+      ),
+      GroupTabData(
+        label: 'CANVAS',
+        icon: Icons.grid_on,
+        color: NeoColors.coral,
+        info: _canvas.status == CanvasStatus.ready
+            ? l10n.inkAmountLabel(_canvas.ink)
+            : null,
+      ),
+      if (albums != null)
+        GroupTabData(
+          label: l10n.groupTabAlbums,
+          icon: Icons.photo_album_outlined,
+          color: NeoColors.teal,
+          info: openAlbums > 0 ? l10n.groupTabOpenAlbums(openAlbums) : null,
+        ),
+    ];
   }
 
   Map<String, Person> _members(GroupSummary summary) => {
@@ -179,33 +227,20 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _Tab(
-                          label: 'CHAT',
-                          icon: Icons.chat_bubble_outline,
-                          selected: !_showCanvas,
-                          onTap: () => setState(() => _showCanvas = false),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _Tab(
-                          label: 'CANVAS',
-                          icon: Icons.grid_on,
-                          selected: _showCanvas,
-                          onTap: () => setState(() => _showCanvas = true),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(16, 0, 19, 0),
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge([_canvas, ?widget.albums]),
+                    builder: (context, _) => GroupTabBar(
+                      selected: _tab,
+                      onSelect: (index) => setState(() => _tab = index),
+                      tabs: _tabs(context, summary),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 9),
                 Expanded(
                   child: IndexedStack(
-                    index: _showCanvas ? 1 : 0,
+                    index: _tab,
                     children: [
                       GroupChatView(
                         store: _chat,
@@ -219,6 +254,18 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
                             ? AppLocalizations.of(context).youLabel
                             : members[id]?.displayName,
                       ),
+                      if (widget.albums != null)
+                        AlbumsPanel(
+                          groupId: widget.groupId,
+                          store: widget.albums!,
+                          members: members,
+                          myId: widget.myId,
+                          iAmOwner: summary.iAmOwner,
+                          mediaUrls: widget.mediaUrls,
+                          actions: _actions,
+                        )
+                      else
+                        const SizedBox.shrink(),
                     ],
                   ),
                 ),
@@ -227,55 +274,6 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
           ),
         );
       },
-    );
-  }
-}
-
-class _Tab extends StatelessWidget {
-  const _Tab({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        onTap: Haptics.tap(onTap),
-        child: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: selected ? NeoColors.accent : NeoColors.surface,
-            border: Border.all(color: NeoColors.ink, width: 2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: NeoColors.ink),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: NeoColors.ink,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

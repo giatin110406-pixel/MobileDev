@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -161,9 +162,9 @@ class FeedFilterPill extends StatelessWidget {
           onTap: () => _open(context),
           offset: const Offset(3, 3),
           builder: (context, pressed) => Container(
-            height: 54,
-            constraints: const BoxConstraints(maxWidth: 260),
-            padding: const EdgeInsets.only(left: 8, right: 12),
+            height: context.s(44),
+            constraints: const BoxConstraints(maxWidth: 240),
+            padding: const EdgeInsets.only(left: 7, right: 10),
             decoration: NeoTheme.panel(color: NeoColors.surface, radius: 999)
                 .copyWith(
                   boxShadow: NeoPress.shadow(
@@ -174,7 +175,7 @@ class FeedFilterPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _leading(filter, 38),
+                _leading(filter, context.s(30)),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
@@ -184,15 +185,15 @@ class FeedFilterPill extends StatelessWidget {
                     style: const TextStyle(
                       fontFamily: NeoFont.display,
                       color: NeoColors.ink,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 2),
                 const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  size: 26,
+                  size: 22,
                   color: NeoColors.ink,
                 ),
               ],
