@@ -263,6 +263,24 @@ class AppLocalizationsVi extends AppLocalizations {
   String get composerTitle => 'ĐĂNG ẢNH';
 
   @override
+  String get styleApply => 'Áp dụng kiểu ảnh';
+
+  @override
+  String get postOptionsTooltip => 'Tuỳ chọn bài đăng';
+
+  @override
+  String get optionsAlbums => 'ALBUM';
+
+  @override
+  String get optionsNone => 'KHÔNG';
+
+  @override
+  String get optionsCurrentPlace => 'VỊ TRÍ HIỆN TẠI';
+
+  @override
+  String get postOptionsTitle => 'TUỲ CHỌN BÀI ĐĂNG';
+
+  @override
   String get composerCaptionHint => 'Thêm chú thích...';
 
   @override

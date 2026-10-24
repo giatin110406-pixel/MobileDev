@@ -572,6 +572,42 @@ abstract class AppLocalizations {
   /// **'ĐĂNG ẢNH'**
   String get composerTitle;
 
+  /// No description provided for @styleApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng kiểu ảnh'**
+  String get styleApply;
+
+  /// No description provided for @postOptionsTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuỳ chọn bài đăng'**
+  String get postOptionsTooltip;
+
+  /// No description provided for @optionsAlbums.
+  ///
+  /// In vi, this message translates to:
+  /// **'ALBUM'**
+  String get optionsAlbums;
+
+  /// No description provided for @optionsNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG'**
+  String get optionsNone;
+
+  /// No description provided for @optionsCurrentPlace.
+  ///
+  /// In vi, this message translates to:
+  /// **'VỊ TRÍ HIỆN TẠI'**
+  String get optionsCurrentPlace;
+
+  /// No description provided for @postOptionsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'TUỲ CHỌN BÀI ĐĂNG'**
+  String get postOptionsTitle;
+
   /// No description provided for @composerCaptionHint.
   ///
   /// In vi, this message translates to:
