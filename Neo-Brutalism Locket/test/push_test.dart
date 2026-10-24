@@ -320,7 +320,7 @@ void main() {
       final push = await pumpShell(tester);
       push.tap(const PushTap(type: 'message', fromId: 'id-unknown'));
       await tester.pumpAndSettle();
-      expect(find.text('ONLINE'), findsOneWidget);
+      expect(find.text('ADD FRIEND'), findsWidgets);
       expect(find.byTooltip('Send message'), findsNothing);
     });
 
@@ -328,7 +328,7 @@ void main() {
       final push = await pumpShell(tester);
       push.tap(const PushTap(type: 'friend_request', fromId: 'id-bo'));
       await tester.pumpAndSettle();
-      expect(find.text('ONLINE'), findsOneWidget);
+      expect(find.text('ADD FRIEND'), findsWidgets);
     });
 
     testWidgets('a new photo opens the feed', (tester) async {

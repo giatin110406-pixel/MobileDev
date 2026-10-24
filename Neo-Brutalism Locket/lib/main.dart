@@ -5,6 +5,7 @@ import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:neo_brutalism_locket/core/app_settings.dart';
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_gate.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
 import 'package:neo_brutalism_locket/features/auth/profile_repository.dart';
@@ -58,6 +59,21 @@ class NeoLocketApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
+        // The layout uses fixed sizes, so a phone set to large text would
+        // grow past them: keep the system text size within a narrow band.
+        // Text follows the same width scale as the boxes drawn for it.
+        builder: (context, child) {
+          final media = MediaQuery.of(context);
+          final system = media.textScaler.scale(1).clamp(0.9, 1.1);
+          return MediaQuery(
+            data: media.copyWith(
+              textScaler: TextScaler.linear(
+                system * uiScaleFor(media.size.width),
+              ),
+            ),
+            child: child!,
+          );
+        },
         home: home,
       ),
     );

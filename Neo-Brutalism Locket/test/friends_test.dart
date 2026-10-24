@@ -380,7 +380,7 @@ void main() {
         );
         await pumpShell(tester, fake);
         await openFriendsTab(tester);
-        expect(find.text('ONLINE'), findsOneWidget);
+        expect(find.text('ONLINE'), findsNothing);
         expect(find.text('Bo Tran'), findsOneWidget);
         expect(find.text('Ava Chen'), findsOneWidget);
         expect(find.text('ACCEPT'), findsOneWidget);
@@ -440,7 +440,8 @@ void main() {
 
       await tester.tap(find.text('CANVAS'));
       await tester.pumpAndSettle();
-      expect(find.text('10 INK'), findsOneWidget);
+      // On the canvas itself and as the news line of its tab.
+      expect(find.text('10 INK'), findsNWidgets(2));
 
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
@@ -723,10 +724,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('JANUARY 2026'), findsOneWidget);
 
-      // The prints kept on this phone are one tap away.
-      await tester.tap(find.text('ON DEVICE'));
-      await tester.pumpAndSettle();
-      expect(find.byType(RemoteImage), findsNothing);
+      // One archive tab: no posts / on-device split.
+      expect(find.text('ON DEVICE'), findsNothing);
     });
 
     testWidgets('blocking from a friend profile asks, then blocks', (

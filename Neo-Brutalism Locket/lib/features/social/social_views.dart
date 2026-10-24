@@ -124,15 +124,14 @@ class FriendsScreen extends StatelessWidget {
                   onPressed: onAddFriend,
                 ),
               ),
-              const SizedBox(width: 12),
-              NeoLabel(
-                online
-                    ? (onlineLabel ??
-                          AppLocalizations.of(context).friendsOnline)
-                    : AppLocalizations.of(context).localMode,
-                color: NeoColors.accent,
-                icon: online ? Icons.cloud_done_outlined : Icons.lock_outline,
-              ),
+              if (!online) ...[
+                const SizedBox(width: 12),
+                NeoLabel(
+                  AppLocalizations.of(context).localMode,
+                  color: NeoColors.accent,
+                  icon: Icons.lock_outline,
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 18),

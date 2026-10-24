@@ -7,6 +7,7 @@ import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_widgets.dart';
 import 'package:neo_brutalism_locket/features/auth/profile_repository.dart';
 import 'package:neo_brutalism_locket/features/auth/reset_password_screen.dart';
+import 'package:neo_brutalism_locket/features/export/media_export.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/notifications/push_service.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
@@ -27,8 +28,12 @@ class SettingsScreen extends StatelessWidget {
     required this.safety,
     required this.onBlocksChanged,
     this.notifications,
+    this.accountExport,
     this.openServerSettings = showServerSettingsSheet,
   });
+
+  /// Makes the zip of everything I posted (the row is hidden when null).
+  final AccountExport? accountExport;
 
   /// Saved notification choices (the notification section is hidden when null).
   final NotificationPrefsRepository? notifications;
@@ -78,6 +83,14 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                _card([
+                  _row(
+                    icon: Icons.dns_outlined,
+                    label: l10n.settingsLaptop,
+                    onTap: () => openServerSettings(context),
+                  ),
+                ]),
                 _heading(l10n.settingsAccount),
                 _card([
                   if (session.user.email != null)
@@ -200,6 +213,17 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () => showSearchModelCheck(context),
                     ),
                 ]),
+                if (accountExport != null) ...[
+                  _heading(l10n.settingsData),
+                  _card([
+                    _row(
+                      icon: Icons.archive_outlined,
+                      label: l10n.settingsExportData,
+                      detail: l10n.settingsExportHint,
+                      onTap: () => _exportData(context),
+                    ),
+                  ]),
+                ],
                 _heading(l10n.settingsLanguage),
                 _card([
                   _languageRow(context, l10n.settingsLanguageSystem, null),
@@ -216,11 +240,6 @@ class SettingsScreen extends StatelessWidget {
                 ]),
                 _heading(l10n.settingsAbout),
                 _card([
-                  _row(
-                    icon: Icons.dns_outlined,
-                    label: l10n.settingsLaptop,
-                    onTap: () => openServerSettings(context),
-                  ),
                   _row(
                     icon: Icons.privacy_tip_outlined,
                     label: l10n.settingsPrivacyPolicy,
@@ -258,6 +277,16 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Future<void> _exportData(BuildContext context) async {
+    final export = accountExport;
+    if (export == null) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _ExportDialog(export: export),
     );
   }
 
@@ -541,6 +570,94 @@ class _NotificationSwitchesState extends State<_NotificationSwitches> {
 }
 
 /// Asks the person to type their username before an account is deleted.
+/// Builds the zip of everything I posted, showing how far it is, then opens the
+/// share sheet so it can be saved to Files or Drive.
+class _ExportDialog extends StatefulWidget {
+  const _ExportDialog({required this.export});
+
+  final AccountExport export;
+
+  @override
+  State<_ExportDialog> createState() => _ExportDialogState();
+}
+
+class _ExportDialogState extends State<_ExportDialog> {
+  int _done = 0;
+  int _total = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // After the first frame: _run reads the localizations.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _run());
+  }
+
+  Future<void> _run() async {
+    final l10n = AppLocalizations.of(context);
+    String? message;
+    try {
+      final result = await widget.export.run(
+        onProgress: (done, total) {
+          if (mounted) {
+            setState(() {
+              _done = done;
+              _total = total;
+            });
+          }
+        },
+      );
+      if (result == null) {
+        message = l10n.exportNothing;
+      } else {
+        final missed = result.missed ?? 0;
+        if (missed > 0) message = l10n.albumDownloadSkipped(missed);
+        await widget.export.exporter.share(result.file);
+      }
+    } catch (_) {
+      message = l10n.exportFailed;
+    }
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).pop();
+    if (message != null) {
+      messenger.showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return PopScope(
+      canPop: false,
+      child: AlertDialog(
+        backgroundColor: NeoColors.surface,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(color: NeoColors.ink, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LinearProgressIndicator(
+              value: _total == 0 ? null : _done / _total,
+              color: NeoColors.ink,
+              backgroundColor: NeoColors.paper,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              l10n.exportProgress(_done, _total),
+              style: const TextStyle(
+                color: NeoColors.ink,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _DeleteAccountDialog extends StatefulWidget {
   const _DeleteAccountDialog({required this.username});
 

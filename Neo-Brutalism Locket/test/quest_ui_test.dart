@@ -305,7 +305,8 @@ void main() {
       });
       await tester.pump();
       expect(questStatusOf(store), QuestStatus.outOfTries);
-      expect(find.text('NO TRIES'), findsOneWidget);
+      expect(find.byIcon(Icons.block_rounded), findsOneWidget);
+      expect(find.text('NO TRIES'), findsNothing);
     });
   });
 

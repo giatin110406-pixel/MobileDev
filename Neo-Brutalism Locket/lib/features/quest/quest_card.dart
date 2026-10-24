@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neo_brutalism_locket/core/language.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
+import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_art.dart';
@@ -34,7 +35,7 @@ class QuestStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quest = store.todayQuest;
-    if (quest == null) return const SizedBox(height: 68);
+    if (quest == null) return SizedBox(height: context.s(56));
     final status = questStatusOf(store);
     return Semantics(
       button: true,
@@ -44,8 +45,8 @@ class QuestStrip extends StatelessWidget {
       child: NeoPress(
         onTap: onTap,
         builder: (context, pressed) => Container(
-          height: 68,
-          padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
+          height: context.s(56),
+          padding: const EdgeInsets.fromLTRB(7, 7, 12, 7),
           decoration: NeoTheme.panel(
             color: status == QuestStatus.done
                 ? NeoColors.accent
@@ -55,8 +56,8 @@ class QuestStrip extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: context.s(42),
+                height: context.s(42),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: questStyleColor(quest.style),
@@ -67,7 +68,7 @@ class QuestStrip extends StatelessWidget {
                   quest.emoji,
                   style: const TextStyle(
                     fontFamily: NeoFont.display,
-                    fontSize: 28,
+                    fontSize: 24,
                   ),
                 ),
               ),
@@ -77,19 +78,6 @@ class QuestStrip extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      AppLocalizations.of(
-                        context,
-                      ).questTodayLabel(quest.style.label),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: NeoColors.muted,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
                     Text(
                       AppLocalizations.of(context).shootSubject(
                         quest.subjectFor(vietnamese: isVietnamese(context)),
@@ -106,24 +94,47 @@ class QuestStrip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              switch (status) {
-                QuestStatus.done => NeoLabel(
-                  AppLocalizations.of(context).qsDone,
-                  color: NeoColors.surface,
-                ),
-                QuestStatus.passed => NeoLabel(
-                  AppLocalizations.of(context).qsPostNow,
-                  color: NeoColors.coral,
-                ),
-                QuestStatus.outOfTries => NeoLabel(
-                  AppLocalizations.of(context).qsOutOfTries,
-                  color: NeoColors.switchOff,
-                ),
-                QuestStatus.open => AttemptDots(left: store.attemptsLeft),
-              },
+              if (status == QuestStatus.open)
+                AttemptDots(left: store.attemptsLeft)
+              else
+                _StatusIcon(status: status),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Where a quest that is not open stands, as an icon in a round badge.
+class _StatusIcon extends StatelessWidget {
+  const _StatusIcon({required this.status});
+
+  final QuestStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final (icon, color, label) = switch (status) {
+      QuestStatus.done => (Icons.check_rounded, NeoColors.blue, l10n.qsDone),
+      QuestStatus.passed => (
+        Icons.north_east_rounded,
+        NeoColors.coral,
+        l10n.qsPostNow,
+      ),
+      _ => (Icons.block_rounded, NeoColors.switchOff, l10n.qsOutOfTries),
+    };
+    return Semantics(
+      label: label,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: NeoColors.ink, width: 2),
+        ),
+        child: Icon(icon, size: 22, color: NeoColors.ink),
       ),
     );
   }
