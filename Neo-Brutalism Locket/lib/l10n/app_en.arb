@@ -351,6 +351,7 @@
     }
   },
   "photoNotSaved": "PHOTO DID NOT SAVE. TRY AGAIN.",
+  "developingPhoto": "DEVELOPING...",
   "photoOpenFailed": "COULD NOT OPEN THAT PHOTO. TRY ANOTHER.",
   "fallbackUsed": "FALLBACK USED: {note}",
   "@fallbackUsed": {
@@ -1698,5 +1699,146 @@
       }
     }
   },
-  "searchMaybe": "MAYBE RELATED"
+  "searchMaybe": "MAYBE RELATED",
+  "albumChipPrefix": "ALBUM:",
+  "groupTabAlbums": "ALBUMS",
+  "albumsEmpty": "No albums yet. Start one for a trip or an evening out: the photos the group takes on those days are collected in one place.",
+  "albumNew": "NEW ALBUM",
+  "albumNameLabel": "Album name (for example: Dalat trip)",
+  "albumDatesLabel": "Dates",
+  "albumCreateButton": "CREATE",
+  "albumDateRange": "{from} – {to}",
+  "@albumDateRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "albumOpenNow": "OPEN NOW",
+  "albumPhotoCount": "{count, plural, =1{1 photo} other{{count} photos}}",
+  "@albumPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumEmptyItems": "No photos in this album yet.",
+  "albumAddMine": "ADD MY PHOTOS",
+  "albumAddNone": "You have no photos from these days, or they are all in already.",
+  "albumAddHint": "Photos in an album are shown to everyone in the group, even people who are not your friends.",
+  "albumAddConfirm": "ADD {count, plural, =1{1 PHOTO} other{{count} PHOTOS}}",
+  "@albumAddConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumAdded": "{count, plural, =1{1 photo} other{{count} photos}} added to the album.",
+  "@albumAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumDownloadSkipped": "{count, plural, =1{1 photo} other{{count} photos}} could not be downloaded and are not in the file.",
+  "@albumDownloadSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumDeleteTitle": "Delete this album?",
+  "albumDeleteBody": "The album disappears from the group. The photos stay in their authors' posts.",
+  "albumDelete": "DELETE ALBUM",
+  "albumRemovePhoto": "REMOVE FROM ALBUM",
+  "albumPhotoRemoved": "Photo removed from the album.",
+  "albumLoadFailed": "The album could not be loaded.",
+  "albumBy": "Photo by {name}",
+  "@albumBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "albumErrName": "The album name must be 1 to 40 characters.",
+  "albumErrWindow": "An album covers at most 31 days.",
+  "albumErrLimit": "The group already has 20 albums. Delete an old one first.",
+  "albumErrNotAllowed": "You are not allowed to do this.",
+  "postMenuSaveOriginal": "SAVE ORIGINAL",
+  "postOriginalSaved": "Original saved to your photo library.",
+  "settingsData": "YOUR DATA",
+  "settingsExportData": "Export all my photos",
+  "settingsExportHint": "Makes a zip with every photo you posted, including the shot before its style, and a list of captions.",
+  "exportProgress": "Preparing {done}/{total}…",
+  "@exportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "exportNothing": "You have not posted any photos yet.",
+  "exportFailed": "The export failed. Check your connection and try again.",
+  "groupTabOpenAlbums": "{count} open",
+  "@groupTabOpenAlbums": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stripButton": "PRINT STRIP",
+  "stripPickHint": "Tap 2–6 photos in the order to print ({count}/6)",
+  "@stripPickHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stripNext": "NEXT",
+  "stripNoVideo": "Videos cannot be printed; pick photos.",
+  "stripTitle": "PHOTO STRIP",
+  "stripFrameLabel": "FRAME",
+  "stripPaperLabel": "PAPER",
+  "stripStyleClassicDark": "BLACK FILM",
+  "stripStyleClassicLight": "WHITE PAPER",
+  "stripStyleNeo": "NEO",
+  "stripStylePixel": "8-BIT",
+  "stripStyleVanGogh": "VAN GOGH",
+  "stripPaperSheet": "4×6 IN (2 STRIPS)",
+  "stripPaperStrip": "ONE 2×6 IN STRIP",
+  "stripPaperSheetHint": "Print it at any photo shop as 4×6 in, then cut it down the middle: two identical strips, like a photobooth.",
+  "stripPaperStripHint": "One 2×6 in strip, 300 dpi.",
+  "stripUseOriginals": "Use the originals (before the style)",
+  "stripTitleLabel": "Big line",
+  "stripSubtitleLabel": "Small line",
+  "stripSave": "SAVE",
+  "stripShare": "SHARE / PRINT",
+  "stripSaved": "Strip saved to your photo library.",
+  "stripLoadFailed": "The photos could not be loaded. Check your connection and try again.",
+  "stripTextLabel": "WORDS ON THE STRIP",
+  "stripZoomHint": "TAP TO ZOOM",
+  "stripPaperGrid": "2×3 GRID (6 PHOTOS)",
+  "stripPaperGridHint": "One 4×6 in sheet of 6 squares (2 columns by 3 rows), nothing to cut. Any square without a photo is a decorative card.",
+  "stripOnlyThree": "A strip uses the first 3 photos. Pick the 2×3 grid to use all {count}.",
+  "@stripOnlyThree": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

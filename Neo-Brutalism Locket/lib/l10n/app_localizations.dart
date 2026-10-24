@@ -1370,6 +1370,12 @@ abstract class AppLocalizations {
   /// **'ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.'**
   String get photoNotSaved;
 
+  /// No description provided for @developingPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG RỬA ẢNH...'**
+  String get developingPhoto;
+
   /// No description provided for @photoOpenFailed.
   ///
   /// In vi, this message translates to:
@@ -4597,6 +4603,396 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'CÓ THỂ LIÊN QUAN'**
   String get searchMaybe;
+
+  /// No description provided for @albumChipPrefix.
+  ///
+  /// In vi, this message translates to:
+  /// **'ALBUM:'**
+  String get albumChipPrefix;
+
+  /// No description provided for @groupTabAlbums.
+  ///
+  /// In vi, this message translates to:
+  /// **'ALBUM'**
+  String get groupTabAlbums;
+
+  /// No description provided for @albumsEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có album nào. Tạo album cho một chuyến đi hay một buổi tiệc: ảnh mọi người trong nhóm chụp những ngày đó sẽ gom về một chỗ.'**
+  String get albumsEmpty;
+
+  /// No description provided for @albumNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠO ALBUM'**
+  String get albumNew;
+
+  /// No description provided for @albumNameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên album (ví dụ: Đà Lạt)'**
+  String get albumNameLabel;
+
+  /// No description provided for @albumDatesLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày diễn ra'**
+  String get albumDatesLabel;
+
+  /// No description provided for @albumCreateButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠO'**
+  String get albumCreateButton;
+
+  /// No description provided for @albumDateRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'{from} – {to}'**
+  String albumDateRange(String from, String to);
+
+  /// No description provided for @albumOpenNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG MỞ'**
+  String get albumOpenNow;
+
+  /// No description provided for @albumPhotoCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ảnh'**
+  String albumPhotoCount(int count);
+
+  /// No description provided for @albumEmptyItems.
+  ///
+  /// In vi, this message translates to:
+  /// **'Album chưa có ảnh nào.'**
+  String get albumEmptyItems;
+
+  /// No description provided for @albumAddMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM ẢNH CỦA TÔI'**
+  String get albumAddMine;
+
+  /// No description provided for @albumAddNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có ảnh nào trong những ngày này, hoặc đã thêm hết rồi.'**
+  String get albumAddNone;
+
+  /// No description provided for @albumAddHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh thêm vào album hiện cho mọi thành viên trong nhóm, kể cả người chưa là bạn của bạn.'**
+  String get albumAddHint;
+
+  /// No description provided for @albumAddConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM {count} ẢNH'**
+  String albumAddConfirm(int count);
+
+  /// No description provided for @albumAdded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm {count} ảnh vào album.'**
+  String albumAdded(int count);
+
+  /// No description provided for @albumDownloadSkipped.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ảnh không tải được nên không có trong file.'**
+  String albumDownloadSkipped(int count);
+
+  /// No description provided for @albumDeleteTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa album này?'**
+  String get albumDeleteTitle;
+
+  /// No description provided for @albumDeleteBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Album biến mất khỏi nhóm. Ảnh vẫn còn trong bài đăng của người chụp.'**
+  String get albumDeleteBody;
+
+  /// No description provided for @albumDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'XÓA ALBUM'**
+  String get albumDelete;
+
+  /// No description provided for @albumRemovePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'GỠ KHỎI ALBUM'**
+  String get albumRemovePhoto;
+
+  /// No description provided for @albumPhotoRemoved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gỡ ảnh khỏi album.'**
+  String get albumPhotoRemoved;
+
+  /// No description provided for @albumLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được album.'**
+  String get albumLoadFailed;
+
+  /// No description provided for @albumBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh của {name}'**
+  String albumBy(String name);
+
+  /// No description provided for @albumErrName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên album phải từ 1 đến 40 ký tự.'**
+  String get albumErrName;
+
+  /// No description provided for @albumErrWindow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Album kéo dài tối đa 31 ngày.'**
+  String get albumErrWindow;
+
+  /// No description provided for @albumErrLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm đã có 20 album. Hãy xóa bớt album cũ.'**
+  String get albumErrLimit;
+
+  /// No description provided for @albumErrNotAllowed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có quyền làm việc này.'**
+  String get albumErrNotAllowed;
+
+  /// No description provided for @postMenuSaveOriginal.
+  ///
+  /// In vi, this message translates to:
+  /// **'LƯU ẢNH GỐC'**
+  String get postMenuSaveOriginal;
+
+  /// No description provided for @postOriginalSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu ảnh gốc vào thư viện ảnh.'**
+  String get postOriginalSaved;
+
+  /// No description provided for @settingsData.
+  ///
+  /// In vi, this message translates to:
+  /// **'DỮ LIỆU CỦA BẠN'**
+  String get settingsData;
+
+  /// No description provided for @settingsExportData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất toàn bộ ảnh của tôi'**
+  String get settingsExportData;
+
+  /// No description provided for @settingsExportHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo file zip gồm mọi ảnh bạn đã đăng, cả ảnh gốc trước khi tạo style, kèm danh sách chú thích.'**
+  String get settingsExportHint;
+
+  /// No description provided for @exportProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chuẩn bị {done}/{total}…'**
+  String exportProgress(int done, int total);
+
+  /// No description provided for @exportNothing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa đăng ảnh nào.'**
+  String get exportNothing;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xuất được. Kiểm tra kết nối rồi thử lại.'**
+  String get exportFailed;
+
+  /// No description provided for @groupTabOpenAlbums.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} đang mở'**
+  String groupTabOpenAlbums(int count);
+
+  /// No description provided for @stripButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'IN STRIP'**
+  String get stripButton;
+
+  /// No description provided for @stripPickHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm 2–6 ảnh theo thứ tự muốn in ({count}/6)'**
+  String stripPickHint(int count);
+
+  /// No description provided for @stripNext.
+  ///
+  /// In vi, this message translates to:
+  /// **'TIẾP'**
+  String get stripNext;
+
+  /// No description provided for @stripNoVideo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Video không in được, hãy chọn ảnh.'**
+  String get stripNoVideo;
+
+  /// No description provided for @stripTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'IN STRIP ẢNH'**
+  String get stripTitle;
+
+  /// No description provided for @stripFrameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHUNG'**
+  String get stripFrameLabel;
+
+  /// No description provided for @stripPaperLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHỔ IN'**
+  String get stripPaperLabel;
+
+  /// No description provided for @stripStyleClassicDark.
+  ///
+  /// In vi, this message translates to:
+  /// **'PHIM ĐEN'**
+  String get stripStyleClassicDark;
+
+  /// No description provided for @stripStyleClassicLight.
+  ///
+  /// In vi, this message translates to:
+  /// **'GIẤY TRẮNG'**
+  String get stripStyleClassicLight;
+
+  /// No description provided for @stripStyleNeo.
+  ///
+  /// In vi, this message translates to:
+  /// **'NEO'**
+  String get stripStyleNeo;
+
+  /// No description provided for @stripStylePixel.
+  ///
+  /// In vi, this message translates to:
+  /// **'8-BIT'**
+  String get stripStylePixel;
+
+  /// No description provided for @stripStyleVanGogh.
+  ///
+  /// In vi, this message translates to:
+  /// **'VAN GOGH'**
+  String get stripStyleVanGogh;
+
+  /// No description provided for @stripPaperSheet.
+  ///
+  /// In vi, this message translates to:
+  /// **'10×15 CM (2 DẢI)'**
+  String get stripPaperSheet;
+
+  /// No description provided for @stripPaperStrip.
+  ///
+  /// In vi, this message translates to:
+  /// **'1 DẢI 5×15 CM'**
+  String get stripPaperStrip;
+
+  /// No description provided for @stripPaperSheetHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'In ở tiệm ảnh khổ 10×15 cm, rồi cắt dọc ở giữa: được 2 dải giống hệt, như ở photobooth.'**
+  String get stripPaperSheetHint;
+
+  /// No description provided for @stripPaperStripHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Một dải 5×15 cm, 300 dpi.'**
+  String get stripPaperStripHint;
+
+  /// No description provided for @stripUseOriginals.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng ảnh gốc (trước khi tạo style)'**
+  String get stripUseOriginals;
+
+  /// No description provided for @stripTitleLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dòng chữ lớn'**
+  String get stripTitleLabel;
+
+  /// No description provided for @stripSubtitleLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dòng chữ nhỏ'**
+  String get stripSubtitleLabel;
+
+  /// No description provided for @stripSave.
+  ///
+  /// In vi, this message translates to:
+  /// **'LƯU VÀO MÁY'**
+  String get stripSave;
+
+  /// No description provided for @stripShare.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHIA SẺ / IN'**
+  String get stripShare;
+
+  /// No description provided for @stripSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu strip vào thư viện ảnh.'**
+  String get stripSaved;
+
+  /// No description provided for @stripLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được ảnh. Kiểm tra kết nối rồi thử lại.'**
+  String get stripLoadFailed;
+
+  /// No description provided for @stripTextLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỮ TRÊN STRIP'**
+  String get stripTextLabel;
+
+  /// No description provided for @stripZoomHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHẠM ĐỂ PHÓNG TO'**
+  String get stripZoomHint;
+
+  /// No description provided for @stripPaperGrid.
+  ///
+  /// In vi, this message translates to:
+  /// **'LƯỚI 2×3 (6 ẢNH)'**
+  String get stripPaperGrid;
+
+  /// No description provided for @stripPaperGridHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Một tờ 10×15 cm có 6 ô vuông (2 cột × 3 hàng), không cần cắt. Ô nào chưa có ảnh sẽ là thẻ trang trí.'**
+  String get stripPaperGridHint;
+
+  /// No description provided for @stripOnlyThree.
+  ///
+  /// In vi, this message translates to:
+  /// **'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả {count} ảnh.'**
+  String stripOnlyThree(int count);
 }
 
 class _AppLocalizationsDelegate

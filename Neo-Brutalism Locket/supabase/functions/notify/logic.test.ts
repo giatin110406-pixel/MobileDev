@@ -122,6 +122,16 @@ test("no kind of push uses a data key FCM reserves", () => {
     "https://x/y.jpg",
   );
   for (const key of Object.keys(widget)) assert.ok(!reservedByFcm(key), key);
+  assert.equal(widget.author_id, "", "no author known: empty, never missing");
+  assert.equal(
+    buildWidgetData(
+      events[0],
+      { author_id: A, kind: "photo", media_path: "a/p.jpg", thumb_path: null, caption: "", created_at: "2026-10-08T00:00:00Z" },
+      "Ava",
+      "https://x/y.jpg",
+    ).author_id,
+    A,
+  );
 });
 
 test("language falls back to Vietnamese", () => {
@@ -228,10 +238,16 @@ test("widget: a video with no still has nothing to show", () => {
 
 test("widget data: everything the phone needs, all strings", () => {
   const event = parseEvent({ type: "new_post", post_id: P, to: B })!;
-  const data = buildWidgetData(event, post, "  Ava ", "https://x/img?token=1");
+  const data = buildWidgetData(
+    event,
+    { ...post, author_id: A },
+    "  Ava ",
+    "https://x/img?token=1",
+  );
   assert.deepEqual(data, {
     type: "widget_update",
     post_id: P,
+    author_id: A,
     name: "Ava",
     caption: "Lunch",
     image_url: "https://x/img?token=1",

@@ -16,6 +16,9 @@ import java.io.File
  * The home-screen widget: the newest photo a friend sent. The Flutter app
  * downloads the picture and saves the details (see lib/features/widget);
  * this only draws them. Tapping opens that post in the app.
+ *
+ * Each placed widget follows one source (everybody, one friend or one group,
+ * see WidgetSources) and draws what the app saved for it.
  */
 class LocketWidgetProvider : HomeWidgetProvider() {
 
@@ -25,16 +28,18 @@ class LocketWidgetProvider : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences,
     ) {
-        val postId = widgetData.getString("w_post_id", null)
-        val bitmap = widgetData.getString("w_image", null)?.let { decode(it) }
-        val shown = postId != null && bitmap != null
-
         for (id in appWidgetIds) {
+            val source = WidgetSources.sourceOf(widgetData, id)
+            fun key(field: String) = WidgetSources.key(source, field)
+            val postId = widgetData.getString(key("w_post_id"), null)
+            val bitmap = widgetData.getString(key("w_image"), null)?.let { decode(it) }
+            val shown = postId != null && bitmap != null
+
             val views = RemoteViews(context.packageName, R.layout.locket_widget)
             if (shown) {
-                val name = widgetData.getString("w_name", "") ?: ""
-                val caption = widgetData.getString("w_caption", "") ?: ""
-                val ago = ago(context, createdAt(widgetData))
+                val name = widgetData.getString(key("w_name"), "") ?: ""
+                val caption = widgetData.getString(key("w_caption"), "") ?: ""
+                val ago = ago(context, createdAt(widgetData, key("w_created")))
                 views.setImageViewBitmap(R.id.widget_image, bitmap)
                 views.setViewVisibility(R.id.widget_image, View.VISIBLE)
                 views.setViewVisibility(R.id.widget_empty, View.GONE)
@@ -62,6 +67,14 @@ class LocketWidgetProvider : HomeWidgetProvider() {
         }
     }
 
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        val edit = WidgetSources.prefs(context).edit()
+        for (id in appWidgetIds) edit.remove("wcfg_$id")
+        edit.apply()
+        WidgetSources.refreshActive(context)
+    }
+
     /** The picture, shrunk: a widget's bitmaps have a small memory budget. */
     private fun decode(path: String): Bitmap? {
         val file = File(path)
@@ -81,8 +94,8 @@ class LocketWidgetProvider : HomeWidgetProvider() {
     }
 
     /** Saved as a number from Dart: an Int or a Long depending on its size. */
-    private fun createdAt(data: SharedPreferences): Long =
-        (data.all["w_created"] as? Number)?.toLong() ?: 0L
+    private fun createdAt(data: SharedPreferences, key: String): Long =
+        (data.all[key] as? Number)?.toLong() ?: 0L
 
     private fun ago(context: Context, createdMs: Long): String {
         if (createdMs <= 0L) return ""

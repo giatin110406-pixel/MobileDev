@@ -715,6 +715,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get photoNotSaved => 'ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.';
 
   @override
+  String get developingPhoto => 'ĐANG RỬA ẢNH...';
+
+  @override
   String get photoOpenFailed => 'KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.';
 
   @override
@@ -2581,4 +2584,227 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get searchMaybe => 'CÓ THỂ LIÊN QUAN';
+
+  @override
+  String get albumChipPrefix => 'ALBUM:';
+
+  @override
+  String get groupTabAlbums => 'ALBUM';
+
+  @override
+  String get albumsEmpty =>
+      'Chưa có album nào. Tạo album cho một chuyến đi hay một buổi tiệc: ảnh mọi người trong nhóm chụp những ngày đó sẽ gom về một chỗ.';
+
+  @override
+  String get albumNew => 'TẠO ALBUM';
+
+  @override
+  String get albumNameLabel => 'Tên album (ví dụ: Đà Lạt)';
+
+  @override
+  String get albumDatesLabel => 'Ngày diễn ra';
+
+  @override
+  String get albumCreateButton => 'TẠO';
+
+  @override
+  String albumDateRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get albumOpenNow => 'ĐANG MỞ';
+
+  @override
+  String albumPhotoCount(int count) {
+    return '$count ảnh';
+  }
+
+  @override
+  String get albumEmptyItems => 'Album chưa có ảnh nào.';
+
+  @override
+  String get albumAddMine => 'THÊM ẢNH CỦA TÔI';
+
+  @override
+  String get albumAddNone =>
+      'Bạn không có ảnh nào trong những ngày này, hoặc đã thêm hết rồi.';
+
+  @override
+  String get albumAddHint =>
+      'Ảnh thêm vào album hiện cho mọi thành viên trong nhóm, kể cả người chưa là bạn của bạn.';
+
+  @override
+  String albumAddConfirm(int count) {
+    return 'THÊM $count ẢNH';
+  }
+
+  @override
+  String albumAdded(int count) {
+    return 'Đã thêm $count ảnh vào album.';
+  }
+
+  @override
+  String albumDownloadSkipped(int count) {
+    return '$count ảnh không tải được nên không có trong file.';
+  }
+
+  @override
+  String get albumDeleteTitle => 'Xóa album này?';
+
+  @override
+  String get albumDeleteBody =>
+      'Album biến mất khỏi nhóm. Ảnh vẫn còn trong bài đăng của người chụp.';
+
+  @override
+  String get albumDelete => 'XÓA ALBUM';
+
+  @override
+  String get albumRemovePhoto => 'GỠ KHỎI ALBUM';
+
+  @override
+  String get albumPhotoRemoved => 'Đã gỡ ảnh khỏi album.';
+
+  @override
+  String get albumLoadFailed => 'Không tải được album.';
+
+  @override
+  String albumBy(String name) {
+    return 'Ảnh của $name';
+  }
+
+  @override
+  String get albumErrName => 'Tên album phải từ 1 đến 40 ký tự.';
+
+  @override
+  String get albumErrWindow => 'Album kéo dài tối đa 31 ngày.';
+
+  @override
+  String get albumErrLimit => 'Nhóm đã có 20 album. Hãy xóa bớt album cũ.';
+
+  @override
+  String get albumErrNotAllowed => 'Bạn không có quyền làm việc này.';
+
+  @override
+  String get postMenuSaveOriginal => 'LƯU ẢNH GỐC';
+
+  @override
+  String get postOriginalSaved => 'Đã lưu ảnh gốc vào thư viện ảnh.';
+
+  @override
+  String get settingsData => 'DỮ LIỆU CỦA BẠN';
+
+  @override
+  String get settingsExportData => 'Xuất toàn bộ ảnh của tôi';
+
+  @override
+  String get settingsExportHint =>
+      'Tạo file zip gồm mọi ảnh bạn đã đăng, cả ảnh gốc trước khi tạo style, kèm danh sách chú thích.';
+
+  @override
+  String exportProgress(int done, int total) {
+    return 'Đang chuẩn bị $done/$total…';
+  }
+
+  @override
+  String get exportNothing => 'Bạn chưa đăng ảnh nào.';
+
+  @override
+  String get exportFailed => 'Không xuất được. Kiểm tra kết nối rồi thử lại.';
+
+  @override
+  String groupTabOpenAlbums(int count) {
+    return '$count đang mở';
+  }
+
+  @override
+  String get stripButton => 'IN STRIP';
+
+  @override
+  String stripPickHint(int count) {
+    return 'Chạm 2–6 ảnh theo thứ tự muốn in ($count/6)';
+  }
+
+  @override
+  String get stripNext => 'TIẾP';
+
+  @override
+  String get stripNoVideo => 'Video không in được, hãy chọn ảnh.';
+
+  @override
+  String get stripTitle => 'IN STRIP ẢNH';
+
+  @override
+  String get stripFrameLabel => 'KHUNG';
+
+  @override
+  String get stripPaperLabel => 'KHỔ IN';
+
+  @override
+  String get stripStyleClassicDark => 'PHIM ĐEN';
+
+  @override
+  String get stripStyleClassicLight => 'GIẤY TRẮNG';
+
+  @override
+  String get stripStyleNeo => 'NEO';
+
+  @override
+  String get stripStylePixel => '8-BIT';
+
+  @override
+  String get stripStyleVanGogh => 'VAN GOGH';
+
+  @override
+  String get stripPaperSheet => '10×15 CM (2 DẢI)';
+
+  @override
+  String get stripPaperStrip => '1 DẢI 5×15 CM';
+
+  @override
+  String get stripPaperSheetHint =>
+      'In ở tiệm ảnh khổ 10×15 cm, rồi cắt dọc ở giữa: được 2 dải giống hệt, như ở photobooth.';
+
+  @override
+  String get stripPaperStripHint => 'Một dải 5×15 cm, 300 dpi.';
+
+  @override
+  String get stripUseOriginals => 'Dùng ảnh gốc (trước khi tạo style)';
+
+  @override
+  String get stripTitleLabel => 'Dòng chữ lớn';
+
+  @override
+  String get stripSubtitleLabel => 'Dòng chữ nhỏ';
+
+  @override
+  String get stripSave => 'LƯU VÀO MÁY';
+
+  @override
+  String get stripShare => 'CHIA SẺ / IN';
+
+  @override
+  String get stripSaved => 'Đã lưu strip vào thư viện ảnh.';
+
+  @override
+  String get stripLoadFailed =>
+      'Không tải được ảnh. Kiểm tra kết nối rồi thử lại.';
+
+  @override
+  String get stripTextLabel => 'CHỮ TRÊN STRIP';
+
+  @override
+  String get stripZoomHint => 'CHẠM ĐỂ PHÓNG TO';
+
+  @override
+  String get stripPaperGrid => 'LƯỚI 2×3 (6 ẢNH)';
+
+  @override
+  String get stripPaperGridHint =>
+      'Một tờ 10×15 cm có 6 ô vuông (2 cột × 3 hàng), không cần cắt. Ô nào chưa có ảnh sẽ là thẻ trang trí.';
+
+  @override
+  String stripOnlyThree(int count) {
+    return 'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả $count ảnh.';
+  }
 }

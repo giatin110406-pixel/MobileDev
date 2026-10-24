@@ -1,5 +1,35 @@
 import 'package:neo_brutalism_locket/features/posts/post_models.dart';
 
+/// The widget that shows every friend's newest photo.
+const allSource = 'all';
+
+/// A widget can follow one friend (`u_<id>`) or one group (`g_<id>`) instead
+/// of everybody. The key names the source in the widget's stored data.
+String friendSource(String userId) => 'u_$userId';
+String groupSource(String groupId) => 'g_$groupId';
+
+/// One thing a widget can be set to show, as the picker lists it.
+class WidgetChoice {
+  const WidgetChoice({required this.key, required this.label});
+
+  /// [friendSource] or [groupSource].
+  final String key;
+  final String label;
+}
+
+/// A group, for the widgets that follow one: who is in it.
+class WidgetGroup {
+  const WidgetGroup({
+    required this.id,
+    required this.name,
+    required this.memberIds,
+  });
+
+  final String id;
+  final String name;
+  final Set<String> memberIds;
+}
+
 /// What the home-screen widget shows: the newest photo a friend sent.
 class WidgetPost {
   const WidgetPost({
@@ -8,9 +38,13 @@ class WidgetPost {
     required this.caption,
     required this.createdAtMs,
     required this.imageUrl,
+    this.authorId,
   });
 
   final String postId;
+
+  /// Who posted it (a push from an older server does not say).
+  final String? authorId;
   final String name;
   final String caption;
 
@@ -35,6 +69,7 @@ WidgetPost? parseWidgetData(Map<String, dynamic>? data) {
     caption: text(data['caption']),
     createdAtMs: int.tryParse(text(data['created_at'])) ?? 0,
     imageUrl: url.toString(),
+    authorId: text(data['author_id']).isEmpty ? null : text(data['author_id']),
   );
 }
 
@@ -51,6 +86,34 @@ RemotePost? latestFriendPost(
     return post;
   }
   return null;
+}
+
+/// The newest post that belongs on a widget set to [source]: any friend's
+/// ([allSource]), one friend's, or one group member's. Null when there is none.
+RemotePost? latestPostForSource(
+  List<RemotePost> posts,
+  String source, {
+  required String myId,
+  required Set<String> friendIds,
+  Map<String, Set<String>> groups = const {},
+}) {
+  if (source == allSource) {
+    return latestFriendPost(posts, myId: myId, friendIds: friendIds);
+  }
+  final id = source.length > 2 ? source.substring(2) : '';
+  final Set<String> wanted;
+  if (source.startsWith('u_')) {
+    wanted = {id};
+  } else if (source.startsWith('g_')) {
+    wanted = groups[id] ?? const {};
+  } else {
+    return null;
+  }
+  return latestFriendPost(
+    posts,
+    myId: myId,
+    friendIds: wanted.intersection(friendIds),
+  );
 }
 
 /// `neolocket://post/<id>` — what tapping the widget opens.

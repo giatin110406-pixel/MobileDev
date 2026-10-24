@@ -719,6 +719,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get photoNotSaved => 'PHOTO DID NOT SAVE. TRY AGAIN.';
 
   @override
+  String get developingPhoto => 'DEVELOPING...';
+
+  @override
   String get photoOpenFailed => 'COULD NOT OPEN THAT PHOTO. TRY ANOTHER.';
 
   @override
@@ -2605,4 +2608,253 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchMaybe => 'MAYBE RELATED';
+
+  @override
+  String get albumChipPrefix => 'ALBUM:';
+
+  @override
+  String get groupTabAlbums => 'ALBUMS';
+
+  @override
+  String get albumsEmpty =>
+      'No albums yet. Start one for a trip or an evening out: the photos the group takes on those days are collected in one place.';
+
+  @override
+  String get albumNew => 'NEW ALBUM';
+
+  @override
+  String get albumNameLabel => 'Album name (for example: Dalat trip)';
+
+  @override
+  String get albumDatesLabel => 'Dates';
+
+  @override
+  String get albumCreateButton => 'CREATE';
+
+  @override
+  String albumDateRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get albumOpenNow => 'OPEN NOW';
+
+  @override
+  String albumPhotoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get albumEmptyItems => 'No photos in this album yet.';
+
+  @override
+  String get albumAddMine => 'ADD MY PHOTOS';
+
+  @override
+  String get albumAddNone =>
+      'You have no photos from these days, or they are all in already.';
+
+  @override
+  String get albumAddHint =>
+      'Photos in an album are shown to everyone in the group, even people who are not your friends.';
+
+  @override
+  String albumAddConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count PHOTOS',
+      one: '1 PHOTO',
+    );
+    return 'ADD $_temp0';
+  }
+
+  @override
+  String albumAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0 added to the album.';
+  }
+
+  @override
+  String albumDownloadSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0 could not be downloaded and are not in the file.';
+  }
+
+  @override
+  String get albumDeleteTitle => 'Delete this album?';
+
+  @override
+  String get albumDeleteBody =>
+      'The album disappears from the group. The photos stay in their authors\' posts.';
+
+  @override
+  String get albumDelete => 'DELETE ALBUM';
+
+  @override
+  String get albumRemovePhoto => 'REMOVE FROM ALBUM';
+
+  @override
+  String get albumPhotoRemoved => 'Photo removed from the album.';
+
+  @override
+  String get albumLoadFailed => 'The album could not be loaded.';
+
+  @override
+  String albumBy(String name) {
+    return 'Photo by $name';
+  }
+
+  @override
+  String get albumErrName => 'The album name must be 1 to 40 characters.';
+
+  @override
+  String get albumErrWindow => 'An album covers at most 31 days.';
+
+  @override
+  String get albumErrLimit =>
+      'The group already has 20 albums. Delete an old one first.';
+
+  @override
+  String get albumErrNotAllowed => 'You are not allowed to do this.';
+
+  @override
+  String get postMenuSaveOriginal => 'SAVE ORIGINAL';
+
+  @override
+  String get postOriginalSaved => 'Original saved to your photo library.';
+
+  @override
+  String get settingsData => 'YOUR DATA';
+
+  @override
+  String get settingsExportData => 'Export all my photos';
+
+  @override
+  String get settingsExportHint =>
+      'Makes a zip with every photo you posted, including the shot before its style, and a list of captions.';
+
+  @override
+  String exportProgress(int done, int total) {
+    return 'Preparing $done/$total…';
+  }
+
+  @override
+  String get exportNothing => 'You have not posted any photos yet.';
+
+  @override
+  String get exportFailed =>
+      'The export failed. Check your connection and try again.';
+
+  @override
+  String groupTabOpenAlbums(int count) {
+    return '$count open';
+  }
+
+  @override
+  String get stripButton => 'PRINT STRIP';
+
+  @override
+  String stripPickHint(int count) {
+    return 'Tap 2–6 photos in the order to print ($count/6)';
+  }
+
+  @override
+  String get stripNext => 'NEXT';
+
+  @override
+  String get stripNoVideo => 'Videos cannot be printed; pick photos.';
+
+  @override
+  String get stripTitle => 'PHOTO STRIP';
+
+  @override
+  String get stripFrameLabel => 'FRAME';
+
+  @override
+  String get stripPaperLabel => 'PAPER';
+
+  @override
+  String get stripStyleClassicDark => 'BLACK FILM';
+
+  @override
+  String get stripStyleClassicLight => 'WHITE PAPER';
+
+  @override
+  String get stripStyleNeo => 'NEO';
+
+  @override
+  String get stripStylePixel => '8-BIT';
+
+  @override
+  String get stripStyleVanGogh => 'VAN GOGH';
+
+  @override
+  String get stripPaperSheet => '4×6 IN (2 STRIPS)';
+
+  @override
+  String get stripPaperStrip => 'ONE 2×6 IN STRIP';
+
+  @override
+  String get stripPaperSheetHint =>
+      'Print it at any photo shop as 4×6 in, then cut it down the middle: two identical strips, like a photobooth.';
+
+  @override
+  String get stripPaperStripHint => 'One 2×6 in strip, 300 dpi.';
+
+  @override
+  String get stripUseOriginals => 'Use the originals (before the style)';
+
+  @override
+  String get stripTitleLabel => 'Big line';
+
+  @override
+  String get stripSubtitleLabel => 'Small line';
+
+  @override
+  String get stripSave => 'SAVE';
+
+  @override
+  String get stripShare => 'SHARE / PRINT';
+
+  @override
+  String get stripSaved => 'Strip saved to your photo library.';
+
+  @override
+  String get stripLoadFailed =>
+      'The photos could not be loaded. Check your connection and try again.';
+
+  @override
+  String get stripTextLabel => 'WORDS ON THE STRIP';
+
+  @override
+  String get stripZoomHint => 'TAP TO ZOOM';
+
+  @override
+  String get stripPaperGrid => '2×3 GRID (6 PHOTOS)';
+
+  @override
+  String get stripPaperGridHint =>
+      'One 4×6 in sheet of 6 squares (2 columns by 3 rows), nothing to cut. Any square without a photo is a decorative card.';
+
+  @override
+  String stripOnlyThree(int count) {
+    return 'A strip uses the first 3 photos. Pick the 2×3 grid to use all $count.';
+  }
 }

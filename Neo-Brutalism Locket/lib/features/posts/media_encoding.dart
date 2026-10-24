@@ -67,3 +67,40 @@ EncodedPhoto encodePhotoSync(Uint8List bytes, bool lossless) {
     mimeType: lossless ? 'image/png' : 'image/jpeg',
   );
 }
+
+/// Longest side the original is allowed to keep. The camera's square shots are
+/// below this, so they are sent untouched.
+const maxOriginalSide = 2560;
+const _maxOriginalBytes = 8 * 1024 * 1024;
+
+/// The shot before its style, as a JPEG to upload beside the styled one. A
+/// shot already within the limits is sent as it is (no second compression, so
+/// nothing is lost); a bigger one is shrunk, at high quality.
+Future<Uint8List> originalForUpload(Uint8List bytes) =>
+    compute(_originalForUpload, bytes);
+
+Uint8List _originalForUpload(Uint8List bytes) {
+  if (bytes.length <= _maxOriginalBytes && _isJpeg(bytes)) {
+    // Only the header is read to learn the size.
+    final info = img.JpegDecoder().startDecode(bytes);
+    if (info != null &&
+        info.width <= maxOriginalSide &&
+        info.height <= maxOriginalSide) {
+      return bytes;
+    }
+  }
+  final source = decodeOrientedImage(bytes);
+  final longest = source.width > source.height ? source.width : source.height;
+  final fitted = longest > maxOriginalSide
+      ? img.copyResize(
+          source,
+          width: source.width >= source.height ? maxOriginalSide : null,
+          height: source.height > source.width ? maxOriginalSide : null,
+          interpolation: img.Interpolation.average,
+        )
+      : source;
+  return Uint8List.fromList(img.encodeJpg(fitted, quality: 95));
+}
+
+bool _isJpeg(Uint8List bytes) =>
+    bytes.length > 3 && bytes[0] == 0xFF && bytes[1] == 0xD8;
