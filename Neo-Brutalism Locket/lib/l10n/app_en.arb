@@ -351,6 +351,7 @@
     }
   },
   "photoNotSaved": "PHOTO DID NOT SAVE. TRY AGAIN.",
+  "developingPhoto": "DEVELOPING...",
   "photoOpenFailed": "COULD NOT OPEN THAT PHOTO. TRY ANOTHER.",
   "fallbackUsed": "FALLBACK USED: {note}",
   "@fallbackUsed": {

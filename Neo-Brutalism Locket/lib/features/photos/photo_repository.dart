@@ -116,12 +116,14 @@ class PhotoRepository {
     return photos;
   }
 
+  /// Saves [bytes] as a new photo. [id] keeps the one a draft already shows.
   Future<NeoPhoto> saveOriginal(
     Uint8List bytes, {
     required StyleType styleType,
+    String? id,
   }) async {
     final now = DateTime.now();
-    final id = now.microsecondsSinceEpoch.toString();
+    id ??= now.microsecondsSinceEpoch.toString();
     final directory = await _photoDirectory();
     final path = '${directory.path}${Platform.pathSeparator}${id}_original.jpg';
     await File(path).writeAsBytes(bytes, flush: true);

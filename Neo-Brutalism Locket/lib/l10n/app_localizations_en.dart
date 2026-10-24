@@ -719,6 +719,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get photoNotSaved => 'PHOTO DID NOT SAVE. TRY AGAIN.';
 
   @override
+  String get developingPhoto => 'DEVELOPING...';
+
+  @override
   String get photoOpenFailed => 'COULD NOT OPEN THAT PHOTO. TRY ANOTHER.';
 
   @override

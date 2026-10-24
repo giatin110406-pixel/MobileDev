@@ -715,6 +715,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get photoNotSaved => 'ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.';
 
   @override
+  String get developingPhoto => 'ĐANG RỬA ẢNH...';
+
+  @override
   String get photoOpenFailed => 'KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.';
 
   @override

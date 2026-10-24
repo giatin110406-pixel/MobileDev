@@ -1370,6 +1370,12 @@ abstract class AppLocalizations {
   /// **'ẢNH CHƯA LƯU ĐƯỢC. THỬ LẠI NHÉ.'**
   String get photoNotSaved;
 
+  /// No description provided for @developingPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG RỬA ẢNH...'**
+  String get developingPhoto;
+
   /// No description provided for @photoOpenFailed.
   ///
   /// In vi, this message translates to:
