@@ -1631,7 +1631,6 @@
   },
   "peOfferEnded": "Ưu đãi này đã kết thúc.",
   "contestEnterGalleryEmpty": "VÀO GALLERY",
-  "hallOfFameButton": "HALL OF FAME",
   "hallOfFameTitle": "Hall of Fame",
   "hallEarlierWeek": "Tuần trước",
   "hallLaterWeek": "Tuần sau",
@@ -1644,6 +1643,15 @@
       }
     }
   },
+  "hallWeekTitle": "Hall of Fame · Tuần {week}",
+  "@hallWeekTitle": {
+    "placeholders": {
+      "week": {
+        "type": "String"
+      }
+    }
+  },
+  "hallSwipeHint": "Vuốt xuống để quay lại",
   "hallEmpty": "Chưa có tranh nào được vinh danh. Ba bài đứng đầu mỗi tuần sẽ được treo ở đây mãi mãi.",
   "entrySavePhoto": "LƯU ẢNH",
   "entrySavedSnack": "Đã lưu tranh vào thư viện ảnh.",

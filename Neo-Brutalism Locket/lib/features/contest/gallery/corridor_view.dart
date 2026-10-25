@@ -16,6 +16,11 @@ import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 /// walls. Tap one and the visitor walks up to it, stops and turns to face it, still in
 /// the corridor, and a card with its name pops up from the bottom. From the card the
 /// painting can be opened (to rate and comment) or the visitor can walk on.
+///
+/// With a [hallBuilder] the door at the end stands ajar, under a sign. Tap it and the
+/// visitor walks to it, the door swings open, and the room behind it takes over the
+/// whole screen (a route of its own, which fades in out of the dark). When that route
+/// is closed the visitor walks back.
 class CorridorView extends StatefulWidget {
   const CorridorView({
     required this.entries,
@@ -28,6 +33,7 @@ class CorridorView extends StatefulWidget {
     this.decorOf,
     this.label,
     this.caption,
+    this.hallBuilder,
     super.key,
   });
 
@@ -50,6 +56,9 @@ class CorridorView extends StatefulWidget {
   /// A line under the name of the painting on its card (the theme of the contest).
   final String? caption;
 
+  /// The room behind the door at the end. Null: the door stays shut.
+  final WidgetBuilder? hallBuilder;
+
   @override
   State<CorridorView> createState() => _CorridorViewState();
 }
@@ -68,6 +77,17 @@ class _CorridorViewState extends State<CorridorView>
   // then the card that pops up ([_panelAnim]).
   late final AnimationController _focusAnim;
   late final AnimationController _panelAnim;
+
+  /// How far the door at the end stands open: a crack to begin with.
+  static const _ajar = 0.35;
+  late final ValueNotifier<double> _doorOpen = ValueNotifier(
+    widget.hallBuilder == null ? 0 : _ajar,
+  );
+
+  // Going through the door: the walk to it and the swing of the door ([_enter]),
+  // then the room behind it.
+  late final AnimationController _enter;
+  bool _door = false;
   final ValueNotifier<double> _yaw = ValueNotifier(0);
   final ValueNotifier<double> _eye = ValueNotifier(0);
   FrameSlot? _focusSlot;
@@ -102,6 +122,13 @@ class _CorridorViewState extends State<CorridorView>
       vsync: this,
       duration: const Duration(milliseconds: 520),
     );
+    _enter =
+        AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 2600),
+          )
+          ..addListener(_onEnterTick)
+          ..addStatusListener(_onEnterStatus);
     SchedulerBinding.instance.addTimingsCallback(_onTimings);
   }
 
@@ -118,6 +145,8 @@ class _CorridorViewState extends State<CorridorView>
     _motion.dispose();
     _focusAnim.dispose();
     _panelAnim.dispose();
+    _enter.dispose();
+    _doorOpen.dispose();
     _yaw.dispose();
     _eye.dispose();
     _camera.dispose();
@@ -172,6 +201,61 @@ class _CorridorViewState extends State<CorridorView>
   }
 
   static const _metresPerPixel = 0.012;
+
+  // Through the door ---------------------------------------------------------------
+
+  /// Looking at a painting or going through the door: the visitor cannot be walked
+  /// about by hand.
+  bool get _busy => _looking || _door;
+
+  /// The visitor walks to the door, which swings open, and the room behind it takes
+  /// over.
+  void _enterHall() {
+    if (_busy || widget.hallBuilder == null) return;
+    _motion.stop();
+    _fromZ = _camera.value;
+    _toZ = math.max(_fromZ, _end - 0.9);
+    _enter.duration = Duration(
+      milliseconds: (1900 + 60 * (_toZ - _fromZ)).round().clamp(2200, 4200),
+    );
+    setState(() => _door = true);
+    _enter.forward(from: 0);
+  }
+
+  /// The room behind the door, over the whole screen. Out of it, the visitor walks
+  /// back to where they were and the door closes to a crack.
+  Future<void> _showHall() async {
+    await Navigator.of(context).push<void>(
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 500),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (context, _, _) => widget.hallBuilder!(context),
+        transitionsBuilder: (context, animation, _, child) =>
+            FadeTransition(opacity: animation, child: child),
+      ),
+    );
+    if (mounted) _enter.reverse();
+  }
+
+  void _onEnterTick() {
+    final t = _enter.value;
+    // First the walk (the door begins to open part-way through it); at the end the
+    // view goes dark, as the room behind the door is.
+    final walk = Curves.easeInOut.transform((t / 0.8).clamp(0.0, 1.0));
+    final swing = Curves.easeInOut.transform(
+      ((t - 0.25) / 0.5).clamp(0.0, 1.0),
+    );
+    _camera.value = _fromZ + (_toZ - _fromZ) * walk;
+    _doorOpen.value = _ajar + (1 - _ajar) * swing;
+  }
+
+  void _onEnterStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _showHall();
+    } else if (status == AnimationStatus.dismissed) {
+      setState(() => _door = false);
+    }
+  }
 
   // Looking at a painting ---------------------------------------------------------
 
@@ -244,9 +328,9 @@ class _CorridorViewState extends State<CorridorView>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_looking,
+      canPop: !_busy,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _walkOn();
+        if (!didPop && _looking) _walkOn();
       },
       child: Semantics(
         container: true,
@@ -263,7 +347,7 @@ class _CorridorViewState extends State<CorridorView>
               children: [
                 Listener(
                   onPointerSignal: (event) {
-                    if (_looking) return;
+                    if (_busy) return;
                     if (event is PointerScrollEvent) {
                       _motion.stop();
                       _set(_camera.value + event.scrollDelta.dy * 0.01);
@@ -273,12 +357,12 @@ class _CorridorViewState extends State<CorridorView>
                     behavior: HitTestBehavior.opaque,
                     onVerticalDragStart: (_) => _motion.stop(),
                     onVerticalDragUpdate: (d) {
-                      if (!_looking) {
+                      if (!_busy) {
                         _set(_camera.value - d.delta.dy * _metresPerPixel);
                       }
                     },
                     onVerticalDragEnd: (d) {
-                      if (!_looking) {
+                      if (!_busy) {
                         _fling(
                           -d.velocity.pixelsPerSecond.dy * _metresPerPixel,
                         );
@@ -288,6 +372,17 @@ class _CorridorViewState extends State<CorridorView>
                       if (_looking) {
                         _tapWhileLooking(d.localPosition, size);
                         return;
+                      }
+                      if (_door) return;
+                      if (widget.hallBuilder != null) {
+                        final door = CorridorPainter.doorHit(
+                          Projection(size, _camera.value),
+                          _end,
+                        );
+                        if (door != null && door.contains(d.localPosition)) {
+                          _enterHall();
+                          return;
+                        }
                       }
                       final slot = hitTest(
                         d.localPosition,
@@ -312,6 +407,12 @@ class _CorridorViewState extends State<CorridorView>
                           style: widget.style,
                           decorOf: widget.decorOf,
                           endZ: _end,
+                          doorOpen: _doorOpen,
+                          doorCaption: widget.hallBuilder == null
+                              ? null
+                              : AppLocalizations.of(
+                                  context,
+                                ).hallOfFameTitle.toUpperCase(),
                         ),
                       ),
                     ),
@@ -321,10 +422,10 @@ class _CorridorViewState extends State<CorridorView>
                   right: 12,
                   bottom: 16,
                   child: IgnorePointer(
-                    ignoring: _looking,
+                    ignoring: _busy,
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 200),
-                      opacity: _looking ? 0 : 1,
+                      opacity: _busy ? 0 : 1,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -351,7 +452,7 @@ class _CorridorViewState extends State<CorridorView>
                     child: IgnorePointer(
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 200),
-                        opacity: _looking ? 0 : 1,
+                        opacity: _busy ? 0 : 1,
                         child: ValueListenableBuilder<double>(
                           valueListenable: _camera,
                           builder: (context, z, _) => NeoLabel(
@@ -364,6 +465,21 @@ class _CorridorViewState extends State<CorridorView>
                     ),
                   ),
                 if (_focusEntry != null) _card(context, _focusEntry!),
+                if (widget.hallBuilder != null) ...[
+                  // The doorway fills the view; it goes dark, as the hall behind it is.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedBuilder(
+                        animation: _enter,
+                        builder: (context, _) => ColoredBox(
+                          color: _darkness.withValues(
+                            alpha: ((_enter.value - 0.8) / 0.2).clamp(0.0, 1.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             );
           },
@@ -371,6 +487,8 @@ class _CorridorViewState extends State<CorridorView>
       ),
     );
   }
+
+  static const _darkness = Color(0xFF0A0809);
 
   /// The card with the painting's name that pops up from the bottom: it slides up with a
   /// little overshoot and fades in.

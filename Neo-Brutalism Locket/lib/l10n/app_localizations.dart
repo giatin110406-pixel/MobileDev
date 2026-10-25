@@ -4364,12 +4364,6 @@ abstract class AppLocalizations {
   /// **'VÀO GALLERY'**
   String get contestEnterGalleryEmpty;
 
-  /// No description provided for @hallOfFameButton.
-  ///
-  /// In vi, this message translates to:
-  /// **'HALL OF FAME'**
-  String get hallOfFameButton;
-
   /// No description provided for @hallOfFameTitle.
   ///
   /// In vi, this message translates to:
@@ -4399,6 +4393,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Bục vinh danh tuần {week}. Chạm vào một bức tranh để xem kỹ hơn.'**
   String hallPodiumSemantics(String week);
+
+  /// No description provided for @hallWeekTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hall of Fame · Tuần {week}'**
+  String hallWeekTitle(String week);
+
+  /// No description provided for @hallSwipeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vuốt xuống để quay lại'**
+  String get hallSwipeHint;
 
   /// No description provided for @hallEmpty.
   ///

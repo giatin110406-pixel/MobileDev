@@ -54,7 +54,6 @@ void main() {
         'rankTop3',
         'kindBanner',
         // The name of the room is the same in both languages.
-        'hallOfFameButton',
         'hallOfFameTitle',
         // A word that is the same in both, and a date range with no words.
         'albumChipPrefix',

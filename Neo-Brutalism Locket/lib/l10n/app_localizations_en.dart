@@ -2467,9 +2467,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contestEnterGalleryEmpty => 'ENTER GALLERY';
 
   @override
-  String get hallOfFameButton => 'HALL OF FAME';
-
-  @override
   String get hallOfFameTitle => 'Hall of Fame';
 
   @override
@@ -2485,6 +2482,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String hallPodiumSemantics(String week) {
     return 'Podium of week $week. Tap a painting to look closer.';
   }
+
+  @override
+  String hallWeekTitle(String week) {
+    return 'Hall of Fame · Week $week';
+  }
+
+  @override
+  String get hallSwipeHint => 'Swipe down to go back';
 
   @override
   String get hallEmpty =>
