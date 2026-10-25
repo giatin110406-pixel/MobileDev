@@ -131,7 +131,9 @@ class CorridorPainter extends CustomPainter {
     this.endZ,
     this.yaw = const AlwaysStoppedAnimation<double>(0),
     this.eye = const AlwaysStoppedAnimation<double>(0),
-  }) : super(repaint: Listenable.merge([camera, yaw, eye, cache]));
+    this.doorOpen = const AlwaysStoppedAnimation<double>(0),
+    this.doorCaption,
+  }) : super(repaint: Listenable.merge([camera, yaw, eye, doorOpen, cache]));
 
   final ValueListenable<double> camera;
 
@@ -151,8 +153,15 @@ class CorridorPainter extends CustomPainter {
   /// Where the corridor ends (null: it does not, as far as the eye can see).
   final double? endZ;
 
+  /// How far the door at the end stands open: 0 is shut, 1 is wide open.
+  final ValueListenable<double> doorOpen;
+
+  /// The sign over the door (null: no sign).
+  final String? doorCaption;
+
   final Map<String, Color> _averages = {};
   final Map<String, TextPainter> _plaques = {};
+  final Map<String, TextPainter> _captions = {};
 
   Color _average(GalleryEntry entry) =>
       _averages[entry.id] ??= Color(averageArgb(entry));
@@ -425,29 +434,137 @@ class CorridorPainter extends CustomPainter {
       (x1, y1, z),
       (x0, y1, z),
     ];
-    // A shut door: black frame, a coloured leaf with two panels and a knob.
+    _door(canvas, view, z, rect);
+  }
+
+  /// The door: a black frame, the dark hall behind it (black) and a leaf that swings
+  /// in on its hinge on the left, with two panels and a knob. Wide open, the leaf is
+  /// edge-on.
+  void _door(
+    Canvas canvas,
+    Projection view,
+    double z,
+    List<Point3> Function(double, double, double, double) rect,
+  ) {
+    final open = doorOpen.value.clamp(0.0, 1.0);
+    final line = _outline(CorridorColors.ink);
     canvas.drawPath(
       _poly3(view, rect(-0.95, 0.95, -1.12, Corridor.floorY)),
       _fill(CorridorColors.ink),
     );
-    canvas.drawPath(
-      _poly3(view, rect(-0.8, 0.8, -1.0, Corridor.floorY)),
-      _fill(CorridorColors.doorLeaf),
-    );
-    final line = _outline(CorridorColors.ink);
-    for (final panel in [
-      rect(-0.55, 0.55, -0.8, 0.0),
-      rect(-0.55, 0.55, 0.25, 1.25),
-    ]) {
-      canvas.drawPath(_poly3(view, panel), line);
+    if (open > 0) {
+      // The hall behind: black.
+      canvas.drawPath(
+        _poly3(view, rect(-0.8, 0.8, -1.0, Corridor.floorY)),
+        _fill(const Color(0xFF0A0809)),
+      );
     }
-    final knob = view.point(0.55, 0.55, z);
-    final knobSide = view.point(0.67, 0.55, z);
+    final leaf = open == 0
+        ? rect(-0.8, 0.8, -1.0, Corridor.floorY)
+        : _leaf(z, open);
+    canvas.drawPath(_poly3(view, leaf), _fill(CorridorColors.doorLeaf));
+    canvas.drawPath(_poly3(view, leaf), line);
+    // Two panels and a knob, on the face of the leaf.
+    final swing = open == 0 ? 0.0 : _swing(open);
+    Point3 onLeaf(double along, double y) =>
+        (-0.8 + along * math.cos(swing), y, z + along * math.sin(swing));
+    for (final panel in [(0.25, 1.35, -0.8, 0.0), (0.25, 1.35, 0.25, 1.25)]) {
+      canvas.drawPath(
+        _poly3(view, [
+          onLeaf(panel.$1, panel.$3),
+          onLeaf(panel.$2, panel.$3),
+          onLeaf(panel.$2, panel.$4),
+          onLeaf(panel.$1, panel.$4),
+        ]),
+        line,
+      );
+    }
+    final knobAt = onLeaf(1.35, 0.55);
+    final knobBeside = onLeaf(1.47, 0.55);
+    final knob = view.point(knobAt.$1, knobAt.$2, knobAt.$3);
+    final knobSide = view.point(knobBeside.$1, knobBeside.$2, knobBeside.$3);
     if (knob != null && knobSide != null) {
       final radius = math.max(1.5, (knobSide - knob).distance);
       canvas.drawCircle(knob, radius, _fill(CorridorColors.light));
       canvas.drawCircle(knob, radius, line);
     }
+    _sign(canvas, view, z);
+  }
+
+  /// How far the leaf has swung (radians) when the door is [open].
+  static double _swing(double open) => open * 1.45;
+
+  /// The leaf, hinged at x = -0.8, swung in by [open].
+  List<Point3> _leaf(double z, double open) {
+    final swing = _swing(open);
+    final x = -0.8 + 1.6 * math.cos(swing);
+    final depth = z + 1.6 * math.sin(swing);
+    const top = -1.0;
+    const bottom = Corridor.floorY;
+    return [
+      (-0.8, top, z),
+      (x, top, depth),
+      (x, bottom, depth),
+      (-0.8, bottom, z),
+    ];
+  }
+
+  /// The plate over the door with its caption, in gold on black.
+  void _sign(Canvas canvas, Projection view, double z) {
+    final caption = doorCaption;
+    if (caption == null) return;
+    const left = -1.0, right = 1.0, top = -1.62, bottom = -1.26;
+    final plate = _poly3(view, [
+      (left, top, z),
+      (right, top, z),
+      (right, bottom, z),
+      (left, bottom, z),
+    ]);
+    canvas.drawPath(plate, _fill(CorridorColors.ink));
+    canvas.drawPath(plate, _outline(CorridorColors.light));
+    final a = view.point(left, top, z);
+    final b = view.point(right, bottom, z);
+    if (a == null || b == null) return;
+    final box = Rect.fromPoints(a, b).deflate(2);
+    if (box.height < 6 || box.width < 20) return;
+    final size = (box.height * 0.6).roundToDouble();
+    final text = _captions['$caption@$size'] ??= TextPainter(
+      text: TextSpan(
+        text: caption,
+        style: TextStyle(
+          color: CorridorColors.light,
+          fontFamily: NeoFont.display,
+          fontSize: size,
+          fontWeight: FontWeight.w900,
+          letterSpacing: size * 0.08,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    canvas.save();
+    canvas.clipRect(box);
+    canvas.translate(
+      box.center.dx - text.width / 2,
+      box.center.dy - text.height / 2,
+    );
+    text.paint(canvas, Offset.zero);
+    canvas.restore();
+  }
+
+  /// The rectangle on screen that opens the door when tapped (the door and its
+  /// sign), at least a finger wide. Null when it is not in front of the visitor.
+  static Rect? doorHit(Projection view, double endZ) {
+    final z = math.min(endZ, view.cameraZ + Corridor.far - 1);
+    final corners = [
+      view.point(-0.95, -1.62, z),
+      view.point(0.95, Corridor.floorY, z),
+    ];
+    final a = corners[0], b = corners[1];
+    if (a == null || b == null) return null;
+    final box = Rect.fromPoints(a, b);
+    final grow = math.max(0.0, 48 - math.min(box.width, box.height)) / 2;
+    return box.inflate(grow);
   }
 
   // Frames --------------------------------------------------------------------

@@ -1,11 +1,16 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_repository.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/contest_store.dart';
+import 'package:neo_brutalism_locket/features/contest/gallery/corridor_geometry.dart';
+import 'package:neo_brutalism_locket/features/contest/gallery/corridor_painter.dart';
 import 'package:neo_brutalism_locket/features/contest/entry_detail_screen.dart';
 import 'package:neo_brutalism_locket/features/contest/entry_export.dart';
 import 'package:neo_brutalism_locket/features/contest/gallery/pixel_art.dart';
@@ -76,10 +81,10 @@ class FakeExporter implements EntryExporter {
 
 void main() {
   group('the podium colours', () {
-    test('the pedestals are gold, off-white and coral by rank', () {
-      expect(hallFrameColor(1), const Color(0xFFFFD23F));
-      expect(hallFrameColor(2), const Color(0xFFFFFDF5));
-      expect(hallFrameColor(3), const Color(0xFFFF6B6B));
+    test('the number plates are gold, off-white and coral by rank', () {
+      expect(hallFrameColor(1), const Color(0xFFF5D06F));
+      expect(hallFrameColor(2), const Color(0xFFF8EED2));
+      expect(hallFrameColor(3), const Color(0xFFFF6F61));
       expect(hallFrameColor(null), hallFrameColor(3));
     });
   });
@@ -160,7 +165,7 @@ void main() {
       await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
       await tester.pump();
       await tester.pump();
-      expect(find.textContaining('W39'), findsOneWidget);
+      expect(find.text('Hall of Fame · Week 39'), findsOneWidget);
       expect(find.text('Team 1'), findsOneWidget);
       expect(find.text('Team 2'), findsOneWidget);
       expect(find.text('Team 3'), findsOneWidget);
@@ -204,6 +209,63 @@ void main() {
       await leave(tester);
     });
 
+    testWidgets('there is no arrow to go to when only one week has winners', (
+      tester,
+    ) async {
+      bigScreen(tester);
+      final repo = FakeContest()..hall.add(winner(1, rank: 1));
+      await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Hall of Fame · Week 39'), findsOneWidget);
+      expect(find.text('Sunflowers'), findsOneWidget);
+      expect(find.byTooltip('Earlier week'), findsNothing);
+      expect(find.byTooltip('Later week'), findsNothing);
+      await leave(tester);
+    });
+
+    // A picture of the whole hall, written when the folder is given:
+    //   flutter test test/hall_of_fame_test.dart --dart-define=HALL_PNG_DIR=the-folder
+    testWidgets('the whole hall, for a person to look at', (tester) async {
+      bigScreen(tester);
+      final repo = FakeContest();
+      repo.hall.addAll([
+        winner(1, rank: 1, week: '2026-W43'),
+        winner(2, rank: 2, week: '2026-W43'),
+        winner(3, rank: 3, week: '2026-W43'),
+        winner(4, rank: 1, week: '2026-W42'),
+      ]);
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(
+            size: Size(400, 900),
+            disableAnimations: true,
+          ),
+          child: RepaintBoundary(
+            child: app(HallOfFameScreen(repository: repo)),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Team 1'), findsOneWidget);
+      expect(find.text('Hall of Fame · Week 43'), findsOneWidget);
+      const out = String.fromEnvironment('HALL_PNG_DIR');
+      if (out.isNotEmpty) {
+        final boundary = tester.renderObject<RenderRepaintBoundary>(
+          find.byType(RepaintBoundary).first,
+        );
+        final image = await tester.runAsync(() => boundary.toImage());
+        final bytes = await tester.runAsync(
+          () => image!.toByteData(format: ui.ImageByteFormat.png),
+        );
+        File(
+          '$out/hall_whole.png',
+        ).writeAsBytesSync(bytes!.buffer.asUint8List());
+      }
+      await leave(tester);
+    });
+
     testWidgets('a hall that cannot load offers a retry', (tester) async {
       bigScreen(tester);
       final repo = FakeContest()
@@ -222,7 +284,31 @@ void main() {
   });
 
   group('ways in', () {
-    testWidgets('the Gallery has a button to the Hall of Fame', (tester) async {
+    final corridor = find.byWidgetPredicate(
+      (w) => w is CustomPaint && w.painter is CorridorPainter,
+    );
+
+    /// Opens the Gallery of one entry and taps the door at the end of the corridor.
+    Future<FakeContest> tapTheDoor(WidgetTester tester) async {
+      bigScreen(tester);
+      final repo = FakeContest()..entries.add(entryOf(1));
+      repo.hall.add(winner(1, rank: 1));
+      await tester.pumpWidget(
+        app(GalleryScreen(repository: repo, title: 'Starry')),
+      );
+      await tester.pump();
+      await tester.pump();
+      final door = CorridorPainter.doorHit(
+        Projection(tester.getSize(corridor), 0),
+        corridorLength(layoutGallery(1)) + 1,
+      )!;
+      await tester.tapAt(tester.getTopLeft(corridor) + door.center);
+      return repo;
+    }
+
+    testWidgets('the Gallery has no button to the Hall of Fame any more', (
+      tester,
+    ) async {
       bigScreen(tester);
       final repo = FakeContest()..entries.add(entryOf(1));
       await tester.pumpWidget(
@@ -230,40 +316,136 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      await tester.tap(find.byTooltip('Hall of Fame'));
+      expect(find.byTooltip('Hall of Fame'), findsNothing);
+      expect(find.byIcon(Icons.emoji_events_outlined), findsNothing);
+      expect(find.byType(HallOfFameScreen), findsNothing);
+      await leave(tester);
+    });
+
+    testWidgets('the door at the end of the corridor leads to the hall', (
+      tester,
+    ) async {
+      await tapTheDoor(tester);
+      // The visitor walks to the door; the hall is not there yet.
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(HallOfFameScreen), findsNothing);
+      await tester.pumpAndSettle();
+      expect(find.byType(HallOfFameScreen), findsOneWidget);
+      expect(find.text('Team 1'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('the corridor cannot be walked while going through the door', (
+      tester,
+    ) async {
+      await tapTheDoor(tester);
+      await tester.pump(const Duration(milliseconds: 400));
+      final before =
+          (tester.widget<CustomPaint>(corridor).painter! as CorridorPainter)
+              .camera
+              .value;
+      await tester.drag(corridor, const Offset(0, 200));
+      await tester.pump(const Duration(milliseconds: 50));
+      final after =
+          (tester.widget<CustomPaint>(corridor).painter! as CorridorPainter)
+              .camera
+              .value;
+      // It only moved on by the walk to the door.
+      expect(after, greaterThanOrEqualTo(before));
+      await tester.pumpAndSettle();
+      await leave(tester);
+    });
+
+    testWidgets('a swipe down in the hall walks back into the corridor', (
+      tester,
+    ) async {
+      await tapTheDoor(tester);
+      await tester.pumpAndSettle();
+      // There is no back arrow in the hall.
+      expect(find.byTooltip('Back'), findsNothing);
+      expect(find.text('Swipe down to go back'), findsOneWidget);
+      // A short pull that is let go springs back.
+      await tester.drag(find.byType(HallOfFameScreen), const Offset(0, 40));
+      await tester.pumpAndSettle();
+      expect(find.byType(HallOfFameScreen), findsOneWidget);
+      await tester.fling(
+        find.byType(HallOfFameScreen),
+        const Offset(0, 300),
+        1500,
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(HallOfFameScreen), findsNothing);
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      final painter =
+          tester.widget<CustomPaint>(corridor).painter! as CorridorPainter;
+      expect(painter.camera.value, 0);
+      expect(painter.doorOpen.value, closeTo(0.35, 1e-9));
+      // And the door can be tried again.
+      final door = CorridorPainter.doorHit(
+        Projection(tester.getSize(corridor), 0),
+        corridorLength(layoutGallery(1)) + 1,
+      )!;
+      await tester.tapAt(tester.getTopLeft(corridor) + door.center);
       await tester.pumpAndSettle();
       expect(find.byType(HallOfFameScreen), findsOneWidget);
       await leave(tester);
     });
 
-    testWidgets(
-      'the contest screen always offers the Gallery, even with no entry yet',
-      (tester) async {
-        bigScreen(tester);
-        final repo = FakeContest(
-          current: overviewOf(contest: contestInfo(accepted: 0)),
-        );
-        final store = ContestStore(repo, clock: () => t0);
-        await tester.pumpWidget(
-          app(ContestScreen(store: store, canvases: FakeCanvas())),
-        );
-        await tester.pump();
-        await tester.pump();
-        expect(find.text('ENTER GALLERY'), findsOneWidget);
-        expect(find.text('HALL OF FAME'), findsOneWidget);
-        await tester.tap(find.text('ENTER GALLERY'));
-        await tester.pumpAndSettle();
-        expect(find.byType(GalleryScreen), findsOneWidget);
-        expect(find.textContaining('The corridor is empty'), findsOneWidget);
-        await tester.tap(find.byTooltip('Back').last);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('HALL OF FAME'));
-        await tester.pumpAndSettle();
-        expect(find.byType(HallOfFameScreen), findsOneWidget);
-        await leave(tester);
-        store.dispose();
-      },
-    );
+    testWidgets('the system back button leaves the hall, not the Gallery', (
+      tester,
+    ) async {
+      await tapTheDoor(tester);
+      await tester.pumpAndSettle();
+      final widgetsApp = tester.state<State>(find.byType(WidgetsApp));
+      // ignore: avoid_dynamic_calls
+      await (widgetsApp as dynamic).didPopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(HallOfFameScreen), findsNothing);
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      await leave(tester);
+    });
+
+    testWidgets('the door stands ajar and says what is behind it', (
+      tester,
+    ) async {
+      bigScreen(tester);
+      final repo = FakeContest()..entries.add(entryOf(1));
+      await tester.pumpWidget(
+        app(GalleryScreen(repository: repo, title: 'Starry')),
+      );
+      await tester.pump();
+      await tester.pump();
+      final painter =
+          tester.widget<CustomPaint>(corridor).painter! as CorridorPainter;
+      expect(painter.doorOpen.value, greaterThan(0));
+      expect(painter.doorOpen.value, lessThan(0.5));
+      expect(painter.doorCaption, 'HALL OF FAME');
+      await leave(tester);
+    });
+
+    testWidgets('the contest screen no longer has a Hall of Fame button', (
+      tester,
+    ) async {
+      bigScreen(tester);
+      final repo = FakeContest(
+        current: overviewOf(contest: contestInfo(accepted: 0)),
+      );
+      final store = ContestStore(repo, clock: () => t0);
+      await tester.pumpWidget(
+        app(ContestScreen(store: store, canvases: FakeCanvas())),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('HALL OF FAME'), findsNothing);
+      expect(find.text('ENTER GALLERY'), findsOneWidget);
+      await tester.tap(find.text('ENTER GALLERY'));
+      await tester.pumpAndSettle();
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      expect(find.textContaining('The corridor is empty'), findsOneWidget);
+      await leave(tester);
+      store.dispose();
+    });
   });
 
   group('saving and sharing a painting', () {

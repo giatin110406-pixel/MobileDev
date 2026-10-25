@@ -114,20 +114,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     ),
                   ),
                   NeoIconButton(
-                    icon: Icons.emoji_events_outlined,
-                    tooltip: AppLocalizations.of(context).hallOfFameTitle,
-                    fill: NeoColors.coral,
-                    onPressed: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => HallOfFameScreen(
-                          repository: widget.repository,
-                          safety: widget.safety,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  NeoIconButton(
                     icon: _grid ? Icons.museum_outlined : Icons.grid_view,
                     tooltip: _grid
                         ? AppLocalizations.of(context).galleryViewCorridor
@@ -180,6 +166,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
             cache: _cache,
             onOpen: _open,
             caption: widget.title,
+            hallBuilder: (context) => HallOfFameScreen(
+              repository: widget.repository,
+              safety: widget.safety,
+            ),
             onNearEnd: _store.hasMore ? _store.loadMore : null,
           ),
         // With no entry yet the corridor is still there, with blank canvases on
