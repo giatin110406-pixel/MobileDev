@@ -2447,9 +2447,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get contestEnterGalleryEmpty => 'VÀO GALLERY';
 
   @override
-  String get hallOfFameButton => 'HALL OF FAME';
-
-  @override
   String get hallOfFameTitle => 'Hall of Fame';
 
   @override
@@ -2465,6 +2462,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String hallPodiumSemantics(String week) {
     return 'Bục vinh danh tuần $week. Chạm vào một bức tranh để xem kỹ hơn.';
   }
+
+  @override
+  String hallWeekTitle(String week) {
+    return 'Hall of Fame · Tuần $week';
+  }
+
+  @override
+  String get hallSwipeHint => 'Vuốt xuống để quay lại';
 
   @override
   String get hallEmpty =>
