@@ -1720,6 +1720,30 @@
     }
   },
   "searchMaybe": "CÓ THỂ LIÊN QUAN",
+  "searchCantTell": "Ảnh không cho biết điều này về một người, nên app không tìm theo hình. Hãy thử mô tả thứ có trong ảnh nhé.",
+  "searchWithFriend": "VỚI {name}?",
+  "@searchWithFriend": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "optionsTagged": "GẮN THẺ BẠN BÈ",
+  "composerTagHint": "Bài hiện “với Lan” và Lan cũng nhận được bài.",
+  "postWithNames": "với {names}",
+  "@postWithNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "postWithYou": "bạn",
+  "tagRemoveTitle": "Gỡ thẻ của bạn?",
+  "tagRemoveBody": "Bài đăng vẫn còn đó. Tên bạn được gỡ khỏi bài và người đăng không thể gắn lại.",
+  "tagRemoveConfirm": "GỠ THẺ",
+  "tagRemoved": "Đã gỡ thẻ.",
   "albumChipPrefix": "ALBUM:",
   "groupTabAlbums": "ALBUM",
   "albumsEmpty": "Chưa có album nào. Tạo album cho một chuyến đi hay một buổi tiệc: ảnh mọi người trong nhóm chụp những ngày đó sẽ gom về một chỗ.",

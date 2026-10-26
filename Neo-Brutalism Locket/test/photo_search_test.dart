@@ -31,6 +31,7 @@ class FakeBackend implements SearchBackend {
   final Map<String, RemotePost> posts;
   final Map<String, Float32List> vectors;
   final sentToFriend = <String, Set<String>>{};
+  final tagged = <String, Set<String>>{};
   int pages = 0;
 
   @override
@@ -68,9 +69,30 @@ class FakeBackend implements SearchBackend {
       (sentToFriend[friendId] ?? {}).intersection(postIds.toSet());
 
   @override
+  Future<Set<String>> taggedWith(String friendId, List<String> postIds) async =>
+      (tagged[friendId] ?? {}).intersection(postIds.toSet());
+
+  @override
+  Future<List<RemotePost>> postsTaggedWith(
+    String friendId, {
+    DateTime? from,
+    DateTime? until,
+    int limit = 120,
+  }) async => [
+    for (final id in tagged[friendId] ?? <String>{})
+      if (posts[id] != null &&
+          (from == null || !posts[id]!.createdAt.isBefore(from)) &&
+          (until == null || posts[id]!.createdAt.isBefore(until)))
+        posts[id]!,
+  ];
+
+  @override
   Future<List<RemotePost>> textMatches(String text, {int limit = 30}) async => [
     for (final p in posts.values)
-      if (p.caption.toLowerCase().contains(text.toLowerCase())) p,
+      if ('${p.caption} ${p.overlay?['place'] ?? ''}'.toLowerCase().contains(
+        text.toLowerCase(),
+      ))
+        p,
   ];
 
   @override
@@ -104,12 +126,14 @@ RemotePost post(
   String author = 'me',
   DateTime? at,
   String caption = '',
+  String? place,
 }) => RemotePost(
   id: uuid(n),
   authorId: author,
   mediaPath: '$author/$n.jpg',
   createdAt: at ?? DateTime(2026, 10, n),
   caption: caption,
+  overlay: place == null ? null : {'place': place},
 );
 
 void main() {
@@ -296,6 +320,122 @@ void main() {
       expect(out.strongCount, 1);
     });
 
+    test(
+      'only a sure match is clear; close to the best photo is "maybe"',
+      () async {
+        // cosines with the query (axis 0): 0.20, 0.18 (below the sure score)
+        Float32List at(double cos) {
+          final v = Float32List(embeddingDimension)
+            ..[0] = cos
+            ..[9] = 1;
+          return v;
+        }
+
+        final backend = FakeBackend(
+          {uuid(1): post(1), uuid(2): post(2)},
+          {uuid(1): at(0.20), uuid(2): at(0.18)},
+        );
+        final out = await PhotoSearch(
+          myId: 'me',
+          backend: backend,
+          index: SearchIndex(
+            userId: 'me',
+            source: backend,
+            folder: () async => dir,
+          ),
+          encodeText: (_) async => axisVector(0),
+        ).search('phone', friends: const [], vietnamese: false);
+        expect([for (final p in out.posts) p.id], [uuid(1), uuid(2)]);
+        expect(out.strongCount, 0, reason: 'shown, but not clear');
+      },
+    );
+
+    test(
+      'a photo that is close to everything does not count as clear',
+      () async {
+        Float32List photo(Map<int, double> axes) {
+          final v = Float32List(embeddingDimension);
+          axes.forEach((i, x) => v[i] = x);
+          return v;
+        }
+
+        final backend = FakeBackend(
+          {uuid(1): post(1), uuid(2): post(2)},
+          {
+            uuid(1): photo({0: 0.30, 5: 0.9}), // the umbrella
+            // the same score for the search, but close to many everyday things
+            uuid(2): photo({0: 0.30, 9: 0.29, 10: 0.29, 11: 0.29}),
+          },
+        );
+        final bank = QuestLabels(
+          labels: const ['a chair', 'a table', 'a person'],
+          vectors: Float32List.fromList([
+            ...axisVector(9),
+            ...axisVector(10),
+            ...axisVector(11),
+          ]),
+          dimension: embeddingDimension,
+          logitScale: 64,
+          matchScore: 0.5,
+          inputSize: 256,
+          quests: const {},
+        );
+        final out = await PhotoSearch(
+          myId: 'me',
+          backend: backend,
+          index: SearchIndex(
+            userId: 'me',
+            source: backend,
+            folder: () async => dir,
+          ),
+          encodeText: (_) async => axisVector(0),
+          loadBank: () async => bank,
+        ).search('umbrella', friends: const [], vietnamese: false);
+        expect([for (final p in out.posts) p.id], [uuid(1), uuid(2)]);
+        expect(out.strongCount, 1, reason: 'the hub photo is only "maybe"');
+      },
+    );
+
+    test(
+      'a search about what a person is does not look at the photos',
+      () async {
+        final backend = FakeBackend(
+          {uuid(1): post(1), uuid(2): post(2, caption: 'gay pride parade')},
+          {uuid(1): axisVector(0)},
+        );
+        final search = PhotoSearch(
+          myId: 'me',
+          backend: backend,
+          index: SearchIndex(
+            userId: 'me',
+            source: backend,
+            folder: () async => dir,
+          ),
+          encodeText: (_) async =>
+              throw StateError('the photos must not be searched'),
+        );
+        final out = await search.search(
+          'gay',
+          friends: const [],
+          vietnamese: false,
+        );
+        expect(out.declined, isTrue);
+        expect(
+          [for (final p in out.posts) p.id],
+          [uuid(2)],
+          reason: 'what the author wrote can still be found',
+        );
+
+        final vi = await search.search(
+          'đồng tính',
+          friends: const [],
+          vietnamese: true,
+        );
+        expect(vi.declined, isTrue);
+        expect(vi.posts, isEmpty);
+      },
+    );
+
     test('a caption match comes first, even with no vector', () async {
       final backend = FakeBackend(
         {uuid(1): post(1), uuid(9): post(9, caption: 'my dog Bin')},
@@ -307,25 +447,131 @@ void main() {
       expect([for (final p in out.posts) p.id], [uuid(9), uuid(1)]);
     });
 
-    test('who and when filter the photo matches', () async {
+    test(
+      'when is a rule; who only decides what is clear and what is maybe',
+      () async {
+        final backend = FakeBackend(
+          {
+            uuid(1): post(1, author: 'lan'),
+            uuid(2): post(2, author: 'minh'),
+            uuid(3): post(3), // mine, sent to Lan
+            uuid(4): post(4), // mine, not sent to Lan, not tagged
+            uuid(5): post(5, author: 'lan', at: DateTime(2024, 5)),
+          },
+          {
+            for (final n in [1, 2, 3, 4, 5]) uuid(n): axisVector(0),
+          },
+        )..sentToFriend['lan'] = {uuid(3)};
+        final out = await engine(backend).search(
+          'dog với Lan tháng này',
+          friends: const [(id: 'lan', name: 'Lan')],
+          vietnamese: false,
+        );
+        expect(out.strongCount, 2);
+        expect({for (final p in out.posts.take(2)) p.id}, {uuid(1), uuid(3)});
+        expect(
+          {for (final p in out.posts) p.id},
+          {uuid(1), uuid(2), uuid(3), uuid(4)},
+          reason: 'the others stay, after; 2024 is out of range',
+        );
+      },
+    );
+
+    test('a tag puts a photo with the friend first, sent or not', () async {
       final backend = FakeBackend(
         {
-          uuid(1): post(1, author: 'lan'),
-          uuid(2): post(2, author: 'minh'),
-          uuid(3): post(3), // mine, sent to Lan
-          uuid(4): post(4), // mine, not sent to Lan
-          uuid(5): post(5, author: 'lan', at: DateTime(2024, 5)),
+          uuid(1): post(1), // mine, tagged Lan, sent to nobody
+          uuid(2): post(2), // mine, nothing says Lan is in it
+          uuid(3): post(3, author: 'minh'), // Minh's, tagged Lan
         },
         {
-          for (final n in [1, 2, 3, 4, 5]) uuid(n): axisVector(0),
+          for (final n in [1, 2, 3]) uuid(n): axisVector(0),
         },
-      )..sentToFriend['lan'] = {uuid(3)};
+      )..tagged['lan'] = {uuid(1), uuid(3)};
       final out = await engine(backend).search(
-        'dog với Lan tháng này',
+        'dog với Lan',
         friends: const [(id: 'lan', name: 'Lan')],
         vietnamese: false,
       );
-      expect({for (final p in out.posts) p.id}, {uuid(1), uuid(3)});
+      expect(out.strongCount, 2);
+      expect({for (final p in out.posts.take(2)) p.id}, {uuid(1), uuid(3)});
+      expect(out.posts.last.id, uuid(2), reason: 'untagged is not dropped');
+    });
+
+    test('a name without "with" is offered; pinning applies it', () async {
+      final backend = FakeBackend(
+        {uuid(1): post(1), uuid(2): post(2)},
+        {uuid(1): axisVector(0), uuid(2): axisVector(0)},
+      )..tagged['lan'] = {uuid(1)};
+      const friends = [(id: 'lan', name: 'Lan')];
+      final search = engine(backend);
+
+      final offered = await search.search(
+        'Lan dog',
+        friends: friends,
+        vietnamese: false,
+      );
+      expect(offered.query.friendId, isNull);
+      expect(offered.query.friendHints.single.id, 'lan');
+      expect(offered.strongCount, 2, reason: 'nothing was filtered');
+
+      final pinned = await search.search(
+        'Lan dog',
+        friends: friends,
+        vietnamese: false,
+        pinFriend: 'lan',
+      );
+      expect(pinned.query.friendId, 'lan');
+      expect(pinned.strongCount, 1);
+      expect(pinned.posts.first.id, uuid(1));
+    });
+
+    test('a place that names a word helps, and is never required', () async {
+      final backend = FakeBackend(
+        {
+          uuid(1): post(1), // no place at all
+          uuid(2): post(2, place: 'Vung Tau'),
+          uuid(3): post(3, place: 'Da Lat'),
+        },
+        {
+          for (final n in [1, 2, 3]) uuid(n): axisVector(0),
+        },
+      );
+      final out = await engine(
+        backend,
+      ).search('dog Vung', friends: const [], vietnamese: false);
+      expect(out.posts.first.id, uuid(2), reason: 'its place names the word');
+      expect(
+        {for (final p in out.posts) p.id},
+        {uuid(1), uuid(2), uuid(3)},
+        reason: 'photos without a place are still found by the picture',
+      );
+    });
+
+    test('a caption or place can find a post that has no vector', () async {
+      final backend = FakeBackend(
+        {uuid(1): post(1), uuid(2): post(2, place: 'Vung Tau')},
+        {uuid(1): axisVector(0)},
+      );
+      final out = await engine(
+        backend,
+      ).search('dog Vung', friends: const [], vietnamese: false);
+      expect([for (final p in out.posts) p.id], [uuid(1), uuid(2)]);
+      expect(out.strongCount, 1, reason: 'the one by words alone is "maybe"');
+    });
+
+    test('only who / when also lists photos tagged with the friend', () async {
+      final backend = FakeBackend({
+        uuid(1): post(1, author: 'lan'),
+        uuid(3): post(3, author: 'minh'), // Minh's photo, Lan is in it
+        uuid(2): post(2, author: 'minh'),
+      }, {})..tagged['lan'] = {uuid(3)};
+      final out = await engine(backend, ready: false).search(
+        'ảnh với Lan',
+        friends: const [(id: 'lan', name: 'Lan')],
+        vietnamese: true,
+      );
+      expect([for (final p in out.posts) p.id], [uuid(3), uuid(1)]);
     });
 
     test('only who / when: newest first, no model needed', () async {

@@ -29,6 +29,7 @@ void main() {
   Future<List<(List<String>, int)>> pump(
     WidgetTester tester, {
     bool modelsReady = true,
+    bool bank = true,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -50,6 +51,9 @@ void main() {
         folder: () async => dir,
       ),
       clock: () => DateTime(2026, 10, 22),
+      // Reading the label bank from the asset bundle works once per test file;
+      // a test that needs no bank says so.
+      loadBank: bank ? null : () async => throw StateError('no bank'),
       encodeText: modelsReady
           ? (english) async => axisVector(english.contains('dog') ? 0 : 3)
           : null,
@@ -90,6 +94,20 @@ void main() {
     await tester.pump();
   }
 
+  /// Waits until a search has shown its result count (and no spinner).
+  Future<void> results(WidgetTester tester) async {
+    for (var i = 0; i < 100; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+      if (find.textContaining('PHOTOS').evaluate().isNotEmpty &&
+          find.byType(CircularProgressIndicator).evaluate().isEmpty) {
+        return;
+      }
+    }
+  }
+
   testWidgets('typing a search shows the matching photos and the filters it '
       'understood; clearing brings the history back', (tester) async {
     final opened = await pump(tester);
@@ -97,16 +115,43 @@ void main() {
 
     await type(tester, 'dog with Lan');
     expect(find.text('Lan'), findsOneWidget, reason: 'friend chip');
-    expect(find.text('1 PHOTOS'), findsOneWidget);
-    expect(find.byType(RemoteImage), findsOneWidget);
-    await tester.tap(find.byType(RemoteImage));
-    expect(opened.single.$1, [uuid(1)]);
+    // Lan's dog photo first; my own dog photo, which does not say Lan is in
+    // it, is still there after it.
+    expect(find.text('2 PHOTOS'), findsOneWidget);
+    expect(find.byType(RemoteImage), findsNWidgets(2));
+    await tester.tap(find.byType(RemoteImage).first);
+    expect(opened.single.$1, [uuid(1), uuid(2)]);
     expect(opened.single.$2, 0);
 
     await tester.tap(find.byTooltip('Clear search'));
     await tester.pumpAndSettle();
     expect(find.text('ALL'), findsOneWidget);
     expect(find.byType(RemoteImage), findsNWidgets(3));
+  });
+
+  testWidgets('a name typed without "with" is offered as a chip; a tap applies '
+      'it', (tester) async {
+    await pump(tester, bank: false);
+    await type(tester, 'Lan dog');
+    await results(tester);
+    // nothing applied yet: both dog photos are clear matches
+    expect(find.text('WITH LAN?'), findsOneWidget);
+    expect(find.text('2 PHOTOS'), findsOneWidget);
+
+    await tester.tap(find.text('WITH LAN?'));
+    await results(tester);
+    expect(find.text('Lan'), findsOneWidget, reason: 'now a friend filter');
+    expect(find.text('WITH LAN?'), findsNothing);
+  });
+
+  testWidgets('a search about what a person is says photos cannot tell', (
+    tester,
+  ) async {
+    await pump(tester, bank: false);
+    await type(tester, 'gay');
+    await results(tester);
+    expect(find.textContaining("can't tell"), findsOneWidget);
+    expect(find.byType(RemoteImage), findsNothing);
   });
 
   testWidgets('a Vietnamese search without the language pack offers it', (

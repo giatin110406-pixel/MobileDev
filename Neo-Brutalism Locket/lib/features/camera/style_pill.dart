@@ -35,7 +35,7 @@ class _StylePillState extends State<StylePill> {
   static const _sideSize = Size(88, 34);
 
   /// Distance between the centres of the current pill and a neighbour.
-  static const _spacing = 104.0;
+  static const _spacing = 118.0;
 
   /// Drag distance (px) or fling speed (px/s) that counts as a swipe.
   static const _swipeDistance = 24.0;

@@ -135,6 +135,8 @@ class FeedScreen extends StatefulWidget {
     this.onViewed,
     this.onPostMenu,
     this.activity = const {},
+    this.tags = const {},
+    this.onRemoveMyTag,
     this.initialPage = 0,
     this.filterPill,
   });
@@ -159,6 +161,12 @@ class FeedScreen extends StatefulWidget {
 
   /// Reactions and viewers of my posts, by post id.
   final Map<String, PostActivity> activity;
+
+  /// Who each server post is "with" (tagged user ids), by post id.
+  final Map<String, List<String>> tags;
+
+  /// Tap on "with you": the tagged person wants their name off the post.
+  final Future<void> Function(RemotePost post)? onRemoveMyTag;
 
   final List<FeedEntry> entries;
   final List<PocketFriend> friends;
@@ -616,9 +624,58 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
         right: 16,
         child: OverlayLabels(overlay: PostOverlay.fromJson(post.overlay)),
       ),
+      ?_withLine(post),
       if (post.caption.isNotEmpty) _caption(sampleText(context, post.caption)),
     ],
   );
+
+  /// "with Lan, Minh" over the photo's top left; null when nobody is tagged
+  /// that this person knows. Tapping it when it says "you" offers to take the
+  /// name off.
+  Widget? _withLine(RemotePost post) {
+    final l10n = AppLocalizations.of(context);
+    final me = widget.self.userId;
+    final ids = widget.tags[post.id] ?? const <String>[];
+    final names = [
+      for (final id in ids)
+        if (id == me)
+          l10n.postWithYou
+        else if (widget.friends.any((f) => f.id == id))
+          _nameOf(id),
+    ];
+    if (names.isEmpty) return null;
+    final mine = me != null && ids.contains(me);
+    return Positioned(
+      top: 16,
+      left: 16,
+      right: 140,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: GestureDetector(
+          onTap: mine && widget.onRemoveMyTag != null
+              ? () => widget.onRemoveMyTag!(post)
+              : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: NeoColors.ink.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              l10n.postWithNames(names.join(', ')),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: NeoColors.surface,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _questCard(QuestPost post) => Stack(
     fit: StackFit.expand,

@@ -229,6 +229,8 @@ void main() {
       ValueChanged<FeedEntry>? onViewed,
       ValueChanged<RemotePost>? onMenu,
       Map<String, PostActivity> activity = const {},
+      Map<String, List<String>> tags = const {},
+      Future<void> Function(RemotePost)? onRemoveMyTag,
     }) async {
       tester.view.physicalSize = const Size(400, 900);
       tester.view.devicePixelRatio = 1;
@@ -249,6 +251,8 @@ void main() {
               onViewed: onViewed,
               onPostMenu: onMenu,
               activity: activity,
+              tags: tags,
+              onRemoveMyTag: onRemoveMyTag,
             ),
           ),
         ),
@@ -276,6 +280,64 @@ void main() {
       await tester.tap(find.byTooltip('Send reply'));
       await tester.pumpAndSettle();
       expect(replies, ['p1:love it']);
+    });
+
+    testWidgets('a tagged post says who it is with, by first name', (
+      tester,
+    ) async {
+      await pumpFeed(
+        tester,
+        entries: [FeedEntry.remote(post('p1', 'ava'))],
+        tags: {
+          'p1': ['ava'],
+        },
+      );
+      expect(find.text('with Ava'), findsOneWidget);
+    });
+
+    testWidgets('people I do not know are not named', (tester) async {
+      await pumpFeed(
+        tester,
+        entries: [FeedEntry.remote(post('p1', 'ava'))],
+        tags: {
+          'p1': ['someone-else'],
+        },
+      );
+      expect(find.textContaining('with '), findsNothing);
+    });
+
+    testWidgets('"with you" can be tapped to take my name off', (tester) async {
+      final removed = <String>[];
+      await pumpFeed(
+        tester,
+        entries: [FeedEntry.remote(post('p1', 'ava'))],
+        tags: {
+          'p1': ['me', 'ava'],
+        },
+        onRemoveMyTag: (p) async => removed.add(p.id),
+      );
+      await tester.tap(find.text('with you, Ava'));
+      // the photo also listens for a double tap, so a single tap is told
+      // apart from it after a moment
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(removed, ['p1']);
+    });
+
+    testWidgets('a tag that is not mine does nothing when tapped', (
+      tester,
+    ) async {
+      final removed = <String>[];
+      await pumpFeed(
+        tester,
+        entries: [FeedEntry.remote(post('p1', 'ava'))],
+        tags: {
+          'p1': ['ava'],
+        },
+        onRemoveMyTag: (p) async => removed.add(p.id),
+      );
+      await tester.tap(find.text('with Ava'));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(removed, isEmpty);
     });
 
     testWidgets('my own post has no reply bar but shows who saw it', (
