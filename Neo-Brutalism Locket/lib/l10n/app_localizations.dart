@@ -4646,6 +4646,66 @@ abstract class AppLocalizations {
   /// **'CÓ THỂ LIÊN QUAN'**
   String get searchMaybe;
 
+  /// No description provided for @searchCantTell.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh không cho biết điều này về một người, nên app không tìm theo hình. Hãy thử mô tả thứ có trong ảnh nhé.'**
+  String get searchCantTell;
+
+  /// No description provided for @searchWithFriend.
+  ///
+  /// In vi, this message translates to:
+  /// **'VỚI {name}?'**
+  String searchWithFriend(String name);
+
+  /// No description provided for @optionsTagged.
+  ///
+  /// In vi, this message translates to:
+  /// **'GẮN THẺ BẠN BÈ'**
+  String get optionsTagged;
+
+  /// No description provided for @composerTagHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài hiện “với Lan” và Lan cũng nhận được bài.'**
+  String get composerTagHint;
+
+  /// No description provided for @postWithNames.
+  ///
+  /// In vi, this message translates to:
+  /// **'với {names}'**
+  String postWithNames(String names);
+
+  /// No description provided for @postWithYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'bạn'**
+  String get postWithYou;
+
+  /// No description provided for @tagRemoveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ thẻ của bạn?'**
+  String get tagRemoveTitle;
+
+  /// No description provided for @tagRemoveBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài đăng vẫn còn đó. Tên bạn được gỡ khỏi bài và người đăng không thể gắn lại.'**
+  String get tagRemoveBody;
+
+  /// No description provided for @tagRemoveConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'GỠ THẺ'**
+  String get tagRemoveConfirm;
+
+  /// No description provided for @tagRemoved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gỡ thẻ.'**
+  String get tagRemoved;
+
   /// No description provided for @albumChipPrefix.
   ///
   /// In vi, this message translates to:

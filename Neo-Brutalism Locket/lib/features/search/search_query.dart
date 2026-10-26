@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 /// What a typed search asks for (archive-ai-search-plan.md, C3): who and when
 /// become filters, because a photo model cannot see them; what is left is the
 /// picture to look for.
@@ -11,6 +13,7 @@ class SearchQuery {
     this.mine = false,
     this.from,
     this.until,
+    this.friendHints = const [],
   });
 
   /// What to look for in the photo, in the typed language, with the glossary
@@ -26,6 +29,11 @@ class SearchQuery {
   /// Inclusive start / exclusive end, local time.
   final DateTime? from;
   final DateTime? until;
+
+  /// Friends whose name is in the what-to-look-for part of the search without a
+  /// "with" in front ("Lan ăn lẩu"). Not applied: the screen offers them as
+  /// one-tap filters, since a name can also be an ordinary word.
+  final List<SearchFriend> friendHints;
 
   bool get hasFilters => friendId != null || mine || from != null;
 }
@@ -88,6 +96,7 @@ SearchQuery parseSearchQuery(
   String typed, {
   required List<SearchFriend> friends,
   required DateTime now,
+  String? pinFriend,
 }) {
   var text = ' ${typed.trim().replaceAll(_space, ' ')} ';
   String? friendId;
@@ -139,7 +148,70 @@ SearchQuery parseSearchQuery(
     until = b;
   }
 
+  DateTime dayAt(int offset) =>
+      DateTime(today.year, today.month, today.day + offset);
+
+  // A remembered span is never exact: "6 months ago" means roughly then, so
+  // the range is widened by a quarter of the span (at least a few days).
+  void ago(double days, int least) {
+    final slack = math.max(least, (days * 0.25).round());
+    final centre = days.round();
+    final end = dayAt(-centre + slack + 1);
+    range(dayAt(-centre - slack), end.isAfter(dayAt(1)) ? dayAt(1) : end);
+  }
+
   final rules = <RegExp, void Function(RegExpMatch)>{
+    // These come first: "3 nam truoc" must not be read as "nam truoc", nor
+    // "half a year ago" as "a year ago".
+    RegExp(
+      ' $_roughly(?:nua nam|half a year|half year|half-year) '
+      '(?:truoc|roi|ago)(?= )',
+    ): (_) =>
+        ago(182.5, 20),
+    RegExp(' $_roughly($_count) ($_unit) (?:truoc|roi|ago)(?= )'): (m) => ago(
+      _countOf(m.group(1)!) * _daysIn(m.group(2)!),
+      _leastSlack(m.group(2)!),
+    ),
+    RegExp(
+      ' (?:(?:a )?few|several|vai|may) ($_unit) (?:truoc|roi|ago)(?= )',
+    ): (m) {
+      final unit = _daysIn(m.group(1)!);
+      range(dayAt(-(5 * unit).round()), dayAt(-(1.5 * unit).round() + 1));
+    },
+    RegExp(' (?:hom kia|the day before yesterday)(?= )'): (_) =>
+        range(dayAt(-2), dayAt(-1)),
+    // "mua he nam ngoai", "last summer", "mua dong 2024"
+    RegExp(
+      ' (?:mua (he|dong|xuan|thu)|(?:in|last|this) '
+      '(summer|winter|spring|autumn|fall))'
+      r'(?: (nam ngoai|nam truoc|nam roi|last year|nam nay|this year|'
+      r'(?:(?:nam|in) )?(20\d\d)))?(?= )',
+    ): (m) {
+      final start = switch (m.group(1) ?? m.group(2)) {
+        'xuan' || 'spring' => 3,
+        'he' || 'summer' => 6,
+        'thu' || 'autumn' || 'fall' => 9,
+        _ => 12,
+      };
+      final phrase = m.group(3);
+      final int year;
+      if (m.group(4) != null) {
+        year = int.parse(m.group(4)!);
+      } else if (phrase == null) {
+        // the latest one that has begun
+        year = DateTime(now.year, start).isAfter(today)
+            ? now.year - 1
+            : now.year;
+      } else {
+        final past =
+            phrase.contains('ngoai') ||
+            phrase.contains('truoc') ||
+            phrase.contains('roi') ||
+            phrase.contains('last');
+        year = past ? now.year - 1 : now.year;
+      }
+      range(DateTime(year, start), DateTime(year, start + 3));
+    },
     RegExp(' (?:hom nay|today)(?= )'): (_) =>
         range(today, today.add(const Duration(days: 1))),
     RegExp(' (?:hom qua|yesterday)(?= )'): (_) =>
@@ -186,6 +258,26 @@ SearchQuery parseSearchQuery(
   ).firstMatch(content.toLowerCase());
   if (filler != null) content = content.substring(filler.end).trim();
 
+  // A name with no "with" in front: offered, not applied. When the person
+  // already tapped the offer ([pinFriend]) it is applied and the name leaves
+  // the picture part of the search.
+  var hints = const <SearchFriend>[];
+  if (friendId == null) {
+    final pinned = friends.where((f) => f.id == pinFriend).firstOrNull;
+    if (pinned != null) {
+      friendId = pinned.id;
+      for (final form in _nameForms(pinned)) {
+        final cut = _cutWord(content, form);
+        if (cut != null) {
+          content = cut;
+          break;
+        }
+      }
+    } else {
+      hints = _friendHints(content, friends);
+    }
+  }
+
   // Glossary, matched without accents, written in English in place.
   for (final entry in searchGlossary.entries) {
     final f = _fold(content);
@@ -204,5 +296,108 @@ SearchQuery parseSearchQuery(
     mine: mine,
     from: from,
     until: until,
+    friendHints: hints,
   );
+}
+
+// Words that only say "about": the range is widened anyway.
+const _roughly =
+    '(?:(?:tam|khoang|gan|hon|around|about|roughly|approximately|nearly|'
+    'cach day) )*';
+const _count =
+    r'\d{1,3}|mot|hai|ba|bon|nam|sau|bay|tam|chin|muoi|one|two|three|four|'
+    'five|six|seven|eight|nine|ten|an?';
+const _unit = 'ngay|tuan|thang|nam|days?|weeks?|months?|years?';
+
+const _numberWords = {
+  'mot': 1,
+  'hai': 2,
+  'ba': 3,
+  'bon': 4,
+  'nam': 5,
+  'sau': 6,
+  'bay': 7,
+  'tam': 8,
+  'chin': 9,
+  'muoi': 10,
+  'one': 1,
+  'two': 2,
+  'three': 3,
+  'four': 4,
+  'five': 5,
+  'six': 6,
+  'seven': 7,
+  'eight': 8,
+  'nine': 9,
+  'ten': 10,
+  'a': 1,
+  'an': 1,
+};
+
+double _countOf(String word) =>
+    (_numberWords[word] ?? int.tryParse(word) ?? 1).toDouble();
+
+/// Days in one [unit] (a word of [_unit]).
+double _daysIn(String unit) {
+  if (unit == 'ngay' || unit.startsWith('day')) return 1;
+  if (unit == 'tuan' || unit.startsWith('week')) return 7;
+  if (unit == 'thang' || unit.startsWith('month')) return 30.44;
+  return 365.25; // nam / year
+}
+
+/// The least widening, in days, for a span in this unit.
+int _leastSlack(String unit) => switch (_daysIn(unit)) {
+  <= 1 => 2,
+  <= 7 => 5,
+  <= 31 => 20,
+  _ => 90,
+};
+
+/// The folded spellings a friend can be called by: the full name, then the
+/// first name.
+List<String> _nameForms(SearchFriend friend) {
+  final full = foldAccents(friend.name.trim());
+  final first = full.split(' ').first;
+  return [
+    if (full.isNotEmpty) full,
+    if (first.isNotEmpty && first != full) first,
+  ];
+}
+
+RegExp _wholeWord(String folded) => RegExp(
+  r'(?<![\p{L}\p{N}])' + RegExp.escape(folded) + r'(?![\p{L}\p{N}])',
+  unicode: true,
+);
+
+/// [content] without the first whole word [name] (accent-folded); null when
+/// it is not there.
+String? _cutWord(String content, String name) {
+  final folded = _fold(content);
+  final m = _wholeWord(name).firstMatch(folded.text);
+  if (m == null) return null;
+  return '${content.substring(0, folded.origin[m.start])} '
+          '${content.substring(folded.origin[m.end])}'
+      .replaceAll(_space, ' ')
+      .trim();
+}
+
+/// Friends named in [content]; "Lan Anh" typed in full is not also "Lan".
+List<SearchFriend> _friendHints(String content, List<SearchFriend> friends) {
+  final text = _fold(content).text;
+  final found = <(SearchFriend, String)>[];
+  for (final friend in friends) {
+    for (final form in _nameForms(friend)) {
+      if (_wholeWord(form).hasMatch(text)) {
+        found.add((friend, form));
+        break;
+      }
+    }
+  }
+  return [
+    for (final (friend, form) in found)
+      if (!found.any(
+        (o) => o.$2.length > form.length && ' ${o.$2} '.contains(' $form '),
+      ))
+        friend,
+  ].take(3).toList();
 }

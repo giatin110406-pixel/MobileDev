@@ -1714,6 +1714,30 @@
     }
   },
   "searchMaybe": "MAYBE RELATED",
+  "searchCantTell": "A photo can't tell this about a person, so the pictures were not searched. Try describing what is in the picture.",
+  "searchWithFriend": "WITH {name}?",
+  "@searchWithFriend": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "optionsTagged": "TAG FRIENDS",
+  "composerTagHint": "The post shows “with Lan”, and Lan gets it too.",
+  "postWithNames": "with {names}",
+  "@postWithNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "postWithYou": "you",
+  "tagRemoveTitle": "Remove your tag?",
+  "tagRemoveBody": "The post stays. Your name comes off it, and the author cannot put it back.",
+  "tagRemoveConfirm": "REMOVE MY TAG",
+  "tagRemoved": "Tag removed.",
   "albumChipPrefix": "ALBUM:",
   "groupTabAlbums": "ALBUMS",
   "albumsEmpty": "No albums yet. Start one for a trip or an evening out: the photos the group takes on those days are collected in one place.",

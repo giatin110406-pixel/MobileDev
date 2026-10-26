@@ -162,6 +162,7 @@ class SupabasePostsRepository implements PostsRepository {
       await _db.rpc('create_post', params: params..remove('p_embedding'));
     }
     await _addToAlbums(post);
+    await _tagPeople(post);
   });
 
   /// Puts the sent post in the albums chosen for it. A refusal (the album is
@@ -179,6 +180,22 @@ class SupabasePostsRepository implements PostsRepository {
         final code = int.tryParse(error.code ?? '');
         if (code != null && code >= 500) rethrow;
       }
+    }
+  }
+
+  /// Records who the post is "with". Same rule as the albums: a refusal, or a
+  /// database without post tags (PGRST202), is not worth losing the post for;
+  /// a dropped connection throws, so the whole send is tried again.
+  Future<void> _tagPeople(PendingPost post) async {
+    if (post.taggedIds.isEmpty) return;
+    try {
+      await _db.rpc(
+        'set_post_tags',
+        params: {'p_post': post.id, 'p_tagged': post.taggedIds},
+      );
+    } on sb.PostgrestException catch (error) {
+      final code = int.tryParse(error.code ?? '');
+      if (code != null && code >= 500) rethrow;
     }
   }
 

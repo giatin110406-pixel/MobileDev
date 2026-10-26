@@ -96,6 +96,7 @@ class PendingPost {
     this.recipients,
     this.embedding,
     this.albumIds = const [],
+    this.taggedIds = const [],
     this.attempts = 0,
   });
 
@@ -128,6 +129,9 @@ class PendingPost {
 
   /// Group albums this post goes into once it is on the server.
   final List<String> albumIds;
+
+  /// Friends the author tagged ("with Lan"); the server sends them the post.
+  final List<String> taggedIds;
   final DateTime createdAt;
 
   /// Failed tries that were not just a missing connection.
@@ -154,6 +158,7 @@ class PendingPost {
     recipients: recipients,
     embedding: embedding,
     albumIds: albumIds,
+    taggedIds: taggedIds,
     attempts: attempts + 1,
   );
 
@@ -171,6 +176,7 @@ class PendingPost {
     'recipients': recipients,
     'embedding': embedding,
     'albumIds': albumIds,
+    'taggedIds': taggedIds,
     'createdAt': createdAt.toIso8601String(),
     'attempts': attempts,
   };
@@ -189,6 +195,7 @@ class PendingPost {
     recipients: (json['recipients'] as List?)?.cast<String>(),
     embedding: json['embedding'] as String?,
     albumIds: (json['albumIds'] as List?)?.cast<String>() ?? const [],
+    taggedIds: (json['taggedIds'] as List?)?.cast<String>() ?? const [],
     createdAt: DateTime.parse(json['createdAt'] as String),
     attempts: json['attempts'] as int? ?? 0,
   );

@@ -44,6 +44,7 @@ import 'package:neo_brutalism_locket/features/posts/media_actions.dart';
 import 'package:neo_brutalism_locket/features/posts/post_models.dart';
 import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_outbox.dart';
+import 'package:neo_brutalism_locket/features/posts/post_tags.dart';
 import 'package:neo_brutalism_locket/features/posts/posts_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/posts_store.dart';
 import 'package:neo_brutalism_locket/features/auth/account_session.dart';
@@ -208,6 +209,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   PostsStore? _postsStore;
   ChatStore? _chat;
   InteractionsStore? _interactions;
+  PostTagsStore? _tags;
   SafetyRepository? _safety;
   WidgetUpdater? _widget;
   Future<void> Function()? _beforeSignOut;
@@ -279,6 +281,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _postsStore = posts
         ..addListener(_onPostsChanged)
         ..addListener(_onPostsLoaded);
+      _tags = PostTagsStore(SupabasePostTagsSource(), myId: session.user.id)
+        ..addListener(_onPostsChanged);
       _chat =
           ChatStore(
               widget.chatRepository ??
@@ -367,6 +371,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     _postsStore
       ?..removeListener(_onPostsChanged)
       ..removeListener(_onPostsLoaded)
+      ..dispose();
+    _tags
+      ?..removeListener(_onPostsChanged)
       ..dispose();
     _outbox?.dispose();
     _chat
@@ -568,6 +575,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (signature == _lastLoadedPosts) return;
     _lastLoadedPosts = signature;
     _interactions?.load(posts);
+    _tags?.load(posts);
     _refreshWidget();
     _warmFeedPictures(posts);
   }
@@ -657,6 +665,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     int? friendCount,
     File? original,
     List<String> albumIds = const [],
+    List<String> taggedIds = const [],
   }) => _queueAndSend(
     (outbox) => outbox.enqueue(
       source: file,
@@ -667,6 +676,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       recipients: recipients,
       original: original,
       albumIds: albumIds,
+      taggedIds: taggedIds,
     ),
     recipients: recipients,
     friendCount: friendCount,
@@ -731,6 +741,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       friendCount: result.recipients?.length ?? store.friends.length,
       original: _originalToCompare(photo, processed),
       albumIds: result.albumIds,
+      taggedIds: result.taggedIds,
     );
   }
 
@@ -752,6 +763,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       friendCount: result.recipients?.length ?? store.friends.length,
       original: _originalToCompare(photo, processed),
       albumIds: result.albumIds,
+      taggedIds: result.taggedIds,
     );
   }
 
@@ -789,6 +801,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         overlay: result.overlay,
         recipients: result.recipients,
         albumIds: result.albumIds,
+        taggedIds: result.taggedIds,
       ),
       recipients: result.recipients,
       friendCount: result.recipients?.length ?? store.friends.length,
@@ -1402,6 +1415,52 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     await _sendSocialMessage('', photo.processedPath ?? photo.originalPath);
   }
 
+  /// "with you" on a post: the tagged person takes their name off it.
+  Future<void> _removeMyTag(RemotePost post) async {
+    final remove = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          backgroundColor: NeoColors.surface,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: NeoColors.ink, width: 2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          title: Text(
+            l10n.tagRemoveTitle,
+            style: const TextStyle(
+              color: NeoColors.ink,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: Text(
+            l10n.tagRemoveBody,
+            style: const TextStyle(color: NeoColors.ink),
+          ),
+          actions: [
+            TextButton(
+              onPressed: Haptics.tap(() => Navigator.pop(context, false)),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: Haptics.tap(() => Navigator.pop(context, true)),
+              child: Text(l10n.tagRemoveConfirm),
+            ),
+          ],
+        );
+      },
+    );
+    if (remove != true || !mounted) return;
+    final l10n = AppLocalizations.of(context);
+    try {
+      await _tags?.removeMine(post.id);
+      if (mounted) _notify(l10n.tagRemoved);
+    } catch (_) {
+      if (mounted) _notify(l10n.errUnknown);
+    }
+  }
+
   Future<void> _removeActiveFriend() async {
     final friend = _activeFriend;
     if (friend == null) return;
@@ -1998,6 +2057,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     onViewed: _online ? _onFeedViewed : null,
     onPostMenu: _online ? _showPostMenu : null,
     activity: _interactions?.activity ?? const {},
+    tags: _tags?.tags ?? const {},
+    onRemoveMyTag: _online ? _removeMyTag : null,
   );
 
   /// The weekly contest as a menu tab (signed-in only: it lives on the server).

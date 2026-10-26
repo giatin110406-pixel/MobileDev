@@ -10,6 +10,17 @@ abstract interface class SearchBackend implements EmbeddingSource {
   /// Which of my [postIds] went to [friendId].
   Future<Set<String>> sentTo(String friendId, List<String> postIds);
 
+  /// Which of [postIds] are tagged "with" [friendId].
+  Future<Set<String>> taggedWith(String friendId, List<String> postIds);
+
+  /// Posts that have [friendId] tagged, newest first, in a date range.
+  Future<List<RemotePost>> postsTaggedWith(
+    String friendId, {
+    DateTime? from,
+    DateTime? until,
+    int limit,
+  });
+
   /// Posts whose caption or place contains [text] (as typed).
   Future<List<RemotePost>> textMatches(String text, {int limit});
 
@@ -88,6 +99,45 @@ class SupabaseSearchBackend implements SearchBackend {
         .eq('user_id', friendId)
         .inFilter('post_id', postIds);
     return {for (final r in rows) r['post_id'] as String};
+  }
+
+  @override
+  Future<Set<String>> taggedWith(String friendId, List<String> postIds) async {
+    if (postIds.isEmpty) return const {};
+    final rows = await _db
+        .from('post_tags')
+        .select('post_id')
+        .eq('user_id', friendId)
+        .inFilter('post_id', postIds);
+    return {for (final r in rows) r['post_id'] as String};
+  }
+
+  @override
+  Future<List<RemotePost>> postsTaggedWith(
+    String friendId, {
+    DateTime? from,
+    DateTime? until,
+    int limit = 120,
+  }) async {
+    final ids = await _db
+        .from('post_tags')
+        .select('post_id')
+        .eq('user_id', friendId)
+        .limit(1000);
+    final tagged = [for (final r in ids) r['post_id'] as String];
+    if (tagged.isEmpty) return const [];
+    var query = _db
+        .from('posts')
+        .select(RemotePost.columns)
+        .inFilter('id', tagged);
+    if (from != null) {
+      query = query.gte('created_at', from.toUtc().toIso8601String());
+    }
+    if (until != null) {
+      query = query.lt('created_at', until.toUtc().toIso8601String());
+    }
+    final rows = await query.order('created_at', ascending: false).limit(limit);
+    return [for (final r in rows) RemotePost.fromRow(r)];
   }
 
   @override

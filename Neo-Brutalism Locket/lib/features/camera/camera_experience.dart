@@ -1002,7 +1002,8 @@ class CameraTabState extends State<CameraTab> {
     final hasOptions =
         composer.showTime ||
         composer.place != null ||
-        composer.selectedAlbums.isNotEmpty;
+        composer.selectedAlbums.isNotEmpty ||
+        composer.tagged.isNotEmpty;
     return ListenableBuilder(
       listenable: Listenable.merge([composer, composer.captionFocus]),
       builder: (context, _) => GestureDetector(
@@ -1050,11 +1051,12 @@ class CameraTabState extends State<CameraTab> {
                     ),
                   ],
                 ),
-                // The quest card stays laid out (unseen) under the pill, so
-                // the slot is exactly as tall as on the live camera.
+                // The quest card stays laid out (unseen) under the pill; the
+                // slot is at least tall enough for the pill and APPLY below it.
                 strip: Stack(
                   clipBehavior: Clip.none,
                   children: [
+                    const SizedBox(height: 112),
                     Visibility(
                       visible: false,
                       maintainSize: true,
@@ -1210,6 +1212,24 @@ class CameraTabState extends State<CameraTab> {
                                   onTap: () => composer.toggleAlbum(album.id),
                                 ),
                             ]),
+                          if (widget.friends.isNotEmpty)
+                            _optionGroup(l10n.optionsTagged, [
+                              for (final friend in widget.friends)
+                                _optionPill(
+                                  leading: FriendAvatar(
+                                    friend: friend.person.toPocketFriend(),
+                                    size: 22,
+                                  ),
+                                  label: friend.person.displayName
+                                      .split(' ')
+                                      .first,
+                                  selected: composer.tagged.contains(
+                                    friend.person.id,
+                                  ),
+                                  onTap: () =>
+                                      composer.toggleTag(friend.person.id),
+                                ),
+                            ]),
                         ],
                       ),
                     ),
@@ -1247,6 +1267,7 @@ class CameraTabState extends State<CameraTab> {
   /// A pill in the options popup: sunken and yellow while chosen.
   Widget _optionPill({
     IconData? icon,
+    Widget? leading,
     required String label,
     required bool selected,
     required VoidCallback? onTap,
@@ -1272,6 +1293,7 @@ class CameraTabState extends State<CameraTab> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (leading != null) ...[leading, const SizedBox(width: 8)],
             if (icon != null) ...[
               Icon(icon, size: 16, color: NeoColors.ink),
               const SizedBox(width: 6),
@@ -1857,17 +1879,15 @@ class CameraTabState extends State<CameraTab> {
     final picked = _pendingStyle ?? current;
     final canApply = !_processing && picked != current;
     return Center(
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: StylePill(
-              value: picked,
-              enabled: !_processing,
-              onChanged: (styleType) =>
-                  setState(() => _pendingStyle = styleType),
-            ),
+          StylePill(
+            value: picked,
+            enabled: !_processing,
+            onChanged: (styleType) => setState(() => _pendingStyle = styleType),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(height: 10),
           AnimatedOpacity(
             duration: const Duration(milliseconds: 120),
             opacity: canApply ? 1 : 0.4,

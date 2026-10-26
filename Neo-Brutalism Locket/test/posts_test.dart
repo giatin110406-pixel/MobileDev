@@ -558,9 +558,57 @@ void main() {
       expect(result?.recipients, isNull);
     });
 
+    testWidgets('tagging a friend is separate from who gets the post', (
+      tester,
+    ) async {
+      final result = await run(tester, () async {
+        // the friend's name is on a pill in "who's in the photo", after the
+        // avatars that pick who gets it
+        await tester.scrollUntilVisible(
+          find.text("TAG FRIENDS"),
+          100,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.text('bo').last);
+        await tester.pumpAndSettle();
+        expect(find.text('POST TO ALL FRIENDS'), findsOneWidget);
+        await tester.tap(find.byIcon(Icons.send_rounded));
+      });
+      expect(result?.taggedIds, ['id-bo']);
+      expect(result?.recipients, isNull, reason: 'everyone still gets it');
+    });
+
+    testWidgets('tagging a friend also sends them the post', (tester) async {
+      final result = await run(tester, () async {
+        // send to Ava only
+        await tester.tap(find.text('bo').first);
+        await tester.tap(find.text('cy').first);
+        await tester.pumpAndSettle();
+        expect(find.text('SEND TO 1 FRIEND'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('TAG FRIENDS'),
+          100,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.text('cy').last);
+        await tester.pumpAndSettle();
+        expect(find.text('SEND TO 2 FRIENDS'), findsOneWidget);
+        await tester.tap(find.byIcon(Icons.send_rounded));
+      });
+      expect(result?.taggedIds, ['id-cy']);
+      expect(result?.recipients, unorderedEquals(['id-ava', 'id-cy']));
+    });
+
+    testWidgets('no tags unless asked: nothing is required', (tester) async {
+      final result = await run(tester, () async {
+        await tester.tap(find.byIcon(Icons.send_rounded));
+      });
+      expect(result?.taggedIds, isEmpty);
+    });
+
     testWidgets('unticking a friend sends only to the others', (tester) async {
       final result = await run(tester, () async {
-        await tester.tap(find.text('bo'));
+        await tester.tap(find.text('bo').first);
         await tester.pumpAndSettle();
         expect(find.text('SEND TO 2 FRIENDS'), findsOneWidget);
         await tester.tap(find.byIcon(Icons.send_rounded));

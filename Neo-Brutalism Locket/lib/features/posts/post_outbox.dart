@@ -101,6 +101,7 @@ class PostOutbox extends ChangeNotifier {
     List<String>? recipients,
     File? original,
     List<String> albumIds = const [],
+    List<String> taggedIds = const [],
   }) async {
     final sourceBytes = await source.readAsBytes();
     final encoded = await encode(
@@ -150,6 +151,7 @@ class PostOutbox extends ChangeNotifier {
         recipients: recipients,
         embedding: embedding,
         albumIds: albumIds,
+        taggedIds: taggedIds,
         createdAt: DateTime.now(),
       ),
     );
@@ -166,6 +168,7 @@ class PostOutbox extends ChangeNotifier {
     Map<String, dynamic>? overlay,
     List<String>? recipients,
     List<String> albumIds = const [],
+    List<String> taggedIds = const [],
   }) async {
     final dir = await _dir();
     final id = newUuid();
@@ -197,6 +200,7 @@ class PostOutbox extends ChangeNotifier {
         recipients: recipients,
         embedding: embedding,
         albumIds: albumIds,
+        taggedIds: taggedIds,
         createdAt: DateTime.now(),
       ),
     );

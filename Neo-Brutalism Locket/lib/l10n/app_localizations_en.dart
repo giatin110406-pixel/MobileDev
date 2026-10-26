@@ -2633,6 +2633,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchMaybe => 'MAYBE RELATED';
 
   @override
+  String get searchCantTell =>
+      'A photo can\'t tell this about a person, so the pictures were not searched. Try describing what is in the picture.';
+
+  @override
+  String searchWithFriend(String name) {
+    return 'WITH $name?';
+  }
+
+  @override
+  String get optionsTagged => 'TAG FRIENDS';
+
+  @override
+  String get composerTagHint =>
+      'The post shows “with Lan”, and Lan gets it too.';
+
+  @override
+  String postWithNames(String names) {
+    return 'with $names';
+  }
+
+  @override
+  String get postWithYou => 'you';
+
+  @override
+  String get tagRemoveTitle => 'Remove your tag?';
+
+  @override
+  String get tagRemoveBody =>
+      'The post stays. Your name comes off it, and the author cannot put it back.';
+
+  @override
+  String get tagRemoveConfirm => 'REMOVE MY TAG';
+
+  @override
+  String get tagRemoved => 'Tag removed.';
+
+  @override
   String get albumChipPrefix => 'ALBUM:';
 
   @override

@@ -9,6 +9,7 @@ import 'package:neo_brutalism_locket/features/posts/post_models.dart';
 import 'package:neo_brutalism_locket/features/posts/video_views.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/search/photo_search.dart';
+import 'package:neo_brutalism_locket/features/search/search_query.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -82,12 +83,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.dispose();
   }
 
-  Future<void> _search() async {
+  /// The friend whose name the person tapped in the text ("with Lan?"); only
+  /// for the search it was tapped on, a new search starts without.
+  String? _pinned;
+
+  /// [pin]: search again with this friend applied.
+  Future<void> _search({String? pin}) async {
     final search = widget.search;
     final text = _searchText.text.trim();
     if (search == null) return;
     if (text.isEmpty) return _clearSearch();
     final vietnamese = Localizations.localeOf(context).languageCode == 'vi';
+    _pinned = pin;
     setState(() {
       _searching = true;
       _searchFailed = false;
@@ -97,6 +104,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         text,
         friends: [for (final f in widget.friends) (id: f.id, name: f.name)],
         vietnamese: vietnamese,
+        pinFriend: pin,
       );
       if (mounted) setState(() => _outcome = outcome);
     } catch (e, st) {
@@ -125,7 +133,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       await widget.search!.prepareLanguagePack();
       if (!mounted) return;
       setState(() => _downloading = false);
-      await _search();
+      await _search(pin: _pinned);
     } catch (e, st) {
       AppLog.warn('history_search', e, st);
       if (mounted) {
@@ -402,6 +410,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(width: 8),
           ],
+          // A name typed without "with": one tap applies it as a filter.
+          for (final friend
+              in query?.friendHints ?? const <SearchFriend>[]) ...[
+            Semantics(
+              button: true,
+              child: InkWell(
+                onTap: Haptics.tap(() => _search(pin: friend.id)),
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    color: NeoColors.surface,
+                    border: Border.all(color: NeoColors.ink, width: 2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    l10n.searchWithFriend(
+                      friend.name.split(' ').first.toUpperCase(),
+                    ),
+                    style: const TextStyle(
+                      color: NeoColors.ink,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
         ],
       ),
     );
@@ -449,7 +489,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           SliverToBoxAdapter(child: _notice(l10n.searchFailed))
         else ...[
           if (needsPack) SliverToBoxAdapter(child: _downloadCard(l10n)),
-          if (posts.isEmpty && !needsPack)
+          if (outcome?.declined ?? false)
+            SliverToBoxAdapter(child: _notice(l10n.searchCantTell)),
+          if (posts.isEmpty && !needsPack && !(outcome?.declined ?? false))
             SliverToBoxAdapter(child: _notice(l10n.searchNoResults)),
           _resultGrid(posts, 0, strong),
           if (strong < posts.length) ...[

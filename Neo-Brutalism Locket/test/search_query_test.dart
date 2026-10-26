@@ -55,6 +55,126 @@ void main() {
     expect(parse('pizza in 2025').content, 'pizza');
   });
 
+  group('remembered times are ranges, not exact days', () {
+    // now = Thursday 2026-10-22
+    test('"about half a year ago" is a window around April', () {
+      for (final text in [
+        'tầm nửa năm trước',
+        'khoảng 6 tháng trước',
+        'sáu tháng trước',
+        'about 6 months ago',
+        'half a year ago',
+      ]) {
+        final q = parse('ăn lẩu $text');
+        expect(q.content, 'ăn lẩu', reason: text);
+        // 6 months = 183 days; a quarter of it either side
+        expect(q.from!.isBefore(DateTime(2026, 4, 1)), isTrue, reason: text);
+        expect(q.from!.isAfter(DateTime(2026, 2, 1)), isTrue, reason: text);
+        expect(q.until!.isAfter(DateTime(2026, 5, 15)), isTrue, reason: text);
+        expect(q.until!.isBefore(DateTime(2026, 7, 15)), isTrue, reason: text);
+      }
+    });
+
+    test('a few days, weeks or years back, and never into the future', () {
+      final days = parse('3 ngày trước');
+      expect(days.from, DateTime(2026, 10, 17));
+      expect(days.until, DateTime(2026, 10, 22));
+      final recent = parse('1 tuần trước');
+      expect(recent.until!.isAfter(DateTime(2026, 10, 23)), isFalse);
+      final years = parse('2 years ago');
+      expect(years.from!.year, 2024);
+      expect(years.until!.isAfter(DateTime(2025, 3)), isTrue);
+      expect(years.until!.isBefore(DateTime(2025, 6)), isTrue);
+    });
+
+    test('"a few months ago" is a wide band', () {
+      final q = parse('mấy tháng trước');
+      expect(q.from, DateTime(2026, 5, 23));
+      expect(q.until, DateTime(2026, 9, 7));
+      expect(q.content, isEmpty);
+    });
+
+    test('"3 năm trước" is not read as "last year"', () {
+      final q = parse('biển 3 năm trước');
+      expect(q.content, 'biển');
+      expect(q.from!.year, 2023);
+    });
+
+    test('seasons, with or without a year', () {
+      expect(parse('mùa hè').from, DateTime(2026, 6));
+      expect(parse('mùa hè').until, DateTime(2026, 9));
+      expect(parse('mùa hè năm ngoái').from, DateTime(2025, 6));
+      expect(
+        parse('mùa đông').from,
+        DateTime(2025, 12),
+        reason: 'this winter has not begun',
+      );
+      expect(parse('mùa thu 2024').from, DateTime(2024, 9));
+      expect(parse('pizza last summer').content, 'pizza');
+      expect(
+        parse('spring roll').content,
+        'spring roll',
+        reason: 'only "in / last / this spring" is a season',
+      );
+    });
+
+    test('the day before yesterday', () {
+      expect(parse('hôm kia').from, DateTime(2026, 10, 20));
+      expect(parse('hôm kia').until, DateTime(2026, 10, 21));
+    });
+  });
+
+  group('a name without "with" is offered, not applied', () {
+    test('"Minh ăn lẩu" offers Minh and keeps the words', () {
+      final q = parse('Minh ăn lẩu');
+      expect(q.friendId, isNull);
+      expect(q.friendHints.map((f) => f.id), ['minh']);
+      expect(q.content, 'Minh ăn lẩu');
+    });
+
+    test('a name inside another word offers nothing', () {
+      expect(parse('lanterns at night').friendHints, isEmpty);
+    });
+
+    test('a full name typed in full offers only that friend', () {
+      expect(parse('lan anh ăn kem').friendHints.map((f) => f.id), ['lananh']);
+    });
+
+    test('a first name shared by two friends offers both', () {
+      expect(parse('ảnh lan').friendHints.map((f) => f.id).toSet(), {
+        'lan',
+        'lananh',
+      });
+    });
+
+    test('with "with" there is nothing left to offer', () {
+      expect(parse('ăn lẩu với Lan').friendHints, isEmpty);
+    });
+
+    test('pinning applies the friend and takes the name out of the words', () {
+      final q = parseSearchQuery(
+        'Lan ăn lẩu',
+        friends: friends,
+        now: now,
+        pinFriend: 'lan',
+      );
+      expect(q.friendId, 'lan');
+      expect(q.content, 'ăn lẩu');
+      expect(q.friendHints, isEmpty);
+    });
+
+    test('pinning Lan Anh by her first name only', () {
+      final q = parseSearchQuery(
+        'lan chụp biển',
+        friends: friends,
+        now: now,
+        pinFriend: 'lananh',
+      );
+      expect(q.friendId, 'lananh');
+      expect(q.content, 'chụp biển');
+    });
+  });
+
   test('a search can be only filters', () {
     final q = parse('ảnh với Lan tháng trước');
     expect(q.content, isEmpty);

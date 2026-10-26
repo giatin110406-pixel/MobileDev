@@ -2609,6 +2609,42 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searchMaybe => 'CÓ THỂ LIÊN QUAN';
 
   @override
+  String get searchCantTell =>
+      'Ảnh không cho biết điều này về một người, nên app không tìm theo hình. Hãy thử mô tả thứ có trong ảnh nhé.';
+
+  @override
+  String searchWithFriend(String name) {
+    return 'VỚI $name?';
+  }
+
+  @override
+  String get optionsTagged => 'GẮN THẺ BẠN BÈ';
+
+  @override
+  String get composerTagHint => 'Bài hiện “với Lan” và Lan cũng nhận được bài.';
+
+  @override
+  String postWithNames(String names) {
+    return 'với $names';
+  }
+
+  @override
+  String get postWithYou => 'bạn';
+
+  @override
+  String get tagRemoveTitle => 'Gỡ thẻ của bạn?';
+
+  @override
+  String get tagRemoveBody =>
+      'Bài đăng vẫn còn đó. Tên bạn được gỡ khỏi bài và người đăng không thể gắn lại.';
+
+  @override
+  String get tagRemoveConfirm => 'GỠ THẺ';
+
+  @override
+  String get tagRemoved => 'Đã gỡ thẻ.';
+
+  @override
   String get albumChipPrefix => 'ALBUM:';
 
   @override

@@ -17,12 +17,17 @@ class ComposerResult {
     this.recipients,
     this.overlay,
     this.albumIds = const [],
+    this.taggedIds = const [],
   });
 
   final String caption;
 
   /// Group albums the person also put the post in.
   final List<String> albumIds;
+
+  /// Friends the post is "with" (tagged, as on Facebook). They are also in
+  /// [recipients]: the composer ticks them when they are tagged.
+  final List<String> taggedIds;
 
   /// Time / place labels to show on the post (null for none).
   final Map<String, dynamic>? overlay;
@@ -58,6 +63,9 @@ class ComposerController extends ChangeNotifier {
   /// Albums the post is also added to. Empty to start with: putting a photo
   /// in an album shows it to the whole group, friends or not.
   final Set<String> selectedAlbums = {};
+
+  /// Friends tagged ("with Lan"). Empty to start with: never a required step.
+  final Set<String> tagged = {};
 
   /// The time label, fixed when the shot was taken.
   final String time;
@@ -95,6 +103,15 @@ class ComposerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Tagging a friend also sends them the post; untagging leaves it sent.
+  void toggleTag(String id) {
+    if (!tagged.remove(id)) {
+      tagged.add(id);
+      selected.add(id);
+    }
+    notifyListeners();
+  }
+
   /// Adds the place label, or removes it. [onProblem] hears why it failed.
   Future<void> togglePlace(
     void Function(PlaceProblem problem) onProblem,
@@ -121,6 +138,7 @@ class ComposerController extends ChangeNotifier {
     recipients: all ? null : selected.toList(),
     overlay: overlay.toJson(),
     albumIds: selectedAlbums.toList(),
+    taggedIds: tagged.toList(),
   );
 
   @override
@@ -305,6 +323,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
   String? _place;
   bool _findingPlace = false;
   final Set<String> _albums = {};
+  final Set<String> _tagged = {};
 
   @override
   void dispose() {
@@ -361,6 +380,7 @@ class _PostComposerFormState extends State<PostComposerForm> {
         recipients: _all ? null : _selected.toList(),
         overlay: _overlay.toJson(),
         albumIds: _albums.toList(),
+        taggedIds: _tagged.toList(),
       ),
     );
   }
@@ -468,6 +488,45 @@ class _PostComposerFormState extends State<PostComposerForm> {
                 ),
               ),
             ),
+          // After who gets it, and optional: who the post is "with".
+          const SizedBox(height: 18),
+          Text(
+            l10n.optionsTagged,
+            style: const TextStyle(
+              color: NeoColors.muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.composerTagHint,
+            style: const TextStyle(
+              color: NeoColors.muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final friend in widget.friends)
+                _recipientChip(
+                  label: friend.person.displayName.split(' ').first,
+                  selected: _tagged.contains(friend.person.id),
+                  onTap: () => setState(() {
+                    // A tagged friend gets the post; untagging leaves it sent.
+                    if (!_tagged.remove(friend.person.id)) {
+                      _tagged.add(friend.person.id);
+                      _selected.add(friend.person.id);
+                    }
+                  }),
+                ),
+            ],
+          ),
         ],
         const SizedBox(height: 20),
         NeoButton(
