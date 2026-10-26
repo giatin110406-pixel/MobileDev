@@ -167,8 +167,7 @@ QuestScore scoreQuestPhoto(
   final onScreenPhoto = onScreen >= bank.screenReject;
   return QuestScore(
     match:
-        (top < set.positives || accepted >= bank.matchScore) &&
-        !onScreenPhoto,
+        (top < set.positives || accepted >= bank.matchScore) && !onScreenPhoto,
     screen: onScreenPhoto,
     score: accepted,
     top: bank.labels[set.labelIds[top]],
