@@ -2595,8 +2595,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No vibration information on this device (only Android reports it).';
 
   @override
-  String get searchHint =>
-      'Search photos: “dog at the beach”, “with Lan last year”…';
+  String get searchHint => 'Quick photo search';
 
   @override
   String get searchNeedsModel =>

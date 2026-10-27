@@ -2572,7 +2572,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không có thông tin rung trên thiết bị này (chỉ Android cung cấp).';
 
   @override
-  String get searchHint => 'Tìm ảnh: “chó ở biển”, “với Lan năm ngoái”…';
+  String get searchHint => 'Tìm kiếm ảnh nhanh';
 
   @override
   String get searchNeedsModel =>
