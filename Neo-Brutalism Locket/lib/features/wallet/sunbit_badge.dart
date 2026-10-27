@@ -219,17 +219,17 @@ class _PixelFlamePainter extends CustomPainter {
   static const cols = 14;
   static const rows = 16;
 
-  /// The flame, 12 x 14 cells: the tip leans right, a small tongue on the
-  /// left is split off by a notch.
+  /// The flame, 12 x 14 cells: one solid body with a single tip that leans
+  /// right. No notch cuts into the belly, so the count reads on clean colour.
   static const _mask = [
-    '.......#....',
-    '.......##...',
-    '......###...',
-    '..#...####..',
-    '..##..#####.',
-    '..###.######',
-    '.####.######',
-    '.###########',
+    '......#.....',
+    '.....##.....',
+    '.....###....',
+    '....####....',
+    '...#####....',
+    '...######...',
+    '..#######...',
+    '.#########..',
     '############',
     '############',
     '############',
