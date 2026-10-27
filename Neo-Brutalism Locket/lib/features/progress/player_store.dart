@@ -25,7 +25,8 @@ class PlayerStore extends ChangeNotifier {
 
   Quest? get todayQuest {
     final state = _state;
-    return state == null ? null : questForDay(state.seed, today);
+    if (state == null) return null;
+    return pinnedQuestOn(today) ?? questForDay(state.seed, today);
   }
 
   int get balance => _state?.balance ?? 0;
