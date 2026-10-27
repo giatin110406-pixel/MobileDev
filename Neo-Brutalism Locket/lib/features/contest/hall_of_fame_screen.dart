@@ -58,7 +58,16 @@ class _HallOfFameScreenState extends State<HallOfFameScreen>
   void initState() {
     super.initState();
     _store.addListener(_begin);
-    _store.load();
+    _loadAll();
+  }
+
+  /// Every week that has winners, so the weeks can be numbered from the first.
+  Future<void> _loadAll() async {
+    await _store.load();
+    for (var page = 0; page < 20 && _store.hasMore; page++) {
+      if (_store.error != null || !mounted) return;
+      await _store.loadMore();
+    }
   }
 
   /// The curtains open once there is something to show behind them.
@@ -251,9 +260,10 @@ class _HallOfFameScreenState extends State<HallOfFameScreen>
     final theme = sample == null
         ? null
         : (vi ? sample.titleVi : sample.titleEn);
-    // "2026-W43" is week 43.
-    final weekName = week == null ? '' : week.split('W').last;
     final index = weeks.isEmpty ? 0 : _week.clamp(0, weeks.length - 1);
+    // The weeks of the Hall of Fame are numbered from the first one that had
+    // winners: the oldest is week 1. (The list runs newest first.)
+    final weekName = weeks.isEmpty ? '' : '${weeks.length - index}';
 
     return Semantics(
       container: true,

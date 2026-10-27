@@ -165,7 +165,7 @@ void main() {
       await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
       await tester.pump();
       await tester.pump();
-      expect(find.text('Hall of Fame · Week 39'), findsOneWidget);
+      expect(find.text('Hall of Fame · Week 2'), findsOneWidget);
       expect(find.text('Team 1'), findsOneWidget);
       expect(find.text('Team 2'), findsOneWidget);
       expect(find.text('Team 3'), findsOneWidget);
@@ -188,6 +188,8 @@ void main() {
       await tester.pump();
       expect(find.text('Team 4'), findsOneWidget);
       expect(find.text('Team 1'), findsNothing);
+      // The older week is the first one.
+      expect(find.text('Hall of Fame · Week 1'), findsOneWidget);
       await tester.tap(find.byTooltip('Later week'));
       await tester.pump();
       expect(find.text('Team 1'), findsOneWidget);
@@ -217,7 +219,7 @@ void main() {
       await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
       await tester.pump();
       await tester.pump();
-      expect(find.text('Hall of Fame · Week 39'), findsOneWidget);
+      expect(find.text('Hall of Fame · Week 1'), findsOneWidget);
       expect(find.text('Sunflowers'), findsOneWidget);
       expect(find.byTooltip('Earlier week'), findsNothing);
       expect(find.byTooltip('Later week'), findsNothing);
@@ -249,7 +251,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('Team 1'), findsOneWidget);
-      expect(find.text('Hall of Fame · Week 43'), findsOneWidget);
+      expect(find.text('Hall of Fame · Week 2'), findsOneWidget);
       const out = String.fromEnvironment('HALL_PNG_DIR');
       if (out.isNotEmpty) {
         final boundary = tester.renderObject<RenderRepaintBoundary>(
@@ -263,6 +265,25 @@ void main() {
           '$out/hall_whole.png',
         ).writeAsBytesSync(bytes!.buffer.asUint8List());
       }
+      await leave(tester);
+    });
+
+    testWidgets('the weeks are numbered from the first, all pages loaded', (
+      tester,
+    ) async {
+      bigScreen(tester);
+      final repo = FakeContest();
+      // Thirty weeks with one winner each: more than one page.
+      for (var i = 1; i <= 30; i++) {
+        repo.hall.add(
+          winner(i, rank: 1, week: '2026-W${(100 - i).toString()}'),
+        );
+      }
+      await tester.pumpWidget(app(HallOfFameScreen(repository: repo)));
+      for (var i = 0; i < 6; i++) {
+        await tester.pump();
+      }
+      expect(find.text('Hall of Fame · Week 30'), findsOneWidget);
       await leave(tester);
     });
 
