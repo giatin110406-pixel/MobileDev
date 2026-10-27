@@ -58,6 +58,24 @@ void main() {
       expect(a, isNot(b));
     });
 
+    test(
+      'a pinned week gives everybody the same quest, then the order goes on',
+      () {
+        // 20753 is Tuesday 27 October 2026 in Vietnam.
+        for (var day = 20753; day < 20753 + 7; day++) {
+          expect(pinnedQuestOn(day)?.id, 'px_key', reason: 'day $day');
+        }
+        expect(pinnedQuestOn(20752), isNull);
+        expect(pinnedQuestOn(20760), isNull);
+        expect(questById('px_key')?.subject, 'một chiếc chìa khóa');
+        // A pin can be any quest, for any days.
+        const pins = [QuestPin(questId: 'vg_bed', firstDay: 100, days: 2)];
+        expect(pinnedQuestOn(100, pins: pins)?.id, 'vg_bed');
+        expect(pinnedQuestOn(101, pins: pins)?.id, 'vg_bed');
+        expect(pinnedQuestOn(102, pins: pins), isNull);
+      },
+    );
+
     test('never the same quest two days in a row; all seen before repeats', () {
       for (final seed in [0, 1, 7, 123456, 0x7FFFFFFE]) {
         String? previous;

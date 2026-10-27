@@ -636,6 +636,35 @@ Quest? questById(String id) {
   return null;
 }
 
+/// Days on which everybody gets the same quest, whatever their own order: from
+/// [firstDay] (days since 1970 in Vietnam time) for [days] days. The "never the
+/// same quest two days in a row" rule of [questForDay] does not hold inside one.
+class QuestPin {
+  const QuestPin({
+    required this.questId,
+    required this.firstDay,
+    required this.days,
+  });
+
+  final String questId;
+  final int firstDay;
+  final int days;
+
+  bool covers(int day) => day >= firstDay && day < firstDay + days;
+}
+
+/// "A key" for everybody for seven days: Tuesday 27 October to Monday 2 November
+/// 2026, Vietnam time.
+const questPins = [QuestPin(questId: 'px_key', firstDay: 20753, days: 7)];
+
+/// The quest pinned for [day], or null when the day is not pinned.
+Quest? pinnedQuestOn(int day, {List<QuestPin> pins = questPins}) {
+  for (final pin in pins) {
+    if (pin.covers(day)) return questById(pin.questId);
+  }
+  return null;
+}
+
 /// The quest for [day] (days since 1970 in Vietnam time) for the user with
 /// [seed]. Each user walks the catalog in their own shuffled order, so nobody
 /// repeats a quest until they have seen all of them, and two days in a row are
