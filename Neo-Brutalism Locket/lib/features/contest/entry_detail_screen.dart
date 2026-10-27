@@ -369,7 +369,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
       note = l10n.ratingOwnGroup;
     } else if (!detail.participant) {
       note = l10n.ratingNotParticipant;
-    } else if (detail.phase != ContestPhase.judging) {
+    } else if (!detail.ratingOpen) {
       note = detail.phase == ContestPhase.finalized
           ? l10n.ratingContestOver
           : l10n.ratingNotYet;

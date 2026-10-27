@@ -68,6 +68,7 @@ ContestInfo contestInfo({
   Duration opensIn = const Duration(hours: -1),
   Duration closesIn = const Duration(hours: 20),
   Duration endsIn = const Duration(hours: 30),
+  bool anytime = false,
 }) => ContestInfo(
   id: 'c1',
   weekKey: '2026-W41',
@@ -78,6 +79,7 @@ ContestInfo contestInfo({
   endsAt: t0.add(endsIn),
   acceptedCount: accepted,
   maxEntries: 100,
+  anytime: anytime,
 );
 
 const theme = ContestTheme(
@@ -443,6 +445,64 @@ void main() {
       },
     );
 
+    test('with the time rules off, groups submit and rate any day', () async {
+      // Monday: the contest has not opened yet.
+      final repo = FakeContest(
+        current: overviewOf(
+          contest: contestInfo(
+            opensIn: const Duration(days: 4),
+            closesIn: const Duration(days: 5),
+            endsIn: const Duration(days: 6),
+            anytime: true,
+          ),
+          owned: const [OwnedGroup(id: 'g2', name: 'B', submitted: false)],
+        ),
+      );
+      final store = ContestStore(repo, clock: () => t0);
+      await store.refresh();
+      expect(store.phase, ContestPhase.upcoming);
+      expect(store.submitOpen, isTrue);
+      expect(store.ratingOpen, isTrue);
+      expect(store.submittableGroups.map((g) => g.id), ['g2']);
+      // The same day with the rules on: neither.
+      repo.current = overviewOf(
+        contest: contestInfo(
+          opensIn: const Duration(days: 4),
+          closesIn: const Duration(days: 5),
+          endsIn: const Duration(days: 6),
+        ),
+        owned: const [OwnedGroup(id: 'g2', name: 'B', submitted: false)],
+      );
+      await store.refresh();
+      expect(store.submitOpen, isFalse);
+      expect(store.ratingOpen, isFalse);
+      expect(store.submittableGroups, isEmpty);
+      store.dispose();
+    });
+
+    test(
+      'with the time rules off, nothing is taken once the week is over',
+      () async {
+        final repo = FakeContest(
+          current: overviewOf(
+            contest: contestInfo(
+              opensIn: const Duration(days: -2),
+              closesIn: const Duration(days: -1),
+              endsIn: const Duration(hours: -1),
+              anytime: true,
+            ),
+            owned: const [OwnedGroup(id: 'g2', name: 'B', submitted: false)],
+          ),
+        );
+        final store = ContestStore(repo, clock: () => t0);
+        await store.refresh();
+        expect(store.phase, ContestPhase.closed);
+        expect(store.submitOpen, isFalse);
+        expect(store.ratingOpen, isFalse);
+        store.dispose();
+      },
+    );
+
     test(
       'submitting returns the place and reloads, also after a refusal',
       () async {
@@ -565,6 +625,7 @@ void main() {
       bool participant = true,
       ContestPhase phase = ContestPhase.judging,
       bool mine = false,
+      bool? ratingOpen,
     }) async {
       final entry = entryOf(3, mine: mine);
       final repo = FakeContest()
@@ -572,6 +633,7 @@ void main() {
         ..detail = EntryDetail(
           entry: entry,
           phase: phase,
+          ratingOpen: ratingOpen,
           participant: participant,
           reactions: const {'🔥': 2},
           commentCount: 0,
@@ -595,6 +657,51 @@ void main() {
       expect((await open(participant: false)).$2.canComment, isFalse);
       expect((await open(phase: ContestPhase.finalized)).$2.canRate, isFalse);
       expect((await open(phase: ContestPhase.open)).$2.canComment, isFalse);
+    });
+
+    test(
+      'with the time rules off, an entry can be rated before judging',
+      () async {
+        final (_, store) = await open(
+          phase: ContestPhase.open,
+          ratingOpen: true,
+        );
+        expect(store.canRate, isTrue);
+        expect(store.canComment, isTrue);
+        expect(
+          (await open(
+            phase: ContestPhase.open,
+            ratingOpen: true,
+            mine: true,
+          )).$2.canRate,
+          isFalse,
+        );
+      },
+    );
+
+    test('the server says whether rating is open', () {
+      final json = {
+        'id': 'e1',
+        'contest_id': 'c1',
+        'seq': 1,
+        'group_name': 'G',
+        'width': 2,
+        'height': 2,
+        'palette': [0xFF000000, 0xFFFF0000],
+        'pixels': 'AAEBAA==',
+        'submitted_at': t0.toIso8601String(),
+        'phase': 'upcoming',
+        'participant': true,
+      };
+      expect(EntryDetail.fromJson(json).ratingOpen, isFalse);
+      expect(
+        EntryDetail.fromJson({...json, 'rating_open': true}).ratingOpen,
+        isTrue,
+      );
+      expect(
+        EntryDetail.fromJson({...json, 'phase': 'judging'}).ratingOpen,
+        isTrue,
+      );
     });
 
     test('a rating shows at once and is sent', () async {
