@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:neo_brutalism_locket/core/app_log.dart';
@@ -34,7 +32,11 @@ class HistoryScreen extends StatefulWidget {
     this.onLoadMore,
     this.onRefresh,
     this.search,
+    this.myNames = const [],
   });
+
+  /// What I am called (display name, username), for the search.
+  final List<String> myNames;
 
   /// Newest first.
   final List<RemotePost> posts;
@@ -70,10 +72,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _downloading = false;
   bool _downloadFailed = false;
 
-  /// "Maybe" photos start short: they are the likeliest wrong ones.
-  static const _maybeFirst = 6;
-  bool _allMaybe = false;
-
   bool get _searchActive => _outcome != null || _searching || _searchFailed;
 
   @override
@@ -102,7 +100,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final vietnamese = Localizations.localeOf(context).languageCode == 'vi';
     _pinned = pin;
     setState(() {
-      _allMaybe = false;
       _searching = true;
       _searchFailed = false;
     });
@@ -112,6 +109,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         friends: [for (final f in widget.friends) (id: f.id, name: f.name)],
         vietnamese: vietnamese,
         pinFriend: pin,
+        myNames: widget.myNames,
       );
       if (mounted) setState(() => _outcome = outcome);
     } catch (e, st) {
@@ -383,12 +381,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final friendId = query?.friendId;
     final from = query?.from;
     final until = query?.until;
+    final fromHour = query?.fromHour;
+    final untilHour = query?.untilHour;
     final labels = <String>[
       if (friendId != null)
         for (final f in widget.friends)
           if (f.id == friendId) f.name.split(' ').first,
       if (query?.mine ?? false) l10n.searchMine,
       if (from != null && until != null) _dateLabel(from, until),
+      if (fromHour != null && untilHour != null) '${fromHour}h–${untilHour}h',
       if (outcome != null) l10n.searchResults(outcome.posts.length),
     ];
     return SizedBox(
@@ -473,7 +474,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final outcome = _outcome;
     final posts = outcome?.posts ?? const <RemotePost>[];
     final needsPack = outcome?.needsLanguagePack ?? false;
-    final strong = outcome?.strongCount ?? 0;
     return CustomScrollView(
       slivers: [
         if (_searching)
@@ -500,42 +500,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             SliverToBoxAdapter(child: _notice(l10n.searchCantTell)),
           if (posts.isEmpty && !needsPack && !(outcome?.declined ?? false))
             SliverToBoxAdapter(child: _notice(l10n.searchNoResults)),
-          _resultGrid(posts, 0, strong),
-          if (strong < posts.length) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(2, 18, 2, 0),
-                child: Text(
-                  l10n.searchMaybe,
-                  style: const TextStyle(
-                    color: NeoColors.muted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-            _resultGrid(
-              posts,
-              strong,
-              _allMaybe
-                  ? posts.length
-                  : math.min(posts.length, strong + _maybeFirst),
-            ),
-            if (!_allMaybe && posts.length > strong + _maybeFirst)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Center(
-                    child: NeoButton(
-                      label: l10n.searchSeeMore,
-                      variant: NeoButtonVariant.outline,
-                      onPressed: () => setState(() => _allMaybe = true),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+          // One list, best match first. Scores of the best photos are often
+          // within 0.01 of each other, so a "sure" / "maybe" line between them
+          // would be arbitrary: the order is all the app knows.
+          _resultGrid(posts, 0, posts.length),
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],

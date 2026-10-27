@@ -2233,6 +2233,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       onLoadMore: posts?.loadMore,
       onRefresh: _syncPosts,
       search: _photoSearch,
+      myNames: [
+        ?widget.session!.profile.displayName,
+        ?widget.session!.profile.username,
+      ],
     );
   }
 

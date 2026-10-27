@@ -1722,8 +1722,6 @@
       }
     }
   },
-  "searchMaybe": "CÓ THỂ LIÊN QUAN",
-  "searchSeeMore": "XEM THÊM",
   "searchCantTell": "Ảnh không cho biết điều này về một người, nên app không tìm theo hình. Hãy thử mô tả thứ có trong ảnh nhé.",
   "searchWithFriend": "VỚI {name}?",
   "@searchWithFriend": {

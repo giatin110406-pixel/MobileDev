@@ -4658,18 +4658,6 @@ abstract class AppLocalizations {
   /// **'{count} ẢNH'**
   String searchResults(int count);
 
-  /// No description provided for @searchMaybe.
-  ///
-  /// In vi, this message translates to:
-  /// **'CÓ THỂ LIÊN QUAN'**
-  String get searchMaybe;
-
-  /// No description provided for @searchSeeMore.
-  ///
-  /// In vi, this message translates to:
-  /// **'XEM THÊM'**
-  String get searchSeeMore;
-
   /// No description provided for @searchCantTell.
   ///
   /// In vi, this message translates to:

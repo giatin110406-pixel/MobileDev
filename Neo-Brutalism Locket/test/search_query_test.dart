@@ -28,6 +28,44 @@ void main() {
     expect(parse('biển với Hoa').friendId, isNull, reason: 'not a friend');
   });
 
+  test('a part of the day is a rule on the hour, not for the photo model', () {
+    var q = parse('đi cà phê với Hiếu lúc chiều');
+    expect(q.content, 'đi cà phê với Hiếu');
+    expect((q.fromHour, q.untilHour), (12, 19));
+    expect(q.hourMatches(15), isTrue);
+    expect(q.hourMatches(9), isFalse);
+    expect(q.hourMatches(19), isFalse);
+
+    q = parse('coffee in the afternoon');
+    expect(q.content, 'coffee');
+    expect(q.fromHour, 12);
+
+    q = parse('quán cà phê buổi sáng');
+    expect(q.content, 'quán cà phê');
+    expect(q.hourMatches(8), isTrue);
+
+    q = parse('đi dạo lúc tối');
+    expect(q.content, 'đi dạo');
+    expect(q.hourMatches(20), isTrue);
+
+    // past midnight: 21:00 .. 05:00
+    q = parse('quán nhậu lúc đêm');
+    expect(q.hourMatches(23), isTrue);
+    expect(q.hourMatches(2), isTrue);
+    expect(q.hourMatches(12), isFalse);
+  });
+
+  test('a part of the day needs its marker word, and "tôi" is not "tối"', () {
+    // no "lúc / buổi" in front: nothing is cut out
+    expect(parse('chiều hôm qua').fromHour, isNull);
+    expect(parse('xem chiếu phim').fromHour, isNull);
+    // "tôi" (I) is not the evening
+    final q = parse('lúc tôi chụp ở biển');
+    expect(q.fromHour, isNull);
+    // a dark scene is a picture, not a rule
+    expect(parse('lanterns at night').fromHour, isNull);
+  });
+
   test('a name inside a word is not a friend', () {
     final q = parse('lanterns at night');
     expect(q.friendId, isNull);
