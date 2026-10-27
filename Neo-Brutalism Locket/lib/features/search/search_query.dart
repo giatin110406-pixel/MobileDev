@@ -13,6 +13,8 @@ class SearchQuery {
     this.mine = false,
     this.from,
     this.until,
+    this.fromHour,
+    this.untilHour,
     this.friendHints = const [],
   });
 
@@ -30,12 +32,28 @@ class SearchQuery {
   final DateTime? from;
   final DateTime? until;
 
+  /// Time of day ("lúc chiều"): local hours, [fromHour] inclusive to
+  /// [untilHour] exclusive, wrapping past midnight when from > until.
+  final int? fromHour;
+  final int? untilHour;
+
+  /// Whether a photo taken at [hour] (0-23) fits the time of day asked for.
+  bool hourMatches(int hour) {
+    final from = fromHour;
+    final until = untilHour;
+    if (from == null || until == null) return true;
+    return from < until
+        ? hour >= from && hour < until
+        : hour >= from || hour < until;
+  }
+
   /// Friends whose name is in the what-to-look-for part of the search without a
   /// "with" in front ("Lan ăn lẩu"). Not applied: the screen offers them as
   /// one-tap filters, since a name can also be an ordinary word.
   final List<SearchFriend> friendHints;
 
-  bool get hasFilters => friendId != null || mine || from != null;
+  bool get hasFilters =>
+      friendId != null || mine || from != null || fromHour != null;
 }
 
 /// A friend as the parser needs them.
@@ -260,6 +278,43 @@ SearchQuery parseSearchQuery(
     if (take(rule.key, rule.value)) break;
   }
 
+  // Time of day ("lúc chiều", "in the afternoon"): a rule on the hour the
+  // photo was taken, not something for the photo model to guess. Hours are
+  // local, widened by an hour or so at each end. A word like "lúc / buổi" must
+  // come first: "chieu" alone can be "chiếu", and "tối" is "tôi" (I) without
+  // its accent, so that one is read from the typed text. "at night" is left
+  // alone: a dark scene is something the picture shows.
+  int? fromHour;
+  int? untilHour;
+  void partOfDay(String word) {
+    (fromHour, untilHour) = switch (word) {
+      'sang' || 'morning' => (4, 12),
+      'trua' => (10, 14),
+      'chieu' || 'afternoon' => (12, 19),
+      'toi' || 'evening' => (17, 24),
+      _ => (21, 5), // dem, khuya
+    };
+  }
+
+  final marked =
+      take(
+        RegExp(' (?:luc|buoi|vao|hoi) (sang|trua|chieu|dem|khuya)(?= )'),
+        (m) => partOfDay(m.group(1)!),
+      ) ||
+      take(
+        RegExp(' in the (morning|afternoon|evening)(?= )'),
+        (m) => partOfDay(m.group(1)!),
+      );
+  if (!marked) {
+    final evening = RegExp(
+      ' (?:lúc|buổi|vào|hồi) tối(?= )',
+    ).firstMatch(text.toLowerCase());
+    if (evening != null) {
+      partOfDay('toi');
+      text = '${text.substring(0, evening.start)} ${text.substring(evening.end)}';
+    }
+  }
+
   // Filler words in front ("ảnh", "những tấm hình", "photos of"). Matched on
   // the typed text: without accents "anh" is also "brother", so a bare "anh"
   // only counts when "có / chụp / về" follows.
@@ -307,6 +362,8 @@ SearchQuery parseSearchQuery(
     mine: mine,
     from: from,
     until: until,
+    fromHour: fromHour,
+    untilHour: untilHour,
     friendHints: hints,
   );
 }

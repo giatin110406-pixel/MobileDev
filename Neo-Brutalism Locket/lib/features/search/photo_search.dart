@@ -27,9 +27,11 @@ class SearchOutcome {
   /// Best match first (photo searches) or newest first (who / when only).
   final List<RemotePost> posts;
 
-  /// The first [strongCount] of [posts] are clear matches; the rest are
-  /// "maybe": close to the best photo, but they do not beat everyday things
-  /// the photo could be instead.
+  /// The first [strongCount] of [posts] are clear matches (a sure score that
+  /// also beats everyday things the photo could be instead); the rest are only
+  /// close to the best photo. It decides the order, not the screen: the scores
+  /// of the best photos are often within 0.01 of each other, so the app shows
+  /// one list and does not call any of it sure.
   final int strongCount;
 
   /// The photo part was skipped: the search had to be translated and the
@@ -84,6 +86,15 @@ class PhotoSearch {
   static const margin = 0.03;
   static const maxResults = 60;
 
+  /// The best photo must score at least [liftGate] above the mean of all
+  /// photos for the pictures to be searched at all, in a library of at least
+  /// [minLibrary] photos. 0.06 kept 88-95 % of real searches and blocked
+  /// 44-70 % of names / nonsense (0.08: 74-87 % kept, 74-90 % blocked); the
+  /// lower one is the safer. Not measured on real photos yet: debug builds
+  /// print each search's lift (SEARCHDBG) to tune it.
+  static const liftGate = 0.06;
+  static const minLibrary = 8;
+
   /// How many of the typed words are looked for in captions and places.
   static const maxWords = 4;
 
@@ -106,18 +117,18 @@ class PhotoSearch {
   /// 20 / 60: a wrong photo among the clear matches 7 / 18 % of the time
   /// (16 / 35 % with the closeness rule alone). Labels this close to the
   /// search itself (its synonyms) are left out of the contest.
-  static const clearShare = 0.3;
+  ///
+  /// It was 0.3, which pushed right photos of a scene down to "maybe": the
+  /// people and cups in a cafe photo beat "cafe" (shares 0.12-0.22 on the
+  /// owner's phone). On Flickr1k (object and scene searches, library of 22)
+  /// 0.1 and no share rule at all gave the same precision (97 / 91 %), so
+  /// this only keeps out a photo that is clearly something else.
+  ///
+  /// A "hub" penalty used to lower the score of photos close to many everyday
+  /// labels; it was never measured, added nothing on Flickr1k and demoted the
+  /// right cafe photos, so it is gone.
+  static const clearShare = 0.1;
   static const synonym = 0.80;
-
-  /// Some photos (a portrait, a busy room) are close to everything, so they
-  /// come up for any search. A photo's "hubness" is how close it is to the
-  /// [hubTop] nearest everyday labels (the search's synonyms left out, as for
-  /// [clearShare]). A photo more of a hub than the typical candidate loses
-  /// [hubWeight] of the difference from its score before the [sure] test.
-  /// Only ever lowers a score. NOT measured on real photos yet: kept small
-  /// until server/eval has numbers for it.
-  static const hubWeight = 0.5;
-  static const hubTop = 10;
 
   SearchTextEncoder? _encoder;
   DateTime? _prunedAt;
@@ -151,11 +162,14 @@ class PhotoSearch {
   /// [vietnamese]: the app is in Vietnamese, so text without accents is
   /// still translated.
   /// [pinFriend]: the person tapped "with `friend`?" on a name in the text.
+  /// [myNames]: what I am called (display name, username): a search that is
+  /// only a name is not looked up in the photos.
   Future<SearchOutcome> search(
     String typed, {
     required List<SearchFriend> friends,
     required bool vietnamese,
     String? pinFriend,
+    List<String> myNames = const [],
   }) async {
     final query = parseSearchQuery(
       typed,
@@ -207,6 +221,11 @@ class PhotoSearch {
     }
 
     if (asksAboutPeople(query.content)) return byWordsOnly(declined: true);
+    // A name is not something a photo shows: the photo model has no picture
+    // for "Thinh", so it hands back whoever looks most like the name's
+    // stereotype (measured: names score as high as real searches, so no
+    // score cut-off tells them apart).
+    if (_onlyNames(query.content, friends, myNames)) return byWordsOnly();
     // English typed in an English app needs no translation, so no pack.
     final needsEnglish =
         vietnamese || foldAccents(query.content) != query.content.toLowerCase();
@@ -246,13 +265,28 @@ class PhotoSearch {
         (entry.key, _dot(vector, entry.value)),
     ]..sort((a, b) => b.$2.compareTo(a.$2));
     final best = all.isEmpty ? 0.0 : all.first.$2;
+    // A search no photo stands out for: names and nonsense score high on
+    // every photo (the best photo's own score cannot tell them from a real
+    // search; how far it is above the mean can). Flickr1k, 20 real and 22
+    // name / nonsense searches: AUC 0.55 by the best score, 0.89 by this.
+    // Skipped in a small library, where the mean says little.
+    if (all.length >= minLibrary) {
+      final mean = all.fold(0.0, (sum, s) => sum + s.$2) / all.length;
+      if (kDebugMode) {
+        debugPrint(
+          'SEARCHDBG "$typed" lift ${(best - mean).toStringAsFixed(3)} '
+          '(gate $liftGate, ${all.length} photos)',
+        );
+      }
+      if (best - mean < liftGate) return byWordsOnly();
+    }
     final scored = [
       for (final s in all)
         if (s.$2 >= sure || (s.$2 >= floor && s.$2 >= best - margin)) s,
     ];
     if (kDebugMode) {
       debugPrint(
-        'SEARCHDBG "$typed" -> "$prompt"; best '
+        'SEARCHDBG "$typed" content "${query.content}" -> "$prompt"; best '
         '${[for (final s in all.take(5)) s.$2.toStringAsFixed(3)]}, '
         'shown ${scored.length} of ${all.length}',
       );
@@ -265,40 +299,33 @@ class PhotoSearch {
       },
     ));
     final keep = bank == null ? null : _contestants(vector, bank);
-    // Scores with the hub penalty (none without the label bank), best first.
-    final hubs = <String, double>{
-      if (bank != null)
-        for (final s in scored) s.$1: _hubness(s.$1, bank, keep!),
-    };
-    final typical = _median(hubs.values.toList());
-    final adjusted = [
-      for (final s in scored)
-        (
-          s.$1,
-          s.$2 - hubWeight * math.max(0.0, (hubs[s.$1] ?? typical) - typical),
-        ),
-    ]..sort((a, b) => b.$2.compareTo(a.$2));
     // Clear: a sure match that also beats the everyday labels. Close to the
-    // best photo is enough to be shown, not to be clear.
-    final raw = {for (final s in scored) s.$1: s.$2};
+    // best photo is enough to be shown, not to be clear. [scored] is best
+    // first.
     final clear = <String>{};
-    for (final s in adjusted) {
+    for (final s in scored) {
       if (s.$2 >= sure &&
-          (bank == null ||
-              _share(s.$1, raw[s.$1]!, bank, keep!) >= clearShare)) {
+          (bank == null || _share(s.$1, s.$2, bank, keep!) >= clearShare)) {
         clear.add(s.$1);
       }
     }
     if (kDebugMode) {
+      debugPrint('SEARCHDBG clear ${clear.length} of ${scored.length}');
+      // Why a photo is clear or only "maybe": its cosine with the search and
+      // its share against the everyday labels.
       debugPrint(
-        'SEARCHDBG clear ${clear.length} of ${scored.length}; hub typical '
-        '${typical.toStringAsFixed(3)}',
+        'SEARCHDBG top ${[
+          for (final s in scored.take(8))
+            '${s.$1.substring(0, 4)} ${s.$2.toStringAsFixed(3)} '
+                'share ${bank == null ? '-' : _share(s.$1, s.$2, bank, keep!).toStringAsFixed(2)}'
+                '${clear.contains(s.$1) ? ' CLEAR' : ''}',
+        ]}',
       );
     }
     final ranked = [
-      for (final s in adjusted.take(maxResults * 2))
+      for (final s in scored.take(maxResults * 2))
         if (clear.contains(s.$1)) s.$1,
-      for (final s in adjusted.take(maxResults * 2))
+      for (final s in scored.take(maxResults * 2))
         if (!clear.contains(s.$1)) s.$1,
     ];
     final posts = {for (final p in await backend.postsByIds(ranked)) p.id: p};
@@ -324,6 +351,27 @@ class PhotoSearch {
       posts: shown.posts,
       strongCount: shown.strong,
     );
+  }
+
+  /// [content] is nothing but (up to 3) words of a friend's or my own name.
+  /// A friend who is called like an ordinary word ("Hoa") makes that word a
+  /// name search too: the "with Hoa?" chip is offered instead of pictures.
+  bool _onlyNames(
+    String content,
+    List<SearchFriend> friends,
+    List<String> myNames,
+  ) {
+    List<String> words(String text) => [
+      for (final w in foldAccents(text).split(RegExp(r'[^a-z0-9]+')))
+        if (w.isNotEmpty) w,
+    ];
+    final names = {
+      for (final name in [for (final f in friends) f.name, ...myNames])
+        for (final w in words(name))
+          if (w.length >= 2) w,
+    };
+    final typed = words(content);
+    return typed.isNotEmpty && typed.length <= 3 && typed.every(names.contains);
   }
 
   /// The words of [content] worth looking for in a caption or place: at most
@@ -354,19 +402,6 @@ class PhotoSearch {
       for (var j = 0; j < bank.labels.length; j++)
         _dotAt(photo, bank.vectors, j * bank.dimension, bank.dimension),
     ]);
-  }
-
-  /// How much of a hub the photo is: its mean cosine with the [hubTop] nearest
-  /// competing bank labels.
-  double _hubness(String id, QuestLabels bank, List<bool> keep) {
-    final scores = _scoresWithBank(id, bank);
-    final near = [
-      for (var j = 0; j < scores.length; j++)
-        if (keep[j]) scores[j],
-    ]..sort((a, b) => b.compareTo(a));
-    if (near.isEmpty) return 0;
-    final top = near.take(hubTop);
-    return top.reduce((a, b) => a + b) / top.length;
   }
 
   /// Probability that the photo shows the search rather than any competing
@@ -407,6 +442,7 @@ class PhotoSearch {
       for (final p in candidates)
         if ((query.from == null || !p.createdAt.isBefore(query.from!)) &&
             (query.until == null || p.createdAt.isBefore(query.until!)) &&
+            query.hourMatches(_hourOf(p)) &&
             (!query.mine || p.authorId == myId))
           p,
     ];
@@ -502,22 +538,25 @@ class PhotoSearch {
         until: query.until,
       );
     }
+    posts.removeWhere((p) => !query.hourMatches(_hourOf(p)));
     posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return posts;
   }
 
-  Future<void> close() async => _encoder?.close();
-}
+  /// The hour a post was taken: the time the poster chose to show on it
+  /// ("14:05", when they turned it on: it is the shot, even if the post
+  /// waited offline), else when it reached the server.
+  static int _hourOf(RemotePost post) {
+    final shown = post.overlay?['time'];
+    if (shown is String) {
+      final m = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(shown.trim());
+      final hour = m == null ? null : int.parse(m.group(1)!);
+      if (hour != null && hour < 24) return hour;
+    }
+    return post.createdAt.hour;
+  }
 
-/// The middle value (the mean of the two middle ones for an even count); 0 for
-/// none.
-double _median(List<double> values) {
-  if (values.isEmpty) return 0;
-  final sorted = [...values]..sort();
-  final mid = sorted.length ~/ 2;
-  return sorted.length.isOdd
-      ? sorted[mid]
-      : (sorted[mid - 1] + sorted[mid]) / 2;
+  Future<void> close() async => _encoder?.close();
 }
 
 double _dotAt(Float32List a, Float32List b, int offset, int length) {
