@@ -4646,6 +4646,12 @@ abstract class AppLocalizations {
   /// **'CÓ THỂ LIÊN QUAN'**
   String get searchMaybe;
 
+  /// No description provided for @searchSeeMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'XEM THÊM'**
+  String get searchSeeMore;
+
   /// No description provided for @searchCantTell.
   ///
   /// In vi, this message translates to:

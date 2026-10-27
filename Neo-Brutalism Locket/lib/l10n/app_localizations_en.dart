@@ -2633,6 +2633,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchMaybe => 'MAYBE RELATED';
 
   @override
+  String get searchSeeMore => 'SEE MORE';
+
+  @override
   String get searchCantTell =>
       'A photo can\'t tell this about a person, so the pictures were not searched. Try describing what is in the picture.';
 

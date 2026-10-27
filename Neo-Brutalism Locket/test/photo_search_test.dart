@@ -246,8 +246,7 @@ void main() {
         friends: const [],
         vietnamese: false,
       );
-      expect(prompts.single, 'a photo of phone.');
-      // 0.20 is the best and above the floor; 0.18 is within 0.03 of it;
+      expect(prompts.single, 'a photo of phone.');      // 0.20 is the best and above the floor; 0.18 is within 0.03 of it;
       // 0.12 is neither
       expect([for (final p in out.posts) p.id], [uuid(1), uuid(2)]);
 
