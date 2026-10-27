@@ -1696,7 +1696,7 @@
   "hcAdviceNoMotor": "This phone has no vibration motor, so nothing can buzz.",
   "hcAdviceTry": "Tap both buttons. If you feel the direct buzz but not the system one, the phone mutes system haptics: use \"Strong buzz\".",
   "hcUnknown": "No vibration information on this device (only Android reports it).",
-  "searchHint": "Search photos: “dog at the beach”, “with Lan last year”…",
+  "searchHint": "Quick photo search",
   "searchNeedsModel": "To search in Vietnamese, the phone needs the Vietnamese pack once (about 30 MB). The app fetches it on Wi-Fi by itself; you can also get it now. After that it works offline, and what you type never leaves the phone.",
   "searchDownload": "GET THE VIETNAMESE PACK",
   "searchDownloading": "DOWNLOADING THE VIETNAMESE PACK…",

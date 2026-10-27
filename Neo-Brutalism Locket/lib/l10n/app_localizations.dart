@@ -4583,7 +4583,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In vi, this message translates to:
-  /// **'Tìm ảnh: “chó ở biển”, “với Lan năm ngoái”…'**
+  /// **'Tìm kiếm ảnh nhanh'**
   String get searchHint;
 
   /// No description provided for @searchNeedsModel.
