@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/shop/cosmetics.dart';
 import 'package:neo_brutalism_locket/features/shop/shop_catalog.dart';
@@ -344,6 +345,7 @@ class ConversationScreen extends StatefulWidget {
     required this.onSendLatestPhoto,
     required this.onRemoveFriend,
     this.posts = const [],
+    this.photoOfPost,
     this.onOpenProfile,
     this.allowPhoto = true,
     super.key,
@@ -360,6 +362,11 @@ class ConversationScreen extends StatefulWidget {
 
   /// Feed posts, so a reply can show the post it answers.
   final List<FriendPost> posts;
+
+  /// Where the picture of a post on the server is in the `media` bucket (its
+  /// small copy when it has one), for the post a reply is about. Null when the
+  /// post is not known.
+  final String? Function(String postId)? photoOfPost;
   final VoidCallback onBack;
   final Future<void> Function(String text, String? photoPath) onSend;
   final VoidCallback onSendLatestPhoto;
@@ -522,6 +529,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     return _MessageBubble(
                       message: message,
                       friend: widget.friend,
+                      remotePhoto: message.isPostReply
+                          ? widget.photoOfPost?.call(message.replyToPostId!)
+                          : null,
                       post: message.isPostReply
                           ? widget.posts
                                 .where((p) => p.id == message.replyToPostId)
@@ -611,11 +621,13 @@ class _MessageBubble extends StatelessWidget {
     required this.message,
     required this.friend,
     this.post,
+    this.remotePhoto,
   });
 
   final PocketMessage message;
   final PocketFriend friend;
   final FriendPost? post;
+  final String? remotePhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -647,7 +659,12 @@ class _MessageBubble extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (message.isPostReply) ...[
-                  _PostQuote(message: message, friend: friend, post: post),
+                  _PostQuote(
+                    message: message,
+                    friend: friend,
+                    post: post,
+                    remotePhoto: remotePhoto,
+                  ),
                   const SizedBox(height: 8),
                 ],
                 if (message.reaction != null)
@@ -709,11 +726,19 @@ class _MessageBubble extends StatelessWidget {
 /// The post a reply answers: its picture (or card), whose post it was, and the
 /// caption. Falls back to the saved caption if the post is gone.
 class _PostQuote extends StatelessWidget {
-  const _PostQuote({required this.message, required this.friend, this.post});
+  const _PostQuote({
+    required this.message,
+    required this.friend,
+    this.post,
+    this.remotePhoto,
+  });
 
   final PocketMessage message;
   final PocketFriend friend;
   final FriendPost? post;
+
+  /// The post's picture on the server (path in the `media` bucket).
+  final String? remotePhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -742,6 +767,7 @@ class _PostQuote extends StatelessWidget {
         PostThumbnail(
           post: post,
           imagePath: message.photoPath,
+          remotePath: remotePhoto,
           fallbackText: caption,
           size: 150,
         ),
@@ -767,28 +793,37 @@ class _PostQuote extends StatelessWidget {
   }
 }
 
-/// Small square of a feed post: its photo, or the coloured emoji card that
-/// sample posts use. With neither available, a plain card with [fallbackText].
+/// Small square of a feed post: its photo (on this phone, or [remotePath] on the
+/// server), or the coloured emoji card that sample posts use. With none of them,
+/// a plain card with [fallbackText].
 class PostThumbnail extends StatelessWidget {
   const PostThumbnail({
     super.key,
     this.post,
     this.imagePath,
+    this.remotePath,
     this.fallbackText = '',
     this.size = 120,
   });
 
   final FriendPost? post;
   final String? imagePath;
+
+  /// The picture in the `media` bucket, for a post that is on the server.
+  final String? remotePath;
   final String fallbackText;
   final double size;
 
   @override
   Widget build(BuildContext context) {
     final path = post?.imagePath ?? imagePath;
+    final remote = remotePath;
     final Widget content;
     if (path != null && File(path).existsSync()) {
       content = Image.file(File(path), fit: BoxFit.cover);
+    } else if (remote != null) {
+      // Until it arrives (or if it cannot), the caption card stands in.
+      content = RemoteImage(path: remote, placeholder: _card);
     } else if (post != null) {
       content = ColoredBox(
         color: Color(post!.color),
@@ -797,25 +832,7 @@ class PostThumbnail extends StatelessWidget {
         ),
       );
     } else {
-      content = ColoredBox(
-        color: NeoColors.paper,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              fallbackText.isEmpty ? 'POST' : fallbackText,
-              maxLines: 3,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: NeoColors.muted,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      );
+      content = _card;
     }
     return Container(
       width: size,
@@ -828,6 +845,27 @@ class PostThumbnail extends StatelessWidget {
       child: content,
     );
   }
+
+  /// A plain card with [fallbackText] (the caption).
+  Widget get _card => ColoredBox(
+    color: NeoColors.paper,
+    child: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Text(
+          fallbackText.isEmpty ? 'POST' : fallbackText,
+          maxLines: 3,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: NeoColors.muted,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _FriendTile extends StatelessWidget {
