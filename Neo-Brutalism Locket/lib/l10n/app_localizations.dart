@@ -1412,6 +1412,24 @@ abstract class AppLocalizations {
   /// **'ĐANG RỬA ẢNH...'**
   String get developingPhoto;
 
+  /// No description provided for @cropHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'KÉO & ZOOM ĐỂ CHỌN KHUNG'**
+  String get cropHint;
+
+  /// No description provided for @cropReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐẶT LẠI'**
+  String get cropReset;
+
+  /// No description provided for @cropDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'DÙNG ẢNH'**
+  String get cropDone;
+
   /// No description provided for @photoOpenFailed.
   ///
   /// In vi, this message translates to:

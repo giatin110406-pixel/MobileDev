@@ -16,6 +16,7 @@ import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/camera/before_after_view.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/print_post_animation.dart';
+import 'package:neo_brutalism_locket/features/camera/crop_screen.dart';
 import 'package:neo_brutalism_locket/features/camera/square_crop.dart';
 import 'package:neo_brutalism_locket/features/camera/style_art.dart';
 import 'package:neo_brutalism_locket/features/camera/style_pill.dart';
@@ -26,7 +27,6 @@ import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
-import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_working_label.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
@@ -140,6 +140,10 @@ class CameraTabState extends State<CameraTab> {
   int _cameraIndex = 0;
   bool _cameraLoading = true;
   bool _processing = false;
+
+  /// A gallery photo being framed in the viewfinder's place, if any.
+  CropSource? _cropSource;
+  final _cropKey = GlobalKey<CropFrameState>();
   bool _showPrint = false;
 
   /// What is being chosen for the shot just taken (caption, labels, who gets
@@ -672,17 +676,39 @@ class CameraTabState extends State<CameraTab> {
   }
 
   /// Lets the user pick any photo from the device instead of taking one. The
-  /// photo is centre-cropped to the same 1:1 square as a camera shot.
+  /// user frames it in a 1:1 square first, like a camera shot.
   Future<void> _uploadFromGallery() async {
     if (_processing || _questMode) return;
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
       if (picked == null || !mounted) return;
       setState(() => _processing = true);
-      final bytes = await compute(
-        cropToSquareJpegCapped,
+      final source = await compute(
+        prepareCropSource,
         await picked.readAsBytes(),
       );
+      if (!mounted) return;
+      // The photo is framed on this page, in the viewfinder's place.
+      setState(() {
+        _processing = false;
+        _cropSource = source;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      _notify(AppLocalizations.of(context).photoOpenFailed);
+    }
+  }
+
+  /// Cuts the square the user framed and starts the print from it.
+  Future<void> _confirmCrop() async {
+    final frame = _cropKey.currentState;
+    if (frame == null || _processing) return;
+    setState(() => _processing = true);
+    try {
+      final bytes = await frame.crop();
+      if (!mounted) return;
+      setState(() => _cropSource = null);
       await _startPrint(bytes);
     } catch (_) {
       if (!mounted) return;
@@ -863,7 +889,7 @@ class CameraTabState extends State<CameraTab> {
       key: key,
       behavior: HitTestBehavior.translucent,
       // Swipe up anywhere on the camera page to see the feed (like Locket).
-      onVerticalDragEnd: _draftMode
+      onVerticalDragEnd: _draftMode || _cropSource != null
           ? null
           : (details) {
               if ((details.primaryVelocity ?? 0) < -400) widget.onOpenFeed();
@@ -878,7 +904,7 @@ class CameraTabState extends State<CameraTab> {
       strip: _questMode
           ? _buildQuestModeHeader(_questModeQuest!)
           : QuestStrip(store: widget.player, onTap: widget.onOpenQuestSheet),
-      square: _buildViewfinder(),
+      square: _cropSource != null ? _buildCropper() : _buildViewfinder(),
       // The style is picked after the shot, on the draft; only a quest's
       // locked style is shown up front.
       belowSquare: [
@@ -895,7 +921,9 @@ class CameraTabState extends State<CameraTab> {
           ),
         ],
       ],
-      controls: _buildCaptureControls(),
+      controls: _cropSource != null
+          ? _buildCropControls()
+          : _buildCaptureControls(),
       footer: Align(
         alignment: Alignment.topCenter,
         child: Semantics(
@@ -1635,6 +1663,85 @@ class CameraTabState extends State<CameraTab> {
         height: 1000,
         child: CameraPreview(camera),
       ),
+    );
+  }
+
+  /// The gallery photo under a square frame, where the viewfinder was.
+  Widget _buildCropper() {
+    return TabSwipeExclusion(
+      key: const ValueKey('cropper'),
+      child: Container(
+        decoration: NeoTheme.panel(
+          color: NeoColors.surface,
+          borderWidth: 2,
+          radius: _squareRadius,
+        ),
+        foregroundDecoration: neoPanelOutline(radius: _squareRadius),
+        child: NeoPanelClip(
+          radius: _squareRadius,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CropFrame(key: _cropKey, source: _cropSource!),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 14,
+                child: IgnorePointer(
+                  child: Center(
+                    child: NeoLabel(
+                      AppLocalizations.of(context).cropHint,
+                      color: NeoColors.accent,
+                      icon: Icons.open_with,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCropControls() {
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: Center(
+            child: NeoIconButton(
+              icon: Icons.close,
+              tooltip: l10n.printDiscard,
+              fill: NeoColors.coral,
+              size: 54,
+              onPressed: _processing
+                  ? null
+                  : () => setState(() => _cropSource = null),
+            ),
+          ),
+        ),
+        NeoIconButton(
+          icon: Icons.check,
+          tooltip: l10n.cropDone,
+          fill: NeoColors.teal,
+          size: 72,
+          onPressed: _processing ? null : _confirmCrop,
+        ),
+        Expanded(
+          child: Center(
+            child: NeoIconButton(
+              icon: Icons.center_focus_strong_outlined,
+              tooltip: l10n.cropReset,
+              fill: NeoColors.accent,
+              size: 54,
+              onPressed: _processing
+                  ? null
+                  : () => _cropKey.currentState?.reset(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

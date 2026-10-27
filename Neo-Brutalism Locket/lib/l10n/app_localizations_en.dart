@@ -740,6 +740,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get developingPhoto => 'DEVELOPING...';
 
   @override
+  String get cropHint => 'DRAG & PINCH TO FRAME';
+
+  @override
+  String get cropReset => 'RESET';
+
+  @override
+  String get cropDone => 'USE';
+
+  @override
   String get photoOpenFailed => 'COULD NOT OPEN THAT PHOTO. TRY ANOTHER.';
 
   @override
