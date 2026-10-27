@@ -358,6 +358,9 @@
   },
   "photoNotSaved": "PHOTO DID NOT SAVE. TRY AGAIN.",
   "developingPhoto": "DEVELOPING...",
+  "cropHint": "DRAG & PINCH TO FRAME",
+  "cropReset": "RESET",
+  "cropDone": "USE",
   "photoOpenFailed": "COULD NOT OPEN THAT PHOTO. TRY ANOTHER.",
   "fallbackUsed": "FALLBACK USED: {note}",
   "@fallbackUsed": {

@@ -736,6 +736,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get developingPhoto => 'ĐANG RỬA ẢNH...';
 
   @override
+  String get cropHint => 'KÉO & ZOOM ĐỂ CHỌN KHUNG';
+
+  @override
+  String get cropReset => 'ĐẶT LẠI';
+
+  @override
+  String get cropDone => 'DÙNG ẢNH';
+
+  @override
   String get photoOpenFailed => 'KHÔNG MỞ ĐƯỢC ẢNH NÀY. THỬ ẢNH KHÁC.';
 
   @override
