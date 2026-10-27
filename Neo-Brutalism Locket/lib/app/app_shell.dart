@@ -1799,15 +1799,22 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                         ),
                       ),
                     ),
-                    if (!cameraVisible)
-                      Positioned.fill(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 140),
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeIn,
-                          child: page,
-                        ),
+                    // Kept mounted over the camera (its page is empty then), so
+                    // the switcher has a page to fade from when leaving it.
+                    Positioned.fill(
+                      child: AnimatedSwitcher(
+                        // While the SHOOT button flies down, the page fades
+                        // in over the same time: both land together.
+                        duration: _flying
+                            ? ShutterFlight.duration
+                            : const Duration(milliseconds: 140),
+                        switchInCurve: _flying
+                            ? Curves.easeInOutCubic
+                            : Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        child: page,
                       ),
+                    ),
                   ],
                 ),
               ),
