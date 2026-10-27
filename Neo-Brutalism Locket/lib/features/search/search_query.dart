@@ -88,6 +88,17 @@ const searchGlossary = {
   'lop hoc': 'classroom',
   'non la': 'conical hat',
   'xe om': 'motorbike taxi',
+  // Food and everyday things a literal translation turns into nonsense. Long
+  // keys only: a key is matched anywhere in the text, so "pho" would also hit
+  // "phong". Longer keys first. Not measured on a phone yet.
+  'ca phe sua': 'iced milk coffee',
+  'tra sua': 'bubble tea',
+  'com tam': 'broken rice plate',
+  'bun cha': 'grilled pork with rice noodles',
+  'bun bo': 'beef noodle soup',
+  'banh xeo': 'banh xeo Vietnamese crispy pancake',
+  'banh chung': 'banh chung square sticky rice cake',
+  'hoa sen': 'lotus flower',
 };
 
 final _space = RegExp(r'\s+');

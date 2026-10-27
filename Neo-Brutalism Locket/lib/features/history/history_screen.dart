@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:neo_brutalism_locket/core/app_log.dart';
@@ -68,6 +70,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _downloading = false;
   bool _downloadFailed = false;
 
+  /// "Maybe" photos start short: they are the likeliest wrong ones.
+  static const _maybeFirst = 6;
+  bool _allMaybe = false;
+
   bool get _searchActive => _outcome != null || _searching || _searchFailed;
 
   @override
@@ -96,6 +102,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final vietnamese = Localizations.localeOf(context).languageCode == 'vi';
     _pinned = pin;
     setState(() {
+      _allMaybe = false;
       _searching = true;
       _searchFailed = false;
     });
@@ -508,7 +515,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ),
             ),
-            _resultGrid(posts, strong, posts.length),
+            _resultGrid(
+              posts,
+              strong,
+              _allMaybe
+                  ? posts.length
+                  : math.min(posts.length, strong + _maybeFirst),
+            ),
+            if (!_allMaybe && posts.length > strong + _maybeFirst)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Center(
+                    child: NeoButton(
+                      label: l10n.searchSeeMore,
+                      variant: NeoButtonVariant.outline,
+                      onPressed: () => setState(() => _allMaybe = true),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 24)),

@@ -95,6 +95,9 @@ class PhotoSearch {
 
   /// Searches of up to this many words get CLIP's "a photo of ..." wording,
   /// which raised their scores by 0.02-0.05.
+  ///
+  /// Averaging three wordings ("a close-up photo of ...") was tried on
+  /// Flickr1k, 30 short searches: mAP 0.553 -> 0.548, no gain, so one wording.
   static const shortWords = 4;
 
   /// A clear match must also beat the daily quest's 316 everyday labels
@@ -388,7 +391,6 @@ class PhotoSearch {
     if (override != null) return override(english);
     return (_encoder ??= SearchTextEncoder()).encode(english);
   }
-
   /// Puts [candidates] (best first) in the order they are shown: when and
   /// "mine" are rules, who is not. A post that is clearly a match ([strong])
   /// and has the friend in it (author, tagged, or sent to them) comes first;

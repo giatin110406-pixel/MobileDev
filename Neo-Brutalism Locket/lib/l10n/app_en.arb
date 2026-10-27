@@ -1714,6 +1714,7 @@
     }
   },
   "searchMaybe": "MAYBE RELATED",
+  "searchSeeMore": "SEE MORE",
   "searchCantTell": "A photo can't tell this about a person, so the pictures were not searched. Try describing what is in the picture.",
   "searchWithFriend": "WITH {name}?",
   "@searchWithFriend": {

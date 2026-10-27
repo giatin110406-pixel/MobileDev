@@ -2609,6 +2609,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searchMaybe => 'CÓ THỂ LIÊN QUAN';
 
   @override
+  String get searchSeeMore => 'XEM THÊM';
+
+  @override
   String get searchCantTell =>
       'Ảnh không cho biết điều này về một người, nên app không tìm theo hình. Hãy thử mô tả thứ có trong ảnh nhé.';
 
