@@ -90,8 +90,23 @@ class ContestStore extends ChangeNotifier {
     return left.isNegative ? Duration.zero : left;
   }
 
-  /// Groups I own that can still enter (the contest must be open).
-  List<OwnedGroup> get submittableGroups => phase == ContestPhase.open
+  /// Groups may submit now: while the contest is open, or at any time in the
+  /// week when the time rules are off.
+  bool get submitOpen =>
+      phase == ContestPhase.open ||
+      ((contest?.anytime ?? false) &&
+          (phase == ContestPhase.upcoming || phase == ContestPhase.judging) &&
+          !(contest?.isFull ?? false));
+
+  /// Entries may be rated now: during judging, or at any time in the week when
+  /// the time rules are off.
+  bool get ratingOpen =>
+      phase == ContestPhase.judging ||
+      ((contest?.anytime ?? false) &&
+          (phase == ContestPhase.upcoming || phase == ContestPhase.open));
+
+  /// Groups I own that can still enter (the contest must take entries now).
+  List<OwnedGroup> get submittableGroups => submitOpen
       ? [
           for (final group in _overview?.ownerGroups ?? const <OwnedGroup>[])
             if (!group.submitted) group,

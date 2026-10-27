@@ -25,12 +25,12 @@ class EntryStore extends ChangeNotifier {
   /// Only people from the entering groups may rate and comment, only while
   /// rating is open, and never on their own group's entry.
   bool get canRate =>
-      (_detail?.participant ?? false) &&
-      phase == ContestPhase.judging &&
-      !entry.mine;
+      (_detail?.participant ?? false) && ratingOpen && !entry.mine;
 
-  bool get canComment =>
-      (_detail?.participant ?? false) && phase == ContestPhase.judging;
+  bool get canComment => (_detail?.participant ?? false) && ratingOpen;
+
+  /// Rating is open: during judging, or any time when the time rules are off.
+  bool get ratingOpen => _detail?.ratingOpen ?? phase == ContestPhase.judging;
 
   Map<String, int> get reactions => _detail?.reactions ?? const {};
 

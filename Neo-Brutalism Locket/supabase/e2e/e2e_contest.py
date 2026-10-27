@@ -84,6 +84,12 @@ def main() -> int:
     users: list[dict] = []
     contests: list[str] = []
     banned = "e2ebadword"
+    # The checks below are about the time rules, so they run with them on, and the
+    # project's own setting (`anytime`) is put back at the end.
+    anytime_before = (sql("select value from public.contest_config where key = 'anytime'")
+                      or [{"value": None}])[0]["value"]
+    if anytime_before is not None:
+        sql("update public.contest_config set value = '0' where key = 'anytime'")
     try:
         h.section("Accounts, friends and three groups")
         names = ["a1", "a2", "b1", "b2", "c1", "c2", "x"]
@@ -141,6 +147,15 @@ def main() -> int:
         entry_b = second["entry_id"]
         h.rpc_refused(a1["token"], "vote_entry", {"p_entry": entry_b, "p_score": 4}, "not_judging",
                       "rating is not open while entries are still being accepted")
+        if anytime_before is not None:
+            # With the time rules off the same rating goes through (then it is taken
+            # back, so the results below stay as planned).
+            sql("update public.contest_config set value = '1' where key = 'anytime'")
+            status, payload = h.rpc(a1["token"], "vote_entry", {"p_entry": entry_b, "p_score": 4})
+            sql("update public.contest_config set value = '0' where key = 'anytime'")
+            sql(f"delete from public.entry_votes where entry_id = '{entry_b}' and voter_id = '{a1['id']}'")
+            h.check("with the time rules off, rating works while entries are still coming in",
+                    status in (200, 204), f"-> {status} {h.error_text(payload)}")
         status, third = sub(c1, gc, c1id)
         h.check("C1 submits and is number 3", status == 200 and third["seq"] == 3, f"{third}")
         entry_c = third["entry_id"]
@@ -388,6 +403,8 @@ def main() -> int:
         try:
             sql("delete from public.contests where week_key like 'E2E-%'")
             sql(f"delete from public.contest_banned_words where word = '{banned}'")
+            if anytime_before is not None:
+                sql(f"update public.contest_config set value = '{anytime_before}' where key = 'anytime'")
             h.check("test contests and the banned word removed", True)
         except RuntimeError as error:
             h.check("test contests and the banned word removed", False, str(error)[:200])

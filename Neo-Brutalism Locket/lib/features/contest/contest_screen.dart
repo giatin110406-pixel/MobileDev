@@ -302,7 +302,9 @@ class _ContestScreenState extends State<ContestScreen> {
               ),
               Expanded(
                 child:
-                    phase == ContestPhase.open || phase == ContestPhase.judging
+                    phase == ContestPhase.open ||
+                        phase == ContestPhase.judging ||
+                        widget.store.submitOpen
                     ? Text(
                         AppLocalizations.of(context).contestEntriesCount(
                           contest.acceptedCount,
@@ -423,7 +425,7 @@ class _ContestScreenState extends State<ContestScreen> {
         ),
       );
     }
-    if (phase == ContestPhase.judging && overview.participant) {
+    if (widget.store.ratingOpen && overview.participant) {
       final needed = overview.votesNeeded;
       final done = overview.myVotes;
       cards.add(
@@ -469,7 +471,7 @@ class _ContestScreenState extends State<ContestScreen> {
       );
     }
     if (overview.ownerGroups.isEmpty) {
-      if (phase == ContestPhase.open && mine == null) {
+      if (widget.store.submitOpen && mine == null) {
         cards.add(
           Padding(
             padding: EdgeInsets.only(bottom: 10),
@@ -487,7 +489,7 @@ class _ContestScreenState extends State<ContestScreen> {
       return cards;
     }
     for (final group in overview.ownerGroups) {
-      final canSubmit = phase == ContestPhase.open && !group.submitted;
+      final canSubmit = widget.store.submitOpen && !group.submitted;
       cards.add(
         Container(
           padding: const EdgeInsets.all(12),
@@ -511,7 +513,7 @@ class _ContestScreenState extends State<ContestScreen> {
                     Text(
                       group.submitted
                           ? AppLocalizations.of(context).contestGroupSubmitted
-                          : phase == ContestPhase.open
+                          : widget.store.submitOpen
                           ? AppLocalizations.of(context).contestOwnerHint
                           : AppLocalizations.of(context).contestOpensAt(
                               formatMoment(context, overview.contest.opensAt),

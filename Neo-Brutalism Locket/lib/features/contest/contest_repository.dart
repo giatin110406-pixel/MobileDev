@@ -32,6 +32,7 @@ class ContestInfo {
     required this.endsAt,
     required this.acceptedCount,
     required this.maxEntries,
+    this.anytime = false,
   });
 
   final String id;
@@ -51,6 +52,10 @@ class ContestInfo {
   final int acceptedCount;
   final int maxEntries;
 
+  /// The time rules are off: groups may submit, and entries may be rated, at
+  /// any time in the week (the server's `anytime` setting).
+  final bool anytime;
+
   bool get isFull => acceptedCount >= maxEntries;
 
   factory ContestInfo.fromJson(Map<String, dynamic> json) => ContestInfo(
@@ -63,6 +68,7 @@ class ContestInfo {
     endsAt: _time(json['ends_at']),
     acceptedCount: json['accepted_count'] as int? ?? 0,
     maxEntries: json['max_entries'] as int? ?? 100,
+    anytime: json['anytime'] as bool? ?? false,
   );
 
   ContestInfo copyWith({int? acceptedCount, ContestPhase? phase}) =>
@@ -76,6 +82,7 @@ class ContestInfo {
         endsAt: endsAt,
         acceptedCount: acceptedCount ?? this.acceptedCount,
         maxEntries: maxEntries,
+        anytime: anytime,
       );
 }
 
@@ -362,10 +369,15 @@ class EntryDetail {
     required this.participant,
     required this.reactions,
     required this.commentCount,
-  });
+    bool? ratingOpen,
+  }) : ratingOpen = ratingOpen ?? phase == ContestPhase.judging;
 
   final GalleryEntry entry;
   final ContestPhase phase;
+
+  /// Whether the entry may be rated, reacted to and commented on now: during
+  /// judging, or at any time in the week when the time rules are off.
+  final bool ratingOpen;
   final bool participant;
   final Map<String, int> reactions;
   final int commentCount;
@@ -373,6 +385,7 @@ class EntryDetail {
   factory EntryDetail.fromJson(Map<String, dynamic> json) => EntryDetail(
     entry: GalleryEntry.fromJson(json),
     phase: _phaseOf(json['phase']),
+    ratingOpen: json['rating_open'] as bool?,
     participant: json['participant'] as bool? ?? false,
     reactions: {
       for (final item
