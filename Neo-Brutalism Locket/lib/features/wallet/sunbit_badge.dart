@@ -149,99 +149,165 @@ class StreakChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       boxShadow: NeoPress.shadow(pressed, offset: const Offset(2, 2)),
     ),
-    child: Text(
-      '🔥 $streak',
-      style: const TextStyle(
-        color: NeoColors.ink,
-        fontSize: 13,
-        fontWeight: FontWeight.w900,
-        height: 1.1,
-      ),
-    ),
-  );
-
-  /// The flame: thick ink outline, hard shadow, the count in its belly.
-  Widget _flame(BuildContext context, bool pressed) => CustomPaint(
-    size: Size(context.s(42), context.s(46)),
-    painter: _FlamePainter(
-      color: streak > 0 ? NeoColors.coral : NeoColors.switchOff,
-      core: streak > 0 ? NeoColors.accent : NeoColors.surface,
-      shadow: pressed ? Offset.zero : const Offset(3, 3),
-    ),
-    child: SizedBox(
-      width: context.s(42),
-      height: context.s(46),
-      child: Align(
-        alignment: const Alignment(0, 0.45),
-        child: Text(
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CustomPaint(
+          size: const Size(
+            _PixelFlamePainter.cols * 1.25,
+            _PixelFlamePainter.rows * 1.25,
+          ),
+          painter: _PixelFlamePainter(lit: streak > 0, shadow: false),
+        ),
+        const SizedBox(width: 5),
+        Text(
           '$streak',
           style: const TextStyle(
             color: NeoColors.ink,
-            fontSize: 17,
+            fontSize: 13,
             fontWeight: FontWeight.w900,
-            height: 1,
+            height: 1.1,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  /// The pixel flame with the count in its belly and a hard shadow.
+  Widget _flame(BuildContext context, bool pressed) {
+    final cell = context.s(3);
+    return CustomPaint(
+      size: Size(cell * _PixelFlamePainter.cols, cell * _PixelFlamePainter.rows),
+      painter: _PixelFlamePainter(lit: streak > 0, shadow: !pressed),
+      child: SizedBox(
+        width: cell * _PixelFlamePainter.cols,
+        height: cell * _PixelFlamePainter.rows,
+        child: Align(
+          alignment: const Alignment(0, 0.44),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: cell * 2.5),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '$streak',
+                style: const TextStyle(
+                  color: NeoColors.ink,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
-class _FlamePainter extends CustomPainter {
-  const _FlamePainter({
-    required this.color,
-    required this.core,
-    required this.shadow,
-  });
+/// An 8-bit flame drawn on a pixel grid: ink outline, coral body, a yellow
+/// middle and a pale core, with a one-cell hard shadow. The grid is
+/// [cols] x [rows] cells (the flame itself is 12 x 14, with a cell of outline
+/// around it); the painter scales a cell to the size it is given.
+class _PixelFlamePainter extends CustomPainter {
+  const _PixelFlamePainter({required this.lit, required this.shadow});
 
-  final Color color;
-  final Color core;
-  final Offset shadow;
+  /// A live streak is coloured; 0 is a grey flame.
+  final bool lit;
+  final bool shadow;
 
-  /// A flame in a box of [w]×[h]: a tip leaning right, a round belly.
-  static Path _flame(double w, double h) {
-    double x(double v) => v * w;
-    double y(double v) => v * h;
-    return Path()
-      ..moveTo(x(0.58), y(0.02))
-      ..cubicTo(x(0.54), y(0.24), x(0.10), y(0.36), x(0.10), y(0.68))
-      ..cubicTo(x(0.10), y(0.88), x(0.28), y(0.98), x(0.50), y(0.98))
-      ..cubicTo(x(0.72), y(0.98), x(0.90), y(0.88), x(0.90), y(0.64))
-      ..cubicTo(x(0.90), y(0.48), x(0.82), y(0.40), x(0.76), y(0.34))
-      ..cubicTo(x(0.76), y(0.46), x(0.70), y(0.50), x(0.66), y(0.48))
-      ..cubicTo(x(0.70), y(0.30), x(0.62), y(0.14), x(0.58), y(0.02))
-      ..close();
+  static const cols = 14;
+  static const rows = 16;
+
+  /// The flame, 12 x 14 cells: the tip leans right, a small tongue on the
+  /// left is split off by a notch.
+  static const _mask = [
+    '.......#....',
+    '.......##...',
+    '......###...',
+    '..#...####..',
+    '..##..#####.',
+    '..###.######',
+    '.####.######',
+    '.###########',
+    '############',
+    '############',
+    '############',
+    '.##########.',
+    '..########..',
+    '...######...',
+  ];
+
+  /// Cell ([c], [r]) of the grid; the body starts one cell in.
+  static bool _body(int c, int r) {
+    final y = r - 1;
+    final x = c - 1;
+    return y >= 0 && y < _mask.length && x >= 0 && x < 12 && _mask[y][x] == '#';
   }
+
+  static bool _inside(bool Function(int, int) layer, int c, int r) =>
+      layer(c, r) &&
+      layer(c - 1, r) &&
+      layer(c + 1, r) &&
+      layer(c, r - 1) &&
+      layer(c, r + 1);
+
+  /// The yellow middle: one cell in from the edge, below the tip.
+  static bool _mid(int c, int r) => r - 1 >= 4 && _inside(_body, c, r);
+
+  /// The pale core under the number: one more cell in, in the belly.
+  static bool _core(int c, int r) => r - 1 >= 8 && _inside(_mid, c, r);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final body = _flame(
-      size.width - 3,
-      size.height - 3,
-    ).shift(const Offset(1.5, 1.5));
-    canvas.drawPath(body.shift(shadow), Paint()..color = NeoColors.ink);
-    canvas.drawPath(body, Paint()..color = color);
-    // The lighter core under the number.
-    canvas.save();
-    canvas.translate(size.width * 0.2, size.height * 0.34);
-    canvas.drawPath(
-      _flame(size.width * 0.6, size.height * 0.62),
-      Paint()..color = core,
-    );
-    canvas.restore();
-    canvas.drawPath(
-      body,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5
-        ..strokeJoin = StrokeJoin.round
-        ..color = NeoColors.ink,
-    );
+    final cell = size.width / cols;
+    final paint = Paint()..isAntiAlias = false;
+    void put(int c, int r, Color color, [double shift = 0]) {
+      canvas.drawRect(
+        Rect.fromLTWH(c * cell + shift, r * cell + shift, cell, cell),
+        paint..color = color,
+      );
+    }
+
+    bool edge(int c, int r) =>
+        !_body(c, r) &&
+        (_body(c - 1, r) ||
+            _body(c + 1, r) ||
+            _body(c, r - 1) ||
+            _body(c, r + 1));
+
+    final outer = lit ? NeoColors.coral : NeoColors.switchOff;
+    final middle = lit ? NeoColors.accent : NeoColors.surface;
+    final inner = lit ? NeoColors.paper : NeoColors.surface;
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        if (shadow && (_body(c, r) || edge(c, r))) {
+          put(c, r, NeoColors.ink, cell);
+        }
+      }
+    }
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        if (edge(c, r)) {
+          put(c, r, NeoColors.ink);
+        } else if (_body(c, r)) {
+          put(
+            c,
+            r,
+            _core(c, r)
+                ? inner
+                : _mid(c, r)
+                ? middle
+                : outer,
+          );
+        }
+      }
+    }
   }
 
   @override
-  bool shouldRepaint(_FlamePainter old) =>
-      old.color != color || old.core != core || old.shadow != shadow;
+  bool shouldRepaint(_PixelFlamePainter old) =>
+      old.lit != lit || old.shadow != shadow;
 }
 
 /// A small round icon button for the status row, drawn like the streak and
