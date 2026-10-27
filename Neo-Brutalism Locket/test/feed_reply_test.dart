@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:neo_brutalism_locket/core/backend/media_urls.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/social/feed_view.dart';
 import 'package:neo_brutalism_locket/features/social/reply_bar.dart';
@@ -162,6 +163,7 @@ void main() {
       WidgetTester tester,
       PocketMessage message, {
       List<FriendPost> posts = const [],
+      String? Function(String postId)? photoOfPost,
     }) => tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -172,6 +174,7 @@ void main() {
             friend: friend,
             messages: [message],
             posts: posts,
+            photoOfPost: photoOfPost,
             onBack: () {},
             onSend: (_, _) async {},
             onSendLatestPhoto: () {},
@@ -204,6 +207,40 @@ void main() {
       expect(find.byType(PostThumbnail), findsOneWidget);
       expect(find.text('🔥'), findsOneWidget);
       expect(find.text("REACTED TO AVA'S POST"), findsOneWidget);
+    });
+
+    testWidgets('a reply to a post on the server shows its picture', (
+      tester,
+    ) async {
+      // With an account the post is on the server, not on this phone.
+      final asked = <String>[];
+      await pumpThread(
+        tester,
+        reply(),
+        photoOfPost: (id) {
+          asked.add(id);
+          return 'f1/p1_thumb.jpg';
+        },
+      );
+      expect(asked, ['p1']);
+      final image = tester.widget<RemoteImage>(
+        find.descendant(
+          of: find.byType(PostThumbnail),
+          matching: find.byType(RemoteImage),
+        ),
+      );
+      expect(image.path, 'f1/p1_thumb.jpg');
+      expect(image.bucket, 'media');
+      // Until it loads, the caption stands in.
+      expect(find.text('Morning light'), findsWidgets);
+    });
+
+    testWidgets('a post the server does not know shows the caption', (
+      tester,
+    ) async {
+      await pumpThread(tester, reply(), photoOfPost: (_) => null);
+      expect(find.byType(RemoteImage), findsNothing);
+      expect(find.text('Morning light'), findsWidgets);
     });
 
     testWidgets('if the post is gone the saved caption is shown', (

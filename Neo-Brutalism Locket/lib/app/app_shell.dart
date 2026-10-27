@@ -1744,6 +1744,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         onSendLatestPhoto: _sendLatestPrint,
         onRemoveFriend: _removeActiveFriend,
         posts: _posts,
+        photoOfPost: (postId) {
+          final post = _postsStore?.posts
+              .where((p) => p.id == postId)
+              .firstOrNull;
+          return post == null ? null : post.thumbPath ?? post.mediaPath;
+        },
         onOpenProfile: () => _openFriendProfile(_activeFriend!),
         allowPhoto: !_online,
       ),
