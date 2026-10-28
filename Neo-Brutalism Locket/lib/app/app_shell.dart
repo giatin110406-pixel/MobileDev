@@ -581,12 +581,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   }
 
   /// Starts fetching the newest pictures now, so the feed opens on pictures
-  /// that are already on the phone: small previews first, then the full ones,
-  /// then the originals people may drag to compare.
+  /// that are already on the phone: the small previews of every loaded post
+  /// first (the history grid shows them all, and signing their URLs one at a
+  /// time was slow), then the full ones, then the originals people may drag to
+  /// compare.
   void _warmFeedPictures(List<RemotePost> posts) {
     final newest = posts.take(12).toList();
     warmMedia(_mediaUrls, [
-      for (final post in newest) ?post.thumbPath,
+      for (final post in posts) ?post.thumbPath,
       for (final post in newest) post.mediaPath,
       for (final post in newest)
         if (!post.isVideo) ?post.originalPath,
