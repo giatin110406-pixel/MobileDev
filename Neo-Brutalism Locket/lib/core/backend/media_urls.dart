@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -157,8 +158,11 @@ class RemoteImage extends StatefulWidget {
   State<RemoteImage> createState() => _RemoteImageState();
 }
 
+/// Where a picture comes from: a file already on the phone, or a signed URL.
+typedef _Found = ({File? file, String? url});
+
 class _RemoteImageState extends State<RemoteImage> {
-  Future<String?>? _url;
+  Future<_Found>? _found;
   MediaUrls? _source;
   int _attempt = 0;
 
@@ -180,11 +184,36 @@ class _RemoteImageState extends State<RemoteImage> {
     }
   }
 
-  void _load() => _url = _source?.resolve(widget.bucket, widget.path);
+  void _load({bool useCache = true}) {
+    final source = _source;
+    _found = source == null ? null : _find(source, useCache);
+  }
+
+  /// A picture that is already on the phone needs no signed URL: those are
+  /// lost when the app closes and expire after an hour, so asking for one
+  /// first made every picture wait for the network on each start. The cache
+  /// is looked at first; [useCache] is off on a retry (a bad file in it).
+  /// Only for the real storage, like [warmMedia]: other sources have no
+  /// picture cache behind them.
+  Future<_Found> _find(MediaUrls source, bool useCache) async {
+    if (useCache && source is SupabaseMediaUrls) {
+      try {
+        final hit = await DefaultCacheManager().getFileFromCache(
+          '${widget.bucket}/${widget.path}',
+        );
+        if (hit != null && await hit.file.exists()) {
+          return (file: hit.file, url: null);
+        }
+      } catch (_) {
+        // No cache to read (a test, a full disk): sign a URL instead.
+      }
+    }
+    return (file: null, url: await source.resolve(widget.bucket, widget.path));
+  }
 
   void _retry() => setState(() {
     _attempt++;
-    _load();
+    _load(useCache: false);
   });
 
   Widget get _background {
@@ -252,14 +281,23 @@ class _RemoteImageState extends State<RemoteImage> {
   @override
   Widget build(BuildContext context) {
     // No way to reach storage here (no MediaUrlsScope): nothing will load.
-    if (_url == null) return widget.placeholder ?? _background;
-    return FutureBuilder<String?>(
-      future: _url,
+    if (_found == null) return widget.placeholder ?? _background;
+    return FutureBuilder<_Found>(
+      future: _found,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return _loading();
         }
-        final url = snapshot.data;
+        final file = snapshot.data?.file;
+        if (file != null) {
+          return Image.file(
+            file,
+            key: ValueKey(_attempt),
+            fit: widget.fit,
+            errorBuilder: (context, _, error) => _failed(),
+          );
+        }
+        final url = snapshot.data?.url;
         if (url == null) return _failed();
         return CachedNetworkImage(
           key: ValueKey(_attempt),
