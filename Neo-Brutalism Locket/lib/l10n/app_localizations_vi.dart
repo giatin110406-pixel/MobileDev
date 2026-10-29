@@ -3076,4 +3076,23 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get photoToolsTitle => 'CÔNG CỤ ẢNH';
+
+  @override
+  String get searchV2Setup => 'TÌM KIẾM AI TRÊN LAPTOP';
+
+  @override
+  String get searchV2Privacy =>
+      'Câu tìm kiếm và ảnh được xử lý trên laptop bạn kết nối. Khi không kết nối được, app dùng kết quả nhanh trên điện thoại.';
+
+  @override
+  String get searchQuickResults => 'KẾT QUẢ NHANH';
+
+  @override
+  String get searchUnsupported =>
+      'Chưa hỗ trợ cách tìm này. Hãy mô tả những vật nhìn thấy trong ảnh.';
+
+  @override
+  String searchPending(int count) {
+    return '$count ảnh chưa sẵn sàng để tìm theo nội dung.';
+  }
 }

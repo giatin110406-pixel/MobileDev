@@ -59,6 +59,7 @@ import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:neo_brutalism_locket/features/search/embedding_backfill.dart';
 import 'package:neo_brutalism_locket/features/search/photo_search.dart';
 import 'package:neo_brutalism_locket/features/search/search_backend.dart';
+import 'package:neo_brutalism_locket/features/search/search_v2_client.dart';
 import 'package:neo_brutalism_locket/features/search/photo_embedding.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
@@ -356,6 +357,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _photoSearch = PhotoSearch(
           myId: session.user.id,
           backend: SupabaseSearchBackend(myId: session.user.id),
+          v2: HttpSearchV2(
+            accessToken: () => Backend.client.auth.currentSession?.accessToken,
+          ),
         );
         // The Vietnamese pack (ML Kit, ~30 MB) cannot ship in the app: fetch
         // it quietly on Wi-Fi so it is there by the first search.

@@ -11,6 +11,7 @@ import 'package:neo_brutalism_locket/features/search/search_guard.dart';
 import 'package:neo_brutalism_locket/features/search/search_index.dart';
 import 'package:neo_brutalism_locket/features/search/search_query.dart';
 import 'package:neo_brutalism_locket/features/search/search_text_encoder.dart';
+import 'package:neo_brutalism_locket/features/search/search_v2_client.dart';
 
 /// What one search found.
 class SearchOutcome {
@@ -20,6 +21,10 @@ class SearchOutcome {
     int? strongCount,
     this.needsLanguagePack = false,
     this.declined = false,
+    this.quickResults = false,
+    this.usedV2 = false,
+    this.v2Declined = false,
+    this.pending = 0,
   }) : strongCount = strongCount ?? posts.length;
 
   final SearchQuery query;
@@ -43,6 +48,10 @@ class SearchOutcome {
   /// is (see [asksAboutPeople]), which a photo cannot tell. [posts] holds only
   /// caption / place matches.
   final bool declined;
+  final bool quickResults;
+  final bool usedV2;
+  final bool v2Declined;
+  final int pending;
 }
 
 /// Photo search over the posts I may see (archive-ai-search-plan.md, C3):
@@ -57,6 +66,7 @@ class PhotoSearch {
     Future<Float32List> Function(String english)? encodeText,
     Future<QuestLabels> Function()? loadBank,
     DateTime Function()? clock,
+    this.v2,
   }) : index = index ?? SearchIndex(userId: myId, source: backend),
        _translator = translator,
        _encodeOverride = encodeText,
@@ -65,6 +75,7 @@ class PhotoSearch {
 
   final String myId;
   final SearchBackend backend;
+  final SearchV2Backend? v2;
   final SearchIndex index;
   QueryTranslator? _translator;
   final Future<Float32List> Function(String english)? _encodeOverride;
@@ -181,6 +192,82 @@ class PhotoSearch {
       return SearchOutcome(query: query, posts: await _byFilters(query));
     }
 
+    if (v2 != null &&
+        !asksAboutPeople(query.content) &&
+        !_onlyNames(query.content, friends, myNames)) {
+      try {
+        final remote = await v2!.search(
+          typed,
+          query,
+          friends: friends,
+          myNames: myNames,
+          now: _clock(),
+        );
+        final rows = <String, RemotePost>{};
+        for (var start = 0; start < remote.ids.length; start += 100) {
+          final ids = remote.ids.sublist(
+            start,
+            math.min(start + 100, remote.ids.length),
+          );
+          for (final post in await backend.postsByIds(ids)) {
+            rows[post.id] = post;
+          }
+        }
+        return SearchOutcome(
+          query: remote.query,
+          posts: [
+            for (final id in remote.ids)
+              if (rows[id] case final post?)
+                if (remote.query.hourMatches(_hourOf(post))) post,
+          ],
+          usedV2: true,
+          v2Declined: remote.declined,
+          pending: remote.pending,
+        );
+      } catch (error) {
+        AppLog.warn('search_v2', error.runtimeType);
+        final fallback = await _searchV1(
+          typed,
+          friends: friends,
+          vietnamese: vietnamese,
+          pinFriend: pinFriend,
+          myNames: myNames,
+        );
+        return SearchOutcome(
+          query: fallback.query,
+          posts: fallback.posts,
+          strongCount: fallback.strongCount,
+          needsLanguagePack: fallback.needsLanguagePack,
+          declined: fallback.declined,
+          quickResults: true,
+        );
+      }
+    }
+    return _searchV1(
+      typed,
+      friends: friends,
+      vietnamese: vietnamese,
+      pinFriend: pinFriend,
+      myNames: myNames,
+    );
+  }
+
+  Future<SearchOutcome> _searchV1(
+    String typed, {
+    required List<SearchFriend> friends,
+    required bool vietnamese,
+    String? pinFriend,
+    List<String> myNames = const [],
+  }) async {
+    final query = parseSearchQuery(
+      typed,
+      friends: friends,
+      now: _clock(),
+      pinFriend: pinFriend,
+    );
+    if (query.content.isEmpty) {
+      return SearchOutcome(query: query, posts: await _byFilters(query));
+    }
     final byText = await _safe(
       () => backend.textMatches(query.content),
       const <RemotePost>[],
@@ -314,12 +401,9 @@ class PhotoSearch {
       // Why a photo is clear or only "maybe": its cosine with the search and
       // its share against the everyday labels.
       debugPrint(
-        'SEARCHDBG top ${[
-          for (final s in scored.take(8))
-            '${s.$1.substring(0, 4)} ${s.$2.toStringAsFixed(3)} '
-                'share ${bank == null ? '-' : _share(s.$1, s.$2, bank, keep!).toStringAsFixed(2)}'
-                '${clear.contains(s.$1) ? ' CLEAR' : ''}',
-        ]}',
+        'SEARCHDBG top ${[for (final s in scored.take(8)) '${s.$1.substring(0, 4)} ${s.$2.toStringAsFixed(3)} '
+              'share ${bank == null ? '-' : _share(s.$1, s.$2, bank, keep!).toStringAsFixed(2)}'
+              '${clear.contains(s.$1) ? ' CLEAR' : ''}']}',
       );
     }
     final ranked = [
@@ -426,6 +510,7 @@ class PhotoSearch {
     if (override != null) return override(english);
     return (_encoder ??= SearchTextEncoder()).encode(english);
   }
+
   /// Puts [candidates] (best first) in the order they are shown: when and
   /// "mine" are rules, who is not. A post that is clearly a match ([strong])
   /// and has the friend in it (author, tagged, or sent to them) comes first;
@@ -556,7 +641,10 @@ class PhotoSearch {
     return post.createdAt.hour;
   }
 
-  Future<void> close() async => _encoder?.close();
+  Future<void> close() async {
+    v2?.close();
+    await _encoder?.close();
+  }
 }
 
 double _dotAt(Float32List a, Float32List b, int offset, int length) {
