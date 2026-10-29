@@ -25,6 +25,10 @@ LOCKET_SEARCH_TAG_OWNER=<owner UUID>
 # LOCKET_QUERY_ADAPTER=D:/clip_eval_tmp/search_v2/query_parser_lora
 ```
 
+Quickest start for a phone on the same Wi-Fi: `.\start-search.ps1` from server/. It checks
+.env, adds a private-network firewall rule for port 8766 once (asks for admin), prints the
+address to type in the app, then starts the server below on 0.0.0.0.
+
 From server/, for laptop-only testing:
 
 ```powershell
