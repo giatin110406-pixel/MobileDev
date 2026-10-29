@@ -201,3 +201,79 @@ Phía Dart bọc trong `abstract class RewindBackend` + `MethodChannelRewindBack
 - Zoom, flash, hẹn giờ, video trong màn lùi thời gian.
 - ZSL (`CAPTURE_MODE_ZERO_SHUTTER_LAG`). Chỉ thử nếu số đo "Lệch HQ" > 300ms.
 - Ghi H.264 vòng tròn (MediaCodec). Chỉ cân nhắc nếu Bước 1 không đạt ngay cả ở 720.
+
+---
+
+## 7. Sai khác so với plan
+
+Ghi lại những chỗ code khác plan, kèm lý do. Chưa có điều nào trong số này được thử trên máy thật.
+
+1. **Đường dẫn.** Thư mục dự án Flutter nằm trong `Neo-Brutalism Locket/` của kho git, nên file này nằm ở `Neo-Brutalism Locket/docs/`.
+2. **Thêm thư viện Gradle.** Ngoài ba gói CameraX 1.5.3, thêm `com.google.guava:guava:33.4.8-android`. Lý do: `ProcessCameraProvider.getInstance` trả về `ListenableFuture`, mà Kotlin cần lớp này trên classpath của app (bản stub `listenablefuture:1.0` không đủ, build báo "Cannot access class 'ListenableFuture'").
+3. **`FrameRing` có thêm API.** Thêm `accepts(ts)` (để khỏi nén khung sắp bị bỏ), `freeze()` (hết giờ chờ thì đóng băng sớm), `release()` (trả RAM sau khi đã ghi khung ra file), `size`. Khung đầu tiên có `ts ≥ press + 1000ms` vẫn được giữ rồi mới đóng băng, nên khung cuối có thể ở khoảng `+1,0s` đến `+1,07s`. Khi bấm, các khung cũ hơn `press − 2000ms` bị bỏ ngay.
+4. **Độ phân giải.** Cả ba use case dùng tỉ lệ 4:3. Preview và ImageAnalysis bị chặn ở `1440×1080` (`FRAME_SIDE = 1080` trong `RewindCamera.kt`, `FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER`). ImageCapture lấy độ phân giải cao nhất. Plan không nói rõ tỉ lệ; 4:3 vì khung vuông cắt giữa từ 4:3 mất ít điểm ảnh nhất và phần cứng LEGACY đảm bảo tổ hợp này.
+5. **`finalizeFrame` native** được viết ở Bước 1 cùng `RewindPlugin` (không đợi Bước 3), vì plugin cần đủ bộ method ngay từ đầu.
+6. **Lỗi `noPermission`.** `start` trả `PlatformException` mã `noPermission` khi chưa có quyền camera (cần cho màn hình khóa, plan mục 1.3 nói "không xin quyền" nhưng không nói cách báo). Ở màn hình khóa Dart hiện "Chưa có quyền dùng camera" + nút "Mở app để cho phép camera"; nút này gọi `dismissKeyguard` rồi `handoff` với **mảng byte rỗng**, và native hiểu là "chỉ mở MainActivity, không kèm ảnh". Không thêm method mới.
+7. **Điểm vào Dart của màn hình khóa.** `RewindLockscreenActivity` đặt `getDartEntrypointLibraryUri()` = `package:neo_brutalism_locket/features/rewind/rewind_lockscreen_main.dart` cùng `getDartEntrypointFunctionName()` = `rewindLockscreenMain`. Để chắc chắn thư viện đó nằm trong bản build, `main.dart` có một dòng `import` kèm `// ignore: unused_import`. **Chưa kiểm** trên máy thật là engine tìm được hàm này ở bản release; nếu không, cách dự phòng là khai báo `@pragma('vm:entry-point') rewindLockscreenMain()` thẳng trong `main.dart` rồi gọi sang file kia và bỏ `getDartEntrypointLibraryUri`.
+8. **Dọn file handoff cũ** (`rewind_handoff/*` quá 1 giờ) làm ở phía Dart (`sweepRewindHandoff`, gọi trong `initState` của `app_shell.dart`), vì Dart đã có `path_provider` và phép thử dễ hơn. Thư mục `cacheDir/rewind/*` thì dọn ở native (`RewindPlugin` khi attach), bỏ qua session đang chạy.
+9. **Nhánh link rewind** trong `app_shell.dart` nhập ảnh cả khi chạy chế độ cục bộ không có tài khoản (`widget.session == null`), vì chế độ đó là cách dùng hợp lệ của app (không cần Supabase). Khi có Supabase mà chưa đăng nhập thì `AppShell` không tồn tại nên không có đường nào tới nhánh này. Nếu tab camera chưa dựng (khởi động nguội) thì chờ tối đa khoảng 3 giây.
+10. **Nút vào** đặt dạng nút tròn nhỏ ở góc khung ngắm, ngay cạnh nút flash (dùng lại `_cornerControl`), chứ không phải một hàng nút phụ mới.
+11. **Đóng màn.** Nút Đóng, nút Quay lại và Gửi đều đi qua `_close()`: `await backend.stop()` **rồi mới** `Navigator.pop`, để camera của CameraTab khởi tạo lại không trùng với camera của màn lùi thời gian. Ở màn hình khóa, đóng màn gọi `SystemNavigator.pop()`.
+12. **Android 7.x (API 24–25)** không có `requestDismissKeyguard`: dùng cờ `FLAG_DISMISS_KEYGUARD` rồi trả `true`, MainActivity mở ra sau màn mở khóa của hệ thống. Chưa thử.
+13. **Overlay số đo** hiện ở bản debug **và profile** (`!kReleaseMode`), không chỉ debug, vì tiêu chí 3 yêu cầu đo giật khi chạy `--profile`. Overlay có thêm dòng `slowFrames` (đếm bằng `addTimingsCallback`, khung > 16,7ms).
+14. **Test thêm** ngoài danh sách plan: `test/rewind_screen_test.dart` (màn hình với backend giả) và các test `FrameRing` về `freeze`.
+15. **Ảnh HQ.** File `hq.jpg` được ghi lại EXIF orientation theo `rotationDegrees` của CameraX (JPEG từ `OnImageCapturedCallback` không đảm bảo có EXIF xoay). Màn chọn khung dựa vào việc Flutter áp EXIF khi vẽ `Image.file`; chưa kiểm trên máy thật rằng ảnh đứng đúng chiều ở cả camera sau lẫn trước.
+16. **Chiều xoay khung phụ.** Khung phụ là JPEG vuông chưa xoay, kèm `rotation` (độ quay thuận chiều kim đồng hồ, lấy từ `imageInfo.rotationDegrees`). Màn chọn xoay bằng `RotatedBox`, `finalizeFrame` xoay bằng `Matrix`. Công thức xoay preview (`rewind_preview.dart`) lấy theo plugin camera với màn khóa portrait (độ xoay màn hình = 0). Chưa kiểm trên máy thật, đặc biệt camera trước (không lật gương ở ảnh, có lật ở khung ngắm theo cách plugin làm).
+
+---
+
+## 8. Cách đo trên máy thật
+
+Bước 1 của plan cần người cầm máy. Tất cả số đo dưới đây điền vào bảng ở mục 5. Chưa ai đo, nên mục 5 vẫn để trống.
+
+### 8.0 Chuẩn bị
+- Máy Android tầm trung, cắm USB, bật gỡ lỗi USB. Từ thư mục `Neo-Brutalism Locket/`: `flutter run` (để xem số khung, nén, RAM) hoặc `flutter run --profile` (để đo giật, tiêu chí 3). Bản `--release` **không** có overlay.
+- Mở app, vào tab chụp, bấm nút tròn nhỏ có hình đồng hồ lùi (cạnh nút flash) để vào màn lùi thời gian.
+- Ghi lại tên máy và bản Android vào bảng mục 5.
+
+### 8.1 Đọc overlay số đo
+Góc trên bên trái khung vuông có bảng chữ trắng nền đen, cập nhật mỗi 0,5 giây (chỉ hiện khi camera đang chạy):
+
+| Dòng | Ý nghĩa | Ô trong bảng mục 5 / ngưỡng |
+|---|---|---|
+| `keptPerSecond` | Số khung giữ lại được mỗi giây, tính trong 2 giây gần nhất | Khung/giây, cổng Bước 1: **≥ 12** |
+| `compressP50Ms`, `compressP95Ms` | Thời gian đổi một khung sang JPEG (mili giây), trung vị và phân vị 95, trong 150 khung gần nhất | Nén p50/p95, cổng: **p95 ≤ 50** |
+| `avgJpegKb` | Kích thước JPEG trung bình (KB) | Ghi chú |
+| `ringFrames`, `ringBytes` | Số khung và số byte đang giữ trong bộ đệm | Ring MB = `ringBytes / 1048576`, cổng: **≤ 25MB** (trần cứng 40MB) |
+| `dropped` | Số khung bị bỏ vì chạm trần 40MB. Nên bằng 0 | Nếu > 0 thì ghi lại |
+| `nativeHeapMb` | `Debug.getNativeHeapAllocatedSize()` | Ghi chú |
+| `analysisWidth`, `analysisHeight`, `previewWidth`, `previewHeight` | Độ phân giải thực tế CameraX chọn | Ô "Analysis res" |
+| `hqLagMs` | `hq.timestamp − pressTs` (mili giây), có sau lần chụp đầu | Ô "Lệch HQ". Nếu > 300 thì xem xét ZSL (mục 6) |
+| `slowFrames a/b (c%)` | Số khung Flutter có build+raster > 16,7ms trên tổng số khung kể từ khi mở màn | Tiêu chí 3: **< 5%**, đọc ở bản `--profile` sau 30 giây |
+
+Đợi khoảng 5 giây sau khi mở màn cho số ổn định rồi mới đọc. Đứng yên máy hoặc hướng vào cảnh có chuyển động đều (không hướng vào tường trắng).
+
+Nếu không đạt cổng: đổi `FRAME_SIDE` trong `android/app/src/main/kotlin/com/neobrutalism/neo_brutalism_locket/rewind/RewindCamera.kt` từ 1080 xuống 900, rồi 720; đo lại và ghi mỗi lần thử vào bảng mục 5.
+
+### 8.2 Các phép đo trong mục 4
+1. **Bấm trễ 1 giây vẫn đúng khoảnh khắc (tiêu chí 1).** Mở một đồng hồ bấm giờ có phần nghìn giây trên máy khác (hoặc trên máy tính, trang web stopwatch). Hướng camera vào màn hình đó. Khi số hiện T, bấm chụp lúc T+1 giây (bấm trễ có chủ ý). Đợi màn chọn khung, vuốt tìm khung có số T. Ghi: khung nào chứa T, lệch bao nhiêu khung (mỗi khung cách nhau khoảng 67ms). Đạt khi lệch ≤ 1 khung, **10/10 lần**.
+2. **Ảnh chất lượng cao đặt đúng chỗ (tiêu chí 2).** Cùng cách đo trên: số trên ảnh HQ (khung được chọn sẵn lúc mở dải, không có nhãn "KHUNG PHỤ") phải nằm giữa số của hai khung kề nó trên dải. 10/10 lần.
+3. **Khung ngắm không giật (tiêu chí 3).** `flutter run --profile`, mở màn, để yên 30 giây, đọc dòng `slowFrames`. Đạt khi < 5%.
+4. **Số khung (tiêu chí 4).** Đọc `keptPerSecond` ≥ 12.
+5. **RAM (tiêu chí 5).** Trong khi app chạy:
+   - `adb shell dumpsys meminfo com.neobrutalism.neo_brutalism_locket`, ghi dòng `TOTAL PSS` lúc đang ở tab chụp thường.
+   - Vào màn lùi thời gian, bấm chụp, đợi tới khi hiện dải khung (đóng băng), rồi chạy lại lệnh trên và ghi `TOTAL PSS`.
+   - Hiệu hai số là "PSS tăng", đạt khi ≤ 80MB.
+6. **Không bị hệ điều hành tắt (tiêu chí 6).** Chụp liên tiếp 20 lần (Chụp lại giữa các lần), trong khi chạy `adb logcat | findstr /i lowmemorykiller` (Windows) hoặc `| grep -i lowmemorykiller`. Đạt khi 0 dòng ghi app bị tắt. Có thể chạy thêm `adb shell dumpsys meminfo ...` sau mỗi 5 lần để xem RAM có tăng dần không.
+7. **Màn hình khóa (tiêu chí 7).**
+   - Thêm nút: kéo thanh cài đặt nhanh xuống, bấm biểu tượng bút chì, kéo ô "Chụp lùi thời gian" vào.
+   - Khóa máy (có đặt PIN hoặc vân tay). Kéo cài đặt nhanh từ màn khóa, bấm ô đó. Dùng đồng hồ bấm giờ đo từ lúc bấm tới lúc thấy khung ngắm: **dưới 1,5 giây**.
+   - Kiểm tra không có bảng tin hay danh sách bạn bè nào lộ ra khi chưa mở khóa.
+   - Chụp, chọn khung, bấm GỬI: máy phải đòi mở khóa; mở xong thì vào tab chụp của app với đúng khung đã chọn đang in. Bấm hủy ở bước mở khóa: ở lại màn, hiện "MỞ KHÓA MÁY ĐỂ GỬI", khung chọn còn nguyên.
+   - Thử cả máy không đặt khóa màn hình (phải sang app ngay) và Android 14 trở lên (đường `PendingIntent`).
+   - Thử khi đã thu hồi quyền camera của app: phải hiện "CHƯA CÓ QUYỀN DÙNG CAMERA" và nút mở app.
+8. **Quay về camera thường (tiêu chí 8).** Mở và đóng màn lùi thời gian 10 lần liền. Mỗi lần quay về, khung ngắm camera thường phải hiện lại, không có thông báo "camera đang bận" hay lỗi "camera in use" trong `adb logcat`.
+9. **Các điểm cần xem bằng mắt (mục 7, số 15 và 16).** Với cả camera sau và camera trước, chụp một vật có chiều rõ ràng (chữ, khuôn mặt): khung ngắm, khung phụ trên dải, ảnh HQ và ảnh in ra phải cùng đứng đúng chiều. Ghi lại nếu chiều nào sai.
+
+### 8.3 Ghi kết quả
+Điền hàng cho từng máy vào bảng mục 5. Nếu có tiêu chí không đạt, ghi số đo và thử đổi `FRAME_SIDE` theo mục 8.1 trước khi kết luận.

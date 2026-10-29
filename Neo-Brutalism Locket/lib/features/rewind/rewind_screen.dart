@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:camera/camera.dart' show CameraLensDirection;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:neo_brutalism_locket/core/haptics.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
@@ -73,8 +74,10 @@ class _RewindScreenState extends State<RewindScreen> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _events = _backend.events.listen(_onEvent);
     _open();
-    if (kDebugMode) {
-      // The numbers from the plan's measuring table (section 5).
+    if (!kReleaseMode) {
+      // The numbers from the plan's measuring table (section 5). Debug and
+      // profile builds only; profile is the one to judge smoothness in.
+      SchedulerBinding.instance.addTimingsCallback(_onTimings);
       _statsTimer = Timer.periodic(const Duration(milliseconds: 500), (
         _,
       ) async {
@@ -84,8 +87,22 @@ class _RewindScreenState extends State<RewindScreen> {
     }
   }
 
+  // Frames whose build + raster took longer than one 60 Hz frame.
+  int _slowFrames = 0;
+  int _allFrames = 0;
+
+  void _onTimings(List<FrameTiming> timings) {
+    for (final timing in timings) {
+      _allFrames++;
+      if (timing.totalSpan > const Duration(microseconds: 16700)) _slowFrames++;
+    }
+  }
+
   @override
   void dispose() {
+    if (!kReleaseMode) {
+      SchedulerBinding.instance.removeTimingsCallback(_onTimings);
+    }
     _statsTimer?.cancel();
     _events?.cancel();
     _strip.dispose();
@@ -136,6 +153,9 @@ class _RewindScreenState extends State<RewindScreen> {
           WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToThumb());
         }
       case RewindError():
+        // The frames are already on disk once the person is choosing; a
+        // camera that fails now (app in the background) must not take them away.
+        if (_phase == _Phase.picking) return;
         setState(
           () => _phase = _phase == _Phase.holding
               ? _Phase.nothingKept
@@ -355,7 +375,7 @@ class _RewindScreenState extends State<RewindScreen> {
             fit: StackFit.expand,
             children: [
               content,
-              if (kDebugMode && _stats.isNotEmpty)
+              if (!kReleaseMode && _stats.isNotEmpty)
                 Positioned(
                   left: 6,
                   top: 6,
@@ -401,6 +421,8 @@ class _RewindScreenState extends State<RewindScreen> {
         'hqLagMs',
       ])
         '$key ${number(_stats[key])}',
+      'slowFrames $_slowFrames/$_allFrames '
+          '(${_allFrames == 0 ? 0 : (100 * _slowFrames / _allFrames).round()}%)',
     ];
     return Container(
       color: NeoColors.ink.withValues(alpha: 0.6),

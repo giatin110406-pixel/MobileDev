@@ -100,6 +100,33 @@ class FrameRingTest {
     }
 
     @Test
+    fun freezeStopsWaitingAndOnlyWorksAfterAPress() {
+        val ring = FrameRing()
+        ring.offer(frame(0))
+        // Nothing to freeze while only waiting for the shutter.
+        ring.freeze()
+        assertEquals(FrameRing.State.ARMED, ring.state)
+        ring.press(100 * ms)
+        ring.freeze()
+        assertEquals(FrameRing.State.FROZEN, ring.state)
+        assertFalse(ring.offer(frame(200)))
+        assertEquals(1, ring.size)
+    }
+
+    @Test
+    fun aSecondPressIsIgnoredUntilReset() {
+        val ring = FrameRing()
+        ring.offer(frame(0))
+        ring.press(100 * ms)
+        ring.press(900 * ms)
+        // Still waiting for the first press's window (100 + 1000).
+        assertTrue(ring.offer(frame(1000)))
+        assertEquals(FrameRing.State.AFTER_PRESS, ring.state)
+        assertTrue(ring.offer(frame(1100)))
+        assertEquals(FrameRing.State.FROZEN, ring.state)
+    }
+
+    @Test
     fun totalBytesFollowsTheFramesHeld() {
         val ring = FrameRing()
         for (t in 0..4000 step 100) ring.offer(frame(t.toLong(), 7))

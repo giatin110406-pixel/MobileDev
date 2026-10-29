@@ -91,7 +91,13 @@ void main() {
     ];
   });
 
-  tearDown(() => dir.deleteSync(recursive: true));
+  tearDown(() {
+    try {
+      dir.deleteSync(recursive: true);
+    } on FileSystemException {
+      // Windows keeps a picture open while it is still being read.
+    }
+  });
 
   Future<Uint8List?> pumpScreen(
     WidgetTester tester,
@@ -222,6 +228,24 @@ void main() {
     expect(backend.handoffs, [
       [1, 2, 3],
     ]);
+  });
+
+  testWidgets('a camera error says busy, and is ignored while choosing', (
+    tester,
+  ) async {
+    final backend = FakeRewindBackend();
+    await pumpScreen(tester, backend);
+    await emit(tester, backend, const RewindError('cameraBusy', 'in use'));
+    expect(find.text('THE CAMERA IS BUSY'), findsOneWidget);
+    await tester.tap(find.text('TRY AGAIN'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('Capture'));
+    await tester.pump();
+    await emit(tester, backend, RewindFrozen(frames: frames, still: null));
+    await emit(tester, backend, const RewindError('cameraBusy', 'closed'));
+    expect(find.text('THE CAMERA IS BUSY'), findsNothing);
+    expect(find.text('SEND'), findsOneWidget);
   });
 
   testWidgets('nothing kept is reported plainly', (tester) async {
