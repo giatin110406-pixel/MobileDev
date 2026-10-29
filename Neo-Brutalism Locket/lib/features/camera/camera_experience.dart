@@ -468,8 +468,16 @@ class CameraTabState extends State<CameraTab> {
         )
       : PluginShotCamera(description);
 
+  /// Frames that came before [takePicture] returned (a slow still): kept
+  /// until the shot they belong to is adopted.
+  final Map<String, ShotBurst> _earlyBursts = {};
+
   void _onBurst(ShotBurst burst) {
-    if (!mounted || burst.shotId != _shotId || burst.frames.isEmpty) return;
+    if (!mounted || burst.frames.isEmpty) return;
+    if (burst.shotId != _shotId) {
+      _earlyBursts[burst.shotId] = burst;
+      return;
+    }
     setState(() => _burst = burst);
   }
 
@@ -483,6 +491,9 @@ class CameraTabState extends State<CameraTab> {
     _shotId = shot.shotId;
     _shotStillPath = shot.shotId == null ? null : shot.path;
     _pickedFramePath = null;
+    final early = _earlyBursts[shot.shotId];
+    _earlyBursts.clear();
+    if (early != null) _burst = early;
   }
 
   /// Lets the camera delete the frames kept for the last shot.
