@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:neo_brutalism_locket/core/backend/backend.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_signaling.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 /// Omni POV: a friend (the viewer, A) watches what my camera (the host, B) sees, live,
@@ -410,11 +411,8 @@ class _SupabaseSignal implements PovSignalChannel {
         .onBroadcast(
           event: 'signal',
           callback: (payload) {
-            // The payload sits in `payload` on some versions of the client.
-            final inner = payload['payload'];
-            _messages.add(
-              inner is Map ? Map<String, dynamic>.from(inner) : payload,
-            );
+            final message = decodePovSignal(payload);
+            if (message != null) _messages.add(message);
           },
         )
         .subscribe((status, error) {
@@ -441,7 +439,14 @@ class _SupabaseSignal implements PovSignalChannel {
 
   @override
   Future<void> send(Map<String, dynamic> message) async {
-    await _channel.sendBroadcastMessage(event: 'signal', payload: message);
+    await ready;
+    final result = await _channel.sendBroadcastMessage(
+      event: 'signal',
+      payload: encodePovSignal(message),
+    );
+    if (result != sb.ChannelResponse.ok) {
+      throw StateError('POV signal delivery failed: $result');
+    }
   }
 
   @override

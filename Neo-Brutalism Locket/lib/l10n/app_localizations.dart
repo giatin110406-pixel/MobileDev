@@ -5354,6 +5354,12 @@ abstract class AppLocalizations {
   /// **'TRỰC TIẾP'**
   String get povLive;
 
+  /// No description provided for @povConnecting.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG KẾT NỐI…'**
+  String get povConnecting;
+
   /// No description provided for @povReconnecting.
   ///
   /// In vi, this message translates to:
@@ -5377,6 +5383,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đây là đúng khung vuông của tấm ảnh.'**
   String get povFramingNote;
+
+  /// No description provided for @povSnapBoth.
+  ///
+  /// In vi, this message translates to:
+  /// **'TÁCH! CẢ HAI MÁY ĐÃ CHỤP'**
+  String get povSnapBoth;
 
   /// No description provided for @povShotsTaken.
   ///
@@ -5485,6 +5497,138 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{count} ảnh chưa sẵn sàng để tìm theo nội dung.'**
   String searchPending(int count);
+
+  /// No description provided for @holdFrameTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP HỘ'**
+  String get holdFrameTitle;
+
+  /// No description provided for @holdFrameIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn khung bạn muốn rồi khóa lại. Đưa máy cho bạn bè để họ chụp giúp. Giữ người và cảnh ít chuyển động.'**
+  String get holdFrameIntro;
+
+  /// No description provided for @holdFrameChoose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Canh bố cục bạn muốn, rồi khóa khung.'**
+  String get holdFrameChoose;
+
+  /// No description provided for @holdFrameLock.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÓA KHUNG NÀY'**
+  String get holdFrameLock;
+
+  /// No description provided for @holdFrameHandoff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa máy cho bạn. Người nhận máy bấm Bắt đầu rồi làm theo mũi tên.'**
+  String get holdFrameHandoff;
+
+  /// No description provided for @holdFrameStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẮT ĐẦU'**
+  String get holdFrameStart;
+
+  /// No description provided for @holdFramePause.
+  ///
+  /// In vi, this message translates to:
+  /// **'TẠM DỪNG TỰ CHỤP'**
+  String get holdFramePause;
+
+  /// No description provided for @holdFrameReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỌN LẠI KHUNG'**
+  String get holdFrameReset;
+
+  /// No description provided for @holdFrameSteady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã khớp — giữ yên, máy sẽ tự chụp.'**
+  String get holdFrameSteady;
+
+  /// No description provided for @holdFrameCapturing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chụp…'**
+  String get holdFrameCapturing;
+
+  /// No description provided for @holdFrameUnsure.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không nhận ra khung. Hướng máy về cảnh ban đầu, tìm chỗ sáng hơn hoặc chọn lại khung.'**
+  String get holdFrameUnsure;
+
+  /// No description provided for @holdFrameFewFeatures.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung này ít chi tiết để nhận ra. Chọn khung sáng hơn, có đồ vật hoặc đường nét rõ.'**
+  String get holdFrameFewFeatures;
+
+  /// No description provided for @holdFrameStale.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tìm lại khung… Giữ máy hướng về cảnh ban đầu.'**
+  String get holdFrameStale;
+
+  /// No description provided for @holdFrameUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa canh khung được trên máy này. Thử chọn lại khung hoặc quay về chụp bình thường.'**
+  String get holdFrameUnavailable;
+
+  /// No description provided for @holdFrameRight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa khung ngắm sang phải →'**
+  String get holdFrameRight;
+
+  /// No description provided for @holdFrameLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'← Đưa khung ngắm sang trái'**
+  String get holdFrameLeft;
+
+  /// No description provided for @holdFrameDown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa khung ngắm xuống ↓'**
+  String get holdFrameDown;
+
+  /// No description provided for @holdFrameUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa khung ngắm lên ↑'**
+  String get holdFrameUp;
+
+  /// No description provided for @holdFrameClockwise.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay máy theo chiều kim đồng hồ ↻'**
+  String get holdFrameClockwise;
+
+  /// No description provided for @holdFrameCounterclockwise.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay máy ngược chiều kim đồng hồ ↺'**
+  String get holdFrameCounterclockwise;
+
+  /// No description provided for @holdFrameBack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lùi lại một chút'**
+  String get holdFrameBack;
+
+  /// No description provided for @holdFrameCloser.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiến gần một chút'**
+  String get holdFrameCloser;
 }
 
 class _AppLocalizationsDelegate

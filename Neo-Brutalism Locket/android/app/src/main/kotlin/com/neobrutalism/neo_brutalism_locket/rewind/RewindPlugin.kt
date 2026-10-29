@@ -187,11 +187,22 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
         next.start(
             call.argument<String>("lens") == "front",
             call.argument<Boolean>("continuous") == true,
+            keepFrames = call.argument<Boolean>("keepFrames") != false,
         ) { outcome -> outcome.reply(result) }
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
+            "lockFrame" -> {
+                val active = camera
+                if (active == null) result.error("cameraBusy", "Camera stopped", null)
+                else active.lockFrame { outcome -> outcome.reply(result) }
+            }
+            "unlockFrame" -> { camera?.unlockFrame(); result.success(null) }
+            "armHoldFrame" -> {
+                camera?.armHoldFrame(call.argument<Boolean>("on") == true)
+                result.success(null)
+            }
             "start" -> startCamera(call, result)
             // The main camera page (continuous mode).
             "shoot" -> {

@@ -44,6 +44,7 @@ import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/camera/photo_tools_menu.dart';
 import 'package:neo_brutalism_locket/features/camera/shot_camera.dart';
+import 'package:neo_brutalism_locket/features/hold_frame/hold_frame_screen.dart';
 import 'package:neo_brutalism_locket/features/rewind/rewind_picker.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_check_text.dart';
@@ -371,6 +372,47 @@ class CameraTabState extends State<CameraTab> {
 
   /// A screen of the session is open (so a second one is not opened).
   bool _povOpen = false;
+  bool _holdFrameOpen = false;
+
+  Future<void> _openHoldFrame() async {
+    if (_holdFrameOpen ||
+        _povOpen ||
+        _processing ||
+        _recording ||
+        _questMode ||
+        _countdown != null ||
+        _cameraLoading) {
+      return;
+    }
+    _holdFrameOpen = true;
+    Uint8List? bytes;
+    try {
+      await _stopScan();
+      final old = _camera;
+      _camera = null;
+      setState(() => _cameraLoading = true);
+      await old?.dispose();
+      if (!mounted) return;
+      bytes = await Navigator.of(context).push<Uint8List>(
+        MaterialPageRoute(builder: (_) => const HoldFrameScreen()),
+      );
+    } catch (error, stack) {
+      AppLog.warn('hold_frame', error, stack);
+      if (mounted) _notify(AppLocalizations.of(context).cameraUnavailable);
+    } finally {
+      if (mounted) await _initializeCamera();
+      _holdFrameOpen = false;
+    }
+    if (!mounted) return;
+    if (bytes != null) {
+      try {
+        await _startPrint(bytes);
+      } catch (_) {
+        if (mounted) _notify(AppLocalizations.of(context).photoNotSaved);
+      }
+    }
+    if (mounted) _onPov();
+  }
 
   /// Photos taken in the session, in order, with their square JPEG.
   final _povShots = <(NeoPhoto, Uint8List)>[];
@@ -471,7 +513,7 @@ class CameraTabState extends State<CameraTab> {
   /// The session moved: a friend said yes to me, or I said yes to a friend.
   void _onPov() {
     final pov = widget.pov;
-    if (pov == null || _povOpen || !mounted) return;
+    if (pov == null || _povOpen || _holdFrameOpen || !mounted) return;
     if (pov.isHosting) {
       _povOpen = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _runPovHost());
@@ -502,14 +544,33 @@ class CameraTabState extends State<CameraTab> {
       return;
     }
     final friend = _povFriend(session.hostId ?? '');
+    _povShots.clear();
+    // The viewer only receives video; its own camera is not needed during POV.
+    final old = _camera;
+    _camera = null;
+    if (mounted) setState(() => _cameraLoading = true);
+    await old?.dispose();
+    if (!mounted) return;
+    if (!pov.isWatching || pov.session?.id != session.id) {
+      _povOpen = false;
+      await _initializeCamera();
+      return;
+    }
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) =>
-            PovViewerScreen(store: pov, repository: repository, friend: friend),
+        builder: (_) => PovViewerScreen(
+          store: pov,
+          repository: repository,
+          friend: friend,
+          onShot: _savePovShot,
+        ),
       ),
     );
     _povOpen = false;
+    if (!mounted) return;
+    await _initializeCamera();
     _povEnded(friend?.name ?? '');
+    await _finishPovShots(friend?.id);
   }
 
   Future<void> _runPovHost() async {
@@ -529,6 +590,11 @@ class CameraTabState extends State<CameraTab> {
     if (mounted) setState(() => _cameraLoading = true);
     await old?.dispose();
     if (!mounted) return;
+    if (!pov.isHosting || pov.session?.id != session.id) {
+      _povOpen = false;
+      await _initializeCamera();
+      return;
+    }
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => PovHostScreen(
@@ -1448,32 +1514,11 @@ class CameraTabState extends State<CameraTab> {
         composer.selectedAlbums.isNotEmpty ||
         composer.tagged.isNotEmpty;
     return ListenableBuilder(
-      listenable: Listenable.merge([composer, composer.captionFocus]),
+      listenable: composer,
       builder: (context, _) => GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        // While typing, the keyboard just covers the controls: the picture
-        // keeps its full square (never squeezed) and sits at the top, with the
-        // caption on it staying visible above the keyboard.
-        child: composer.captionFocus.hasFocus
-            ? Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  18 - _squareBleed,
-                  12,
-                  18 - _squareBleed,
-                  0,
-                ),
-                child: OverflowBox(
-                  alignment: Alignment.topCenter,
-                  minHeight: 0,
-                  maxHeight: double.infinity,
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: _draftViewfinder(photo, composer),
-                  ),
-                ),
-              )
-            : _shootLayout(
+        child: _shootLayout(
                 top: Row(
                   children: [
                     // Off the picture, so the square stays clean.
@@ -2206,6 +2251,26 @@ class CameraTabState extends State<CameraTab> {
                 ),
               Positioned(top: 18, left: 18, child: _flashControl()),
               Positioned(top: 18, right: 18, child: _timerControl()),
+              if (!kIsWeb &&
+                  Platform.isAndroid &&
+                  !_questMode &&
+                  !_recording &&
+                  !_processing &&
+                  _countdown == null)
+                Positioned(
+                  top: 18,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: _cornerControl(
+                      icon: Icons.filter_center_focus,
+                      tooltip: AppLocalizations.of(context).holdFrameTitle,
+                      active: false,
+                      activeColor: NeoColors.accent,
+                      onPressed: _openHoldFrame,
+                    ),
+                  ),
+                ),
               // Omni POV: see yourself through a friend's camera. Not while
               // recording, or in quest mode (a quest is shot live).
               if (widget.pov != null &&
