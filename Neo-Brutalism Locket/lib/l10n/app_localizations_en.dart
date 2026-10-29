@@ -2902,6 +2902,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stripSaved => 'Strip saved to your photo library.';
 
   @override
+  String get rewindShutterLabel => 'Capture';
+
+  @override
+  String get rewindHint =>
+      'PRESSED TOO LATE? THE 2 SECONDS BEFORE THE PRESS ARE KEPT.';
+
+  @override
+  String get rewindHolding => 'HOLDING THE MOMENT...';
+
+  @override
+  String get rewindSend => 'SEND';
+
+  @override
+  String get rewindRetake => 'RETAKE';
+
+  @override
+  String get rewindClose => 'Close';
+
+  @override
+  String get rewindExtraFrame => 'EXTRA FRAME';
+
+  @override
+  String get rewindCameraBusy => 'THE CAMERA IS BUSY';
+
+  @override
+  String get rewindNothingKept => 'NO FRAME WAS KEPT. TRY AGAIN.';
+
+  @override
+  String rewindFrameSemantics(String time) {
+    return 'Frame $time';
+  }
+
+  @override
   String get stripLoadFailed =>
       'The photos could not be loaded. Check your connection and try again.';
 

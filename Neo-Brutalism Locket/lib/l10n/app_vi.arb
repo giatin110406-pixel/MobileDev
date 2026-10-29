@@ -1874,7 +1874,24 @@
   "stripSave": "LƯU VÀO MÁY",
   "stripShare": "CHIA SẺ / IN",
   "stripSaved": "Đã lưu strip vào thư viện ảnh.",
-  "stripLoadFailed": "Không tải được ảnh. Kiểm tra kết nối rồi thử lại.",
+  "rewindShutterLabel": "Chụp",
+  "rewindHint": "BẤM TRỄ CŨNG ĐƯỢC. APP GIỮ LẠI 2 GIÂY TRƯỚC LÚC BẤM.",
+  "rewindHolding": "ĐANG GIỮ KHOẢNH KHẮC...",
+  "rewindSend": "GỬI",
+  "rewindRetake": "CHỤP LẠI",
+  "rewindClose": "Đóng",
+  "rewindExtraFrame": "KHUNG PHỤ",
+  "rewindCameraBusy": "CAMERA ĐANG BẬN",
+  "rewindNothingKept": "KHÔNG GIỮ ĐƯỢC KHUNG NÀO. CHỤP LẠI NHÉ.",
+  "rewindFrameSemantics": "Khung {time}",
+  "@rewindFrameSemantics": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "stripLoadFailed":"Không tải được ảnh. Kiểm tra kết nối rồi thử lại.",
   "stripTextLabel": "CHỮ TRÊN STRIP",
   "stripZoomHint": "CHẠM ĐỂ PHÓNG TO",
   "stripPaperGrid": "LƯỚI 2×3 (6 ẢNH)",

@@ -2852,6 +2852,39 @@ class AppLocalizationsVi extends AppLocalizations {
   String get stripSaved => 'Đã lưu strip vào thư viện ảnh.';
 
   @override
+  String get rewindShutterLabel => 'Chụp';
+
+  @override
+  String get rewindHint =>
+      'BẤM TRỄ CŨNG ĐƯỢC. APP GIỮ LẠI 2 GIÂY TRƯỚC LÚC BẤM.';
+
+  @override
+  String get rewindHolding => 'ĐANG GIỮ KHOẢNH KHẮC...';
+
+  @override
+  String get rewindSend => 'GỬI';
+
+  @override
+  String get rewindRetake => 'CHỤP LẠI';
+
+  @override
+  String get rewindClose => 'Đóng';
+
+  @override
+  String get rewindExtraFrame => 'KHUNG PHỤ';
+
+  @override
+  String get rewindCameraBusy => 'CAMERA ĐANG BẬN';
+
+  @override
+  String get rewindNothingKept => 'KHÔNG GIỮ ĐƯỢC KHUNG NÀO. CHỤP LẠI NHÉ.';
+
+  @override
+  String rewindFrameSemantics(String time) {
+    return 'Khung $time';
+  }
+
+  @override
   String get stripLoadFailed =>
       'Không tải được ảnh. Kiểm tra kết nối rồi thử lại.';
 

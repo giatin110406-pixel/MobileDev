@@ -5072,6 +5072,66 @@ abstract class AppLocalizations {
   /// **'Đã lưu strip vào thư viện ảnh.'**
   String get stripSaved;
 
+  /// No description provided for @rewindShutterLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp'**
+  String get rewindShutterLabel;
+
+  /// No description provided for @rewindHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẤM TRỄ CŨNG ĐƯỢC. APP GIỮ LẠI 2 GIÂY TRƯỚC LÚC BẤM.'**
+  String get rewindHint;
+
+  /// No description provided for @rewindHolding.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG GIỮ KHOẢNH KHẮC...'**
+  String get rewindHolding;
+
+  /// No description provided for @rewindSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'GỬI'**
+  String get rewindSend;
+
+  /// No description provided for @rewindRetake.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP LẠI'**
+  String get rewindRetake;
+
+  /// No description provided for @rewindClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng'**
+  String get rewindClose;
+
+  /// No description provided for @rewindExtraFrame.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHUNG PHỤ'**
+  String get rewindExtraFrame;
+
+  /// No description provided for @rewindCameraBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'CAMERA ĐANG BẬN'**
+  String get rewindCameraBusy;
+
+  /// No description provided for @rewindNothingKept.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG GIỮ ĐƯỢC KHUNG NÀO. CHỤP LẠI NHÉ.'**
+  String get rewindNothingKept;
+
+  /// No description provided for @rewindFrameSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung {time}'**
+  String rewindFrameSemantics(String time);
+
   /// No description provided for @stripLoadFailed.
   ///
   /// In vi, this message translates to:
