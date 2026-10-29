@@ -1868,6 +1868,7 @@
   "stripSave": "SAVE",
   "stripShare": "SHARE / PRINT",
   "stripSaved": "Strip saved to your photo library.",
+  "rewindTooltip": "Rewind capture",
   "rewindShutterLabel": "Capture",
   "rewindHint": "PRESSED TOO LATE? THE 2 SECONDS BEFORE THE PRESS ARE KEPT.",
   "rewindHolding": "HOLDING THE MOMENT...",

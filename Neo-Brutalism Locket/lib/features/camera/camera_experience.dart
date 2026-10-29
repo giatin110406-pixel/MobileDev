@@ -34,6 +34,7 @@ import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
+import 'package:neo_brutalism_locket/features/rewind/rewind_screen.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_check_text.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
@@ -697,6 +698,47 @@ class CameraTabState extends State<CameraTab> {
       if (!mounted) return;
       setState(() => _processing = false);
       _notify(AppLocalizations.of(context).photoOpenFailed);
+    }
+  }
+
+  /// Opens rewind capture. It drives the camera itself, so this page lets go
+  /// of its own first and starts it again when the person comes back; the
+  /// frame they picked is then printed like any other shot.
+  Future<void> _openRewind() async {
+    if (_processing || _recording) return;
+    final lens = _cameras.isEmpty
+        ? CameraLensDirection.back
+        : _cameras[_cameraIndex].lensDirection;
+    final old = _camera;
+    setState(() {
+      _camera = null;
+      _cameraLoading = true;
+    });
+    await old?.dispose();
+    if (!mounted) return;
+    final bytes = await Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute(builder: (_) => RewindScreen(initialLens: lens)),
+    );
+    if (!mounted) return;
+    await _initializeCamera();
+    if (bytes != null && mounted) await _printPicked(bytes);
+  }
+
+  /// A picture made elsewhere (the lock-screen rewind hands one over): print
+  /// it as a new shot, unless this page is busy with something else.
+  Future<void> importShot(Uint8List bytes) async {
+    if (_processing || _questMode || _draftMode) return;
+    await _printPicked(bytes);
+  }
+
+  Future<void> _printPicked(Uint8List bytes) async {
+    setState(() => _processing = true);
+    try {
+      await _startPrint(bytes);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      _notify(AppLocalizations.of(context).photoNotSaved);
     }
   }
 
@@ -1801,6 +1843,8 @@ class CameraTabState extends State<CameraTab> {
                   ),
                 ),
               Positioned(top: 18, left: 18, child: _flashControl()),
+              if (!_questMode && !kIsWeb && Platform.isAndroid)
+                Positioned(top: 18, left: 62, child: _rewindControl()),
               Positioned(top: 18, right: 18, child: _timerControl()),
               if (camera != null &&
                   camera.value.isInitialized &&
@@ -1898,6 +1942,16 @@ class CameraTabState extends State<CameraTab> {
     active: _flashMode != FlashMode.off,
     activeColor: NeoColors.accent,
     onPressed: _toggleFlash,
+  );
+
+  Widget _rewindControl() => _cornerControl(
+    icon: Icons.history_toggle_off,
+    tooltip: AppLocalizations.of(context).rewindTooltip,
+    active: false,
+    activeColor: NeoColors.accent,
+    onPressed: _processing || _recording || _countdown != null
+        ? null
+        : _openRewind,
   );
 
   Widget _timerControl() => _cornerControl(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -180,6 +179,16 @@ void main() {
     await tester.tap(find.text('TRY AGAIN'));
     await tester.pumpAndSettle();
     expect(find.bySemanticsLabel('Capture'), findsOneWidget);
+  });
+
+  testWidgets('closing lets the camera go and returns nothing', (tester) async {
+    final backend = FakeRewindBackend();
+    await pumpScreen(tester, backend);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+    expect(backend.stopped, isTrue);
+    expect(find.bySemanticsLabel('Capture'), findsNothing);
+    expect(find.text('open'), findsOneWidget);
   });
 
   testWidgets('nothing kept is reported plainly', (tester) async {

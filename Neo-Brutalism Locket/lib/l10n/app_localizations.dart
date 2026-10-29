@@ -5072,6 +5072,12 @@ abstract class AppLocalizations {
   /// **'Đã lưu strip vào thư viện ảnh.'**
   String get stripSaved;
 
+  /// No description provided for @rewindTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp lùi thời gian'**
+  String get rewindTooltip;
+
   /// No description provided for @rewindShutterLabel.
   ///
   /// In vi, this message translates to:

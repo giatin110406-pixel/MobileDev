@@ -2902,6 +2902,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stripSaved => 'Strip saved to your photo library.';
 
   @override
+  String get rewindTooltip => 'Rewind capture';
+
+  @override
   String get rewindShutterLabel => 'Capture';
 
   @override

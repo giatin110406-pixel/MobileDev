@@ -187,6 +187,13 @@ class _RewindScreenState extends State<RewindScreen> {
     }
   }
 
+  // The camera is let go of before the page closes, so the page below can
+  // start its own right away without two cameras on one screen.
+  Future<void> _close([Uint8List? bytes]) async {
+    await _backend.stop();
+    if (mounted) Navigator.of(context).pop(bytes);
+  }
+
   Future<void> _send() async {
     final timeline = _timeline;
     if (timeline == null || _sending) return;
@@ -196,8 +203,7 @@ class _RewindScreenState extends State<RewindScreen> {
       final bytes = entry.isStill
           ? await cropShotToSquare(entry.path)
           : await _backend.finalizeFrame(entry.path, entry.rotation);
-      if (!mounted) return;
-      Navigator.of(context).pop(bytes);
+      await _close(bytes);
     } catch (_) {
       if (!mounted) return;
       setState(() => _sending = false);
@@ -208,50 +214,57 @@ class _RewindScreenState extends State<RewindScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      backgroundColor: NeoColors.paper,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, box) => Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    NeoIconButton(
-                      icon: Icons.close,
-                      tooltip: l10n.rewindClose,
-                      onPressed: () => Navigator.of(context).pop(),
-                      fill: NeoColors.coral,
-                      size: 44,
-                    ),
-                    const Spacer(),
-                    if (_phase == _Phase.ready)
+    return PopScope(
+      // The back button goes through _close so the camera is released first.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _close();
+      },
+      child: Scaffold(
+        backgroundColor: NeoColors.paper,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, box) => Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
                       NeoIconButton(
-                        icon: Icons.flip_camera_ios_outlined,
-                        tooltip: l10n.switchCameraTooltip,
-                        onPressed: _flip,
-                        fill: NeoColors.accent,
+                        icon: Icons.close,
+                        tooltip: l10n.rewindClose,
+                        onPressed: _close,
+                        fill: NeoColors.coral,
                         size: 44,
                       ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Square, but never so tall that the controls below are pushed
-                // off a short screen.
-                Center(
-                  child: _square(
-                    l10n,
-                    math.min(
-                      box.maxWidth - 32,
-                      math.max(160, box.maxHeight - 290),
+                      const Spacer(),
+                      if (_phase == _Phase.ready)
+                        NeoIconButton(
+                          icon: Icons.flip_camera_ios_outlined,
+                          tooltip: l10n.switchCameraTooltip,
+                          onPressed: _flip,
+                          fill: NeoColors.accent,
+                          size: 44,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Square, but never so tall that the controls below are pushed
+                  // off a short screen.
+                  Center(
+                    child: _square(
+                      l10n,
+                      math.min(
+                        box.maxWidth - 32,
+                        math.max(160, box.maxHeight - 290),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                Expanded(child: _lower(l10n)),
-              ],
+                  const SizedBox(height: 14),
+                  Expanded(child: _lower(l10n)),
+                ],
+              ),
             ),
           ),
         ),

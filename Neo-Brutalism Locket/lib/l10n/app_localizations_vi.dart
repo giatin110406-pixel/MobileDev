@@ -2852,6 +2852,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get stripSaved => 'Đã lưu strip vào thư viện ảnh.';
 
   @override
+  String get rewindTooltip => 'Chụp lùi thời gian';
+
+  @override
   String get rewindShutterLabel => 'Chụp';
 
   @override
