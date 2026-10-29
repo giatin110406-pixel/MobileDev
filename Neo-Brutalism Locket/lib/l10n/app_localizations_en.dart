@@ -3061,6 +3061,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get povLive => 'LIVE';
 
   @override
+  String get povConnecting => 'CONNECTING…';
+
+  @override
   String get povReconnecting => 'RECONNECTING…';
 
   @override
@@ -3074,6 +3077,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get povFramingNote =>
       'This is exactly the square the photo will have.';
+
+  @override
+  String get povSnapBoth => 'SNAP! BOTH PHONES TOOK A PHOTO';
 
   @override
   String povShotsTaken(int count) {

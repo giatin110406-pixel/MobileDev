@@ -1957,6 +1957,7 @@
     }
   },
   "povLive": "LIVE",
+  "povConnecting": "CONNECTING…",
   "povReconnecting": "RECONNECTING…",
   "povConnectionLost": "CONNECTION LOST",
   "povWaitingPicture": "Waiting for {name}'s camera…",
@@ -1968,6 +1969,7 @@
     }
   },
   "povFramingNote": "This is exactly the square the photo will have.",
+  "povSnapBoth": "SNAP! BOTH PHONES TOOK A PHOTO",
   "povShotsTaken": "{count, plural, =0{No photos yet} =1{1 photo taken} other{{count} photos taken}}",
   "@povShotsTaken": {
     "placeholders": {

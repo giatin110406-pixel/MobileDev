@@ -10,6 +10,7 @@ import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/camera/capture_options.dart';
 import 'package:neo_brutalism_locket/features/camera/square_crop.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_connection.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_controls.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
@@ -52,7 +53,8 @@ class _PovHostScreenState extends State<PovHostScreen>
 
   bool _ready = false;
   bool _flash = false;
-  bool _shutterDown = false;
+  bool _snapped = false;
+  Timer? _snapTimer;
   bool _busy = false;
   bool _torch = false;
   bool _front = false;
@@ -89,6 +91,8 @@ class _PovHostScreenState extends State<PovHostScreen>
       _connection = connection;
       connection.link.addListener(_onLink);
       connection.onBye.listen((_) => _finish(PovEnd.ended));
+      connection.onCommand.listen(_onCommand);
+      connection.onGo.listen(_begin);
       await connection.start();
     } catch (error, stack) {
       AppLog.warn('pov_host', error, stack);
@@ -123,6 +127,19 @@ class _PovHostScreenState extends State<PovHostScreen>
     }
   }
 
+  /// The friend who watches asked for something from my camera.
+  void _onCommand(String command) {
+    if (!mounted) return;
+    switch (command) {
+      case 'flip':
+        unawaited(_flip());
+      case 'torch':
+        unawaited(_toggleTorch());
+    }
+  }
+
+  void _reportState() => _connection?.sendState(front: _front, torch: _torch);
+
   void _onLink() {
     if (!mounted) return;
     if (_connection?.link.value == PovLink.lost) {
@@ -151,7 +168,7 @@ class _PovHostScreenState extends State<PovHostScreen>
   void _close() {
     if (_leaving) return;
     _leaving = true;
-    if (mounted) Navigator.of(context).maybePop();
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -165,6 +182,7 @@ class _PovHostScreenState extends State<PovHostScreen>
     WidgetsBinding.instance.removeObserver(this);
     widget.store.removeListener(_onStore);
     _countdownTimer?.cancel();
+    _snapTimer?.cancel();
     final connection = _connection;
     if (connection != null) {
       connection.link.removeListener(_onLink);
@@ -193,14 +211,23 @@ class _PovHostScreenState extends State<PovHostScreen>
 
   // Taking photos ----------------------------------------------------------------------
 
+  /// The shutter was pressed here: both phones take a photo.
   void _press() {
     if (_busy || _countdown != null || !_ready) return;
+    final seconds = _timer == ShotTimer.off ? 0 : _timer.seconds;
+    _connection?.sendGo(seconds);
+    _begin(seconds);
+  }
+
+  /// A photo in [seconds] (now when 0), asked for here or by the friend.
+  void _begin(int seconds) {
+    if (!mounted || _busy || _countdown != null || !_ready) return;
     Haptics.press();
-    if (_timer == ShotTimer.off) {
+    if (seconds <= 0) {
       unawaited(_capture());
       return;
     }
-    setState(() => _countdown = _timer.seconds);
+    setState(() => _countdown = seconds);
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final left = (_countdown ?? 1) - 1;
       if (left <= 0) {
@@ -219,9 +246,15 @@ class _PovHostScreenState extends State<PovHostScreen>
     setState(() {
       _busy = true;
       _flash = true;
+      _snapped = true;
     });
+    Haptics.heavy();
     Timer(const Duration(milliseconds: 90), () {
       if (mounted) setState(() => _flash = false);
+    });
+    _snapTimer?.cancel();
+    _snapTimer = Timer(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _snapped = false);
     });
     try {
       final frame = await track.captureFrame();
@@ -264,6 +297,7 @@ class _PovHostScreenState extends State<PovHostScreen>
           _front = !_front;
           _torch = false;
         });
+        _reportState();
       }
     } catch (error, stack) {
       AppLog.warn('pov_host', error, stack);
@@ -276,7 +310,10 @@ class _PovHostScreenState extends State<PovHostScreen>
     try {
       if (!await track.hasTorch()) return;
       await track.setTorch(!_torch);
-      if (mounted) setState(() => _torch = !_torch);
+      if (mounted) {
+        setState(() => _torch = !_torch);
+        _reportState();
+      }
     } catch (error, stack) {
       AppLog.warn('pov_host', error, stack);
     }
@@ -313,13 +350,18 @@ class _PovHostScreenState extends State<PovHostScreen>
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: NeoLabel(
-                          link == PovLink.reconnecting
-                              ? l10n.povReconnecting
-                              : l10n.povHostWatching(name),
-                          color: link == PovLink.reconnecting
-                              ? NeoColors.accent
-                              : NeoColors.teal,
-                          icon: Icons.visibility_outlined,
+                          switch (link) {
+                            PovLink.live => l10n.povHostWatching(name),
+                            PovLink.reconnecting => l10n.povReconnecting,
+                            PovLink.lost => l10n.povConnectionLost,
+                            _ => l10n.povConnecting,
+                          },
+                          color: link == PovLink.live
+                              ? NeoColors.teal
+                              : NeoColors.accent,
+                          icon: link == PovLink.live
+                              ? Icons.visibility_outlined
+                              : Icons.sync,
                         ),
                       ),
                     ),
@@ -329,11 +371,27 @@ class _PovHostScreenState extends State<PovHostScreen>
                     ),
                   ],
                 ),
+                // The viewfinder takes the middle, the controls sit under the thumb.
+                Expanded(
+                  child: Center(
+                    child: AspectRatio(aspectRatio: 1, child: _viewfinder()),
+                  ),
+                ),
+                PovSnapLine(snapped: _snapped, note: l10n.povFramingNote),
+                const SizedBox(height: 10),
+                PovControls(
+                  ready: _ready,
+                  busy: _busy,
+                  front: _front,
+                  torch: _torch,
+                  timer: _timer,
+                  counting: _countdown != null,
+                  onShutter: _press,
+                  onTorch: _toggleTorch,
+                  onFlip: _flip,
+                  onTimer: () => setState(() => _timer = _timer.next),
+                ),
                 const SizedBox(height: 18),
-                AspectRatio(aspectRatio: 1, child: _viewfinder()),
-                const Spacer(),
-                _controls(l10n),
-                const SizedBox(height: 14),
                 NeoButton(
                   expand: true,
                   label: l10n.povHostStop,
@@ -366,146 +424,9 @@ class _PovHostScreenState extends State<PovHostScreen>
               const Center(
                 child: CircularProgressIndicator(color: NeoColors.ink),
               ),
-            IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: _flash ? 0.85 : 0,
-                duration: const Duration(milliseconds: 120),
-                child: const ColoredBox(color: Colors.white),
-              ),
-            ),
-            if (_countdown != null)
-              Center(
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  alignment: Alignment.center,
-                  decoration: NeoTheme.panel(
-                    color: NeoColors.accent,
-                    radius: 999,
-                  ),
-                  child: Text(
-                    '$_countdown',
-                    style: const TextStyle(
-                      fontFamily: NeoFont.display,
-                      color: NeoColors.ink,
-                      fontSize: 44,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
+            PovFlash(on: _flash),
+            if (_countdown != null) PovCountdown(_countdown!),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _controls(AppLocalizations l10n) {
-    return Row(
-      children: [
-        Expanded(
-          child: Center(
-            child: NeoIconButton(
-              icon: _torch ? Icons.flash_on : Icons.flash_off,
-              tooltip: l10n.flashTooltip,
-              onPressed: _front || !_ready ? null : _toggleTorch,
-              fill: _torch ? NeoColors.accent : NeoColors.surface,
-              size: 54,
-            ),
-          ),
-        ),
-        _shutter(l10n),
-        Expanded(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NeoIconButton(
-                  icon: Icons.flip_camera_ios_outlined,
-                  tooltip: l10n.switchCameraTooltip,
-                  onPressed: _ready ? _flip : null,
-                  fill: NeoColors.accent,
-                  size: 54,
-                ),
-                const SizedBox(height: 8),
-                NeoIconButton(
-                  icon: switch (_timer) {
-                    ShotTimer.off => Icons.timer_off_outlined,
-                    ShotTimer.three => Icons.timer_3,
-                    ShotTimer.ten => Icons.timer_10,
-                  },
-                  tooltip: _timer == ShotTimer.off
-                      ? l10n.timerOff
-                      : l10n.timerSeconds(_timer.seconds),
-                  onPressed: _countdown != null
-                      ? null
-                      : () => setState(() => _timer = _timer.next),
-                  fill: _timer == ShotTimer.off
-                      ? NeoColors.surface
-                      : NeoColors.coral,
-                  size: 40,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// The same button as on the camera page.
-  Widget _shutter(AppLocalizations l10n) {
-    final disabled = _busy || !_ready || _countdown != null;
-    return Semantics(
-      button: true,
-      label: l10n.takePhotoLabel,
-      child: Listener(
-        onPointerDown: (_) => setState(() => _shutterDown = true),
-        onPointerUp: (_) => setState(() => _shutterDown = false),
-        onPointerCancel: (_) => setState(() => _shutterDown = false),
-        child: GestureDetector(
-          onTap: disabled ? null : _press,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            width: 78,
-            height: 78,
-            padding: const EdgeInsets.all(7),
-            transform: Matrix4.translationValues(
-              _shutterDown && !disabled ? 4 : 0,
-              _shutterDown && !disabled ? 4 : 0,
-              0,
-            ),
-            decoration: BoxDecoration(
-              color: disabled ? NeoColors.switchOff : NeoColors.ink,
-              shape: BoxShape.circle,
-              border: Border.all(color: NeoColors.ink, width: 2),
-              boxShadow: disabled || _shutterDown
-                  ? const []
-                  : const [
-                      BoxShadow(
-                        color: NeoColors.ink,
-                        offset: Offset(4, 4),
-                        blurRadius: 0,
-                      ),
-                    ],
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: NeoColors.accent,
-                shape: BoxShape.circle,
-                border: Border.all(color: NeoColors.surface, width: 2),
-              ),
-              child: _busy
-                  ? const Padding(
-                      padding: EdgeInsets.all(17),
-                      child: CircularProgressIndicator(
-                        color: NeoColors.ink,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : null,
-            ),
-          ),
         ),
       ),
     );

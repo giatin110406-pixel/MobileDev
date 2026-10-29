@@ -35,6 +35,8 @@ class PovStore extends ChangeNotifier {
   PovFailure? _error;
   bool _busy = false;
   Timer? _expiry;
+  Timer? _waitingPoll;
+  bool _polling = false;
   StreamSubscription<PovSession>? _changes;
 
   /// My session, if it is not over.
@@ -180,6 +182,11 @@ class PovStore extends ChangeNotifier {
     final now = _clock();
     final mine = _session;
     if (mine != null && mine.id == update.id) {
+      // A delayed read must not put an accepted session back into pending.
+      if (mine.status == PovStatus.accepted &&
+          update.status == PovStatus.pending) {
+        return;
+      }
       if (update.isOver) {
         _lastEnd = _endOf(update.status);
         _code = null;
@@ -217,10 +224,32 @@ class PovStore extends ChangeNotifier {
   void _syncExpiry() {
     _expiry?.cancel();
     _expiry = null;
+    _waitingPoll?.cancel();
+    _waitingPoll = null;
     final session = _session;
     if (session == null || session.status != PovStatus.pending) return;
     final wait = session.expiresAt.difference(_clock());
     _expiry = Timer(wait.isNegative ? Duration.zero : wait, _expire);
+    // Realtime can miss an update while its subscription is reconnecting.
+    // While the QR is visible, reconcile with the server as a fallback.
+    _waitingPoll = Timer.periodic(const Duration(seconds: 3), (_) async {
+      if (_polling) return;
+      _polling = true;
+      try {
+        final live = await repository.loadLive();
+        if (_session?.id != session.id || !isWaiting) return;
+        for (final update in live) {
+          if (update.id == session.id) {
+            _apply(update);
+            break;
+          }
+        }
+      } on PovFailure {
+        // Realtime or the next poll can still deliver the update.
+      } finally {
+        _polling = false;
+      }
+    });
   }
 
   void _expire() {
@@ -233,6 +262,8 @@ class PovStore extends ChangeNotifier {
     }
     _code = null;
     _session = null;
+    _waitingPoll?.cancel();
+    _waitingPoll = null;
     _lastEnd = PovEnd.expired;
     notifyListeners();
   }
@@ -256,6 +287,7 @@ class PovStore extends ChangeNotifier {
   @override
   void dispose() {
     _expiry?.cancel();
+    _waitingPoll?.cancel();
     _changes?.cancel();
     repository.dispose();
     super.dispose();
