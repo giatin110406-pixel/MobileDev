@@ -25,6 +25,14 @@ import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/albums/albums_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_host_screen.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_qr_sheet.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_scan.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_text.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_viewer_screen.dart';
+import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_type.dart';
@@ -64,6 +72,9 @@ class CameraTab extends StatefulWidget {
     this.embedPhoto,
     this.shutterKey,
     this.hideShutter = false,
+    this.pov,
+    this.povRepository,
+    this.povFriends = const [],
   });
 
   final PlayerStore player;
@@ -81,6 +92,13 @@ class CameraTab extends StatefulWidget {
   final Future<String?> Function(Uint8List photo)? embedPhoto;
 
   /// Prints on this device, newest first (owned by the shell).
+  /// Omni POV: a friend watches my camera, or I watch theirs. Null without an account.
+  final PovStore? pov;
+  final PovRepository? povRepository;
+
+  /// Friends I can ask (the real ones).
+  final List<PocketFriend> povFriends;
+
   final List<NeoPhoto> photos;
   final PhotoRepository repository;
   final StyleEngineFactory styleEngineFactory;
@@ -203,10 +221,24 @@ class CameraTabState extends State<CameraTab> {
   void initState() {
     super.initState();
     _initializeCamera();
+    widget.pov?.addListener(_onPov);
+  }
+
+  @override
+  void didUpdateWidget(CameraTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pov != widget.pov) {
+      oldWidget.pov?.removeListener(_onPov);
+      widget.pov?.addListener(_onPov);
+    }
   }
 
   @override
   void dispose() {
+    widget.pov?.removeListener(_onPov);
+    _scanTimeout?.cancel();
+    _notOursTimer?.cancel();
+    unawaited(_reader?.close());
     _composer?.dispose();
     _countdownTimer?.cancel();
     _recordTimer?.cancel();
@@ -307,6 +339,260 @@ class CameraTabState extends State<CameraTab> {
   }
 
   void _notify(String message) => showNeoSnack(context, message);
+
+  // Omni POV ------------------------------------------------------------------------------
+  // A friend watches my camera (I take the photos), or I watch theirs. The camera is
+  // handed over to the connection for the session and taken back after it.
+
+  /// A screen of the session is open (so a second one is not opened).
+  bool _povOpen = false;
+
+  /// Photos taken in the session, in order, with their square JPEG.
+  final _povShots = <(NeoPhoto, Uint8List)>[];
+
+  /// The button on the viewfinder: show a code, so a friend's camera shows me.
+  Future<void> _openPovQr() async {
+    final pov = widget.pov;
+    if (pov == null || _povOpen || _processing) return;
+    await _stopScan();
+    if (!mounted) return;
+    await showPovQrSheet(context, store: pov);
+  }
+
+  // Looking for a code (the friend taking the photos) -------------------------------------
+  // The main camera also reads QR codes: while this is on, its frames go through ML Kit
+  // (on the phone, a few a second). It is only on when asked for, and stops after a
+  // minute, when the shutter is pressed, or when a code is found.
+
+  bool _scanning = false;
+  bool _scanNotOurs = false;
+  PovCodeReader? _reader;
+  Timer? _scanTimeout;
+  Timer? _notOursTimer;
+
+  /// The back camera is the one that looks for codes (the front one shows a mirror
+  /// image).
+  bool get _canScan =>
+      widget.pov != null &&
+      widget.povRepository != null &&
+      _cameras.isNotEmpty &&
+      _cameras[_cameraIndex].lensDirection == CameraLensDirection.back;
+
+  Future<void> _toggleScan() async {
+    if (_scanning) return _stopScan();
+    final camera = _camera;
+    if (camera == null ||
+        !camera.value.isInitialized ||
+        !_canScan ||
+        _processing ||
+        _recording ||
+        _questMode ||
+        _povOpen) {
+      return;
+    }
+    try {
+      _reader ??= PovCodeReader();
+      await camera.startImageStream(_onScanFrame);
+      _scanTimeout?.cancel();
+      _scanTimeout = Timer(const Duration(seconds: 60), _stopScan);
+      if (mounted) setState(() => _scanning = true);
+    } catch (error, stack) {
+      AppLog.warn('camera_experience', error, stack);
+      _scanning = false;
+      if (mounted) _notify(AppLocalizations.of(context).povErrUnknown);
+    }
+  }
+
+  Future<void> _stopScan() async {
+    if (!_scanning) return;
+    _scanning = false;
+    _scanTimeout?.cancel();
+    final camera = _camera;
+    try {
+      if (camera != null && camera.value.isStreamingImages) {
+        await camera.stopImageStream();
+      }
+    } catch (error, stack) {
+      AppLog.warn('camera_experience', error, stack);
+    }
+    if (mounted) setState(() => _scanNotOurs = false);
+  }
+
+  Future<void> _onScanFrame(CameraImage image) async {
+    final reader = _reader;
+    final camera = _camera;
+    if (!_scanning || reader == null || camera == null) return;
+    final result = await reader.look(
+      image,
+      sensorOrientation: _cameras[_cameraIndex].sensorOrientation,
+      deviceOrientation: camera.value.deviceOrientation,
+    );
+    if (result == null || !_scanning || !mounted) return;
+    final code = result.code;
+    if (code != null) {
+      Haptics.press();
+      await _stopScan();
+      if (!mounted) return;
+      await joinPovWithCode(
+        context,
+        store: widget.pov!,
+        code: code,
+        friends: widget.povFriends,
+      );
+      return;
+    }
+    if (result.otherQr && !_scanNotOurs) {
+      setState(() => _scanNotOurs = true);
+      _notOursTimer?.cancel();
+      _notOursTimer = Timer(const Duration(milliseconds: 2200), () {
+        if (mounted) setState(() => _scanNotOurs = false);
+      });
+    }
+  }
+
+  /// The session moved: a friend said yes to me, or I said yes to a friend.
+  void _onPov() {
+    final pov = widget.pov;
+    if (pov == null || _povOpen || !mounted) return;
+    if (pov.isHosting) {
+      _povOpen = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _runPovHost());
+    } else if (pov.isWatching) {
+      _povOpen = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _runPovViewer());
+    }
+  }
+
+  PocketFriend? _povFriend(String id) =>
+      widget.povFriends.where((friend) => friend.id == id).firstOrNull;
+
+  /// Tells the person why the session ended, if it did not end by their own hand.
+  void _povEnded(String name) {
+    final pov = widget.pov;
+    final end = pov?.lastEnd;
+    pov?.clearNotice();
+    if (end == null || !mounted) return;
+    _notify(povEndText(AppLocalizations.of(context), end, name));
+  }
+
+  Future<void> _runPovViewer() async {
+    final pov = widget.pov;
+    final repository = widget.povRepository;
+    final session = pov?.session;
+    if (pov == null || repository == null || session == null || !mounted) {
+      _povOpen = false;
+      return;
+    }
+    final friend = _povFriend(session.hostId ?? '');
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) =>
+            PovViewerScreen(store: pov, repository: repository, friend: friend),
+      ),
+    );
+    _povOpen = false;
+    _povEnded(friend?.name ?? '');
+  }
+
+  Future<void> _runPovHost() async {
+    final pov = widget.pov;
+    final repository = widget.povRepository;
+    final session = pov?.session;
+    if (pov == null || repository == null || session == null || !mounted) {
+      _povOpen = false;
+      return;
+    }
+    final viewer = _povFriend(session.viewerId);
+    await _stopScan();
+    _povShots.clear();
+    // The camera is let go of, so the connection can have it.
+    final old = _camera;
+    _camera = null;
+    if (mounted) setState(() => _cameraLoading = true);
+    await old?.dispose();
+    if (!mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => PovHostScreen(
+          store: pov,
+          repository: repository,
+          viewer: viewer,
+          onShot: _savePovShot,
+        ),
+      ),
+    );
+    _povOpen = false;
+    if (!mounted) return;
+    await _initializeCamera();
+    _povEnded(viewer?.name ?? '');
+    await _finishPovShots(viewer?.id);
+  }
+
+  /// A photo of the session, saved at once (so a closed app loses nothing) as a
+  /// finished print with no style.
+  Future<void> _savePovShot(Uint8List bytes) async {
+    final photo = await widget.repository.saveOriginal(
+      bytes,
+      styleType: StyleType.none,
+    );
+    final output = await widget.styleEngineFactory
+        .create(StyleType.none)
+        .process(
+          File(photo.originalPath),
+          StyleType.none,
+          onProgress: (_, _) {},
+        );
+    final done = photo.copyWith(
+      processedPath: output.file.path,
+      styleSource: output.source,
+      status: ProcessingStatus.done,
+      clearFailureReason: true,
+    );
+    await widget.repository.upsert(done);
+    widget.onPhotoChanged(done);
+    _povShots.add((done, bytes));
+  }
+
+  /// After the session the last photo opens like a fresh shot (style, caption, who
+  /// gets it) with the friend who watched already tagged; the earlier ones stay in
+  /// the prints.
+  Future<void> _finishPovShots(String? viewerId) async {
+    if (_povShots.isEmpty || !mounted) return;
+    final (photo, bytes) = _povShots.removeLast();
+    _povShots.clear();
+    await widget.repository.delete(photo);
+    widget.onPhotoRemoved?.call(photo);
+    if (!mounted) return;
+    await _startPrint(bytes);
+    final composer = _composer;
+    if (composer != null &&
+        viewerId != null &&
+        widget.friends.any((friend) => friend.person.id == viewerId) &&
+        !composer.tagged.contains(viewerId)) {
+      composer.toggleTag(viewerId);
+    }
+  }
+
+  /// The button on the viewfinder's lower left corner: show a code.
+  Widget _povControl() {
+    final pov = widget.pov!;
+    return _cornerControl(
+      icon: Icons.visibility_outlined,
+      tooltip: AppLocalizations.of(context).povTooltip,
+      active: pov.isWaiting,
+      activeColor: NeoColors.teal,
+      onPressed: _openPovQr,
+    );
+  }
+
+  /// The button on the lower right corner: look for a friend's code.
+  Widget _scanControl() => _cornerControl(
+    icon: Icons.qr_code_scanner,
+    tooltip: AppLocalizations.of(context).povScanTooltip,
+    active: _scanning,
+    activeColor: NeoColors.accent,
+    onPressed: _toggleScan,
+  );
 
   /// What the quest check saw or why it failed. Debug builds only: the player
   /// is never told what was detected.
@@ -451,6 +737,8 @@ class CameraTabState extends State<CameraTab> {
         throw CameraException('NoCamera', 'No camera is available');
       }
       final nextIndex = index ?? _cameraIndex;
+      _scanning = false;
+      _scanTimeout?.cancel();
       final oldCamera = _camera;
       _camera = null;
       await oldCamera?.dispose();
@@ -458,6 +746,8 @@ class CameraTabState extends State<CameraTab> {
         _cameras[nextIndex],
         ResolutionPreset.veryHigh,
         enableAudio: false,
+        // Only used while looking for an Omni POV code (see _startScan).
+        imageFormatGroup: ImageFormatGroup.nv21,
       );
       _camera = nextCamera;
       await nextCamera.initialize();
@@ -499,6 +789,7 @@ class CameraTabState extends State<CameraTab> {
   /// it), otherwise shoots now.
   Future<void> _capture() async {
     if (_recording) return;
+    if (_scanning) await _stopScan();
     if (_countdown != null) {
       _cancelCountdown();
       return;
@@ -1802,6 +2093,22 @@ class CameraTabState extends State<CameraTab> {
                 ),
               Positioned(top: 18, left: 18, child: _flashControl()),
               Positioned(top: 18, right: 18, child: _timerControl()),
+              // Omni POV: see yourself through a friend's camera. Not while
+              // recording, or in quest mode (a quest is shot live).
+              if (widget.pov != null &&
+                  widget.povRepository != null &&
+                  !_recording &&
+                  !_questMode)
+                Positioned(bottom: 8, left: 18, child: _povControl()),
+              if (_canScan && !_recording && !_questMode)
+                Positioned(bottom: 8, right: 18, child: _scanControl()),
+              if (_scanning)
+                Positioned.fill(
+                  child: PovScanOverlay(
+                    notOurs: _scanNotOurs,
+                    onClose: _stopScan,
+                  ),
+                ),
               if (camera != null &&
                   camera.value.isInitialized &&
                   zoomPresets(_minZoom, _maxZoom).length > 1)
