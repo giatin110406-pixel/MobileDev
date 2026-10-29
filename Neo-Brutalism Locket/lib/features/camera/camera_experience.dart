@@ -1514,32 +1514,11 @@ class CameraTabState extends State<CameraTab> {
         composer.selectedAlbums.isNotEmpty ||
         composer.tagged.isNotEmpty;
     return ListenableBuilder(
-      listenable: Listenable.merge([composer, composer.captionFocus]),
+      listenable: composer,
       builder: (context, _) => GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        // While typing, the keyboard just covers the controls: the picture
-        // keeps its full square (never squeezed) and sits at the top, with the
-        // caption on it staying visible above the keyboard.
-        child: composer.captionFocus.hasFocus
-            ? Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  18 - _squareBleed,
-                  12,
-                  18 - _squareBleed,
-                  0,
-                ),
-                child: OverflowBox(
-                  alignment: Alignment.topCenter,
-                  minHeight: 0,
-                  maxHeight: double.infinity,
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: _draftViewfinder(photo, composer),
-                  ),
-                ),
-              )
-            : _shootLayout(
+        child: _shootLayout(
                 top: Row(
                   children: [
                     // Off the picture, so the square stays clean.

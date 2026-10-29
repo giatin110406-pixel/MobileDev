@@ -1819,6 +1819,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final isContestTab = _tabIndex == _contestTab;
     final scaffold = Scaffold(
       backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: _tabIndex != _cameraTab,
       body: SafeArea(
         child: Column(
           children: [
