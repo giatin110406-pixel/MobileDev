@@ -22,6 +22,12 @@ class RewindEntry {
   final bool isStill;
 }
 
+/// A still further from the press than this was timed on another clock than
+/// the press (the phone's sensor clock is not always the one the press is read
+/// on), so where it belongs is unknown: it is left off the strip rather than
+/// shown at a made-up place. The kept frames span 2 s before and 1 s after.
+const maxStillOffsetMs = 3000;
+
 /// The frames around the press in time order, with the still placed where it
 /// was taken. Pure data, so it can be tested without a camera.
 @immutable
@@ -43,7 +49,7 @@ class RewindTimeline {
           isStill: false,
         ),
     ]..sort((a, b) => a.offsetMs.compareTo(b.offsetMs));
-    if (still != null) {
+    if (still != null && still.offsetMs.abs() <= maxStillOffsetMs) {
       final entry = RewindEntry(
         path: still.path,
         offsetMs: still.offsetMs,

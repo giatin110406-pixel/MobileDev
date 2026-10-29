@@ -67,6 +67,17 @@ void main() {
       expect(timeline.entries[timeline.defaultIndex].offsetMs, -60);
     });
 
+    test('a still timed on another clock is left off the strip', () {
+      final timeline = RewindTimeline.tryBuild(
+        frames: [frame(-600), frame(0), frame(300)],
+        still: const RewindStill(path: 'hq.jpg', offsetMs: -981249819),
+      )!;
+      expect(timeline.hasStill, isFalse);
+      expect(timeline.entries, hasLength(3));
+      // Opens on the frame nearest the press instead.
+      expect(timeline.entries[timeline.defaultIndex].isStill, isFalse);
+    });
+
     test('a failed still leaves a usable strip of frames', () {
       final timeline = RewindTimeline.tryBuild(frames: [frame(-100)])!;
       expect(timeline.entries, hasLength(1));
