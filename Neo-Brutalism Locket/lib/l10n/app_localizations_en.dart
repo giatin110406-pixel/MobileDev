@@ -3206,4 +3206,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holdFrameCloser => 'Step closer a little';
+
+  @override
+  String get sensitiveTitle => 'CHECK BEFORE POSTING';
+
+  @override
+  String sensitiveIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count spots may show something private.',
+      one: '1 spot may show something private.',
+    );
+    return '$_temp0 Tap a box to leave it uncovered.';
+  }
+
+  @override
+  String get sensitiveMayMiss =>
+      'The phone reads the text itself and can miss things. Look over the photo too.';
+
+  @override
+  String get sensitiveCoverAndPost => 'COVER & POST';
+
+  @override
+  String get sensitivePostAsIs => 'POST WITHOUT COVERING';
+
+  @override
+  String get sensitiveCheckFailed =>
+      'The photo could not be checked for private details.';
+
+  @override
+  String get sensitiveKindIdNumber => 'ID number';
+
+  @override
+  String get sensitiveKindPhone => 'Phone number';
+
+  @override
+  String get sensitiveKindPlate => 'Licence plate';
+
+  @override
+  String get sensitiveKindCard => 'Bank card';
+
+  @override
+  String get sensitiveKindAddress => 'Address';
+
+  @override
+  String get sensitiveKindIdDocument => 'ID document';
+
+  @override
+  String get sensitiveKindScreenText => 'Text on a screen';
+
+  @override
+  String get sensitiveCovered => 'COVERED';
+
+  @override
+  String get sensitiveShown => 'SHOWN';
 }

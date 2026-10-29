@@ -63,6 +63,7 @@ dependencies:
   flutter_webrtc: ^1.6.3
   qr_flutter: ^4.1.0
   google_mlkit_barcode_scanning: ^0.16.0
+  google_mlkit_text_recognition: ^0.17.0
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.0
+  integration_test:
+    sdk: flutter
 
 flutter_launcher_icons:
   android: true

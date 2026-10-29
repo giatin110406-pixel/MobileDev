@@ -2032,5 +2032,21 @@
   "holdFrameClockwise": "Turn the phone clockwise ↻",
   "holdFrameCounterclockwise": "Turn the phone anticlockwise ↺",
   "holdFrameBack": "Step back a little",
-  "holdFrameCloser": "Step closer a little"
+  "holdFrameCloser": "Step closer a little",
+  "sensitiveTitle": "CHECK BEFORE POSTING",
+  "sensitiveIntro": "{count, plural, =1{1 spot may show something private.} other{{count} spots may show something private.}} Tap a box to leave it uncovered.",
+  "@sensitiveIntro": {"placeholders": {"count": {"type": "int"}}},
+  "sensitiveMayMiss": "The phone reads the text itself and can miss things. Look over the photo too.",
+  "sensitiveCoverAndPost": "COVER & POST",
+  "sensitivePostAsIs": "POST WITHOUT COVERING",
+  "sensitiveCheckFailed": "The photo could not be checked for private details.",
+  "sensitiveKindIdNumber": "ID number",
+  "sensitiveKindPhone": "Phone number",
+  "sensitiveKindPlate": "Licence plate",
+  "sensitiveKindCard": "Bank card",
+  "sensitiveKindAddress": "Address",
+  "sensitiveKindIdDocument": "ID document",
+  "sensitiveKindScreenText": "Text on a screen",
+  "sensitiveCovered": "COVERED",
+  "sensitiveShown": "SHOWN"
 }

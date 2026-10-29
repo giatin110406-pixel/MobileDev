@@ -3154,4 +3154,59 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holdFrameCloser => 'Tiến gần một chút';
+
+  @override
+  String get sensitiveTitle => 'KIỂM TRA TRƯỚC KHI ĐĂNG';
+
+  @override
+  String sensitiveIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Có $count chỗ có thể lộ thông tin riêng tư.',
+      one: 'Có 1 chỗ có thể lộ thông tin riêng tư.',
+    );
+    return '$_temp0 Chạm vào ô để bỏ che.';
+  }
+
+  @override
+  String get sensitiveMayMiss =>
+      'Máy tự đọc chữ trong ảnh và có thể sót. Bạn xem lại ảnh nữa nhé.';
+
+  @override
+  String get sensitiveCoverAndPost => 'CHE & ĐĂNG';
+
+  @override
+  String get sensitivePostAsIs => 'ĐĂNG KHÔNG CHE';
+
+  @override
+  String get sensitiveCheckFailed =>
+      'Không kiểm tra được thông tin riêng tư trong ảnh.';
+
+  @override
+  String get sensitiveKindIdNumber => 'Số CCCD';
+
+  @override
+  String get sensitiveKindPhone => 'Số điện thoại';
+
+  @override
+  String get sensitiveKindPlate => 'Biển số xe';
+
+  @override
+  String get sensitiveKindCard => 'Số thẻ ngân hàng';
+
+  @override
+  String get sensitiveKindAddress => 'Địa chỉ';
+
+  @override
+  String get sensitiveKindIdDocument => 'Giấy tờ tùy thân';
+
+  @override
+  String get sensitiveKindScreenText => 'Chữ trên màn hình';
+
+  @override
+  String get sensitiveCovered => 'ĐÃ CHE';
+
+  @override
+  String get sensitiveShown => 'KHÔNG CHE';
 }
