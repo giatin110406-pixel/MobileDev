@@ -3076,4 +3076,76 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get photoToolsTitle => 'CÔNG CỤ ẢNH';
+
+  @override
+  String get holdFrameTitle => 'CHỤP HỘ';
+
+  @override
+  String get holdFrameIntro =>
+      'Chọn khung bạn muốn rồi khóa lại. Đưa máy cho bạn bè để họ chụp giúp. Giữ người và cảnh ít chuyển động.';
+
+  @override
+  String get holdFrameChoose => 'Canh bố cục bạn muốn, rồi khóa khung.';
+
+  @override
+  String get holdFrameLock => 'KHÓA KHUNG NÀY';
+
+  @override
+  String get holdFrameHandoff =>
+      'Đưa máy cho bạn. Người nhận máy bấm Bắt đầu rồi làm theo mũi tên.';
+
+  @override
+  String get holdFrameStart => 'BẮT ĐẦU';
+
+  @override
+  String get holdFramePause => 'TẠM DỪNG TỰ CHỤP';
+
+  @override
+  String get holdFrameReset => 'CHỌN LẠI KHUNG';
+
+  @override
+  String get holdFrameSteady => 'Đã khớp — giữ yên, máy sẽ tự chụp.';
+
+  @override
+  String get holdFrameCapturing => 'Đang chụp…';
+
+  @override
+  String get holdFrameUnsure =>
+      'Không nhận ra khung. Hướng máy về cảnh ban đầu, tìm chỗ sáng hơn hoặc chọn lại khung.';
+
+  @override
+  String get holdFrameFewFeatures =>
+      'Khung này ít chi tiết để nhận ra. Chọn khung sáng hơn, có đồ vật hoặc đường nét rõ.';
+
+  @override
+  String get holdFrameStale =>
+      'Đang tìm lại khung… Giữ máy hướng về cảnh ban đầu.';
+
+  @override
+  String get holdFrameUnavailable =>
+      'Chưa canh khung được trên máy này. Thử chọn lại khung hoặc quay về chụp bình thường.';
+
+  @override
+  String get holdFrameRight => 'Đưa khung ngắm sang phải →';
+
+  @override
+  String get holdFrameLeft => '← Đưa khung ngắm sang trái';
+
+  @override
+  String get holdFrameDown => 'Đưa khung ngắm xuống ↓';
+
+  @override
+  String get holdFrameUp => 'Đưa khung ngắm lên ↑';
+
+  @override
+  String get holdFrameClockwise => 'Xoay máy theo chiều kim đồng hồ ↻';
+
+  @override
+  String get holdFrameCounterclockwise => 'Xoay máy ngược chiều kim đồng hồ ↺';
+
+  @override
+  String get holdFrameBack => 'Lùi lại một chút';
+
+  @override
+  String get holdFrameCloser => 'Tiến gần một chút';
 }

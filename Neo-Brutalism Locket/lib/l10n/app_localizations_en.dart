@@ -3128,4 +3128,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoToolsTitle => 'PHOTO TOOLS';
+
+  @override
+  String get holdFrameTitle => 'HOLD MY FRAME';
+
+  @override
+  String get holdFrameIntro =>
+      'Choose your composition and lock it. Hand the phone to a friend to take your photo. Keep people and the scene still.';
+
+  @override
+  String get holdFrameChoose => 'Choose your composition, then lock the frame.';
+
+  @override
+  String get holdFrameLock => 'LOCK THIS FRAME';
+
+  @override
+  String get holdFrameHandoff =>
+      'Hand over the phone. Your friend taps Start and follows the arrows.';
+
+  @override
+  String get holdFrameStart => 'START';
+
+  @override
+  String get holdFramePause => 'PAUSE AUTO CAPTURE';
+
+  @override
+  String get holdFrameReset => 'CHOOSE ANOTHER FRAME';
+
+  @override
+  String get holdFrameSteady => 'Frame matched — hold still for the photo.';
+
+  @override
+  String get holdFrameCapturing => 'Taking the photo…';
+
+  @override
+  String get holdFrameUnsure =>
+      'Cannot recognise the frame. Point at the original scene, find more light or choose another frame.';
+
+  @override
+  String get holdFrameFewFeatures =>
+      'Not enough detail to recognise this frame. Choose a brighter view with clear objects or edges.';
+
+  @override
+  String get holdFrameStale =>
+      'Looking for the frame… Point at the original scene.';
+
+  @override
+  String get holdFrameUnavailable =>
+      'Cannot align frames on this phone right now. Choose another frame or return to the normal camera.';
+
+  @override
+  String get holdFrameRight => 'Move the view right →';
+
+  @override
+  String get holdFrameLeft => '← Move the view left';
+
+  @override
+  String get holdFrameDown => 'Move the view down ↓';
+
+  @override
+  String get holdFrameUp => 'Move the view up ↑';
+
+  @override
+  String get holdFrameClockwise => 'Turn the phone clockwise ↻';
+
+  @override
+  String get holdFrameCounterclockwise => 'Turn the phone anticlockwise ↺';
+
+  @override
+  String get holdFrameBack => 'Step back a little';
+
+  @override
+  String get holdFrameCloser => 'Step closer a little';
 }
