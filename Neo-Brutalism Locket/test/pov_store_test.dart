@@ -1,11 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
-import 'package:neo_brutalism_locket/features/pov/pov_scan.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
-import 'package:neo_brutalism_locket/features/pov/pov_text.dart';
 
 const me = 'me';
 const friend = 'friend';
@@ -354,22 +351,6 @@ void main() {
       );
       expect(povCodeFromText('hello'), isNull);
       expect(povCodeFromText(''), isNull);
-    });
-  });
-
-  group('the scan helpers', () {
-    test('the frame is turned by the sensor, less how the phone is held', () {
-      expect(povScanRotation(90, DeviceOrientation.portraitUp), 90);
-      expect(povScanRotation(90, DeviceOrientation.landscapeLeft), 0);
-      expect(povScanRotation(90, DeviceOrientation.portraitDown), 270);
-      expect(povScanRotation(90, DeviceOrientation.landscapeRight), 180);
-    });
-
-    test('the time a code has left reads as m:ss', () {
-      expect(povClock(const Duration(minutes: 2)), '2:00');
-      expect(povClock(const Duration(seconds: 65)), '1:05');
-      expect(povClock(const Duration(seconds: 9)), '0:09');
-      expect(povClock(const Duration(seconds: -4)), '0:00');
     });
   });
 }

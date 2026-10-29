@@ -86,6 +86,33 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
+        <!-- Rewind capture over the lock screen, opened from the tile below -->
+        <activity
+            android:name=".rewind.RewindLockscreenActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity="com.neobrutalism.neo_brutalism_locket.rewind"
+            android:excludeFromRecents="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true">
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+        </activity>
+        <!-- The quick-settings tile (see RewindTileService.kt) -->
+        <service
+            android:name=".rewind.RewindTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_rewind"
+            android:label="@string/rewind_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

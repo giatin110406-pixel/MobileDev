@@ -25,6 +25,7 @@ import 'package:neo_brutalism_locket/features/groups/groups_screen.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_store.dart';
 import 'package:neo_brutalism_locket/features/groups/groups_widgets.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
+import 'package:neo_brutalism_locket/features/rewind/rewind_handoff.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_repository.dart';
 import 'package:neo_brutalism_locket/features/safety/safety_widgets.dart';
 import 'package:neo_brutalism_locket/features/settings/settings_screen.dart';
@@ -244,6 +245,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     _player.addListener(_onPlayerChanged);
     _loadPlayer();
     _loadArchive();
+    if (Platform.isAndroid) {
+      // Pictures the lock screen left that nobody came for.
+      unawaited(sweepRewindHandoff().catchError((Object _) {}));
+    }
     final session = widget.session;
     if (session != null) {
       final store = FriendsStore(
@@ -892,8 +897,30 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     }
   }
 
+  /// The lock-screen rewind screen picked a frame (neolocket://rewind?file=):
+  /// print it on the camera tab like a shot just taken. The file is deleted
+  /// whatever happens. On a cold start the camera tab may not exist yet.
+  Future<void> _importRewind(String file) async {
+    final bytes = await takeRewindHandoff(file);
+    if (bytes == null) return;
+    for (var wait = 0; wait < 20 && mounted; wait++) {
+      _selectTab(_cameraTab);
+      final camera = _camera;
+      if (camera != null) {
+        await camera.importShot(bytes);
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    }
+  }
+
   /// Someone opened an invite link (neolocket://add/NAME): offer to add them.
   void _onInviteLink(Uri uri) {
+    final rewindFile = rewindFileFromLink(uri);
+    if (rewindFile != null) {
+      _importRewind(rewindFile);
+      return;
+    }
     // An Omni POV code opened from another camera app: the same as scanning it here.
     final povCode = povCodeFromLink(uri);
     if (povCode != null) {

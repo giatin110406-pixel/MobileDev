@@ -1,11 +1,6 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:neo_brutalism_locket/core/app_log.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
@@ -13,98 +8,6 @@ import 'package:neo_brutalism_locket/features/pov/pov_text.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
-
-/// What one look at a camera frame found.
-class PovScanResult {
-  const PovScanResult({this.code, this.otherQr = false});
-
-  /// An Omni POV code, if the frame showed one.
-  final String? code;
-
-  /// The frame showed a QR code, but not one of ours.
-  final bool otherQr;
-}
-
-/// How the camera frame is turned, for ML Kit (degrees clockwise). [sensor] is the
-/// camera's own orientation and [device] how the phone is held; back camera only.
-int povScanRotation(int sensor, DeviceOrientation device) {
-  final held = switch (device) {
-    DeviceOrientation.portraitUp => 0,
-    DeviceOrientation.landscapeLeft => 90,
-    DeviceOrientation.portraitDown => 180,
-    DeviceOrientation.landscapeRight => 270,
-  };
-  return (sensor - held + 360) % 360;
-}
-
-/// Reads Omni POV codes out of the frames of the main camera (ML Kit, on the phone, no
-/// network). It looks at a few frames a second, one at a time, so the viewfinder stays
-/// smooth. The camera has to deliver NV21 frames (see `imageFormatGroup` of the
-/// controller).
-class PovCodeReader {
-  PovCodeReader({
-    BarcodeScanner? scanner,
-    this.every = const Duration(milliseconds: 250),
-  }) : _scanner = scanner ?? BarcodeScanner(formats: [BarcodeFormat.qrCode]);
-
-  final BarcodeScanner _scanner;
-
-  /// The least time between two looks.
-  final Duration every;
-
-  bool _busy = false;
-  DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);
-
-  /// Looks at [image] (null when it is skipped: too soon, or one is being read).
-  Future<PovScanResult?> look(
-    CameraImage image, {
-    required int sensorOrientation,
-    required DeviceOrientation deviceOrientation,
-  }) async {
-    final now = DateTime.now();
-    if (_busy || now.difference(_last) < every) return null;
-    if (image.format.group != ImageFormatGroup.nv21 ||
-        image.planes.length != 1) {
-      return null;
-    }
-    _busy = true;
-    _last = now;
-    try {
-      final plane = image.planes.first;
-      final rotation =
-          InputImageRotationValue.fromRawValue(
-            povScanRotation(sensorOrientation, deviceOrientation),
-          ) ??
-          InputImageRotation.rotation0deg;
-      final input = InputImage.fromBytes(
-        bytes: plane.bytes,
-        metadata: InputImageMetadata(
-          size: ui.Size(image.width.toDouble(), image.height.toDouble()),
-          rotation: rotation,
-          format: InputImageFormat.nv21,
-          bytesPerRow: plane.bytesPerRow,
-        ),
-      );
-      final found = await _scanner.processImage(input);
-      var other = false;
-      for (final barcode in found) {
-        final text = barcode.rawValue;
-        if (text == null) continue;
-        final code = povCodeFromText(text);
-        if (code != null) return PovScanResult(code: code);
-        other = true;
-      }
-      return other ? const PovScanResult(otherQr: true) : null;
-    } catch (error, stack) {
-      AppLog.warn('pov_scan', error, stack);
-      return null;
-    } finally {
-      _busy = false;
-    }
-  }
-
-  Future<void> close() => _scanner.close();
-}
 
 /// Laid over the viewfinder while it looks for a code: four corners to aim with, and a
 /// line saying what to do.

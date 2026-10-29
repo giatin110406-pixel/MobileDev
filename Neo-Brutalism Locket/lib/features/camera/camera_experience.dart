@@ -42,6 +42,9 @@ import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
+import 'package:neo_brutalism_locket/features/camera/photo_tools_menu.dart';
+import 'package:neo_brutalism_locket/features/camera/shot_camera.dart';
+import 'package:neo_brutalism_locket/features/rewind/rewind_picker.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_check_text.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
@@ -146,7 +149,26 @@ class CameraTab extends StatefulWidget {
 
 class CameraTabState extends State<CameraTab> {
   final ImagePicker _imagePicker = ImagePicker();
-  CameraController? _camera;
+  ShotCamera? _camera;
+  StreamSubscription<ShotBurst>? _burstSub;
+  StreamSubscription<String>? _cameraErrorSub;
+
+  /// The frames kept around the shot on the draft page (null: none kept, or
+  /// not arrived yet), and the camera's folder for that shot.
+  ShotBurst? _burst;
+  String? _shotId;
+
+  /// The camera's own full-quality file for that shot, and the print it made.
+  String? _shotStillPath;
+  String? _shotPhotoId;
+
+  /// The frame now printed instead of the shot's own picture (its file in the
+  /// camera's folder); null while the shot's own picture is the one printed.
+  String? _pickedFramePath;
+
+  /// Counts the frames swapped into the print: the picture keeps its file name,
+  /// so the views are rebuilt from scratch to read the new one.
+  int _frameRevision = 0;
   List<CameraDescription> _cameras = [];
   NeoPhoto? _activePhoto;
   FlashMode _flashMode = FlashMode.off;
@@ -238,10 +260,12 @@ class CameraTabState extends State<CameraTab> {
     widget.pov?.removeListener(_onPov);
     _scanTimeout?.cancel();
     _notOursTimer?.cancel();
-    unawaited(_reader?.close());
+    unawaited(_codeSub?.cancel());
     _composer?.dispose();
     _countdownTimer?.cancel();
     _recordTimer?.cancel();
+    _burstSub?.cancel();
+    _cameraErrorSub?.cancel();
     _camera?.dispose();
     super.dispose();
   }
@@ -319,6 +343,7 @@ class CameraTabState extends State<CameraTab> {
 
   void _removeShot(NeoPhoto photo) {
     _discarded.add(photo.id);
+    if (_shotPhotoId == photo.id) _releaseShot();
     if (_draftId == photo.id) {
       _draftId = null;
       _shotPreviewPath = null;
@@ -360,29 +385,28 @@ class CameraTabState extends State<CameraTab> {
   }
 
   // Looking for a code (the friend taking the photos) -------------------------------------
-  // The main camera also reads QR codes: while this is on, its frames go through ML Kit
-  // (on the phone, a few a second). It is only on when asked for, and stops after a
-  // minute, when the shutter is pressed, or when a code is found.
+  // The main camera also reads QR codes (ML Kit, on the phone, inside the camera). It is
+  // only on when asked for, and stops after a minute, when the shutter is pressed, or when
+  // a code is found.
 
   bool _scanning = false;
   bool _scanNotOurs = false;
-  PovCodeReader? _reader;
   Timer? _scanTimeout;
   Timer? _notOursTimer;
+  StreamSubscription<String>? _codeSub;
 
-  /// The back camera is the one that looks for codes (the front one shows a mirror
-  /// image).
+  /// The main camera can read codes (on Android, the back lens; the front one shows a
+  /// mirror image).
   bool get _canScan =>
       widget.pov != null &&
       widget.povRepository != null &&
-      _cameras.isNotEmpty &&
-      _cameras[_cameraIndex].lensDirection == CameraLensDirection.back;
+      (_camera?.canScanCodes ?? false);
 
   Future<void> _toggleScan() async {
     if (_scanning) return _stopScan();
     final camera = _camera;
     if (camera == null ||
-        !camera.value.isInitialized ||
+        !camera.isInitialized ||
         !_canScan ||
         _processing ||
         _recording ||
@@ -391,13 +415,15 @@ class CameraTabState extends State<CameraTab> {
       return;
     }
     try {
-      _reader ??= PovCodeReader();
-      await camera.startImageStream(_onScanFrame);
+      _codeSub = camera.scannedCodes.listen(_onScannedCode);
+      await camera.setCodeScanning(true);
       _scanTimeout?.cancel();
       _scanTimeout = Timer(const Duration(seconds: 60), _stopScan);
       if (mounted) setState(() => _scanning = true);
     } catch (error, stack) {
       AppLog.warn('camera_experience', error, stack);
+      await _codeSub?.cancel();
+      _codeSub = null;
       _scanning = false;
       if (mounted) _notify(AppLocalizations.of(context).povErrUnknown);
     }
@@ -407,47 +433,39 @@ class CameraTabState extends State<CameraTab> {
     if (!_scanning) return;
     _scanning = false;
     _scanTimeout?.cancel();
-    final camera = _camera;
+    _notOursTimer?.cancel();
+    await _codeSub?.cancel();
+    _codeSub = null;
     try {
-      if (camera != null && camera.value.isStreamingImages) {
-        await camera.stopImageStream();
-      }
+      await _camera?.setCodeScanning(false);
     } catch (error, stack) {
       AppLog.warn('camera_experience', error, stack);
     }
     if (mounted) setState(() => _scanNotOurs = false);
   }
 
-  Future<void> _onScanFrame(CameraImage image) async {
-    final reader = _reader;
-    final camera = _camera;
-    if (!_scanning || reader == null || camera == null) return;
-    final result = await reader.look(
-      image,
-      sensorOrientation: _cameras[_cameraIndex].sensorOrientation,
-      deviceOrientation: camera.value.deviceOrientation,
-    );
-    if (result == null || !_scanning || !mounted) return;
-    final code = result.code;
-    if (code != null) {
-      Haptics.press();
-      await _stopScan();
-      if (!mounted) return;
-      await joinPovWithCode(
-        context,
-        store: widget.pov!,
-        code: code,
-        friends: widget.povFriends,
-      );
-      return;
-    }
-    if (result.otherQr && !_scanNotOurs) {
-      setState(() => _scanNotOurs = true);
+  /// One QR code in view: an Omni POV code starts the question to the person; any other
+  /// code is said to be none of ours, for a moment.
+  Future<void> _onScannedCode(String text) async {
+    if (!_scanning || !mounted) return;
+    final code = povCodeFromText(text);
+    if (code == null) {
+      if (!_scanNotOurs) setState(() => _scanNotOurs = true);
       _notOursTimer?.cancel();
       _notOursTimer = Timer(const Duration(milliseconds: 2200), () {
         if (mounted) setState(() => _scanNotOurs = false);
       });
+      return;
     }
+    Haptics.press();
+    await _stopScan();
+    if (!mounted) return;
+    await joinPovWithCode(
+      context,
+      store: widget.pov!,
+      code: code,
+      friends: widget.povFriends,
+    );
   }
 
   /// The session moved: a friend said yes to me, or I said yes to a friend.
@@ -651,7 +669,7 @@ class CameraTabState extends State<CameraTab> {
     final camera = _camera;
     final quest = _questModeQuest;
     if (camera == null ||
-        !camera.value.isInitialized ||
+        !camera.isInitialized ||
         _processing ||
         quest == null) {
       return;
@@ -668,6 +686,9 @@ class CameraTabState extends State<CameraTab> {
     try {
       final day = widget.player.today;
       final shot = await camera.takePicture();
+      // A quest photo is checked as it is: no other frame to pick.
+      final shotId = shot.shotId;
+      if (shotId != null) camera.releaseShot(shotId).ignore();
       final bytes = await cropShotToSquare(shot.path);
       final QuestVerdict verdict;
       try {
@@ -724,6 +745,97 @@ class CameraTabState extends State<CameraTab> {
     }
   }
 
+  ShotCamera _makeCamera(CameraDescription description) =>
+      !kIsWeb && Platform.isAndroid
+      ? NativeShotCamera(
+          front: description.lensDirection == CameraLensDirection.front,
+        )
+      : PluginShotCamera(description);
+
+  /// Frames that came before [takePicture] returned (a slow still): kept
+  /// until the shot they belong to is adopted.
+  final Map<String, ShotBurst> _earlyBursts = {};
+
+  void _onBurst(ShotBurst burst) {
+    if (!mounted || burst.frames.isEmpty) return;
+    if (burst.shotId != _shotId) {
+      _earlyBursts[burst.shotId] = burst;
+      return;
+    }
+    setState(() => _burst = burst);
+  }
+
+  void _onCameraError(String code) {
+    if (mounted) _notify(AppLocalizations.of(context).cameraUnavailable);
+  }
+
+  /// The shot just taken: its frames come on [_onBurst] a moment later.
+  void _adoptShot(ShotPicture shot) {
+    _releaseShot();
+    _shotId = shot.shotId;
+    _shotStillPath = shot.shotId == null ? null : shot.path;
+    _pickedFramePath = null;
+    final early = _earlyBursts[shot.shotId];
+    _earlyBursts.clear();
+    if (early != null) _burst = early;
+  }
+
+  /// Lets the camera delete the frames kept for the last shot.
+  void _releaseShot() {
+    final id = _shotId;
+    if (id != null) _camera?.releaseShot(id).ignore();
+    _shotId = null;
+    _shotStillPath = null;
+    _shotPhotoId = null;
+    _pickedFramePath = null;
+    _burst = null;
+  }
+
+  /// Another frame can be picked for [photo] (it was just shot, and the camera
+  /// kept the frames around it).
+  bool _canPickFrame(NeoPhoto photo) =>
+      _burst != null &&
+      _shotPhotoId == photo.id &&
+      _activePhoto?.id == photo.id &&
+      !_processing;
+
+  /// Opens the frames kept around the shot; the one the person picks replaces
+  /// the printed picture (styled again if it has a style).
+  Future<void> _pickFrame() async {
+    final photo = _activePhoto;
+    final burst = _burst;
+    final still = _shotStillPath;
+    if (photo == null || burst == null || still == null || _processing) return;
+    final choice = await Navigator.of(context).push<RewindChoice>(
+      MaterialPageRoute(
+        builder: (_) => RewindPicker(
+          burst: burst,
+          stillPath: still,
+          currentFramePath: _pickedFramePath,
+          readStill: cropShotToSquare,
+        ),
+      ),
+    );
+    if (choice == null || !mounted || _activePhoto?.id != photo.id) return;
+    setState(() => _processing = true);
+    try {
+      await _startPrint(choice.bytes, draft: photo);
+      // The new picture is written over the old file: forget what was read.
+      await FileImage(File(photo.originalPath)).evict();
+      if (!mounted) return;
+      setState(() {
+        _pickedFramePath = choice.framePath;
+        _frameRevision++;
+        // The camera's own file stood in for the picture while it developed.
+        _shotPreviewPath = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      _notify(AppLocalizations.of(context).photoNotSaved);
+    }
+  }
+
   Future<void> _initializeCamera({int? index}) async {
     if (mounted) {
       setState(() {
@@ -742,24 +854,16 @@ class CameraTabState extends State<CameraTab> {
       final oldCamera = _camera;
       _camera = null;
       await oldCamera?.dispose();
-      final nextCamera = CameraController(
-        _cameras[nextIndex],
-        ResolutionPreset.veryHigh,
-        enableAudio: false,
-        // Only used while looking for an Omni POV code (see _startScan).
-        imageFormatGroup: ImageFormatGroup.nv21,
-      );
+      await _burstSub?.cancel();
+      await _cameraErrorSub?.cancel();
+      final nextCamera = _makeCamera(_cameras[nextIndex]);
       _camera = nextCamera;
       await nextCamera.initialize();
       await nextCamera.setFlashMode(_flashMode);
-      double minZoom = 1;
-      double maxZoom = 1;
-      try {
-        minZoom = await nextCamera.getMinZoomLevel();
-        maxZoom = await nextCamera.getMaxZoomLevel();
-      } catch (_) {
-        // No zoom on this camera: the buttons stay hidden.
-      }
+      _burstSub = nextCamera.bursts.listen(_onBurst);
+      _cameraErrorSub = nextCamera.errors.listen(_onCameraError);
+      final minZoom = nextCamera.minZoom;
+      final maxZoom = nextCamera.maxZoom;
       if (!mounted) return;
       setState(() {
         _cameraIndex = nextIndex;
@@ -824,7 +928,7 @@ class CameraTabState extends State<CameraTab> {
 
   Future<void> _setZoom(double level) async {
     final camera = _camera;
-    if (camera == null || !camera.value.isInitialized) return;
+    if (camera == null || !camera.isInitialized) return;
     final next = clampZoom(level, _minZoom, _maxZoom);
     if ((next - _zoom).abs() < 0.01) return;
     setState(() => _zoom = next);
@@ -843,7 +947,7 @@ class CameraTabState extends State<CameraTab> {
 
   Future<void> _startVideo() async {
     final camera = _camera;
-    if (camera == null || !camera.value.isInitialized || !_canRecord) return;
+    if (camera == null || !camera.isInitialized || !_canRecord) return;
     if (_recording) return;
     final failed = AppLocalizations.of(context).videoFailed;
     try {
@@ -869,18 +973,18 @@ class CameraTabState extends State<CameraTab> {
     setState(() => _recording = false);
     if (camera == null) return;
     try {
-      final file = await camera.stopVideoRecording();
+      final path = await camera.stopVideoRecording();
       final length = DateTime.now().difference(started);
       if (length < const Duration(milliseconds: 600)) {
         _notify(l10n.videoTooShort);
         try {
-          await File(file.path).delete();
+          await File(path).delete();
         } catch (e, st) {
           AppLog.warn('camera_experience', e, st);
         }
         return;
       }
-      await widget.onVideoRecorded?.call(File(file.path));
+      await widget.onVideoRecorded?.call(File(path));
     } catch (_) {
       _notify(l10n.videoFailed);
     }
@@ -889,7 +993,7 @@ class CameraTabState extends State<CameraTab> {
   Future<void> _shoot() async {
     if (_questMode) return _captureQuest();
     final camera = _camera;
-    if (camera == null || !camera.value.isInitialized || _processing) return;
+    if (camera == null || !camera.isInitialized || _processing) return;
 
     setState(() {
       _processing = true;
@@ -904,6 +1008,7 @@ class CameraTabState extends State<CameraTab> {
     final draft = widget.onPostDraft != null ? _openDraft() : null;
     try {
       final shot = await camera.takePicture();
+      _adoptShot(shot);
       if (draft != null) {
         if (_discarded.contains(draft.id)) {
           // Thrown away while developing.
@@ -927,6 +1032,7 @@ class CameraTabState extends State<CameraTab> {
       // Save exactly what the square viewfinder showed: a centred 1:1 crop.
       final bytes = await cropShotToSquare(shot.path);
       await _startPrint(bytes, draft: draft);
+      _shotPhotoId = draft?.id ?? _activePhoto?.id;
     } catch (_) {
       if (!mounted) return;
       if (draft != null) {
@@ -988,6 +1094,24 @@ class CameraTabState extends State<CameraTab> {
       if (!mounted) return;
       setState(() => _processing = false);
       _notify(AppLocalizations.of(context).photoOpenFailed);
+    }
+  }
+
+  /// A picture made elsewhere (the lock-screen rewind hands one over): print
+  /// it as a new shot, unless this page is busy with something else.
+  Future<void> importShot(Uint8List bytes) async {
+    if (_processing || _questMode || _draftMode) return;
+    await _printPicked(bytes);
+  }
+
+  Future<void> _printPicked(Uint8List bytes) async {
+    setState(() => _processing = true);
+    try {
+      await _startPrint(bytes);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      _notify(AppLocalizations.of(context).photoNotSaved);
     }
   }
 
@@ -1352,7 +1476,13 @@ class CameraTabState extends State<CameraTab> {
             : _shootLayout(
                 top: Row(
                   children: [
-                    const Expanded(child: SizedBox()),
+                    // Off the picture, so the square stays clean.
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _photoToolsButton(photo),
+                      ),
+                    ),
                     Text(
                       l10n.composerTitle,
                       style: const TextStyle(
@@ -1673,7 +1803,7 @@ class CameraTabState extends State<CameraTab> {
               _DevelopingShot(label: l10n.developingPhoto)
             else
               BeforeAfterView(
-                key: ValueKey('draft-before-after-${photo.id}'),
+                key: ValueKey('draft-before-after-${photo.id}-$_frameRevision'),
                 originalPath: _shotPreviewPath ?? photo.originalPath,
                 styledPath: styledPath,
                 styleLabel:
@@ -1938,24 +2068,7 @@ class CameraTabState extends State<CameraTab> {
   static const double _squareRadius = 40;
 
   /// The camera feed scaled to cover the square frame, centre-cropped.
-  Widget _squarePreview(CameraController camera) {
-    final orientation = camera.value.deviceOrientation;
-    final landscape =
-        orientation == DeviceOrientation.landscapeLeft ||
-        orientation == DeviceOrientation.landscapeRight;
-    final aspect = landscape
-        ? camera.value.aspectRatio
-        : 1 / camera.value.aspectRatio;
-    return FittedBox(
-      fit: BoxFit.cover,
-      clipBehavior: Clip.hardEdge,
-      child: SizedBox(
-        width: 1000 * aspect,
-        height: 1000,
-        child: CameraPreview(camera),
-      ),
-    );
-  }
+  Widget _squarePreview(ShotCamera camera) => camera.buildPreview();
 
   /// The gallery photo under a square frame, where the viewfinder was.
   Widget _buildCropper() {
@@ -2052,7 +2165,7 @@ class CameraTabState extends State<CameraTab> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (camera != null && camera.value.isInitialized)
+              if (camera != null && camera.isInitialized)
                 GestureDetector(
                   onScaleStart: (_) => _zoomAtPinchStart = _zoom,
                   onScaleUpdate: (details) {
@@ -2110,7 +2223,7 @@ class CameraTabState extends State<CameraTab> {
                   ),
                 ),
               if (camera != null &&
-                  camera.value.isInitialized &&
+                  camera.isInitialized &&
                   zoomPresets(_minZoom, _maxZoom).length > 1)
                 Positioned(
                   left: 0,
@@ -2206,6 +2319,32 @@ class CameraTabState extends State<CameraTab> {
     activeColor: NeoColors.accent,
     onPressed: _toggleFlash,
   );
+
+  /// On the draft page: opens the frames kept around the shot.
+  /// What can be done to the shot just taken, besides styling and posting it.
+  /// New photo tools go in this list: they show up in the one small menu.
+  List<PhotoTool> _photoTools(NeoPhoto photo) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      if (_canPickFrame(photo))
+        PhotoTool(
+          icon: Icons.history_toggle_off,
+          label: l10n.rewindPickFrame,
+          run: _pickFrame,
+        ),
+    ];
+  }
+
+  /// One small button that opens the menu of photo tools (nothing while there
+  /// are none), so the page does not grow a button for each of them.
+  Widget _photoToolsButton(NeoPhoto photo) {
+    final l10n = AppLocalizations.of(context);
+    return PhotoToolsButton(
+      tools: _photoTools(photo),
+      title: l10n.photoToolsTitle,
+      tooltip: l10n.photoToolsTooltip,
+    );
+  }
 
   Widget _timerControl() => _cornerControl(
     icon: switch (_shotTimer) {
@@ -2581,6 +2720,10 @@ class CameraTabState extends State<CameraTab> {
                   ],
                 ),
               ),
+              if (_photoTools(photo).isNotEmpty) ...[
+                _photoToolsButton(photo),
+                const SizedBox(width: 8),
+              ],
               _statusBadge(photo),
             ],
           ),
@@ -2599,7 +2742,7 @@ class CameraTabState extends State<CameraTab> {
                   child: NeoPanelClip(
                     radius: _squareRadius,
                     child: BeforeAfterView(
-                      key: ValueKey('before-after-${photo.id}'),
+                      key: ValueKey('before-after-${photo.id}-$_frameRevision'),
                       originalPath: photo.originalPath,
                       styledPath: styledPath,
                       styleLabel:

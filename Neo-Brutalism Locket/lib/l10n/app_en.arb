@@ -1868,7 +1868,28 @@
   "stripSave": "SAVE",
   "stripShare": "SHARE / PRINT",
   "stripSaved": "Strip saved to your photo library.",
-  "stripLoadFailed": "The photos could not be loaded. Check your connection and try again.",
+  "rewindTooltip": "Rewind capture",
+  "rewindUnlockToSend": "UNLOCK THE PHONE TO SEND",
+  "rewindNoCameraAccess": "CAMERA ACCESS IS OFF",
+  "rewindOpenApp": "OPEN THE APP TO ALLOW THE CAMERA",
+  "rewindShutterLabel": "Capture",
+  "rewindHint": "PRESSED TOO LATE? THE 2 SECONDS BEFORE THE PRESS ARE KEPT.",
+  "rewindHolding": "HOLDING THE MOMENT...",
+  "rewindSend": "SEND",
+  "rewindRetake": "RETAKE",
+  "rewindClose": "Close",
+  "rewindExtraFrame": "EXTRA FRAME",
+  "rewindCameraBusy": "THE CAMERA IS BUSY",
+  "rewindNothingKept": "NO FRAME WAS KEPT. TRY AGAIN.",
+  "rewindFrameSemantics": "Frame {time}",
+  "@rewindFrameSemantics": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "stripLoadFailed":"The photos could not be loaded. Check your connection and try again.",
   "stripTextLabel": "WORDS ON THE STRIP",
   "stripZoomHint": "TAP TO ZOOM",
   "stripPaperGrid": "2×3 GRID (6 PHOTOS)",
@@ -1981,5 +2002,11 @@
     }
   },
   "povHostStop": "STOP",
-  "povCameraFailed": "Could not open the camera."
+  "povCameraFailed": "Could not open the camera.",
+  "rewindPickFrame": "MISCAPTURED?",
+  "rewindPickTitle": "PICK ANOTHER FRAME",
+  "rewindPickOriginal": "AS SHOT",
+  "rewindPickUse": "USE THIS FRAME",
+  "photoToolsTooltip": "Photo tools",
+  "photoToolsTitle": "PHOTO TOOLS"
 }
