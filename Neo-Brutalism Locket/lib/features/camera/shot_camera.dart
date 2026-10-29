@@ -72,6 +72,14 @@ abstract class ShotCamera {
 
   /// Whether this camera keeps frames around shots at all.
   bool get keepsFrames;
+
+  /// Whether QR codes can be read from this camera's frames (Omni POV).
+  bool get canScanCodes;
+
+  /// The raw text of the QR codes in view, while [setCodeScanning] is on.
+  Stream<String> get scannedCodes;
+
+  Future<void> setCodeScanning(bool on);
 }
 
 /// The camera plugin's own controller: no frames kept.
@@ -98,6 +106,15 @@ class PluginShotCamera implements ShotCamera {
 
   @override
   bool get keepsFrames => false;
+
+  @override
+  bool get canScanCodes => false;
+
+  @override
+  Stream<String> get scannedCodes => const Stream<String>.empty();
+
+  @override
+  Future<void> setCodeScanning(bool on) async {}
 
   @override
   Stream<ShotBurst> get bursts => const Stream<ShotBurst>.empty();
@@ -185,6 +202,21 @@ class NativeShotCamera implements ShotCamera {
   @override
   bool get keepsFrames => true;
 
+  /// Only the main (back) camera reads codes: a mirrored front image would not.
+  @override
+  bool get canScanCodes => !front;
+
+  final _codes = StreamController<String>.broadcast();
+
+  @override
+  Stream<String> get scannedCodes => _codes.stream;
+
+  @override
+  Future<void> setCodeScanning(bool on) async {
+    if (_start == null) return;
+    await _backend.setScanning(on);
+  }
+
   @override
   Stream<ShotBurst> get bursts => _bursts.stream;
 
@@ -198,6 +230,8 @@ class NativeShotCamera implements ShotCamera {
         _bursts.add(ShotBurst(shotId: event.shotId, frames: event.frames));
       } else if (event is RewindError) {
         _errors.add(event.code);
+      } else if (event is RewindCode) {
+        _codes.add(event.value);
       }
     });
     try {
@@ -224,6 +258,7 @@ class NativeShotCamera implements ShotCamera {
     await _backend.stop();
     await _bursts.close();
     await _errors.close();
+    await _codes.close();
   }
 
   @override

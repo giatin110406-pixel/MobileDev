@@ -417,3 +417,7 @@ enabled = true
 # Called by the database (pg_net) with its own secret header, not by signed-in users.
 [functions.notify]
 verify_jwt = false
+
+# Called by the app, signed in; the token is checked inside the function (with Auth).
+[functions.pov-ice]
+verify_jwt = false

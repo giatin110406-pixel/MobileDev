@@ -26,6 +26,10 @@ import androidx.camera.core.CameraState
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
@@ -367,8 +371,20 @@ class RewindCamera(
 
     private var nv21: ByteArray? = null
 
+    // Omni POV: while on, the frames are also read for QR codes (ML Kit, on the phone).
+    @Volatile var scanCodes = false
+    private val codeScanner by lazy {
+        BarcodeScanning.getClient(
+            BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build(),
+        )
+    }
+    private var scanBusy = false
+    private var scanLast = 0L
+    private var scanBuffer: ByteArray? = null
+
     // Runs on the analysis thread, once per camera frame.
     private fun analyze(image: ImageProxy) {
+        if (scanCodes) scanForCode(image)
         val timestamp = image.imageInfo.timestamp
         if (!ring.accepts(timestamp)) return
         val started = System.nanoTime()
@@ -400,6 +416,31 @@ class RewindCamera(
                 main.post { if (continuous) finishBurst() else finishIfReady() }
             }
         }
+    }
+
+    // A copy of the frame goes to ML Kit (at most about four times a second, one at a time).
+    // The copy is taken here because the image is closed when the analyser returns.
+    private fun scanForCode(image: ImageProxy) {
+        val now = System.currentTimeMillis()
+        if (scanBusy || now - scanLast < 250) return
+        scanLast = now
+        val width = image.width
+        val height = image.height
+        val buffer = scanBuffer?.takeIf { it.size == width * height * 3 / 2 }
+            ?: ByteArray(width * height * 3 / 2).also { scanBuffer = it }
+        fillNv21(image, buffer)
+        val input = InputImage.fromByteArray(
+            buffer, width, height, image.imageInfo.rotationDegrees, InputImage.IMAGE_FORMAT_NV21,
+        )
+        scanBusy = true
+        codeScanner.process(input)
+            .addOnSuccessListener { codes ->
+                for (code in codes) {
+                    val value = code.rawValue ?: continue
+                    emit(mapOf("type" to "code", "value" to value))
+                }
+            }
+            .addOnCompleteListener { scanBusy = false }
     }
 
     // CameraX hands NV21 as three planes: Y, then V and U sharing one

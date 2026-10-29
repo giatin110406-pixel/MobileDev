@@ -43,6 +43,13 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="neolocket" android:host="add"/>
             </intent-filter>
+            <!-- An Omni POV code scanned by another camera app: neolocket://pov/<code> -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="neolocket" android:host="pov"/>
+            </intent-filter>
             <!-- Link in the "reset my password" email -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>

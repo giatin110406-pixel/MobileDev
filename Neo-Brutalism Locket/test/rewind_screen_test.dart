@@ -22,6 +22,9 @@ class FakeRewindBackend implements RewindBackend {
   Future<void> setZoom(double ratio) => throw UnimplementedError();
 
   @override
+  Future<void> setScanning(bool on) async {}
+
+  @override
   Future<void> startVideo() => throw UnimplementedError();
 
   @override

@@ -5192,6 +5192,234 @@ abstract class AppLocalizations {
   /// **'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả {count} ảnh.'**
   String stripOnlyThree(int count);
 
+  /// No description provided for @povTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Omni POV: xem mình qua camera của bạn'**
+  String get povTooltip;
+
+  /// No description provided for @povScanTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã Omni POV của bạn'**
+  String get povScanTooltip;
+
+  /// No description provided for @povQrTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'XEM MÌNH QUA MÁY CỦA BẠN'**
+  String get povQrTitle;
+
+  /// No description provided for @povQrIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang cầm máy chụp quét mã này bằng camera trong app Omni POV của họ. Khi đó bạn sẽ thấy đúng khung hình trên máy họ để chỉnh lại tư thế.'**
+  String get povQrIntro;
+
+  /// No description provided for @povQrLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn hiệu lực {time}'**
+  String povQrLeft(String time);
+
+  /// No description provided for @povQrExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã đã hết hạn.'**
+  String get povQrExpired;
+
+  /// No description provided for @povQrNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'MÃ MỚI'**
+  String get povQrNew;
+
+  /// No description provided for @povClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÓNG'**
+  String get povClose;
+
+  /// No description provided for @povCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'HỦY'**
+  String get povCancel;
+
+  /// No description provided for @povScanHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng vào mã Omni POV của bạn'**
+  String get povScanHint;
+
+  /// No description provided for @povScanNotOurs.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đây không phải mã Omni POV.'**
+  String get povScanNotOurs;
+
+  /// No description provided for @povConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} MUỐN XEM QUA ỐNG KÍNH CỦA BẠN'**
+  String povConfirmTitle(String name);
+
+  /// No description provided for @povConfirmNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ sẽ thấy trực tiếp những gì camera của bạn thấy. Bạn là người chụp, và có thể dừng bất cứ lúc nào.'**
+  String get povConfirmNote;
+
+  /// No description provided for @povAllow.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHO XEM'**
+  String get povAllow;
+
+  /// No description provided for @povDeny.
+  ///
+  /// In vi, this message translates to:
+  /// **'TỪ CHỐI'**
+  String get povDeny;
+
+  /// No description provided for @povEndEnded.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} đã dừng phiên xem.'**
+  String povEndEnded(String name);
+
+  /// No description provided for @povEndLost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết nối bị gián đoạn.'**
+  String get povEndLost;
+
+  /// No description provided for @povErrBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Omni POV đang được dùng. Hãy kết thúc phiên đó trước.'**
+  String get povErrBusy;
+
+  /// No description provided for @povErrNotFriends.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ chia sẻ camera được cho bạn bè của bạn.'**
+  String get povErrNotFriends;
+
+  /// No description provided for @povErrExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã đã hết hạn. Hãy xin mã mới.'**
+  String get povErrExpired;
+
+  /// No description provided for @povErrNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã này không dùng được nữa.'**
+  String get povErrNotFound;
+
+  /// No description provided for @povErrSelf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đây là mã của chính bạn.'**
+  String get povErrSelf;
+
+  /// No description provided for @povErrTooMany.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo quá nhiều mã. Thử lại sau nhé.'**
+  String get povErrTooMany;
+
+  /// No description provided for @povErrNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có kết nối. Thử lại nhé.'**
+  String get povErrNetwork;
+
+  /// No description provided for @povErrUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không được rồi. Thử lại nhé.'**
+  String get povErrUnknown;
+
+  /// No description provided for @povViewerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'QUA ỐNG KÍNH CỦA {name}'**
+  String povViewerTitle(String name);
+
+  /// No description provided for @povLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'TRỰC TIẾP'**
+  String get povLive;
+
+  /// No description provided for @povReconnecting.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG NỐI LẠI…'**
+  String get povReconnecting;
+
+  /// No description provided for @povConnectionLost.
+  ///
+  /// In vi, this message translates to:
+  /// **'MẤT KẾT NỐI'**
+  String get povConnectionLost;
+
+  /// No description provided for @povWaitingPicture.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ camera của {name}…'**
+  String povWaitingPicture(String name);
+
+  /// No description provided for @povFramingNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đây là đúng khung vuông của tấm ảnh.'**
+  String get povFramingNote;
+
+  /// No description provided for @povShotsTaken.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, =0{Chưa chụp tấm nào} other{Đã chụp {count} tấm}}'**
+  String povShotsTaken(int count);
+
+  /// No description provided for @povSnap.
+  ///
+  /// In vi, this message translates to:
+  /// **'TÁCH! {name} VỪA CHỤP'**
+  String povSnap(String name);
+
+  /// No description provided for @povStopWatching.
+  ///
+  /// In vi, this message translates to:
+  /// **'NGỪNG XEM'**
+  String get povStopWatching;
+
+  /// No description provided for @povHostWatching.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} ĐANG XEM'**
+  String povHostWatching(String name);
+
+  /// No description provided for @povHostShots.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ CHỤP {count}'**
+  String povHostShots(int count);
+
+  /// No description provided for @povHostStop.
+  ///
+  /// In vi, this message translates to:
+  /// **'KẾT THÚC'**
+  String get povHostStop;
+
+  /// No description provided for @povCameraFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được camera.'**
+  String get povCameraFailed;
+
   /// No description provided for @rewindPickFrame.
   ///
   /// In vi, this message translates to:

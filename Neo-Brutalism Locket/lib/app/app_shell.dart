@@ -62,6 +62,9 @@ import 'package:neo_brutalism_locket/features/search/search_backend.dart';
 import 'package:neo_brutalism_locket/features/search/photo_embedding.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_scan.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
 import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/profile/profile_screen.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
@@ -93,6 +96,7 @@ class AppShell extends StatefulWidget {
     this.outbox,
     this.mediaUrls,
     this.chatRepository,
+    this.povRepository,
     this.interactionsRepository,
     this.mediaActions,
     this.safetyRepository,
@@ -138,6 +142,9 @@ class AppShell extends StatefulWidget {
 
   /// Chat on the server (built from [session] when not given).
   final ChatRepository? chatRepository;
+
+  /// Omni POV (a friend watches my camera). Null: the real one with an account.
+  final PovRepository? povRepository;
 
   /// Reactions and views on the server (built from [session] when not given).
   final InteractionsRepository? interactionsRepository;
@@ -209,6 +216,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   bool _showGroups = false;
   PostsStore? _postsStore;
   ChatStore? _chat;
+  PovStore? _pov;
   InteractionsStore? _interactions;
   PostTagsStore? _tags;
   SafetyRepository? _safety;
@@ -296,6 +304,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             )
             ..addListener(_onChatChanged)
             ..refresh();
+      final povRepository =
+          widget.povRepository ??
+          (Backend.isReady
+              ? SupabasePovRepository(myId: session.user.id)
+              : null);
+      if (povRepository != null) {
+        _pov = PovStore(povRepository, myId: session.user.id)..start();
+      }
       _safety =
           widget.safetyRepository ??
           SupabaseSafetyRepository(myId: session.user.id);
@@ -312,6 +328,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       // Before signing out: stop pushes to this phone (still signed in then)
       // and take the account's photo off the home screen.
       _beforeSignOut = () async {
+        await _pov?.end();
         await push.stop();
         await updater.clear();
       };
@@ -381,6 +398,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ?..removeListener(_onPostsChanged)
       ..dispose();
     _outbox?.dispose();
+    _pov?.dispose();
     _chat
       ?..removeListener(_onChatChanged)
       ..dispose();
@@ -901,6 +919,16 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final rewindFile = rewindFileFromLink(uri);
     if (rewindFile != null) {
       _importRewind(rewindFile);
+      return;
+    }
+    // An Omni POV code opened from another camera app: the same as scanning it here.
+    final povCode = povCodeFromLink(uri);
+    if (povCode != null) {
+      final pov = _pov;
+      if (pov != null && mounted) {
+        _selectTab(_cameraTab);
+        joinPovWithCode(context, store: pov, code: povCode, friends: _friends);
+      }
       return;
     }
     final postId = postIdFromLink(uri);
@@ -1825,6 +1853,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           onSendPrint: _online ? _sendPrint : null,
                           onPostDraft: _online ? _postDraft : null,
                           friends: _friendsStore?.friends ?? const [],
+                          pov: _pov,
+                          povRepository: _pov?.repository,
+                          povFriends: _friends,
                           albums: _albumsStore?.open ?? const [],
                           onPhotoRemoved: _onPhotoRemoved,
                           onVideoRecorded: _online ? _sendVideo : null,

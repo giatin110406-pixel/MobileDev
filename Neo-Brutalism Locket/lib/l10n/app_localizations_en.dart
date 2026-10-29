@@ -2969,6 +2969,149 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get povTooltip => 'Omni POV: see yourself through a friend\'s camera';
+
+  @override
+  String get povScanTooltip => 'Scan a friend\'s Omni POV code';
+
+  @override
+  String get povQrTitle => 'SEE YOURSELF THROUGH A FRIEND\'S CAMERA';
+
+  @override
+  String get povQrIntro =>
+      'The friend taking the photo scans this code with the camera of their Omni POV app. Then you see what their camera sees, so you can fix your pose.';
+
+  @override
+  String povQrLeft(String time) {
+    return 'Valid for $time';
+  }
+
+  @override
+  String get povQrExpired => 'This code ran out.';
+
+  @override
+  String get povQrNew => 'NEW CODE';
+
+  @override
+  String get povClose => 'CLOSE';
+
+  @override
+  String get povCancel => 'CANCEL';
+
+  @override
+  String get povScanHint => 'Aim at a friend\'s Omni POV code';
+
+  @override
+  String get povScanNotOurs => 'That is not an Omni POV code.';
+
+  @override
+  String povConfirmTitle(String name) {
+    return '$name WANTS TO SEE THROUGH YOUR CAMERA';
+  }
+
+  @override
+  String get povConfirmNote =>
+      'They will see live what your camera sees. You take the photos, and you can stop at any time.';
+
+  @override
+  String get povAllow => 'SHOW';
+
+  @override
+  String get povDeny => 'NOT NOW';
+
+  @override
+  String povEndEnded(String name) {
+    return '$name stopped the session.';
+  }
+
+  @override
+  String get povEndLost => 'The connection dropped.';
+
+  @override
+  String get povErrBusy => 'Omni POV is in use already. Finish that first.';
+
+  @override
+  String get povErrNotFriends =>
+      'You can only share your camera with your friends.';
+
+  @override
+  String get povErrExpired => 'That code ran out. Ask for a new one.';
+
+  @override
+  String get povErrNotFound => 'That code does not work any more.';
+
+  @override
+  String get povErrSelf => 'That is your own code.';
+
+  @override
+  String get povErrTooMany => 'Too many codes. Try again in a while.';
+
+  @override
+  String get povErrNetwork => 'No connection. Try again.';
+
+  @override
+  String get povErrUnknown => 'That did not work. Try again.';
+
+  @override
+  String povViewerTitle(String name) {
+    return 'THROUGH $name\'S CAMERA';
+  }
+
+  @override
+  String get povLive => 'LIVE';
+
+  @override
+  String get povReconnecting => 'RECONNECTING…';
+
+  @override
+  String get povConnectionLost => 'CONNECTION LOST';
+
+  @override
+  String povWaitingPicture(String name) {
+    return 'Waiting for $name\'s camera…';
+  }
+
+  @override
+  String get povFramingNote =>
+      'This is exactly the square the photo will have.';
+
+  @override
+  String povShotsTaken(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos taken',
+      one: '1 photo taken',
+      zero: 'No photos yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String povSnap(String name) {
+    return 'SNAP! $name TOOK A PHOTO';
+  }
+
+  @override
+  String get povStopWatching => 'STOP WATCHING';
+
+  @override
+  String povHostWatching(String name) {
+    return '$name IS WATCHING';
+  }
+
+  @override
+  String povHostShots(int count) {
+    return 'TAKEN $count';
+  }
+
+  @override
+  String get povHostStop => 'STOP';
+
+  @override
+  String get povCameraFailed => 'Could not open the camera.';
+
+  @override
   String get rewindPickFrame => 'MISCAPTURED?';
 
   @override

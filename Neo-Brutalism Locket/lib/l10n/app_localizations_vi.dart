@@ -2919,6 +2919,147 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get povTooltip => 'Omni POV: xem mình qua camera của bạn';
+
+  @override
+  String get povScanTooltip => 'Quét mã Omni POV của bạn';
+
+  @override
+  String get povQrTitle => 'XEM MÌNH QUA MÁY CỦA BẠN';
+
+  @override
+  String get povQrIntro =>
+      'Bạn đang cầm máy chụp quét mã này bằng camera trong app Omni POV của họ. Khi đó bạn sẽ thấy đúng khung hình trên máy họ để chỉnh lại tư thế.';
+
+  @override
+  String povQrLeft(String time) {
+    return 'Còn hiệu lực $time';
+  }
+
+  @override
+  String get povQrExpired => 'Mã đã hết hạn.';
+
+  @override
+  String get povQrNew => 'MÃ MỚI';
+
+  @override
+  String get povClose => 'ĐÓNG';
+
+  @override
+  String get povCancel => 'HỦY';
+
+  @override
+  String get povScanHint => 'Hướng vào mã Omni POV của bạn';
+
+  @override
+  String get povScanNotOurs => 'Đây không phải mã Omni POV.';
+
+  @override
+  String povConfirmTitle(String name) {
+    return '$name MUỐN XEM QUA ỐNG KÍNH CỦA BẠN';
+  }
+
+  @override
+  String get povConfirmNote =>
+      'Họ sẽ thấy trực tiếp những gì camera của bạn thấy. Bạn là người chụp, và có thể dừng bất cứ lúc nào.';
+
+  @override
+  String get povAllow => 'CHO XEM';
+
+  @override
+  String get povDeny => 'TỪ CHỐI';
+
+  @override
+  String povEndEnded(String name) {
+    return '$name đã dừng phiên xem.';
+  }
+
+  @override
+  String get povEndLost => 'Kết nối bị gián đoạn.';
+
+  @override
+  String get povErrBusy =>
+      'Omni POV đang được dùng. Hãy kết thúc phiên đó trước.';
+
+  @override
+  String get povErrNotFriends => 'Chỉ chia sẻ camera được cho bạn bè của bạn.';
+
+  @override
+  String get povErrExpired => 'Mã đã hết hạn. Hãy xin mã mới.';
+
+  @override
+  String get povErrNotFound => 'Mã này không dùng được nữa.';
+
+  @override
+  String get povErrSelf => 'Đây là mã của chính bạn.';
+
+  @override
+  String get povErrTooMany => 'Tạo quá nhiều mã. Thử lại sau nhé.';
+
+  @override
+  String get povErrNetwork => 'Không có kết nối. Thử lại nhé.';
+
+  @override
+  String get povErrUnknown => 'Không được rồi. Thử lại nhé.';
+
+  @override
+  String povViewerTitle(String name) {
+    return 'QUA ỐNG KÍNH CỦA $name';
+  }
+
+  @override
+  String get povLive => 'TRỰC TIẾP';
+
+  @override
+  String get povReconnecting => 'ĐANG NỐI LẠI…';
+
+  @override
+  String get povConnectionLost => 'MẤT KẾT NỐI';
+
+  @override
+  String povWaitingPicture(String name) {
+    return 'Đang chờ camera của $name…';
+  }
+
+  @override
+  String get povFramingNote => 'Đây là đúng khung vuông của tấm ảnh.';
+
+  @override
+  String povShotsTaken(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã chụp $count tấm',
+      zero: 'Chưa chụp tấm nào',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String povSnap(String name) {
+    return 'TÁCH! $name VỪA CHỤP';
+  }
+
+  @override
+  String get povStopWatching => 'NGỪNG XEM';
+
+  @override
+  String povHostWatching(String name) {
+    return '$name ĐANG XEM';
+  }
+
+  @override
+  String povHostShots(int count) {
+    return 'ĐÃ CHỤP $count';
+  }
+
+  @override
+  String get povHostStop => 'KẾT THÚC';
+
+  @override
+  String get povCameraFailed => 'Không mở được camera.';
+
+  @override
   String get rewindPickFrame => 'CHỤP HỤT?';
 
   @override

@@ -210,6 +210,10 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
                 camera?.setZoom((call.argument<Number>("ratio") ?: 1.0).toFloat())
                 result.success(null)
             }
+            "setScanning" -> {
+                camera?.scanCodes = call.argument<Boolean>("on") == true
+                result.success(null)
+            }
             "startVideo" -> {
                 val active = camera
                 if (active == null) {

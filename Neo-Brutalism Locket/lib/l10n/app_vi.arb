@@ -1908,6 +1908,107 @@
       }
     }
   },
+  "povTooltip": "Omni POV: xem mình qua camera của bạn",
+  "povScanTooltip": "Quét mã Omni POV của bạn",
+  "povQrTitle": "XEM MÌNH QUA MÁY CỦA BẠN",
+  "povQrIntro": "Bạn đang cầm máy chụp quét mã này bằng camera trong app Omni POV của họ. Khi đó bạn sẽ thấy đúng khung hình trên máy họ để chỉnh lại tư thế.",
+  "povQrLeft": "Còn hiệu lực {time}",
+  "@povQrLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "povQrExpired": "Mã đã hết hạn.",
+  "povQrNew": "MÃ MỚI",
+  "povClose": "ĐÓNG",
+  "povCancel": "HỦY",
+  "povScanHint": "Hướng vào mã Omni POV của bạn",
+  "povScanNotOurs": "Đây không phải mã Omni POV.",
+  "povConfirmTitle": "{name} MUỐN XEM QUA ỐNG KÍNH CỦA BẠN",
+  "@povConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povConfirmNote": "Họ sẽ thấy trực tiếp những gì camera của bạn thấy. Bạn là người chụp, và có thể dừng bất cứ lúc nào.",
+  "povAllow": "CHO XEM",
+  "povDeny": "TỪ CHỐI",
+  "povEndEnded": "{name} đã dừng phiên xem.",
+  "@povEndEnded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povEndLost": "Kết nối bị gián đoạn.",
+  "povErrBusy": "Omni POV đang được dùng. Hãy kết thúc phiên đó trước.",
+  "povErrNotFriends": "Chỉ chia sẻ camera được cho bạn bè của bạn.",
+  "povErrExpired": "Mã đã hết hạn. Hãy xin mã mới.",
+  "povErrNotFound": "Mã này không dùng được nữa.",
+  "povErrSelf": "Đây là mã của chính bạn.",
+  "povErrTooMany": "Tạo quá nhiều mã. Thử lại sau nhé.",
+  "povErrNetwork": "Không có kết nối. Thử lại nhé.",
+  "povErrUnknown": "Không được rồi. Thử lại nhé.",
+  "povViewerTitle": "QUA ỐNG KÍNH CỦA {name}",
+  "@povViewerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povLive": "TRỰC TIẾP",
+  "povReconnecting": "ĐANG NỐI LẠI…",
+  "povConnectionLost": "MẤT KẾT NỐI",
+  "povWaitingPicture": "Đang chờ camera của {name}…",
+  "@povWaitingPicture": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povFramingNote": "Đây là đúng khung vuông của tấm ảnh.",
+  "povShotsTaken": "{count, plural, =0{Chưa chụp tấm nào} other{Đã chụp {count} tấm}}",
+  "@povShotsTaken": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "povSnap": "TÁCH! {name} VỪA CHỤP",
+  "@povSnap": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povStopWatching": "NGỪNG XEM",
+  "povHostWatching": "{name} ĐANG XEM",
+  "@povHostWatching": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povHostShots": "ĐÃ CHỤP {count}",
+  "@povHostShots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "povHostStop": "KẾT THÚC",
+  "povCameraFailed": "Không mở được camera.",
   "rewindPickFrame": "CHỤP HỤT?",
   "rewindPickTitle": "CHỌN KHUNG KHÁC",
   "rewindPickOriginal": "ẢNH ĐÃ CHỤP",

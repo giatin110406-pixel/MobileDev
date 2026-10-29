@@ -116,6 +116,13 @@ class RewindHolding extends RewindEvent {
   const RewindHolding();
 }
 
+/// Omni POV: a QR code is in view of the main camera (the raw text of the code).
+class RewindCode extends RewindEvent {
+  const RewindCode(this.value);
+
+  final String value;
+}
+
 class RewindFrozen extends RewindEvent {
   const RewindFrozen({required this.frames, required this.still});
 
@@ -158,6 +165,9 @@ abstract class RewindBackend {
   /// One of `off`, `auto`, `on`.
   Future<void> setFlash(String mode);
   Future<void> setZoom(double ratio);
+
+  /// Omni POV: reads QR codes out of the main camera's frames while on.
+  Future<void> setScanning(bool on);
 
   /// Starts a clip (no sound) and later hands back the MP4's path.
   Future<void> startVideo();
@@ -216,6 +226,10 @@ class MethodChannelRewindBackend implements RewindBackend {
       _methods.invokeMethod<void>('setFlash', {'mode': mode});
 
   @override
+  Future<void> setScanning(bool on) =>
+      _methods.invokeMethod<void>('setScanning', {'on': on});
+
+  @override
   Future<void> setZoom(double ratio) =>
       _methods.invokeMethod<void>('setZoom', {'ratio': ratio});
 
@@ -269,6 +283,8 @@ class MethodChannelRewindBackend implements RewindBackend {
     switch (map['type']) {
       case 'holding':
         return const RewindHolding();
+      case 'code':
+        return RewindCode(map['value']! as String);
       case 'frozen':
         final still = map['hq'];
         return RewindFrozen(

@@ -142,6 +142,9 @@ class _RewindScreenState extends State<RewindScreen> {
     switch (event) {
       case RewindHolding():
         setState(() => _phase = _Phase.holding);
+      case RewindCode():
+        // Omni POV reads codes elsewhere (the main camera); the rewind screen does not.
+        break;
       case RewindFrozen(:final frames, :final still):
         final timeline = RewindTimeline.tryBuild(frames: frames, still: still);
         setState(() {

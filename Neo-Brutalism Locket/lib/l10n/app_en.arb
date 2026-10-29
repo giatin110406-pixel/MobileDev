@@ -1902,6 +1902,107 @@
       }
     }
   },
+  "povTooltip": "Omni POV: see yourself through a friend's camera",
+  "povScanTooltip": "Scan a friend's Omni POV code",
+  "povQrTitle": "SEE YOURSELF THROUGH A FRIEND'S CAMERA",
+  "povQrIntro": "The friend taking the photo scans this code with the camera of their Omni POV app. Then you see what their camera sees, so you can fix your pose.",
+  "povQrLeft": "Valid for {time}",
+  "@povQrLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "povQrExpired": "This code ran out.",
+  "povQrNew": "NEW CODE",
+  "povClose": "CLOSE",
+  "povCancel": "CANCEL",
+  "povScanHint": "Aim at a friend's Omni POV code",
+  "povScanNotOurs": "That is not an Omni POV code.",
+  "povConfirmTitle": "{name} WANTS TO SEE THROUGH YOUR CAMERA",
+  "@povConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povConfirmNote": "They will see live what your camera sees. You take the photos, and you can stop at any time.",
+  "povAllow": "SHOW",
+  "povDeny": "NOT NOW",
+  "povEndEnded": "{name} stopped the session.",
+  "@povEndEnded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povEndLost": "The connection dropped.",
+  "povErrBusy": "Omni POV is in use already. Finish that first.",
+  "povErrNotFriends": "You can only share your camera with your friends.",
+  "povErrExpired": "That code ran out. Ask for a new one.",
+  "povErrNotFound": "That code does not work any more.",
+  "povErrSelf": "That is your own code.",
+  "povErrTooMany": "Too many codes. Try again in a while.",
+  "povErrNetwork": "No connection. Try again.",
+  "povErrUnknown": "That did not work. Try again.",
+  "povViewerTitle": "THROUGH {name}'S CAMERA",
+  "@povViewerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povLive": "LIVE",
+  "povReconnecting": "RECONNECTING…",
+  "povConnectionLost": "CONNECTION LOST",
+  "povWaitingPicture": "Waiting for {name}'s camera…",
+  "@povWaitingPicture": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povFramingNote": "This is exactly the square the photo will have.",
+  "povShotsTaken": "{count, plural, =0{No photos yet} =1{1 photo taken} other{{count} photos taken}}",
+  "@povShotsTaken": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "povSnap": "SNAP! {name} TOOK A PHOTO",
+  "@povSnap": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povStopWatching": "STOP WATCHING",
+  "povHostWatching": "{name} IS WATCHING",
+  "@povHostWatching": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "povHostShots": "TAKEN {count}",
+  "@povHostShots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "povHostStop": "STOP",
+  "povCameraFailed": "Could not open the camera.",
   "rewindPickFrame": "MISCAPTURED?",
   "rewindPickTitle": "PICK ANOTHER FRAME",
   "rewindPickOriginal": "AS SHOT",
