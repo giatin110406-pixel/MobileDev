@@ -1906,5 +1906,6 @@
   "rewindPickTitle": "PICK ANOTHER FRAME",
   "rewindPickOriginal": "AS SHOT",
   "rewindPickUse": "USE THIS FRAME",
-  "photoToolsTooltip": "Photo tools"
+  "photoToolsTooltip": "Photo tools",
+  "photoToolsTitle": "PHOTO TOOLS"
 }

@@ -2982,4 +2982,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoToolsTooltip => 'Photo tools';
+
+  @override
+  String get photoToolsTitle => 'PHOTO TOOLS';
 }

@@ -5221,6 +5221,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Công cụ ảnh'**
   String get photoToolsTooltip;
+
+  /// No description provided for @photoToolsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÔNG CỤ ẢNH'**
+  String get photoToolsTitle;
 }
 
 class _AppLocalizationsDelegate

@@ -2932,4 +2932,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get photoToolsTooltip => 'Công cụ ảnh';
+
+  @override
+  String get photoToolsTitle => 'CÔNG CỤ ẢNH';
 }
