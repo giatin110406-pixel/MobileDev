@@ -57,3 +57,17 @@ def test_seed_picks_the_person():
     pair = make_pair(4)
     result = am.add_me(pair.shot_1, pair.shot_2, seed=(0.85, 0.6))
     assert result.ok
+
+
+def test_a_second_person_sized_change_is_refused():
+    # Someone in the group moved too: two changes the size of a person, and which one is the
+    # photographer is not known. Merging the wrong one would make a wrong photo.
+    pair = make_pair(5)
+    changed = pair.shot_2.copy()
+    h, w = changed.shape[:2]
+    ys, xs = np.nonzero(pair.holder)
+    ph, pw = ys.max() - ys.min(), xs.max() - xs.min()
+    x0 = int(w * 0.05) if xs.mean() > w / 2 else int(w * 0.95) - pw
+    changed[int(h * 0.3):int(h * 0.3) + ph, x0:x0 + pw] = 255 - changed[int(h * 0.3):int(h * 0.3) + ph, x0:x0 + pw]
+    result = am.add_me(pair.shot_1, changed)
+    assert not result.ok and result.reason in (am.REASON_BACKGROUND, am.REASON_SEVERAL)

@@ -5599,6 +5599,114 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tiến gần một chút'**
   String get holdFrameCloser;
+
+  /// No description provided for @addMeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÊM TÔI VÀO'**
+  String get addMeTitle;
+
+  /// No description provided for @addMeTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm tôi vào ảnh nhóm'**
+  String get addMeTooltip;
+
+  /// No description provided for @addMeStep1.
+  ///
+  /// In vi, this message translates to:
+  /// **'1/2 · Chụp cả nhóm. Chừa một chỗ trống cho bạn, mọi người đứng yên.'**
+  String get addMeStep1;
+
+  /// No description provided for @addMeShootFirst.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP NHÓM'**
+  String get addMeShootFirst;
+
+  /// No description provided for @addMeStep2.
+  ///
+  /// In vi, this message translates to:
+  /// **'2/2 · Đưa máy cho một người trong nhóm rồi vào đứng chỗ trống. Người cầm máy canh bóng mờ cho khớp với cảnh rồi chụp.'**
+  String get addMeStep2;
+
+  /// No description provided for @addMeShootSecond.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP CÓ TÔI'**
+  String get addMeShootSecond;
+
+  /// No description provided for @addMeAligned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã khớp khung. Chụp đi.'**
+  String get addMeAligned;
+
+  /// No description provided for @addMeMerging.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang ghép bạn vào…'**
+  String get addMeMerging;
+
+  /// No description provided for @addMeCheckResult.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã có mặt. Xem kỹ chỗ ghép trước khi đăng nhé.'**
+  String get addMeCheckResult;
+
+  /// No description provided for @addMeUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'DÙNG ẢNH NÀY'**
+  String get addMeUse;
+
+  /// No description provided for @addMeRetakeSecond.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP LẠI TẤM 2'**
+  String get addMeRetakeSecond;
+
+  /// No description provided for @addMeStartOver.
+  ///
+  /// In vi, this message translates to:
+  /// **'LÀM LẠI TỪ ĐẦU'**
+  String get addMeStartOver;
+
+  /// No description provided for @addMeAlignFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hai tấm không cùng khung. Chụp tấm 2 ở đúng chỗ đã chụp tấm 1.'**
+  String get addMeAlignFailed;
+
+  /// No description provided for @addMeBackgroundChanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có thứ khác thay đổi giữa hai tấm (ai đó di chuyển hoặc ánh sáng đổi). Mọi người đứng yên rồi chụp lại tấm 2.'**
+  String get addMeBackgroundChanged;
+
+  /// No description provided for @addMeNoNewPerson.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thấy người mới trong tấm 2. Vào đứng chỗ trống rồi chụp lại.'**
+  String get addMeNoNewPerson;
+
+  /// No description provided for @addMeTooLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đứng quá gần máy. Lùi lại một chút.'**
+  String get addMeTooLarge;
+
+  /// No description provided for @addMeNeedsMatting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đứng sát người khác quá. Đứng cách nhóm ra một chút.'**
+  String get addMeNeedsMatting;
+
+  /// No description provided for @addMeFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không ghép được hai tấm ảnh.'**
+  String get addMeFailed;
 }
 
 class _AppLocalizationsDelegate

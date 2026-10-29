@@ -21,6 +21,7 @@ REASON_BACKGROUND = "background_changed"
 REASON_NO_PERSON = "no_new_person"
 REASON_TOO_LARGE = "change_too_large"
 REASON_NEEDS_MATTING = "needs_matting"
+REASON_SEVERAL = "several_changes"
 
 WORK = 640  # the long side everything is measured at; the output stays at full resolution
 MIN_MATCHES = 20
@@ -29,7 +30,13 @@ MIN_INLIER_RATIO = 0.35
 MAX_CORNER_SHIFT = 0.25  # of the image diagonal; a bigger warp is not "the same scene"
 MIN_PERSON_AREA = 0.004  # of the image
 MAX_PERSON_AREA = 0.60
-MAX_OTHER_CHANGE = 0.12  # change outside the chosen person, of the image
+MAX_OTHER_CHANGE = 0.03  # change outside the chosen person, of the image (synthetic pairs: good <= 0.001, moved >= 0.05)
+# A second change at least this big next to the chosen one (of its area) could be the person who
+# was really added, or someone in the group who moved: which one is not known, so refuse.
+MAX_SECOND_CHANGE = 0.15  # synthetic pairs: good <= 0.005, moved >= 0.14
+# Changes this close to the chosen one (of the working size) are parts of the same person: a
+# head and a body that a collar the colour of the background split apart.
+JOIN = 0.04
 MAX_SEAM_COST = 14.0  # mean colour difference along the cut; above this it cuts through someone
 ANGLES = 360
 
@@ -95,14 +102,20 @@ def align(base: np.ndarray, moving: np.ndarray) -> tuple[np.ndarray | None, np.n
 
 
 def match_exposure(base: np.ndarray, moving: np.ndarray, valid: np.ndarray) -> np.ndarray:
-    """Per-channel gain so the two shots have the same overall brightness, from medians (a
-    person covers a small part of the frame, so the median is the background)."""
-    sel = valid > 0
+    """Per-channel gain so the two shots have the same brightness: the median of the pixel-by-
+    pixel ratio. A median of each whole shot would be pulled by the new person (they cover a few
+    per cent of it, enough to tint them by a quarter); the ratio is the same all over the
+    unchanged background, so a few per cent of changed pixels cannot move its median."""
+    b, _ = _fit(base)
+    m, _ = _fit(moving)
+    v, _ = _fit(valid)
+    sel = (v > 128) & (b.min(axis=2) > 8) & (m.min(axis=2) > 8) & (b.max(axis=2) < 250) & (m.max(axis=2) < 250)
     out = moving.astype(np.float32)
+    if sel.sum() < 1000:
+        return moving
     for c in range(3):
-        mb = float(np.median(base[..., c][sel]))
-        mm = float(np.median(moving[..., c][sel]))
-        out[..., c] *= float(np.clip(mb / max(mm, 1.0), 0.7, 1.4))
+        ratio = b[..., c][sel].astype(np.float32) / m[..., c][sel].astype(np.float32)
+        out[..., c] *= float(np.clip(np.median(ratio), 0.7, 1.4))
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
@@ -215,6 +228,11 @@ def add_me(shot_1: np.ndarray, shot_2: np.ndarray, seed: tuple[float, float] | N
         inside = [b for b in blobs if b[sy, sx]]
         chosen = inside[0] if inside else min(
             blobs, key=lambda b: np.hypot(*(np.argwhere(b).mean(axis=0) - (sy, sx))))
+    reach = max(3, round(WORK * JOIN)) | 1
+    near = cv2.dilate(chosen, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (reach, reach)))
+    parts = [b for b in blobs if b is chosen or (b & near).any()]
+    chosen = np.clip(sum(parts), 0, 1).astype(np.uint8)
+    blobs = [chosen] + [b for b in blobs if not any(b is q for q in parts)]
     person = cv2.dilate(chosen, np.ones((5, 5), np.uint8))
     area = float(person.sum()) / total
     others = sum(float(b.sum()) for b in blobs if b is not chosen) / total
@@ -223,6 +241,11 @@ def add_me(shot_1: np.ndarray, shot_2: np.ndarray, seed: tuple[float, float] | N
         return AddMeResult(False, REASON_TOO_LARGE, info=info)
     if others > MAX_OTHER_CHANGE:
         return AddMeResult(False, REASON_BACKGROUND, info=info)
+    if seed is None and len(blobs) > 1:
+        second = max(float(b.sum()) for b in blobs if b is not chosen)
+        info["second_change"] = second / float(chosen.sum())
+        if second / total >= MIN_PERSON_AREA and second >= MAX_SECOND_CHANGE * float(chosen.sum()):
+            return AddMeResult(False, REASON_SEVERAL, info=info)
 
     cut, seam_cost = find_seam(d, person)
     info["seam_cost"] = seam_cost

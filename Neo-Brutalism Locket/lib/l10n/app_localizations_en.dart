@@ -3206,4 +3206,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holdFrameCloser => 'Step closer a little';
+
+  @override
+  String get addMeTitle => 'ADD ME';
+
+  @override
+  String get addMeTooltip => 'Add me to the group photo';
+
+  @override
+  String get addMeStep1 =>
+      '1/2 · Take the group. Leave a gap for yourself, and everyone keeps still.';
+
+  @override
+  String get addMeShootFirst => 'TAKE THE GROUP';
+
+  @override
+  String get addMeStep2 =>
+      '2/2 · Hand the phone to someone in the group and step into the gap. They line the faint picture up with the scene, then take it.';
+
+  @override
+  String get addMeShootSecond => 'TAKE IT WITH ME';
+
+  @override
+  String get addMeAligned => 'Lined up. Take it.';
+
+  @override
+  String get addMeMerging => 'Putting you in…';
+
+  @override
+  String get addMeCheckResult =>
+      'Here you are. Look closely at the join before you post.';
+
+  @override
+  String get addMeUse => 'USE THIS PHOTO';
+
+  @override
+  String get addMeRetakeSecond => 'RETAKE PHOTO 2';
+
+  @override
+  String get addMeStartOver => 'START OVER';
+
+  @override
+  String get addMeAlignFailed =>
+      'The two photos do not show the same frame. Take photo 2 from where photo 1 was taken.';
+
+  @override
+  String get addMeBackgroundChanged =>
+      'Something else changed between the photos (someone moved, or the light). Everyone keeps still, then retake photo 2.';
+
+  @override
+  String get addMeNoNewPerson =>
+      'Nobody new is in photo 2. Step into the gap, then retake it.';
+
+  @override
+  String get addMeTooLarge =>
+      'You are too close to the camera. Step back a little.';
+
+  @override
+  String get addMeNeedsMatting =>
+      'You are standing too close to someone. Leave a little space between you and the group.';
+
+  @override
+  String get addMeFailed => 'The photos could not be merged.';
 }
