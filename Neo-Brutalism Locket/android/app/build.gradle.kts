@@ -35,6 +35,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -52,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation("org.opencv:opencv:4.12.0")
     // The rewind capture screen (rewind/) drives CameraX itself. The version
     // matches the camera plugin's, so Gradle keeps a single copy.
     implementation("androidx.camera:camera-core:1.5.3")
@@ -63,6 +65,8 @@ dependencies {
     // ListenableFuture, which ProcessCameraProvider.getInstance returns.
     implementation("com.google.guava:guava:33.4.8-android")
     testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
 }
 
 flutter {
