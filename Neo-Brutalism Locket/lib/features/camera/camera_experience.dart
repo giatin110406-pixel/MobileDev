@@ -34,7 +34,8 @@ import 'package:neo_brutalism_locket/features/photos/photo_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_error_text.dart';
 import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
-import 'package:neo_brutalism_locket/features/rewind/rewind_screen.dart';
+import 'package:neo_brutalism_locket/features/camera/shot_camera.dart';
+import 'package:neo_brutalism_locket/features/rewind/rewind_picker.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_check_text.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
@@ -129,7 +130,22 @@ class CameraTab extends StatefulWidget {
 
 class CameraTabState extends State<CameraTab> {
   final ImagePicker _imagePicker = ImagePicker();
-  CameraController? _camera;
+  ShotCamera? _camera;
+  StreamSubscription<ShotBurst>? _burstSub;
+  StreamSubscription<String>? _cameraErrorSub;
+
+  /// The frames kept around the shot on the draft page (null: none kept, or
+  /// not arrived yet), and the camera's folder for that shot.
+  ShotBurst? _burst;
+  String? _shotId;
+
+  /// The camera's own full-quality file for that shot, and the print it made.
+  String? _shotStillPath;
+  String? _shotPhotoId;
+
+  /// The frame now printed instead of the shot's own picture (its file in the
+  /// camera's folder); null while the shot's own picture is the one printed.
+  String? _pickedFramePath;
   List<CameraDescription> _cameras = [];
   NeoPhoto? _activePhoto;
   FlashMode _flashMode = FlashMode.off;
@@ -211,6 +227,8 @@ class CameraTabState extends State<CameraTab> {
     _composer?.dispose();
     _countdownTimer?.cancel();
     _recordTimer?.cancel();
+    _burstSub?.cancel();
+    _cameraErrorSub?.cancel();
     _camera?.dispose();
     super.dispose();
   }
@@ -288,6 +306,7 @@ class CameraTabState extends State<CameraTab> {
 
   void _removeShot(NeoPhoto photo) {
     _discarded.add(photo.id);
+    if (_shotPhotoId == photo.id) _releaseShot();
     if (_draftId == photo.id) {
       _draftId = null;
       _shotPreviewPath = null;
@@ -366,7 +385,7 @@ class CameraTabState extends State<CameraTab> {
     final camera = _camera;
     final quest = _questModeQuest;
     if (camera == null ||
-        !camera.value.isInitialized ||
+        !camera.isInitialized ||
         _processing ||
         quest == null) {
       return;
@@ -383,6 +402,9 @@ class CameraTabState extends State<CameraTab> {
     try {
       final day = widget.player.today;
       final shot = await camera.takePicture();
+      // A quest photo is checked as it is: no other frame to pick.
+      final shotId = shot.shotId;
+      if (shotId != null) camera.releaseShot(shotId).ignore();
       final bytes = await cropShotToSquare(shot.path);
       final QuestVerdict verdict;
       try {
@@ -439,6 +461,78 @@ class CameraTabState extends State<CameraTab> {
     }
   }
 
+  ShotCamera _makeCamera(CameraDescription description) =>
+      !kIsWeb && Platform.isAndroid
+      ? NativeShotCamera(
+          front: description.lensDirection == CameraLensDirection.front,
+        )
+      : PluginShotCamera(description);
+
+  void _onBurst(ShotBurst burst) {
+    if (!mounted || burst.shotId != _shotId || burst.frames.isEmpty) return;
+    setState(() => _burst = burst);
+  }
+
+  void _onCameraError(String code) {
+    if (mounted) _notify(AppLocalizations.of(context).cameraUnavailable);
+  }
+
+  /// The shot just taken: its frames come on [_onBurst] a moment later.
+  void _adoptShot(ShotPicture shot) {
+    _releaseShot();
+    _shotId = shot.shotId;
+    _shotStillPath = shot.shotId == null ? null : shot.path;
+    _pickedFramePath = null;
+  }
+
+  /// Lets the camera delete the frames kept for the last shot.
+  void _releaseShot() {
+    final id = _shotId;
+    if (id != null) _camera?.releaseShot(id).ignore();
+    _shotId = null;
+    _shotStillPath = null;
+    _shotPhotoId = null;
+    _pickedFramePath = null;
+    _burst = null;
+  }
+
+  /// Another frame can be picked for [photo] (it was just shot, and the camera
+  /// kept the frames around it).
+  bool _canPickFrame(NeoPhoto photo) =>
+      _burst != null &&
+      _shotPhotoId == photo.id &&
+      _activePhoto?.id == photo.id &&
+      !_processing;
+
+  /// Opens the frames kept around the shot; the one the person picks replaces
+  /// the printed picture (styled again if it has a style).
+  Future<void> _pickFrame() async {
+    final photo = _activePhoto;
+    final burst = _burst;
+    final still = _shotStillPath;
+    if (photo == null || burst == null || still == null || _processing) return;
+    final choice = await Navigator.of(context).push<RewindChoice>(
+      MaterialPageRoute(
+        builder: (_) => RewindPicker(
+          burst: burst,
+          stillPath: still,
+          currentFramePath: _pickedFramePath,
+          readStill: cropShotToSquare,
+        ),
+      ),
+    );
+    if (choice == null || !mounted || _activePhoto?.id != photo.id) return;
+    setState(() => _processing = true);
+    try {
+      await _startPrint(choice.bytes, draft: photo);
+      _pickedFramePath = choice.framePath;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      _notify(AppLocalizations.of(context).photoNotSaved);
+    }
+  }
+
   Future<void> _initializeCamera({int? index}) async {
     if (mounted) {
       setState(() {
@@ -455,22 +549,16 @@ class CameraTabState extends State<CameraTab> {
       final oldCamera = _camera;
       _camera = null;
       await oldCamera?.dispose();
-      final nextCamera = CameraController(
-        _cameras[nextIndex],
-        ResolutionPreset.veryHigh,
-        enableAudio: false,
-      );
+      await _burstSub?.cancel();
+      await _cameraErrorSub?.cancel();
+      final nextCamera = _makeCamera(_cameras[nextIndex]);
       _camera = nextCamera;
       await nextCamera.initialize();
       await nextCamera.setFlashMode(_flashMode);
-      double minZoom = 1;
-      double maxZoom = 1;
-      try {
-        minZoom = await nextCamera.getMinZoomLevel();
-        maxZoom = await nextCamera.getMaxZoomLevel();
-      } catch (_) {
-        // No zoom on this camera: the buttons stay hidden.
-      }
+      _burstSub = nextCamera.bursts.listen(_onBurst);
+      _cameraErrorSub = nextCamera.errors.listen(_onCameraError);
+      final minZoom = nextCamera.minZoom;
+      final maxZoom = nextCamera.maxZoom;
       if (!mounted) return;
       setState(() {
         _cameraIndex = nextIndex;
@@ -534,7 +622,7 @@ class CameraTabState extends State<CameraTab> {
 
   Future<void> _setZoom(double level) async {
     final camera = _camera;
-    if (camera == null || !camera.value.isInitialized) return;
+    if (camera == null || !camera.isInitialized) return;
     final next = clampZoom(level, _minZoom, _maxZoom);
     if ((next - _zoom).abs() < 0.01) return;
     setState(() => _zoom = next);
@@ -553,7 +641,7 @@ class CameraTabState extends State<CameraTab> {
 
   Future<void> _startVideo() async {
     final camera = _camera;
-    if (camera == null || !camera.value.isInitialized || !_canRecord) return;
+    if (camera == null || !camera.isInitialized || !_canRecord) return;
     if (_recording) return;
     final failed = AppLocalizations.of(context).videoFailed;
     try {
@@ -579,18 +667,18 @@ class CameraTabState extends State<CameraTab> {
     setState(() => _recording = false);
     if (camera == null) return;
     try {
-      final file = await camera.stopVideoRecording();
+      final path = await camera.stopVideoRecording();
       final length = DateTime.now().difference(started);
       if (length < const Duration(milliseconds: 600)) {
         _notify(l10n.videoTooShort);
         try {
-          await File(file.path).delete();
+          await File(path).delete();
         } catch (e, st) {
           AppLog.warn('camera_experience', e, st);
         }
         return;
       }
-      await widget.onVideoRecorded?.call(File(file.path));
+      await widget.onVideoRecorded?.call(File(path));
     } catch (_) {
       _notify(l10n.videoFailed);
     }
@@ -599,7 +687,7 @@ class CameraTabState extends State<CameraTab> {
   Future<void> _shoot() async {
     if (_questMode) return _captureQuest();
     final camera = _camera;
-    if (camera == null || !camera.value.isInitialized || _processing) return;
+    if (camera == null || !camera.isInitialized || _processing) return;
 
     setState(() {
       _processing = true;
@@ -614,6 +702,7 @@ class CameraTabState extends State<CameraTab> {
     final draft = widget.onPostDraft != null ? _openDraft() : null;
     try {
       final shot = await camera.takePicture();
+      _adoptShot(shot);
       if (draft != null) {
         if (_discarded.contains(draft.id)) {
           // Thrown away while developing.
@@ -637,6 +726,7 @@ class CameraTabState extends State<CameraTab> {
       // Save exactly what the square viewfinder showed: a centred 1:1 crop.
       final bytes = await cropShotToSquare(shot.path);
       await _startPrint(bytes, draft: draft);
+      _shotPhotoId = draft?.id ?? _activePhoto?.id;
     } catch (_) {
       if (!mounted) return;
       if (draft != null) {
@@ -699,29 +789,6 @@ class CameraTabState extends State<CameraTab> {
       setState(() => _processing = false);
       _notify(AppLocalizations.of(context).photoOpenFailed);
     }
-  }
-
-  /// Opens rewind capture. It drives the camera itself, so this page lets go
-  /// of its own first and starts it again when the person comes back; the
-  /// frame they picked is then printed like any other shot.
-  Future<void> _openRewind() async {
-    if (_processing || _recording) return;
-    final lens = _cameras.isEmpty
-        ? CameraLensDirection.back
-        : _cameras[_cameraIndex].lensDirection;
-    final old = _camera;
-    setState(() {
-      _camera = null;
-      _cameraLoading = true;
-    });
-    await old?.dispose();
-    if (!mounted) return;
-    final bytes = await Navigator.of(context).push<Uint8List>(
-      MaterialPageRoute(builder: (_) => RewindScreen(initialLens: lens)),
-    );
-    if (!mounted) return;
-    await _initializeCamera();
-    if (bytes != null && mounted) await _printPicked(bytes);
   }
 
   /// A picture made elsewhere (the lock-screen rewind hands one over): print
@@ -1440,6 +1507,8 @@ class CameraTabState extends State<CameraTab> {
               bottom: 72,
               child: OverlayLabels(overlay: composer.overlay),
             ),
+            if (_canPickFrame(photo))
+              Positioned(right: 16, bottom: 72, child: _pickFrameButton()),
             Positioned(
               left: 16,
               right: 16,
@@ -1689,24 +1758,7 @@ class CameraTabState extends State<CameraTab> {
   static const double _squareRadius = 40;
 
   /// The camera feed scaled to cover the square frame, centre-cropped.
-  Widget _squarePreview(CameraController camera) {
-    final orientation = camera.value.deviceOrientation;
-    final landscape =
-        orientation == DeviceOrientation.landscapeLeft ||
-        orientation == DeviceOrientation.landscapeRight;
-    final aspect = landscape
-        ? camera.value.aspectRatio
-        : 1 / camera.value.aspectRatio;
-    return FittedBox(
-      fit: BoxFit.cover,
-      clipBehavior: Clip.hardEdge,
-      child: SizedBox(
-        width: 1000 * aspect,
-        height: 1000,
-        child: CameraPreview(camera),
-      ),
-    );
-  }
+  Widget _squarePreview(ShotCamera camera) => camera.buildPreview();
 
   /// The gallery photo under a square frame, where the viewfinder was.
   Widget _buildCropper() {
@@ -1803,7 +1855,7 @@ class CameraTabState extends State<CameraTab> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (camera != null && camera.value.isInitialized)
+              if (camera != null && camera.isInitialized)
                 GestureDetector(
                   onScaleStart: (_) => _zoomAtPinchStart = _zoom,
                   onScaleUpdate: (details) {
@@ -1843,11 +1895,9 @@ class CameraTabState extends State<CameraTab> {
                   ),
                 ),
               Positioned(top: 18, left: 18, child: _flashControl()),
-              if (!_questMode && !kIsWeb && Platform.isAndroid)
-                Positioned(top: 18, left: 62, child: _rewindControl()),
               Positioned(top: 18, right: 18, child: _timerControl()),
               if (camera != null &&
-                  camera.value.isInitialized &&
+                  camera.isInitialized &&
                   zoomPresets(_minZoom, _maxZoom).length > 1)
                 Positioned(
                   left: 0,
@@ -1944,14 +1994,14 @@ class CameraTabState extends State<CameraTab> {
     onPressed: _toggleFlash,
   );
 
-  Widget _rewindControl() => _cornerControl(
-    icon: Icons.history_toggle_off,
-    tooltip: AppLocalizations.of(context).rewindTooltip,
-    active: false,
-    activeColor: NeoColors.accent,
-    onPressed: _processing || _recording || _countdown != null
-        ? null
-        : _openRewind,
+  /// On the draft page: opens the frames kept around the shot.
+  Widget _pickFrameButton() => GestureDetector(
+    onTap: Haptics.tap(_pickFrame),
+    child: NeoLabel(
+      AppLocalizations.of(context).rewindPickFrame,
+      color: NeoColors.accent,
+      icon: Icons.history_toggle_off,
+    ),
   );
 
   Widget _timerControl() => _cornerControl(
@@ -2328,6 +2378,15 @@ class CameraTabState extends State<CameraTab> {
                   ],
                 ),
               ),
+              if (_canPickFrame(photo)) ...[
+                NeoIconButton(
+                  icon: Icons.history_toggle_off,
+                  tooltip: AppLocalizations.of(context).rewindPickFrame,
+                  onPressed: _pickFrame,
+                  fill: NeoColors.peach,
+                ),
+                const SizedBox(width: 8),
+              ],
               _statusBadge(photo),
             ],
           ),

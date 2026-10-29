@@ -11,6 +11,25 @@ import 'package:neo_brutalism_locket/features/rewind/rewind_screen.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
 class FakeRewindBackend implements RewindBackend {
+  // The main camera's calls: the rewind screen never makes them.
+  @override
+  Future<RewindShot> shoot() => throw UnimplementedError();
+
+  @override
+  Future<void> setFlash(String mode) => throw UnimplementedError();
+
+  @override
+  Future<void> setZoom(double ratio) => throw UnimplementedError();
+
+  @override
+  Future<void> startVideo() => throw UnimplementedError();
+
+  @override
+  Future<String> stopVideo() => throw UnimplementedError();
+
+  @override
+  Future<void> releaseShot(String shotId) => throw UnimplementedError();
+
   final controller = StreamController<RewindEvent>.broadcast();
   int shutters = 0;
   int rearms = 0;
@@ -24,7 +43,11 @@ class FakeRewindBackend implements RewindBackend {
   Stream<RewindEvent> get events => controller.stream;
 
   @override
-  Future<RewindStart> start({required bool front}) async {
+  Future<RewindStart> start({
+    required bool front,
+    bool continuous = false,
+    bool askPermission = false,
+  }) async {
     if (failToStart) throw PlatformException(code: 'cameraBusy');
     return const RewindStart(
       textureId: 1,

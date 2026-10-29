@@ -13,6 +13,8 @@ class RewindStart {
     required this.sensorOrientation,
     required this.front,
     required this.handlesCropAndRotation,
+    this.minZoom = 1,
+    this.maxZoom = 1,
   });
 
   factory RewindStart.fromMap(Map<Object?, Object?> map) => RewindStart(
@@ -22,6 +24,8 @@ class RewindStart {
     sensorOrientation: (map['sensorOrientation']! as num).toInt(),
     front: map['lensFacing'] == 'front',
     handlesCropAndRotation: map['handlesCropAndRotation'] == true,
+    minZoom: (map['minZoom'] as num?)?.toDouble() ?? 1,
+    maxZoom: (map['maxZoom'] as num?)?.toDouble() ?? 1,
   );
 
   final int textureId;
@@ -34,6 +38,34 @@ class RewindStart {
 
   /// The engine already turns and crops the texture, so Dart must not.
   final bool handlesCropAndRotation;
+
+  /// The lens's zoom ratios (1 and 1 when it cannot zoom).
+  final double minZoom;
+  final double maxZoom;
+}
+
+/// A shot taken by the main camera: the full-quality still, already on disk.
+@immutable
+class RewindShot {
+  const RewindShot({
+    required this.shotId,
+    required this.path,
+    required this.withBurst,
+  });
+
+  factory RewindShot.fromMap(Map<Object?, Object?> map) => RewindShot(
+    shotId: map['shotId']! as String,
+    path: map['path']! as String,
+    withBurst: map['burst'] == true,
+  );
+
+  final String shotId;
+
+  /// The JPEG; its EXIF says how to turn it upright.
+  final String path;
+
+  /// The frames around the press will follow as a [RewindBurst].
+  final bool withBurst;
 }
 
 /// A camera frame kept from the stream, as a square JPEG file.
@@ -93,6 +125,14 @@ class RewindFrozen extends RewindEvent {
   final RewindStill? still;
 }
 
+/// The frames around a shot of the main camera, about a second after it.
+class RewindBurst extends RewindEvent {
+  const RewindBurst({required this.shotId, required this.frames});
+
+  final String shotId;
+  final List<RewindFrame> frames;
+}
+
 class RewindError extends RewindEvent {
   const RewindError(this.code, this.message);
 
@@ -105,8 +145,26 @@ class RewindError extends RewindEvent {
 abstract class RewindBackend {
   /// Starts the camera. Throws a [PlatformException] (code `cameraBusy`) when
   /// it cannot.
-  Future<RewindStart> start({required bool front});
+  Future<RewindStart> start({
+    required bool front,
+    bool continuous = false,
+    bool askPermission = false,
+  });
   Future<void> shutter();
+
+  /// Main camera: takes the picture. Its frames follow as a [RewindBurst].
+  Future<RewindShot> shoot();
+
+  /// One of `off`, `auto`, `on`.
+  Future<void> setFlash(String mode);
+  Future<void> setZoom(double ratio);
+
+  /// Starts a clip (no sound) and later hands back the MP4's path.
+  Future<void> startVideo();
+  Future<String> stopVideo();
+
+  /// The shot's frames and still are not needed any more.
+  Future<void> releaseShot(String shotId);
 
   /// Drops the held frames and watches again.
   Future<void> rearm();
@@ -135,12 +193,42 @@ class MethodChannelRewindBackend implements RewindBackend {
   );
 
   @override
-  Future<RewindStart> start({required bool front}) async {
+  Future<RewindStart> start({
+    required bool front,
+    bool continuous = false,
+    bool askPermission = false,
+  }) async {
     final map = await _methods.invokeMapMethod<Object?, Object?>('start', {
       'lens': front ? 'front' : 'back',
+      'continuous': continuous,
+      'askPermission': askPermission,
     });
     return RewindStart.fromMap(map!);
   }
+
+  @override
+  Future<RewindShot> shoot() async => RewindShot.fromMap(
+    (await _methods.invokeMapMethod<Object?, Object?>('shoot'))!,
+  );
+
+  @override
+  Future<void> setFlash(String mode) =>
+      _methods.invokeMethod<void>('setFlash', {'mode': mode});
+
+  @override
+  Future<void> setZoom(double ratio) =>
+      _methods.invokeMethod<void>('setZoom', {'ratio': ratio});
+
+  @override
+  Future<void> startVideo() => _methods.invokeMethod<void>('startVideo');
+
+  @override
+  Future<String> stopVideo() async =>
+      (await _methods.invokeMethod<String>('stopVideo'))!;
+
+  @override
+  Future<void> releaseShot(String shotId) =>
+      _methods.invokeMethod<void>('releaseShot', {'shotId': shotId});
 
   @override
   Future<void> shutter() => _methods.invokeMethod<void>('shutter');
@@ -191,6 +279,14 @@ class MethodChannelRewindBackend implements RewindBackend {
           still: still == null
               ? null
               : RewindStill.fromMap(still as Map<Object?, Object?>),
+        );
+      case 'burst':
+        return RewindBurst(
+          shotId: map['shotId']! as String,
+          frames: [
+            for (final f in map['frames']! as List<Object?>)
+              RewindFrame.fromMap(f! as Map<Object?, Object?>),
+          ],
         );
       default:
         return RewindError(

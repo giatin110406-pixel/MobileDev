@@ -2917,4 +2917,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String stripOnlyThree(int count) {
     return 'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả $count ảnh.';
   }
+
+  @override
+  String get rewindPickFrame => 'ĐỔI KHUNG';
+
+  @override
+  String get rewindPickTitle => 'CHỌN KHUNG KHÁC';
+
+  @override
+  String get rewindPickOriginal => 'ẢNH ĐÃ CHỤP';
+
+  @override
+  String get rewindPickUse => 'DÙNG KHUNG NÀY';
 }

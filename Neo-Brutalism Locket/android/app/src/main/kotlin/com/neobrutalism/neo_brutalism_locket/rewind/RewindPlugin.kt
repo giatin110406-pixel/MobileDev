@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -17,6 +18,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 import java.io.File
 import java.util.concurrent.Executors
@@ -30,6 +32,7 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
         const val METHOD_CHANNEL = "com.neobrutalism.neo_brutalism_locket/rewind"
         const val EVENT_CHANNEL = "com.neobrutalism.neo_brutalism_locket/rewind_events"
         private val worker = Executors.newSingleThreadExecutor()
+        private const val REQUEST_CAMERA = 7301
     }
 
     private val main = Handler(Looper.getMainLooper())
@@ -40,6 +43,19 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
     private var sink: EventChannel.EventSink? = null
     private var activity: Activity? = null
     private var camera: RewindCamera? = null
+    private var permissionBinding: ActivityPluginBinding? = null
+
+    // What waits for the answer to the camera permission prompt.
+    private var afterPermission: ((Boolean) -> Unit)? = null
+    private val permissionListener =
+        PluginRegistry.RequestPermissionsResultListener { code, _, results ->
+            if (code != REQUEST_CAMERA) return@RequestPermissionsResultListener false
+            val granted = results.isNotEmpty() && results[0] == PackageManager.PERMISSION_GRANTED
+            val next = afterPermission
+            afterPermission = null
+            next?.invoke(granted)
+            true
+        }
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         val appContext = binding.applicationContext
@@ -68,18 +84,22 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
+        permissionBinding = binding.also { it.addRequestPermissionsResultListener(permissionListener) }
     }
 
     override fun onDetachedFromActivityForConfigChanges() = Unit
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
+        permissionBinding = binding.also { it.addRequestPermissionsResultListener(permissionListener) }
     }
 
     override fun onDetachedFromActivity() {
         camera?.stop()
         camera = null
         activity = null
+        permissionBinding?.removeRequestPermissionsResultListener(permissionListener)
+        permissionBinding = null
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
@@ -121,35 +141,94 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
         }
     }
 
+    // Hands a RewindCamera outcome to Dart; a failure's message is
+    // "code|detail".
+    private fun <T> Result<T>.reply(result: MethodChannel.Result) = fold(
+        onSuccess = { result.success(it) },
+        onFailure = { error ->
+            val parts = (error.message ?: "").split('|', limit = 2)
+            result.error(parts[0].ifEmpty { "cameraBusy" }, parts.getOrNull(1), null)
+        },
+    )
+
+    // The lock-screen screen never asks for the camera permission (it only
+    // reports it); the main camera passes askPermission and the prompt shows.
+    private fun startCamera(call: MethodCall, result: MethodChannel.Result) {
+        val host = activity as? LifecycleOwner
+        val appContext = context
+        val registry = textures
+        if (host == null || appContext == null || registry == null) {
+            result.error("cameraBusy", "No screen to show the camera on", null)
+            return
+        }
+        if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.CAMERA) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            val screen = activity
+            if (call.argument<Boolean>("askPermission") == true && screen != null) {
+                afterPermission = { granted ->
+                    if (granted) {
+                        startCamera(call, result)
+                    } else {
+                        result.error("noPermission", "Camera access is off", null)
+                    }
+                }
+                ActivityCompat.requestPermissions(
+                    screen, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA,
+                )
+            } else {
+                result.error("noPermission", "Camera access is off", null)
+            }
+            return
+        }
+        val next = camera?.also { it.stop() } ?: RewindCamera(
+            appContext, registry, host,
+        ) { event -> sink?.success(event) }.also { camera = it }
+        next.start(
+            call.argument<String>("lens") == "front",
+            call.argument<Boolean>("continuous") == true,
+        ) { outcome -> outcome.reply(result) }
+    }
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "start" -> {
-                val host = activity as? LifecycleOwner
-                val appContext = context
-                val registry = textures
-                if (host == null || appContext == null || registry == null) {
-                    result.error("cameraBusy", "No screen to show the camera on", null)
+            "start" -> startCamera(call, result)
+            // The main camera page (continuous mode).
+            "shoot" -> {
+                val active = camera
+                if (active == null) {
+                    result.error("cameraBusy", "The camera is not running", null)
                     return
                 }
-                // The lock-screen screen never asks for the permission.
-                if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.CAMERA) !=
-                    PackageManager.PERMISSION_GRANTED
-                ) {
-                    result.error("noPermission", "Camera access is off", null)
+                active.shoot { outcome -> outcome.reply(result) }
+            }
+            "setFlash" -> {
+                camera?.setFlash(call.argument<String>("mode") ?: "off")
+                result.success(null)
+            }
+            "setZoom" -> {
+                camera?.setZoom((call.argument<Number>("ratio") ?: 1.0).toFloat())
+                result.success(null)
+            }
+            "startVideo" -> {
+                val active = camera
+                if (active == null) {
+                    result.error("cameraBusy", "The camera is not running", null)
                     return
                 }
-                val next = camera?.also { it.stop() } ?: RewindCamera(
-                    appContext, registry, host,
-                ) { event -> sink?.success(event) }.also { camera = it }
-                next.start(call.argument<String>("lens") == "front") { outcome ->
-                    outcome.fold(
-                        onSuccess = { result.success(it) },
-                        onFailure = { error ->
-                            val parts = (error.message ?: "").split('|', limit = 2)
-                            result.error(parts[0].ifEmpty { "cameraBusy" }, parts.getOrNull(1), null)
-                        },
-                    )
+                active.startVideo { outcome -> outcome.map { null }.reply(result) }
+            }
+            "stopVideo" -> {
+                val active = camera
+                if (active == null) {
+                    result.error("videoFailed", "The camera is not running", null)
+                    return
                 }
+                active.stopVideo { outcome -> outcome.reply(result) }
+            }
+            "releaseShot" -> {
+                call.argument<String>("shotId")?.let { camera?.releaseShot(it) }
+                result.success(null)
             }
             "shutter" -> {
                 camera?.shutter()

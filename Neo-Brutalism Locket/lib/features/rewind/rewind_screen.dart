@@ -152,6 +152,9 @@ class _RewindScreenState extends State<RewindScreen> {
         if (timeline != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToThumb());
         }
+      case RewindBurst():
+        // Only the main camera page shoots in bursts.
+        break;
       case RewindError():
         // The frames are already on disk once the person is choosing; a
         // camera that fails now (app in the background) must not take them away.

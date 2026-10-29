@@ -32,6 +32,14 @@ import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.FallbackStrategy
+import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
@@ -42,10 +50,17 @@ import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-// The camera behind the rewind screen: CameraX with a preview that Flutter
-// shows as a texture, a frame stream that is kept as JPEGs in a FrameRing,
-// and a full-quality still taken at the press. Talks to Dart through
-// RewindPlugin. Every public method is called on the main thread.
+// The camera behind the rewind screen and, on Android, behind the main camera
+// page too: CameraX with a preview that Flutter shows as a texture, a frame
+// stream that is kept as JPEGs in a FrameRing, and a full-quality still taken
+// at the press. Talks to Dart through RewindPlugin. Every public method is
+// called on the main thread.
+//
+// Two ways of using it. The rewind screen (continuous = false) watches until
+// one press, shows the strip, and is done. The main camera (continuous = true)
+// never stops watching: each press (shoot) returns the still at once, and the
+// frames around it follow about a second later as a "burst" event, while the
+// ring starts watching again for the next shot.
 class RewindCamera(
     private val context: Context,
     private val textures: TextureRegistry,
@@ -64,6 +79,14 @@ class RewindCamera(
         // How long after the press we wait for the late frames and the
         // full-quality still before showing what there is.
         private const val SETTLE_TIMEOUT_MS = 4000L
+
+        // The late frames of a burst: 1 s is what is asked, so 2 s is already
+        // a camera that is not delivering.
+        private const val BURST_TIMEOUT_MS = 2000L
+
+        // Shots of the main camera kept on disk (one is on screen at a time).
+        private const val SHOTS_KEPT = 3
+        private val SHOT_ID = Regex("[0-9a-f-]{36}")
         private const val STATS_WINDOW = 150
 
         private val activeSessions = HashSet<String>()
@@ -121,6 +144,17 @@ class RewindCamera(
     private var pendingStart: ((Result<Map<String, Any?>>) -> Unit)? = null
     private var startInfo: Map<String, Any?>? = null
 
+    private var continuous = false
+    private var videoCapture: VideoCapture<Recorder>? = null
+    private var recording: Recording? = null
+    private var videoFile: File? = null
+    private var videoStopReply: ((Result<String>) -> Unit)? = null
+
+    // The shot whose late frames are being collected (continuous mode).
+    private var burstShotId: String? = null
+    private var burstPressNs = 0L
+    private val burstTimeout = Runnable { finishBurst() }
+
     private var realtimeClock = true
     private var sessionId = ""
     private var pressNs = 0L
@@ -159,9 +193,14 @@ class RewindCamera(
         override fun onLowMemory() = Unit
     }
 
-    fun start(front: Boolean, reply: (Result<Map<String, Any?>>) -> Unit) {
+    fun start(
+        front: Boolean,
+        continuous: Boolean,
+        reply: (Result<Map<String, Any?>>) -> Unit,
+    ) {
         stop()
         stopped = false
+        this.continuous = continuous
         pendingStart = reply
         analysisExecutor = Executors.newSingleThreadExecutor()
         ioExecutor = Executors.newSingleThreadExecutor()
@@ -294,7 +333,10 @@ class RewindCamera(
         val bound = p.bindToLifecycle(owner, selector, newPreview, newAnalysis, newCapture)
         camera = bound
         realtimeClock = readsRealtimeClock(bound.cameraInfo)
+        val zoom = bound.cameraInfo.zoomState.value
         startInfo = mapOf(
+            "minZoom" to (zoom?.minZoomRatio ?: 1f).toDouble(),
+            "maxZoom" to (zoom?.maxZoomRatio ?: 1f).toDouble(),
             "textureId" to surfaceProducer.id(),
             "sensorOrientation" to bound.cameraInfo.getSensorRotationDegrees(Surface.ROTATION_0),
             "lensFacing" to if (front) "front" else "back",
@@ -354,7 +396,9 @@ class RewindCamera(
                 while (jpegSizes.size > STATS_WINDOW) jpegSizes.removeFirst()
                 while (keptAtMs.size > STATS_WINDOW) keptAtMs.removeFirst()
             }
-            if (ring.state == FrameRing.State.FROZEN) main.post { finishIfReady() }
+            if (ring.state == FrameRing.State.FROZEN) {
+                main.post { if (continuous) finishBurst() else finishIfReady() }
+            }
         }
     }
 
@@ -511,6 +555,242 @@ class RewindCamera(
         exif.saveAttributes()
     }
 
+    /**
+     * Continuous mode: the shutter. Replies with the full-quality still as soon
+     * as it is on disk; the frames around the press follow as a "burst" event
+     * and the ring is watching again after that. A press while the previous
+     * burst is still being collected (or while recording) gets the still only.
+     */
+    fun shoot(reply: (Result<Map<String, Any?>>) -> Unit) {
+        val cap = capture
+        val executor = ioExecutor
+        if (cap == null || executor == null || stopped) {
+            reply(Result.failure(IllegalStateException("cameraBusy|The camera is not running")))
+            return
+        }
+        val shotId = UUID.randomUUID().toString()
+        val dir = File(context.cacheDir, "rewind/$sessionId/$shotId").apply { mkdirs() }
+        val withBurst = ring.state == FrameRing.State.ARMED && recording == null
+        if (withBurst) {
+            burstShotId = shotId
+            burstPressNs = nowOnSensorClock()
+            ring.press(burstPressNs)
+            main.postDelayed(burstTimeout, BURST_TIMEOUT_MS)
+        }
+        fun giveUp(message: String?) {
+            if (withBurst && burstShotId == shotId) {
+                burstShotId = null
+                main.removeCallbacks(burstTimeout)
+                ring.reset()
+            }
+            dir.deleteRecursively()
+            reply(Result.failure(IllegalStateException("captureFailed|${message ?: ""}")))
+        }
+        try {
+            cap.takePicture(
+                executor,
+                object : ImageCapture.OnImageCapturedCallback() {
+                    override fun onCaptureSuccess(image: ImageProxy) {
+                        try {
+                            val buffer = image.planes[0].buffer
+                            val bytes = ByteArray(buffer.remaining())
+                            buffer.get(bytes)
+                            val file = File(dir, "hq.jpg")
+                            file.writeBytes(bytes)
+                            writeOrientation(file, image.imageInfo.rotationDegrees)
+                            main.post {
+                                reply(
+                                    Result.success(
+                                        mapOf(
+                                            "shotId" to shotId,
+                                            "path" to file.path,
+                                            "burst" to withBurst,
+                                        ),
+                                    ),
+                                )
+                            }
+                        } catch (e: Exception) {
+                            main.post { giveUp(e.message) }
+                        } finally {
+                            image.close()
+                        }
+                    }
+
+                    override fun onError(exception: ImageCaptureException) {
+                        main.post { giveUp(exception.message) }
+                    }
+                },
+            )
+        } catch (e: Exception) {
+            giveUp(e.message)
+        }
+    }
+
+    // The late frames are in (or the camera did not deliver them): write what
+    // the ring holds next to the still and tell Dart, then watch again.
+    private fun finishBurst() {
+        val shotId = burstShotId ?: return
+        if (stopped) return
+        burstShotId = null
+        main.removeCallbacks(burstTimeout)
+        ring.freeze()
+        val frames = ring.snapshot()
+        val press = burstPressNs
+        ring.reset()
+        val executor = ioExecutor ?: return
+        val session = sessionId
+        executor.execute {
+            try {
+                val dir = File(context.cacheDir, "rewind/$session/$shotId").apply { mkdirs() }
+                val list = frames.mapIndexed { index, frame ->
+                    val file = File(dir, "f_$index.jpg")
+                    file.writeBytes(frame.jpeg)
+                    mapOf(
+                        "path" to file.path,
+                        "offsetMs" to Math.round((frame.timestampNs - press) / 1e6),
+                        "rotation" to frame.rotationDegrees,
+                    )
+                }
+                main.post {
+                    if (stopped) return@post
+                    emit(mapOf("type" to "burst", "shotId" to shotId, "frames" to list))
+                    trimShots(session)
+                }
+            } catch (e: Exception) {
+                // No frames for this shot: the still alone is still a photo.
+            }
+        }
+    }
+
+    // Old shots go; the newest few stay (the page on screen uses one).
+    private fun trimShots(session: String) {
+        val shots = File(context.cacheDir, "rewind/$session").listFiles { f -> f.isDirectory }
+            ?: return
+        shots.sortedByDescending { it.lastModified() }.drop(SHOTS_KEPT).forEach {
+            it.deleteRecursively()
+        }
+    }
+
+    /** The shot's folder is not needed any more (posted, dropped or replaced). */
+    fun releaseShot(shotId: String) {
+        if (!SHOT_ID.matches(shotId) || sessionId.isEmpty()) return
+        File(context.cacheDir, "rewind/$sessionId/$shotId").deleteRecursively()
+    }
+
+    /** One of off, auto or on. */
+    fun setFlash(mode: String) {
+        capture?.flashMode = when (mode) {
+            "auto" -> ImageCapture.FLASH_MODE_AUTO
+            "on" -> ImageCapture.FLASH_MODE_ON
+            else -> ImageCapture.FLASH_MODE_OFF
+        }
+    }
+
+    fun setZoom(ratio: Float) {
+        camera?.cameraControl?.setZoomRatio(ratio)
+    }
+
+    /**
+     * Starts recording a clip (no sound, like the camera plugin was set up).
+     * The frame stream rests meanwhile: three use cases are the most a phone
+     * is promised to run together.
+     */
+    fun startVideo(reply: (Result<Unit>) -> Unit) {
+        val p = provider
+        val selector = cameraSelector
+        if (p == null || selector == null || stopped || recording != null) {
+            reply(Result.failure(IllegalStateException("cameraBusy|Cannot record now")))
+            return
+        }
+        burstShotId = null
+        main.removeCallbacks(burstTimeout)
+        ring.reset()
+        analysis?.let { if (p.isBound(it)) p.unbind(it) }
+        val recorder = Recorder.Builder()
+            .setQualitySelector(
+                QualitySelector.from(
+                    Quality.FHD,
+                    FallbackStrategy.lowerQualityOrHigherThan(Quality.FHD),
+                ),
+            )
+            .build()
+        val video = VideoCapture.withOutput(recorder).also { it.targetRotation = Surface.ROTATION_0 }
+        try {
+            p.bindToLifecycle(owner, selector, video)
+        } catch (e: Exception) {
+            // A phone that cannot run preview, still and video together:
+            // the still rests too while recording.
+            try {
+                capture?.let { p.unbind(it) }
+                p.bindToLifecycle(owner, selector, video)
+            } catch (e2: Exception) {
+                resumeWatching()
+                reply(Result.failure(IllegalStateException("cameraBusy|${e2.message ?: ""}")))
+                return
+            }
+        }
+        videoCapture = video
+        val file = File(context.cacheDir, "rewind/video_${UUID.randomUUID()}.mp4")
+            .also { it.parentFile?.mkdirs() }
+        videoFile = file
+        var replied = false
+        recording = recorder
+            .prepareRecording(context, FileOutputOptions.Builder(file).build())
+            .start(mainExecutor) { event ->
+                when (event) {
+                    is VideoRecordEvent.Start -> if (!replied) {
+                        replied = true
+                        reply(Result.success(Unit))
+                    }
+                    is VideoRecordEvent.Finalize -> {
+                        recording = null
+                        val stopReply = videoStopReply
+                        videoStopReply = null
+                        if (!replied) {
+                            replied = true
+                            reply(Result.failure(IllegalStateException("cameraBusy|Recording did not start")))
+                        }
+                        videoCapture?.let { v -> provider?.unbind(v) }
+                        videoCapture = null
+                        resumeWatching()
+                        stopReply?.invoke(
+                            if (event.hasError() && !file.exists()) {
+                                Result.failure(IllegalStateException("videoFailed|${event.error}"))
+                            } else {
+                                Result.success(file.path)
+                            },
+                        )
+                    }
+                    else -> Unit
+                }
+            }
+    }
+
+    /** Stops the clip; replies with the MP4's path once it is written. */
+    fun stopVideo(reply: (Result<String>) -> Unit) {
+        val active = recording
+        if (active == null) {
+            reply(Result.failure(IllegalStateException("videoFailed|Not recording")))
+            return
+        }
+        videoStopReply = reply
+        active.stop()
+    }
+
+    // The still and the frame stream come back after a clip.
+    private fun resumeWatching() {
+        val p = provider ?: return
+        val selector = cameraSelector ?: return
+        if (stopped) return
+        val back = listOfNotNull(capture, analysis).filter { !p.isBound(it) }
+        if (back.isEmpty()) return
+        try {
+            p.bindToLifecycle(owner, selector, *back.toTypedArray())
+        } catch (e: Exception) {
+            emit(mapOf("type" to "error", "code" to "cameraBusy", "message" to e.message))
+        }
+    }
+
     /** Shoot again: drop the held frames and start watching afresh. */
     fun rearm() {
         if (stopped) return
@@ -568,11 +848,16 @@ class RewindCamera(
         stateObserver?.let { camera?.cameraInfo?.cameraState?.removeObserver(it) }
         stateObserver = null
         analysis?.clearAnalyzer()
-        val used = listOfNotNull(preview, analysis, capture)
+        recording?.let { runCatching { it.stop() } }
+        recording = null
+        videoStopReply = null
+        burstShotId = null
+        val used = listOfNotNull(preview, analysis, capture, videoCapture)
         if (used.isNotEmpty()) provider?.unbind(*used.toTypedArray())
         preview = null
         analysis = null
         capture = null
+        videoCapture = null
         camera = null
         provider = null
         producer?.release()

@@ -277,3 +277,31 @@ Nếu không đạt cổng: đổi `FRAME_SIDE` trong `android/app/src/main/kotl
 
 ### 8.3 Ghi kết quả
 Điền hàng cho từng máy vào bảng mục 5. Nếu có tiêu chí không đạt, ghi số đo và thử đổi `FRAME_SIDE` theo mục 8.1 trước khi kết luận.
+
+---
+
+## 9. Chụp lùi tự động cho mọi ảnh (nhánh feat/rewind-everywhere)
+
+Quyết định ngày 2026-10-29: không còn nút "Chụp lùi thời gian" riêng trong app. Trên Android, camera chính chạy bằng bộ Kotlin (CameraX) ở `RewindCamera.kt`, và **mọi ảnh** đều kèm các khung hình quanh lúc bấm. Ảnh mặc định là ảnh chụp chuẩn tại lúc bấm; nếu người dùng bấm hụt thì bấm **ĐỔI KHUNG** để chọn khung khác. Màn "chụp lùi" riêng vẫn còn, chỉ để dùng từ ô cài đặt nhanh trên màn hình khóa.
+
+### Cách chạy
+- `RewindCamera.start(..., continuous = true)`: bộ đệm khung không bao giờ dừng. Mỗi lần bấm (`shoot`) trả ảnh chuẩn ngay khi ghi xong file; khoảng 1 giây sau, các khung quanh lúc bấm gửi về bằng sự kiện `burst`, rồi bộ đệm tự theo dõi lại cho ảnh sau.
+- Ảnh chuẩn **không** còn đặt theo mốc thời gian (đã bỏ lỗi lệch đồng hồ ở mục 7): nó là ô đầu tiên của dải, chọn sẵn.
+- Phía Kotlin có thêm: flash, zoom, quay video (không tiếng; khi quay thì bộ đệm nghỉ, vì CameraX chỉ đảm bảo 3 use case cùng lúc), xin quyền camera, `releaseShot`.
+- Phía Dart: `ShotCamera` (`lib/features/camera/shot_camera.dart`) có hai bản, `NativeShotCamera` (Android) và `PluginShotCamera` (nơi khác, test; không giữ khung). `CameraTab` chỉ nói chuyện với `ShotCamera`.
+- Dải chọn khung: `lib/features/rewind/rewind_picker.dart`. Chọn khung thì ảnh nháp được thay bằng khung đó và chạy lại hiệu ứng (như đổi style).
+- Chế độ nhiệm vụ (quest): không giữ khung, ảnh được kiểm tra như cũ.
+- Khung của một ảnh được xóa khi đăng, bỏ, hoặc chụp ảnh khác; còn lại tối đa 3 thư mục ảnh trong cache.
+
+### Chưa làm / cần biết
+- Chưa có công tắc tắt bộ đệm trong cài đặt (nên có: bộ đệm chạy liên tục tốn pin và CPU).
+- `NeoPhoto.createdAt` của ảnh đã đổi khung là lúc đổi, không phải lúc bấm.
+- Chưa chạy trên máy thật: xem mục 10.
+
+## 10. Việc cần thử trên máy thật cho mục 9
+1. Mở app, vào tab chụp: khung ngắm hiện, đúng chiều, không giật; zoom, flash, đổi camera trước/sau hoạt động; giữ nút chụp để quay video, quay xong ra clip.
+2. Lần đầu cài (chưa cấp quyền): hộp xin quyền camera hiện ra, cấp xong camera lên.
+3. Chụp, đợi khoảng 1 giây: nút **ĐỔI KHUNG** hiện trên trang soạn bài. Bấm vào, chọn khung, **DÙNG KHUNG NÀY**: ảnh đổi đúng khung.
+4. Quay lại "ẢNH ĐÃ CHỤP" thì ảnh về như cũ.
+5. Chụp liên tiếp 20 lần, vừa chụp vừa xem `adb shell dumpsys meminfo com.neobrutalism.neo_brutalism_locket`: RAM không tăng dần.
+6. Chụp với hiệu ứng (Van Gogh, pixel) rồi đổi khung: hiệu ứng chạy lại trên khung mới.

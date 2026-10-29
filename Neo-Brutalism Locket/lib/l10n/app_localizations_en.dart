@@ -2967,4 +2967,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String stripOnlyThree(int count) {
     return 'A strip uses the first 3 photos. Pick the 2×3 grid to use all $count.';
   }
+
+  @override
+  String get rewindPickFrame => 'CHANGE FRAME';
+
+  @override
+  String get rewindPickTitle => 'PICK ANOTHER FRAME';
+
+  @override
+  String get rewindPickOriginal => 'AS SHOT';
+
+  @override
+  String get rewindPickUse => 'USE THIS FRAME';
 }

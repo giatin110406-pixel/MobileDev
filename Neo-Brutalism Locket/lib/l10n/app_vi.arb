@@ -1907,5 +1907,9 @@
         "type": "int"
       }
     }
-  }
+  },
+  "rewindPickFrame": "ĐỔI KHUNG",
+  "rewindPickTitle": "CHỌN KHUNG KHÁC",
+  "rewindPickOriginal": "ẢNH ĐÃ CHỤP",
+  "rewindPickUse": "DÙNG KHUNG NÀY"
 }

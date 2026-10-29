@@ -1901,5 +1901,9 @@
         "type": "int"
       }
     }
-  }
+  },
+  "rewindPickFrame": "CHANGE FRAME",
+  "rewindPickTitle": "PICK ANOTHER FRAME",
+  "rewindPickOriginal": "AS SHOT",
+  "rewindPickUse": "USE THIS FRAME"
 }

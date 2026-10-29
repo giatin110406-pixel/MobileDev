@@ -5191,6 +5191,30 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả {count} ảnh.'**
   String stripOnlyThree(int count);
+
+  /// No description provided for @rewindPickFrame.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐỔI KHUNG'**
+  String get rewindPickFrame;
+
+  /// No description provided for @rewindPickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỌN KHUNG KHÁC'**
+  String get rewindPickTitle;
+
+  /// No description provided for @rewindPickOriginal.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH ĐÃ CHỤP'**
+  String get rewindPickOriginal;
+
+  /// No description provided for @rewindPickUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'DÙNG KHUNG NÀY'**
+  String get rewindPickUse;
 }
 
 class _AppLocalizationsDelegate
