@@ -155,7 +155,7 @@ class RewindCamera(
 
         override fun onConfigurationChanged(newConfig: Configuration) = Unit
 
-        @Deprecated("Replaced by onTrimMemory")
+        @Suppress("OVERRIDE_DEPRECATION")
         override fun onLowMemory() = Unit
     }
 

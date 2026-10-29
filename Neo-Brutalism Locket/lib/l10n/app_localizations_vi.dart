@@ -2855,6 +2855,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get rewindTooltip => 'Chụp lùi thời gian';
 
   @override
+  String get rewindUnlockToSend => 'MỞ KHÓA MÁY ĐỂ GỬI';
+
+  @override
+  String get rewindNoCameraAccess => 'CHƯA CÓ QUYỀN DÙNG CAMERA';
+
+  @override
+  String get rewindOpenApp => 'MỞ APP ĐỂ CHO PHÉP CAMERA';
+
+  @override
   String get rewindShutterLabel => 'Chụp';
 
   @override

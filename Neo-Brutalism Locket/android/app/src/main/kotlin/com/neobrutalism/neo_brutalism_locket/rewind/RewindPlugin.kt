@@ -1,9 +1,15 @@
 package com.neobrutalism.neo_brutalism_locket.rewind
 
+import android.Manifest
 import android.app.Activity
+import android.app.KeyguardManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.view.WindowManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -84,6 +90,37 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
         sink = null
     }
 
+    // Asks the person to unlock (PIN, fingerprint...); true once the keyguard
+    // is gone. No screen lock set: it is true at once.
+    private fun dismissKeyguard(result: MethodChannel.Result) {
+        val host = activity
+        val keyguard = host?.getSystemService(KeyguardManager::class.java)
+        if (host == null || keyguard == null) {
+            result.success(false)
+            return
+        }
+        if (!keyguard.isKeyguardLocked) {
+            result.success(true)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            keyguard.requestDismissKeyguard(
+                host,
+                object : KeyguardManager.KeyguardDismissCallback() {
+                    override fun onDismissSucceeded() = result.success(true)
+
+                    override fun onDismissCancelled() = result.success(false)
+
+                    override fun onDismissError() = result.success(false)
+                },
+            )
+        } else {
+            // Android 7: the window flag asks for the unlock by itself, and
+            // the main app opens behind it.
+            @Suppress("DEPRECATION")
+            host.window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
+            result.success(true)
+        }
+    }
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "start" -> {
@@ -92,6 +129,13 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
                 val registry = textures
                 if (host == null || appContext == null || registry == null) {
                     result.error("cameraBusy", "No screen to show the camera on", null)
+                    return
+                }
+                // The lock-screen screen never asks for the permission.
+                if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.CAMERA) !=
+                    PackageManager.PERMISSION_GRANTED
+                ) {
+                    result.error("noPermission", "Camera access is off", null)
                     return
                 }
                 val next = camera?.also { it.stop() } ?: RewindCamera(
@@ -135,6 +179,16 @@ class RewindPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandl
             "stop" -> {
                 camera?.stop()
                 result.success(null)
+            }
+            "dismissKeyguard" -> dismissKeyguard(result)
+            "handoff" -> {
+                val lockscreen = activity as? RewindLockscreenActivity
+                if (lockscreen == null) {
+                    result.error("notLockscreen", "Only the lock-screen screen hands over", null)
+                } else {
+                    lockscreen.handOff(call.argument<ByteArray>("bytes"))
+                    result.success(null)
+                }
             }
             else -> result.notImplemented()
         }

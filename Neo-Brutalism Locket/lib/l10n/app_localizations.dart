@@ -5078,6 +5078,24 @@ abstract class AppLocalizations {
   /// **'Chụp lùi thời gian'**
   String get rewindTooltip;
 
+  /// No description provided for @rewindUnlockToSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỞ KHÓA MÁY ĐỂ GỬI'**
+  String get rewindUnlockToSend;
+
+  /// No description provided for @rewindNoCameraAccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHƯA CÓ QUYỀN DÙNG CAMERA'**
+  String get rewindNoCameraAccess;
+
+  /// No description provided for @rewindOpenApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỞ APP ĐỂ CHO PHÉP CAMERA'**
+  String get rewindOpenApp;
+
   /// No description provided for @rewindShutterLabel.
   ///
   /// In vi, this message translates to:

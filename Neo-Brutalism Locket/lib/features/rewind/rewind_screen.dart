@@ -14,7 +14,15 @@ import 'package:neo_brutalism_locket/features/rewind/rewind_preview.dart';
 import 'package:neo_brutalism_locket/features/rewind/rewind_timeline.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
-enum _Phase { starting, ready, holding, picking, busy, nothingKept }
+enum _Phase {
+  starting,
+  ready,
+  holding,
+  picking,
+  busy,
+  nothingKept,
+  noPermission,
+}
 
 /// Rewind capture: the camera keeps the last two seconds, the person presses
 /// (late or not), then swipes back to the frame they meant and sends it.
@@ -99,8 +107,16 @@ class _RewindScreenState extends State<RewindScreen> {
         _start = start;
         _phase = _Phase.ready;
       });
-    } on PlatformException {
-      if (mounted) setState(() => _phase = _Phase.busy);
+    } on PlatformException catch (e) {
+      // The lock-screen screen never asks for the camera permission: it sends
+      // the person to the app. In the app the camera page already did.
+      if (mounted) {
+        setState(
+          () => _phase = e.code == 'noPermission' && widget.lockscreen
+              ? _Phase.noPermission
+              : _Phase.busy,
+        );
+      }
     }
   }
 
@@ -191,7 +207,17 @@ class _RewindScreenState extends State<RewindScreen> {
   // start its own right away without two cameras on one screen.
   Future<void> _close([Uint8List? bytes]) async {
     await _backend.stop();
-    if (mounted) Navigator.of(context).pop(bytes);
+    if (widget.lockscreen) {
+      // The only screen of its activity: closing it ends the activity.
+      await SystemNavigator.pop();
+    } else if (mounted) {
+      Navigator.of(context).pop(bytes);
+    }
+  }
+
+  // No camera permission, on the lock screen: unlock, then open the app.
+  Future<void> _openAppForCamera() async {
+    if (await _backend.dismissKeyguard()) await _backend.handoff(Uint8List(0));
   }
 
   Future<void> _send() async {
@@ -203,6 +229,21 @@ class _RewindScreenState extends State<RewindScreen> {
       final bytes = entry.isStill
           ? await cropShotToSquare(entry.path)
           : await _backend.finalizeFrame(entry.path, entry.rotation);
+      if (widget.lockscreen) {
+        // Over the lock screen nothing is sent: unlock first, then the app
+        // opens on this picture. If the person backs out, the choice stays.
+        if (!await _backend.dismissKeyguard()) {
+          if (!mounted) return;
+          setState(() => _sending = false);
+          showNeoSnack(
+            context,
+            AppLocalizations.of(context).rewindUnlockToSend,
+          );
+          return;
+        }
+        await _backend.handoff(bytes);
+        return;
+      }
       await _close(bytes);
     } catch (_) {
       if (!mounted) return;
@@ -281,12 +322,16 @@ class _RewindScreenState extends State<RewindScreen> {
     } else if (start != null &&
         (_phase == _Phase.ready || _phase == _Phase.holding)) {
       content = RewindPreview(start: start);
-    } else if (_phase == _Phase.busy || _phase == _Phase.nothingKept) {
+    } else if (_phase == _Phase.busy ||
+        _phase == _Phase.nothingKept ||
+        _phase == _Phase.noPermission) {
       content = Center(
         child: Text(
-          _phase == _Phase.busy
-              ? l10n.rewindCameraBusy
-              : l10n.rewindNothingKept,
+          switch (_phase) {
+            _Phase.busy => l10n.rewindCameraBusy,
+            _Phase.noPermission => l10n.rewindNoCameraAccess,
+            _ => l10n.rewindNothingKept,
+          },
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontFamily: NeoFont.display,
@@ -450,6 +495,16 @@ class _RewindScreenState extends State<RewindScreen> {
             icon: Icons.refresh,
             variant: NeoButtonVariant.outline,
             onPressed: _open,
+          ),
+        );
+      case _Phase.noPermission:
+        return Align(
+          alignment: Alignment.topCenter,
+          child: NeoButton(
+            label: l10n.rewindOpenApp,
+            icon: Icons.open_in_new,
+            variant: NeoButtonVariant.outline,
+            onPressed: _openAppForCamera,
           ),
         );
       case _Phase.nothingKept:

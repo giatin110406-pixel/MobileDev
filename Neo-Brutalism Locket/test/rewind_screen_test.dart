@@ -16,6 +16,8 @@ class FakeRewindBackend implements RewindBackend {
   int rearms = 0;
   bool stopped = false;
   bool failToStart = false;
+  bool unlocked = true;
+  final handoffs = <Uint8List>[];
   final finalized = <String>[];
 
   @override
@@ -53,10 +55,10 @@ class FakeRewindBackend implements RewindBackend {
   Future<void> stop() async => stopped = true;
 
   @override
-  Future<bool> dismissKeyguard() async => true;
+  Future<bool> dismissKeyguard() async => unlocked;
 
   @override
-  Future<void> handoff(Uint8List bytes) async {}
+  Future<void> handoff(Uint8List bytes) async => handoffs.add(bytes);
 }
 
 /// Sends [event] as the native side would and lets the screen react.
@@ -93,8 +95,9 @@ void main() {
 
   Future<Uint8List?> pumpScreen(
     WidgetTester tester,
-    FakeRewindBackend backend,
-  ) async {
+    FakeRewindBackend backend, {
+    bool lockscreen = false,
+  }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -115,7 +118,10 @@ void main() {
                 onPressed: () async {
                   popped = await Navigator.of(context).push<Uint8List>(
                     MaterialPageRoute(
-                      builder: (_) => RewindScreen(backend: backend),
+                      builder: (_) => RewindScreen(
+                        backend: backend,
+                        lockscreen: lockscreen,
+                      ),
                     ),
                   );
                 },
@@ -189,6 +195,33 @@ void main() {
     expect(backend.stopped, isTrue);
     expect(find.bySemanticsLabel('Capture'), findsNothing);
     expect(find.text('open'), findsOneWidget);
+  });
+
+  testWidgets('on the lock screen, sending waits for the unlock', (
+    tester,
+  ) async {
+    final backend = FakeRewindBackend()..unlocked = false;
+    await pumpScreen(tester, backend, lockscreen: true);
+    await tester.tap(find.bySemanticsLabel('Capture'));
+    await tester.pump();
+    await emit(tester, backend, RewindFrozen(frames: frames, still: null));
+
+    await tester.tap(find.text('SEND'));
+    await tester.pumpAndSettle();
+    // Not unlocked: nothing handed over, the choice is still on screen.
+    expect(backend.handoffs, isEmpty);
+    expect(find.text('UNLOCK THE PHONE TO SEND'), findsOneWidget);
+    expect(find.text('EXTRA FRAME'), findsOneWidget);
+
+    backend.unlocked = true;
+    // Let the message go, then try again.
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SEND'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(backend.handoffs, [
+      [1, 2, 3],
+    ]);
   });
 
   testWidgets('nothing kept is reported plainly', (tester) async {

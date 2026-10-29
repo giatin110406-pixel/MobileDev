@@ -2905,6 +2905,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewindTooltip => 'Rewind capture';
 
   @override
+  String get rewindUnlockToSend => 'UNLOCK THE PHONE TO SEND';
+
+  @override
+  String get rewindNoCameraAccess => 'CAMERA ACCESS IS OFF';
+
+  @override
+  String get rewindOpenApp => 'OPEN THE APP TO ALLOW THE CAMERA';
+
+  @override
   String get rewindShutterLabel => 'Capture';
 
   @override
