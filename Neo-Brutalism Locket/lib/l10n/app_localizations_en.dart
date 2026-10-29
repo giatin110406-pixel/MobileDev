@@ -2979,4 +2979,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewindPickUse => 'USE THIS FRAME';
+
+  @override
+  String get photoToolsTooltip => 'Photo tools';
 }

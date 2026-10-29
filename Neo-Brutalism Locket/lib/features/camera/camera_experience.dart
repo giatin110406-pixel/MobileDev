@@ -1197,9 +1197,7 @@ class CameraTabState extends State<CameraTab> {
                     Expanded(
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: _canPickFrame(photo)
-                            ? _pickFrameButton()
-                            : const SizedBox.shrink(),
+                        child: _photoToolsButton(photo),
                       ),
                     ),
                     Text(
@@ -2024,14 +2022,78 @@ class CameraTabState extends State<CameraTab> {
   );
 
   /// On the draft page: opens the frames kept around the shot.
-  Widget _pickFrameButton() => GestureDetector(
-    onTap: Haptics.tap(_pickFrame),
-    child: NeoLabel(
-      AppLocalizations.of(context).rewindPickFrame,
-      color: NeoColors.accent,
-      icon: Icons.history_toggle_off,
-    ),
-  );
+  /// What can be done to the shot just taken, besides styling and posting it.
+  /// New photo tools go in this list: they show up in the one small menu.
+  List<({IconData icon, String label, VoidCallback run})> _photoTools(
+    NeoPhoto photo,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      if (_canPickFrame(photo))
+        (
+          icon: Icons.history_toggle_off,
+          label: l10n.rewindPickFrame,
+          run: _pickFrame,
+        ),
+    ];
+  }
+
+  /// One small button that opens the menu of photo tools (nothing while there
+  /// are none), so the page does not grow a button for each of them.
+  Widget _photoToolsButton(NeoPhoto photo) {
+    final tools = _photoTools(photo);
+    if (tools.isEmpty) return const SizedBox.shrink();
+    return Builder(
+      builder: (buttonContext) => NeoIconButton(
+        icon: Icons.auto_fix_high,
+        tooltip: AppLocalizations.of(context).photoToolsTooltip,
+        fill: NeoColors.peach,
+        onPressed: () async {
+          final button = buttonContext.findRenderObject()! as RenderBox;
+          final overlay =
+              Overlay.of(buttonContext).context.findRenderObject()!
+                  as RenderBox;
+          final corner = button.localToGlobal(Offset.zero, ancestor: overlay);
+          final tool = await showMenu<VoidCallback>(
+            context: buttonContext,
+            color: NeoColors.surface,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(color: NeoColors.ink, width: 2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            position: RelativeRect.fromLTRB(
+              corner.dx,
+              corner.dy + button.size.height + 4,
+              overlay.size.width - corner.dx - button.size.width,
+              0,
+            ),
+            items: [
+              for (final tool in tools)
+                PopupMenuItem<VoidCallback>(
+                  value: tool.run,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(tool.icon, size: 18, color: NeoColors.ink),
+                      const SizedBox(width: 10),
+                      Text(
+                        tool.label,
+                        style: const TextStyle(
+                          color: NeoColors.ink,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          );
+          if (tool != null && mounted) tool();
+        },
+      ),
+    );
+  }
 
   Widget _timerControl() => _cornerControl(
     icon: switch (_shotTimer) {
@@ -2407,13 +2469,8 @@ class CameraTabState extends State<CameraTab> {
                   ],
                 ),
               ),
-              if (_canPickFrame(photo)) ...[
-                NeoIconButton(
-                  icon: Icons.history_toggle_off,
-                  tooltip: AppLocalizations.of(context).rewindPickFrame,
-                  onPressed: _pickFrame,
-                  fill: NeoColors.peach,
-                ),
+              if (_photoTools(photo).isNotEmpty) ...[
+                _photoToolsButton(photo),
                 const SizedBox(width: 8),
               ],
               _statusBadge(photo),

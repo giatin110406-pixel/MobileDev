@@ -5215,6 +5215,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'DÙNG KHUNG NÀY'**
   String get rewindPickUse;
+
+  /// No description provided for @photoToolsTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công cụ ảnh'**
+  String get photoToolsTooltip;
 }
 
 class _AppLocalizationsDelegate

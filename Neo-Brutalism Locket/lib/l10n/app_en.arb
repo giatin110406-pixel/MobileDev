@@ -1905,5 +1905,6 @@
   "rewindPickFrame": "MISCAPTURED?",
   "rewindPickTitle": "PICK ANOTHER FRAME",
   "rewindPickOriginal": "AS SHOT",
-  "rewindPickUse": "USE THIS FRAME"
+  "rewindPickUse": "USE THIS FRAME",
+  "photoToolsTooltip": "Photo tools"
 }

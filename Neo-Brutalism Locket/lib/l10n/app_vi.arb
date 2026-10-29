@@ -1911,5 +1911,6 @@
   "rewindPickFrame": "CHỤP HỤT?",
   "rewindPickTitle": "CHỌN KHUNG KHÁC",
   "rewindPickOriginal": "ẢNH ĐÃ CHỤP",
-  "rewindPickUse": "DÙNG KHUNG NÀY"
+  "rewindPickUse": "DÙNG KHUNG NÀY",
+  "photoToolsTooltip": "Công cụ ảnh"
 }

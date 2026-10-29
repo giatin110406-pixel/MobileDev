@@ -2929,4 +2929,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get rewindPickUse => 'DÙNG KHUNG NÀY';
+
+  @override
+  String get photoToolsTooltip => 'Công cụ ảnh';
 }

@@ -301,7 +301,7 @@ Quyết định ngày 2026-10-29: không còn nút "Chụp lùi thời gian" ri�
 ## 10. Việc cần thử trên máy thật cho mục 9
 1. Mở app, vào tab chụp: khung ngắm hiện, đúng chiều, không giật; zoom, flash, đổi camera trước/sau hoạt động; giữ nút chụp để quay video, quay xong ra clip.
 2. Lần đầu cài (chưa cấp quyền): hộp xin quyền camera hiện ra, cấp xong camera lên.
-3. Chụp, đợi khoảng 1 giây: nút **CHỤP HỤT?** hiện ở góc trái dòng tiêu đề trang soạn bài. Bấm vào, chọn khung, **DÙNG KHUNG NÀY**: ảnh đổi đúng khung.
+3. Chụp, đợi khoảng 1 giây: nút tròn nhỏ (biểu tượng đũa phép) hiện ở góc trái dòng tiêu đề trang soạn bài. Bấm vào mở menu "Công cụ ảnh", chọn **CHỤP HỤT?**, chọn khung, **DÙNG KHUNG NÀY**: ảnh đổi đúng khung.
 4. Quay lại "ẢNH ĐÃ CHỤP" thì ảnh về như cũ.
 5. Chụp liên tiếp 20 lần, vừa chụp vừa xem `adb shell dumpsys meminfo com.neobrutalism.neo_brutalism_locket`: RAM không tăng dần.
 6. Chụp với hiệu ứng (Van Gogh, pixel) rồi đổi khung: hiệu ứng chạy lại trên khung mới.
