@@ -282,7 +282,7 @@ Nếu không đạt cổng: đổi `FRAME_SIDE` trong `android/app/src/main/kotl
 
 ## 9. Chụp lùi tự động cho mọi ảnh (nhánh feat/rewind-everywhere)
 
-Quyết định ngày 2026-10-29: không còn nút "Chụp lùi thời gian" riêng trong app. Trên Android, camera chính chạy bằng bộ Kotlin (CameraX) ở `RewindCamera.kt`, và **mọi ảnh** đều kèm các khung hình quanh lúc bấm. Ảnh mặc định là ảnh chụp chuẩn tại lúc bấm; nếu người dùng bấm hụt thì bấm **ĐỔI KHUNG** để chọn khung khác. Màn "chụp lùi" riêng vẫn còn, chỉ để dùng từ ô cài đặt nhanh trên màn hình khóa.
+Quyết định ngày 2026-10-29: không còn nút "Chụp lùi thời gian" riêng trong app. Trên Android, camera chính chạy bằng bộ Kotlin (CameraX) ở `RewindCamera.kt`, và **mọi ảnh** đều kèm các khung hình quanh lúc bấm. Ảnh mặc định là ảnh chụp chuẩn tại lúc bấm; nếu người dùng bấm hụt thì bấm **CHỤP HỤT?** (tiếng Anh: MISCAPTURED?) để chọn khung khác. Màn "chụp lùi" riêng vẫn còn, chỉ để dùng từ ô cài đặt nhanh trên màn hình khóa.
 
 ### Cách chạy
 - `RewindCamera.start(..., continuous = true)`: bộ đệm khung không bao giờ dừng. Mỗi lần bấm (`shoot`) trả ảnh chuẩn ngay khi ghi xong file; khoảng 1 giây sau, các khung quanh lúc bấm gửi về bằng sự kiện `burst`, rồi bộ đệm tự theo dõi lại cho ảnh sau.
@@ -301,7 +301,7 @@ Quyết định ngày 2026-10-29: không còn nút "Chụp lùi thời gian" ri�
 ## 10. Việc cần thử trên máy thật cho mục 9
 1. Mở app, vào tab chụp: khung ngắm hiện, đúng chiều, không giật; zoom, flash, đổi camera trước/sau hoạt động; giữ nút chụp để quay video, quay xong ra clip.
 2. Lần đầu cài (chưa cấp quyền): hộp xin quyền camera hiện ra, cấp xong camera lên.
-3. Chụp, đợi khoảng 1 giây: nút **ĐỔI KHUNG** hiện trên trang soạn bài. Bấm vào, chọn khung, **DÙNG KHUNG NÀY**: ảnh đổi đúng khung.
+3. Chụp, đợi khoảng 1 giây: nút **CHỤP HỤT?** hiện ở góc trái dòng tiêu đề trang soạn bài. Bấm vào, chọn khung, **DÙNG KHUNG NÀY**: ảnh đổi đúng khung.
 4. Quay lại "ẢNH ĐÃ CHỤP" thì ảnh về như cũ.
 5. Chụp liên tiếp 20 lần, vừa chụp vừa xem `adb shell dumpsys meminfo com.neobrutalism.neo_brutalism_locket`: RAM không tăng dần.
 6. Chụp với hiệu ứng (Van Gogh, pixel) rồi đổi khung: hiệu ứng chạy lại trên khung mới.

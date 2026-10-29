@@ -2969,7 +2969,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get rewindPickFrame => 'CHANGE FRAME';
+  String get rewindPickFrame => 'MISCAPTURED?';
 
   @override
   String get rewindPickTitle => 'PICK ANOTHER FRAME';

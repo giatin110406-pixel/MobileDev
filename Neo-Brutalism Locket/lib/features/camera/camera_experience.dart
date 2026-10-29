@@ -1170,7 +1170,15 @@ class CameraTabState extends State<CameraTab> {
             : _shootLayout(
                 top: Row(
                   children: [
-                    const Expanded(child: SizedBox()),
+                    // Off the picture, so the square stays clean.
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _canPickFrame(photo)
+                            ? _pickFrameButton()
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
                     Text(
                       l10n.composerTitle,
                       style: const TextStyle(
@@ -1507,8 +1515,6 @@ class CameraTabState extends State<CameraTab> {
               bottom: 72,
               child: OverlayLabels(overlay: composer.overlay),
             ),
-            if (_canPickFrame(photo))
-              Positioned(right: 16, bottom: 72, child: _pickFrameButton()),
             Positioned(
               left: 16,
               right: 16,

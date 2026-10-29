@@ -5195,7 +5195,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewindPickFrame.
   ///
   /// In vi, this message translates to:
-  /// **'ĐỔI KHUNG'**
+  /// **'CHỤP HỤT?'**
   String get rewindPickFrame;
 
   /// No description provided for @rewindPickTitle.

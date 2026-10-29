@@ -1902,7 +1902,7 @@
       }
     }
   },
-  "rewindPickFrame": "CHANGE FRAME",
+  "rewindPickFrame": "MISCAPTURED?",
   "rewindPickTitle": "PICK ANOTHER FRAME",
   "rewindPickOriginal": "AS SHOT",
   "rewindPickUse": "USE THIS FRAME"

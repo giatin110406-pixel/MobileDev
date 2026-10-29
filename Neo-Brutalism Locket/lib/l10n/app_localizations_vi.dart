@@ -2919,7 +2919,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get rewindPickFrame => 'ĐỔI KHUNG';
+  String get rewindPickFrame => 'CHỤP HỤT?';
 
   @override
   String get rewindPickTitle => 'CHỌN KHUNG KHÁC';
