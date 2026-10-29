@@ -1647,6 +1647,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         _cameraOffstage = false;
       }
     });
+    if (index != _cameraTab) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted && _tabIndex != _cameraTab) {
+          setState(() => _cameraOffstage = true);
+        }
+      });
+    }
     if (index == _cameraTab) _camera?.closePrint();
     if (index != _cameraTab) _camera?.leaveQuestMode();
     if (index == _friendsTab) _loadSocial();
@@ -1714,12 +1721,26 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     // Where the far end is is only known once the new tab is laid out.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final start = up ? _rectOf(_navShootKey) : from;
-      final end = _rectOf(up ? _shutterKey : _navShootKey);
-      if (start == null || end == null) {
+      final rawStart = up ? _rectOf(_navShootKey) : from;
+      final rawEnd = _rectOf(up ? _shutterKey : _navShootKey);
+      if (rawStart == null || rawEnd == null) {
         _land(null);
         return;
       }
+      // Both the bottom nav shoot button and the shutter are strictly centered
+      // horizontally. Forcing the flight path to the screen's centerline prevents
+      // the button from drifting or squashing to the left or right during tab transitions.
+      final screenCenterX = MediaQuery.of(context).size.width / 2;
+      final start = Rect.fromCenter(
+        center: Offset(screenCenterX, rawStart.center.dy),
+        width: rawStart.width,
+        height: rawStart.height,
+      );
+      final end = Rect.fromCenter(
+        center: Offset(screenCenterX, rawEnd.center.dy),
+        width: rawEnd.width,
+        height: rawEnd.height,
+      );
       late final OverlayEntry entry;
       entry = OverlayEntry(
         builder: (_) => ShutterFlight(
@@ -1824,12 +1845,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _archiveTab => _buildArchivePage(),
       _ => _buildProfilePage(),
     };
-    final cameraSlideOffset = switch (_tabIndex) {
-      _friendsTab => const Offset(1.0, 0.0),
-      _contestTab => const Offset(-1.0, 0.0),
-      _cameraTab => Offset.zero,
-      _ => Offset.zero,
-    };
     final isContestTab = _tabIndex == _contestTab;
     final scaffold = Scaffold(
       backgroundColor: Colors.transparent,
@@ -1850,26 +1865,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                   clipBehavior: Clip.hardEdge,
                   children: [
                     // Always mounted, so the camera does not restart per tab.
-                    AnimatedSlide(
-                      offset: cameraSlideOffset,
-                      duration: _flying
-                          ? ShutterFlight.duration
-                          : const Duration(milliseconds: 280),
-                      curve: _flying
-                          ? Curves.easeInOutCubic
-                          : Curves.easeOutCubic,
-                      onEnd: () {
-                        if (mounted && _tabIndex != _cameraTab) {
-                          setState(() => _cameraOffstage = true);
-                        }
-                      },
-                      child: Offstage(
-                        offstage: _cameraOffstage,
-                        child: IgnorePointer(
-                          ignoring: !cameraVisible,
-                          child: TickerMode(
-                            enabled: cameraVisible,
-                            child: CameraTab(
+                    Offstage(
+                      offstage: _cameraOffstage,
+                      child: IgnorePointer(
+                        ignoring: !cameraVisible,
+                        child: TickerMode(
+                          enabled: cameraVisible,
+                          child: CameraTab(
                               key: _cameraKey,
                               player: _player,
                               photos: _photos,
@@ -1897,7 +1899,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           ),
                         ),
                       ),
-                    ),
                     // Kept mounted over the camera (its page is empty then), so
                     // the switcher has a page to fade from when leaving it.
                     Positioned.fill(
