@@ -249,10 +249,7 @@ void main() {
         friends: const [],
         vietnamese: false,
       );
-      expect(
-        prompts.single,
-        'a photo of phone.',
-      ); // 0.20 is the best and above the floor; 0.18 is within 0.03 of it;
+      expect(prompts.single, 'a photo of phone.');      // 0.20 is the best and above the floor; 0.18 is within 0.03 of it;
       // 0.12 is neither
       expect([for (final p in out.posts) p.id], [uuid(1), uuid(2)]);
 
@@ -264,59 +261,53 @@ void main() {
       expect(prompts.last, 'a man in a red shirt next to a motorbike');
     });
 
-    test(
-      'a search that is only a name is not looked up in the photos',
-      () async {
-        final backend = FakeBackend(
-          {uuid(1): post(1)},
-          {uuid(1): axisVector(0)},
-        );
-        var encoded = 0;
-        final search = PhotoSearch(
-          myId: 'me',
-          backend: backend,
-          index: SearchIndex(
-            userId: 'me',
-            source: backend,
-            folder: () async => dir,
-          ),
-          encodeText: (_) async {
-            encoded++;
-            return axisVector(0);
-          },
-        );
-        // my own name, with or without accents, in any order of its words
-        var out = await search.search(
-          'thinh',
-          friends: const [],
-          vietnamese: false,
-          myNames: const ['Nguyễn Thịnh'],
-        );
-        expect(encoded, 0);
-        expect(out.posts, isEmpty);
-        // a friend's first name
-        out = await search.search(
-          'Lan',
-          friends: const [(id: 'f1', name: 'Lan Anh')],
-          vietnamese: false,
-        );
-        expect(encoded, 0);
-        // a name next to something to look for is still a picture search
-        out = await search.search(
-          'dog Lan',
-          friends: const [(id: 'f1', name: 'Lan Anh')],
-          vietnamese: false,
-        );
-        expect(encoded, 1);
-        // a word that is nobody's name is searched as before
-        await search.search(
-          'thinh',
-          friends: const [(id: 'f1', name: 'Lan Anh')],
-          vietnamese: false,
-        );
-        expect(encoded, 2);
-      },
-    );
+    test('a search that is only a name is not looked up in the photos', () async {
+      final backend = FakeBackend({uuid(1): post(1)}, {uuid(1): axisVector(0)});
+      var encoded = 0;
+      final search = PhotoSearch(
+        myId: 'me',
+        backend: backend,
+        index: SearchIndex(
+          userId: 'me',
+          source: backend,
+          folder: () async => dir,
+        ),
+        encodeText: (_) async {
+          encoded++;
+          return axisVector(0);
+        },
+      );
+      // my own name, with or without accents, in any order of its words
+      var out = await search.search(
+        'thinh',
+        friends: const [],
+        vietnamese: false,
+        myNames: const ['Nguyễn Thịnh'],
+      );
+      expect(encoded, 0);
+      expect(out.posts, isEmpty);
+      // a friend's first name
+      out = await search.search(
+        'Lan',
+        friends: const [(id: 'f1', name: 'Lan Anh')],
+        vietnamese: false,
+      );
+      expect(encoded, 0);
+      // a name next to something to look for is still a picture search
+      out = await search.search(
+        'dog Lan',
+        friends: const [(id: 'f1', name: 'Lan Anh')],
+        vietnamese: false,
+      );
+      expect(encoded, 1);
+      // a word that is nobody's name is searched as before
+      await search.search(
+        'thinh',
+        friends: const [(id: 'f1', name: 'Lan Anh')],
+        vietnamese: false,
+      );
+      expect(encoded, 2);
+    });
 
     test('a search no photo stands out for shows no pictures', () async {
       Float32List at(double cos) => Float32List(embeddingDimension)
@@ -493,54 +484,57 @@ void main() {
       },
     );
 
-    test('a photo that is clearly an everyday thing instead is only "maybe"; '
-        'one that merely has everyday things in it is still clear', () async {
-      Float32List photo(Map<int, double> axes) {
-        final v = Float32List(embeddingDimension);
-        axes.forEach((i, x) => v[i] = x);
-        return v;
-      }
+    test(
+      'a photo that is clearly an everyday thing instead is only "maybe"; '
+      'one that merely has everyday things in it is still clear',
+      () async {
+        Float32List photo(Map<int, double> axes) {
+          final v = Float32List(embeddingDimension);
+          axes.forEach((i, x) => v[i] = x);
+          return v;
+        }
 
-      final backend = FakeBackend(
-        {uuid(1): post(1), uuid(2): post(2), uuid(3): post(3)},
-        {
-          uuid(1): photo({0: 0.30, 5: 0.9}), // the umbrella
-          // the same score for the search, but a chair is a better answer
-          uuid(2): photo({0: 0.30, 9: 0.34}),
-          // close to many everyday things, none of them closer than the search
-          uuid(3): photo({0: 0.30, 9: 0.29, 10: 0.29, 11: 0.29}),
-        },
-      );
-      final bank = QuestLabels(
-        labels: const ['a chair', 'a table', 'a person'],
-        vectors: Float32List.fromList([
-          ...axisVector(9),
-          ...axisVector(10),
-          ...axisVector(11),
-        ]),
-        dimension: embeddingDimension,
-        logitScale: 64,
-        matchScore: 0.5,
-        inputSize: 256,
-        quests: const {},
-      );
-      final out = await PhotoSearch(
-        myId: 'me',
-        backend: backend,
-        index: SearchIndex(
-          userId: 'me',
-          source: backend,
-          folder: () async => dir,
-        ),
-        encodeText: (_) async => axisVector(0),
-        loadBank: () async => bank,
-      ).search('umbrella', friends: const [], vietnamese: false);
-      expect(
-        {for (final p in out.posts.take(out.strongCount)) p.id},
-        {uuid(1), uuid(3)},
-      );
-      expect(out.posts.last.id, uuid(2), reason: 'the chair photo is "maybe"');
-    });
+        final backend = FakeBackend(
+          {uuid(1): post(1), uuid(2): post(2), uuid(3): post(3)},
+          {
+            uuid(1): photo({0: 0.30, 5: 0.9}), // the umbrella
+            // the same score for the search, but a chair is a better answer
+            uuid(2): photo({0: 0.30, 9: 0.34}),
+            // close to many everyday things, none of them closer than the search
+            uuid(3): photo({0: 0.30, 9: 0.29, 10: 0.29, 11: 0.29}),
+          },
+        );
+        final bank = QuestLabels(
+          labels: const ['a chair', 'a table', 'a person'],
+          vectors: Float32List.fromList([
+            ...axisVector(9),
+            ...axisVector(10),
+            ...axisVector(11),
+          ]),
+          dimension: embeddingDimension,
+          logitScale: 64,
+          matchScore: 0.5,
+          inputSize: 256,
+          quests: const {},
+        );
+        final out = await PhotoSearch(
+          myId: 'me',
+          backend: backend,
+          index: SearchIndex(
+            userId: 'me',
+            source: backend,
+            folder: () async => dir,
+          ),
+          encodeText: (_) async => axisVector(0),
+          loadBank: () async => bank,
+        ).search('umbrella', friends: const [], vietnamese: false);
+        expect(
+          {for (final p in out.posts.take(out.strongCount)) p.id},
+          {uuid(1), uuid(3)},
+        );
+        expect(out.posts.last.id, uuid(2), reason: 'the chair photo is "maybe"');
+      },
+    );
 
     test(
       'a search about what a person is does not look at the photos',
