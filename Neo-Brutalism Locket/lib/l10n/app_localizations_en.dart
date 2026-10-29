@@ -2902,6 +2902,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stripSaved => 'Strip saved to your photo library.';
 
   @override
+  String get rewindTooltip => 'Rewind capture';
+
+  @override
+  String get rewindUnlockToSend => 'UNLOCK THE PHONE TO SEND';
+
+  @override
+  String get rewindNoCameraAccess => 'CAMERA ACCESS IS OFF';
+
+  @override
+  String get rewindOpenApp => 'OPEN THE APP TO ALLOW THE CAMERA';
+
+  @override
+  String get rewindShutterLabel => 'Capture';
+
+  @override
+  String get rewindHint =>
+      'PRESSED TOO LATE? THE 2 SECONDS BEFORE THE PRESS ARE KEPT.';
+
+  @override
+  String get rewindHolding => 'HOLDING THE MOMENT...';
+
+  @override
+  String get rewindSend => 'SEND';
+
+  @override
+  String get rewindRetake => 'RETAKE';
+
+  @override
+  String get rewindClose => 'Close';
+
+  @override
+  String get rewindExtraFrame => 'EXTRA FRAME';
+
+  @override
+  String get rewindCameraBusy => 'THE CAMERA IS BUSY';
+
+  @override
+  String get rewindNothingKept => 'NO FRAME WAS KEPT. TRY AGAIN.';
+
+  @override
+  String rewindFrameSemantics(String time) {
+    return 'Frame $time';
+  }
+
+  @override
   String get stripLoadFailed =>
       'The photos could not be loaded. Check your connection and try again.';
 
@@ -2922,4 +2967,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String stripOnlyThree(int count) {
     return 'A strip uses the first 3 photos. Pick the 2×3 grid to use all $count.';
   }
+
+  @override
+  String get rewindPickFrame => 'MISCAPTURED?';
+
+  @override
+  String get rewindPickTitle => 'PICK ANOTHER FRAME';
+
+  @override
+  String get rewindPickOriginal => 'AS SHOT';
+
+  @override
+  String get rewindPickUse => 'USE THIS FRAME';
+
+  @override
+  String get photoToolsTooltip => 'Photo tools';
+
+  @override
+  String get photoToolsTitle => 'PHOTO TOOLS';
 }

@@ -5072,6 +5072,90 @@ abstract class AppLocalizations {
   /// **'Đã lưu strip vào thư viện ảnh.'**
   String get stripSaved;
 
+  /// No description provided for @rewindTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp lùi thời gian'**
+  String get rewindTooltip;
+
+  /// No description provided for @rewindUnlockToSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỞ KHÓA MÁY ĐỂ GỬI'**
+  String get rewindUnlockToSend;
+
+  /// No description provided for @rewindNoCameraAccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHƯA CÓ QUYỀN DÙNG CAMERA'**
+  String get rewindNoCameraAccess;
+
+  /// No description provided for @rewindOpenApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỞ APP ĐỂ CHO PHÉP CAMERA'**
+  String get rewindOpenApp;
+
+  /// No description provided for @rewindShutterLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp'**
+  String get rewindShutterLabel;
+
+  /// No description provided for @rewindHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'BẤM TRỄ CŨNG ĐƯỢC. APP GIỮ LẠI 2 GIÂY TRƯỚC LÚC BẤM.'**
+  String get rewindHint;
+
+  /// No description provided for @rewindHolding.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG GIỮ KHOẢNH KHẮC...'**
+  String get rewindHolding;
+
+  /// No description provided for @rewindSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'GỬI'**
+  String get rewindSend;
+
+  /// No description provided for @rewindRetake.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP LẠI'**
+  String get rewindRetake;
+
+  /// No description provided for @rewindClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng'**
+  String get rewindClose;
+
+  /// No description provided for @rewindExtraFrame.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHUNG PHỤ'**
+  String get rewindExtraFrame;
+
+  /// No description provided for @rewindCameraBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'CAMERA ĐANG BẬN'**
+  String get rewindCameraBusy;
+
+  /// No description provided for @rewindNothingKept.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG GIỮ ĐƯỢC KHUNG NÀO. CHỤP LẠI NHÉ.'**
+  String get rewindNothingKept;
+
+  /// No description provided for @rewindFrameSemantics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung {time}'**
+  String rewindFrameSemantics(String time);
+
   /// No description provided for @stripLoadFailed.
   ///
   /// In vi, this message translates to:
@@ -5107,6 +5191,42 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả {count} ảnh.'**
   String stripOnlyThree(int count);
+
+  /// No description provided for @rewindPickFrame.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỤP HỤT?'**
+  String get rewindPickFrame;
+
+  /// No description provided for @rewindPickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỌN KHUNG KHÁC'**
+  String get rewindPickTitle;
+
+  /// No description provided for @rewindPickOriginal.
+  ///
+  /// In vi, this message translates to:
+  /// **'ẢNH ĐÃ CHỤP'**
+  String get rewindPickOriginal;
+
+  /// No description provided for @rewindPickUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'DÙNG KHUNG NÀY'**
+  String get rewindPickUse;
+
+  /// No description provided for @photoToolsTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công cụ ảnh'**
+  String get photoToolsTooltip;
+
+  /// No description provided for @photoToolsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'CÔNG CỤ ẢNH'**
+  String get photoToolsTitle;
 }
 
 class _AppLocalizationsDelegate

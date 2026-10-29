@@ -6,6 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.provider.Settings
+import com.neobrutalism.neo_brutalism_locket.rewind.RewindPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -14,6 +15,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         SquareCrop.register(flutterEngine.dartExecutor.binaryMessenger)
+        flutterEngine.plugins.add(RewindPlugin())
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.neobrutalism.neo_brutalism_locket/haptics",

@@ -2852,6 +2852,51 @@ class AppLocalizationsVi extends AppLocalizations {
   String get stripSaved => 'Đã lưu strip vào thư viện ảnh.';
 
   @override
+  String get rewindTooltip => 'Chụp lùi thời gian';
+
+  @override
+  String get rewindUnlockToSend => 'MỞ KHÓA MÁY ĐỂ GỬI';
+
+  @override
+  String get rewindNoCameraAccess => 'CHƯA CÓ QUYỀN DÙNG CAMERA';
+
+  @override
+  String get rewindOpenApp => 'MỞ APP ĐỂ CHO PHÉP CAMERA';
+
+  @override
+  String get rewindShutterLabel => 'Chụp';
+
+  @override
+  String get rewindHint =>
+      'BẤM TRỄ CŨNG ĐƯỢC. APP GIỮ LẠI 2 GIÂY TRƯỚC LÚC BẤM.';
+
+  @override
+  String get rewindHolding => 'ĐANG GIỮ KHOẢNH KHẮC...';
+
+  @override
+  String get rewindSend => 'GỬI';
+
+  @override
+  String get rewindRetake => 'CHỤP LẠI';
+
+  @override
+  String get rewindClose => 'Đóng';
+
+  @override
+  String get rewindExtraFrame => 'KHUNG PHỤ';
+
+  @override
+  String get rewindCameraBusy => 'CAMERA ĐANG BẬN';
+
+  @override
+  String get rewindNothingKept => 'KHÔNG GIỮ ĐƯỢC KHUNG NÀO. CHỤP LẠI NHÉ.';
+
+  @override
+  String rewindFrameSemantics(String time) {
+    return 'Khung $time';
+  }
+
+  @override
   String get stripLoadFailed =>
       'Không tải được ảnh. Kiểm tra kết nối rồi thử lại.';
 
@@ -2872,4 +2917,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String stripOnlyThree(int count) {
     return 'Strip chỉ dùng 3 ảnh đầu. Chọn lưới 2×3 để dùng cả $count ảnh.';
   }
+
+  @override
+  String get rewindPickFrame => 'CHỤP HỤT?';
+
+  @override
+  String get rewindPickTitle => 'CHỌN KHUNG KHÁC';
+
+  @override
+  String get rewindPickOriginal => 'ẢNH ĐÃ CHỤP';
+
+  @override
+  String get rewindPickUse => 'DÙNG KHUNG NÀY';
+
+  @override
+  String get photoToolsTooltip => 'Công cụ ảnh';
+
+  @override
+  String get photoToolsTitle => 'CÔNG CỤ ẢNH';
 }

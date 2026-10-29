@@ -9,6 +9,10 @@ import 'package:neo_brutalism_locket/core/responsive.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_gate.dart';
 import 'package:neo_brutalism_locket/features/auth/auth_repository.dart';
 import 'package:neo_brutalism_locket/features/auth/profile_repository.dart';
+// Only imported so the lock-screen entry point (rewindLockscreenMain, started
+// by RewindLockscreenActivity) is part of the compiled app.
+// ignore: unused_import
+import 'package:neo_brutalism_locket/features/rewind/rewind_lockscreen_main.dart';
 import 'package:neo_brutalism_locket/features/widget/widget_background.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
