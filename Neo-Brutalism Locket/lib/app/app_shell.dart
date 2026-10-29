@@ -45,6 +45,8 @@ import 'package:neo_brutalism_locket/features/posts/media_actions.dart';
 import 'package:neo_brutalism_locket/features/posts/post_models.dart';
 import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_outbox.dart';
+import 'package:neo_brutalism_locket/features/privacy/sensitive_check.dart';
+import 'package:neo_brutalism_locket/features/privacy/sensitive_review.dart';
 import 'package:neo_brutalism_locket/features/posts/post_tags.dart';
 import 'package:neo_brutalism_locket/features/posts/posts_repository.dart';
 import 'package:neo_brutalism_locket/features/posts/posts_store.dart';
@@ -385,6 +387,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _sensitive?.close();
     WidgetsBinding.instance.removeObserver(this);
     _flight?.remove();
     _pushSubscription?.cancel();
@@ -695,21 +698,36 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     File? original,
     List<String> albumIds = const [],
     List<String> taggedIds = const [],
-  }) => _queueAndSend(
-    (outbox) => outbox.enqueue(
-      source: file,
-      caption: caption,
-      style: style,
-      questId: questId,
-      overlay: overlay,
+  }) async {
+    // Session E: look for ID numbers, phone numbers, plates... before the
+    // photo leaves the phone, and let the person cover them.
+    final checked = await reviewSensitive(
+      context,
+      file,
+      scanner: _sensitive ??= OnDeviceSensitiveScanner(),
+      notify: _notify,
+    );
+    if (checked == null || !mounted) return false;
+    return _queueAndSend(
+      (outbox) => outbox.enqueue(
+        source: checked.photo,
+        caption: caption,
+        style: style,
+        questId: questId,
+        overlay: overlay,
+        recipients: recipients,
+        // The uncovered original would show what was just covered.
+        original: checked.covered ? null : original,
+        albumIds: albumIds,
+        taggedIds: taggedIds,
+      ),
       recipients: recipients,
-      original: original,
-      albumIds: albumIds,
-      taggedIds: taggedIds,
-    ),
-    recipients: recipients,
-    friendCount: friendCount,
-  );
+      friendCount: friendCount,
+    );
+  }
+
+  /// Reads text in photos before they are posted (made on first use).
+  OnDeviceSensitiveScanner? _sensitive;
 
   /// Queues a post with [enqueue], tries to send it, and says how it went.
   /// True once it is sent or safely queued.

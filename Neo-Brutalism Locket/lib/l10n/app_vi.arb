@@ -2050,5 +2050,21 @@
   "holdFrameClockwise": "Xoay máy theo chiều kim đồng hồ ↻",
   "holdFrameCounterclockwise": "Xoay máy ngược chiều kim đồng hồ ↺",
   "holdFrameBack": "Lùi lại một chút",
-  "holdFrameCloser": "Tiến gần một chút"
+  "holdFrameCloser": "Tiến gần một chút",
+  "sensitiveTitle": "KIỂM TRA TRƯỚC KHI ĐĂNG",
+  "sensitiveIntro": "{count, plural, =1{Có 1 chỗ có thể lộ thông tin riêng tư.} other{Có {count} chỗ có thể lộ thông tin riêng tư.}} Chạm vào ô để bỏ che.",
+  "@sensitiveIntro": {"placeholders": {"count": {"type": "int"}}},
+  "sensitiveMayMiss": "Máy tự đọc chữ trong ảnh và có thể sót. Bạn xem lại ảnh nữa nhé.",
+  "sensitiveCoverAndPost": "CHE & ĐĂNG",
+  "sensitivePostAsIs": "ĐĂNG KHÔNG CHE",
+  "sensitiveCheckFailed": "Không kiểm tra được thông tin riêng tư trong ảnh.",
+  "sensitiveKindIdNumber": "Số CCCD",
+  "sensitiveKindPhone": "Số điện thoại",
+  "sensitiveKindPlate": "Biển số xe",
+  "sensitiveKindCard": "Số thẻ ngân hàng",
+  "sensitiveKindAddress": "Địa chỉ",
+  "sensitiveKindIdDocument": "Giấy tờ tùy thân",
+  "sensitiveKindScreenText": "Chữ trên màn hình",
+  "sensitiveCovered": "ĐÃ CHE",
+  "sensitiveShown": "KHÔNG CHE"
 }

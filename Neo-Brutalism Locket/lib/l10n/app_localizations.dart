@@ -5629,6 +5629,96 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tiến gần một chút'**
   String get holdFrameCloser;
+
+  /// No description provided for @sensitiveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'KIỂM TRA TRƯỚC KHI ĐĂNG'**
+  String get sensitiveTitle;
+
+  /// No description provided for @sensitiveIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, =1{Có 1 chỗ có thể lộ thông tin riêng tư.} other{Có {count} chỗ có thể lộ thông tin riêng tư.}} Chạm vào ô để bỏ che.'**
+  String sensitiveIntro(int count);
+
+  /// No description provided for @sensitiveMayMiss.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy tự đọc chữ trong ảnh và có thể sót. Bạn xem lại ảnh nữa nhé.'**
+  String get sensitiveMayMiss;
+
+  /// No description provided for @sensitiveCoverAndPost.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHE & ĐĂNG'**
+  String get sensitiveCoverAndPost;
+
+  /// No description provided for @sensitivePostAsIs.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐĂNG KHÔNG CHE'**
+  String get sensitivePostAsIs;
+
+  /// No description provided for @sensitiveCheckFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được thông tin riêng tư trong ảnh.'**
+  String get sensitiveCheckFailed;
+
+  /// No description provided for @sensitiveKindIdNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số CCCD'**
+  String get sensitiveKindIdNumber;
+
+  /// No description provided for @sensitiveKindPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại'**
+  String get sensitiveKindPhone;
+
+  /// No description provided for @sensitiveKindPlate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biển số xe'**
+  String get sensitiveKindPlate;
+
+  /// No description provided for @sensitiveKindCard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số thẻ ngân hàng'**
+  String get sensitiveKindCard;
+
+  /// No description provided for @sensitiveKindAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ'**
+  String get sensitiveKindAddress;
+
+  /// No description provided for @sensitiveKindIdDocument.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giấy tờ tùy thân'**
+  String get sensitiveKindIdDocument;
+
+  /// No description provided for @sensitiveKindScreenText.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chữ trên màn hình'**
+  String get sensitiveKindScreenText;
+
+  /// No description provided for @sensitiveCovered.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐÃ CHE'**
+  String get sensitiveCovered;
+
+  /// No description provided for @sensitiveShown.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG CHE'**
+  String get sensitiveShown;
 }
 
 class _AppLocalizationsDelegate
