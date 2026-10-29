@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -3228,4 +3229,65 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sensitiveShown => 'KHÔNG CHE';
+
+  @override
+  String get addMeTitle => 'THÊM TÔI VÀO';
+
+  @override
+  String get addMeTooltip => 'Thêm tôi vào ảnh nhóm';
+
+  @override
+  String get addMeStep1 =>
+      '1/2 · Chụp cả nhóm. Chừa một chỗ trống cho bạn, mọi người đứng yên.';
+
+  @override
+  String get addMeShootFirst => 'CHỤP NHÓM';
+
+  @override
+  String get addMeStep2 =>
+      '2/2 · Đưa máy cho một người trong nhóm rồi vào đứng chỗ trống. Người cầm máy canh bóng mờ cho khớp với cảnh rồi chụp.';
+
+  @override
+  String get addMeShootSecond => 'CHỤP CÓ TÔI';
+
+  @override
+  String get addMeAligned => 'Đã khớp khung. Chụp đi.';
+
+  @override
+  String get addMeMerging => 'Đang ghép bạn vào…';
+
+  @override
+  String get addMeCheckResult =>
+      'Bạn đã có mặt. Xem kỹ chỗ ghép trước khi đăng nhé.';
+
+  @override
+  String get addMeUse => 'DÙNG ẢNH NÀY';
+
+  @override
+  String get addMeRetakeSecond => 'CHỤP LẠI TẤM 2';
+
+  @override
+  String get addMeStartOver => 'LÀM LẠI TỪ ĐẦU';
+
+  @override
+  String get addMeAlignFailed =>
+      'Hai tấm không cùng khung. Chụp tấm 2 ở đúng chỗ đã chụp tấm 1.';
+
+  @override
+  String get addMeBackgroundChanged =>
+      'Có thứ khác thay đổi giữa hai tấm (ai đó di chuyển hoặc ánh sáng đổi). Mọi người đứng yên rồi chụp lại tấm 2.';
+
+  @override
+  String get addMeNoNewPerson =>
+      'Không thấy người mới trong tấm 2. Vào đứng chỗ trống rồi chụp lại.';
+
+  @override
+  String get addMeTooLarge => 'Bạn đứng quá gần máy. Lùi lại một chút.';
+
+  @override
+  String get addMeNeedsMatting =>
+      'Bạn đứng sát người khác quá. Đứng cách nhóm ra một chút.';
+
+  @override
+  String get addMeFailed => 'Không ghép được hai tấm ảnh.';
 }
