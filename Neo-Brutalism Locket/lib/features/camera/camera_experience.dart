@@ -146,6 +146,10 @@ class CameraTabState extends State<CameraTab> {
   /// The frame now printed instead of the shot's own picture (its file in the
   /// camera's folder); null while the shot's own picture is the one printed.
   String? _pickedFramePath;
+
+  /// Counts the frames swapped into the print: the picture keeps its file name,
+  /// so the views are rebuilt from scratch to read the new one.
+  int _frameRevision = 0;
   List<CameraDescription> _cameras = [];
   NeoPhoto? _activePhoto;
   FlashMode _flashMode = FlashMode.off;
@@ -536,7 +540,15 @@ class CameraTabState extends State<CameraTab> {
     setState(() => _processing = true);
     try {
       await _startPrint(choice.bytes, draft: photo);
-      _pickedFramePath = choice.framePath;
+      // The new picture is written over the old file: forget what was read.
+      await FileImage(File(photo.originalPath)).evict();
+      if (!mounted) return;
+      setState(() {
+        _pickedFramePath = choice.framePath;
+        _frameRevision++;
+        // The camera's own file stood in for the picture while it developed.
+        _shotPreviewPath = null;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _processing = false);
@@ -1510,7 +1522,7 @@ class CameraTabState extends State<CameraTab> {
               _DevelopingShot(label: l10n.developingPhoto)
             else
               BeforeAfterView(
-                key: ValueKey('draft-before-after-${photo.id}'),
+                key: ValueKey('draft-before-after-${photo.id}-$_frameRevision'),
                 originalPath: _shotPreviewPath ?? photo.originalPath,
                 styledPath: styledPath,
                 styleLabel:
@@ -2422,7 +2434,7 @@ class CameraTabState extends State<CameraTab> {
                   child: NeoPanelClip(
                     radius: _squareRadius,
                     child: BeforeAfterView(
-                      key: ValueKey('before-after-${photo.id}'),
+                      key: ValueKey('before-after-${photo.id}-$_frameRevision'),
                       originalPath: photo.originalPath,
                       styledPath: styledPath,
                       styleLabel:
