@@ -149,6 +149,8 @@ class RewindCamera(
     private var startInfo: Map<String, Any?>? = null
 
     private var continuous = false
+    private var keepFrames = true
+    private var holdTracker: com.neobrutalism.neo_brutalism_locket.holdframe.HoldFrameTracker? = null
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
     private var videoFile: File? = null
@@ -200,11 +202,13 @@ class RewindCamera(
     fun start(
         front: Boolean,
         continuous: Boolean,
+        keepFrames: Boolean = true,
         reply: (Result<Map<String, Any?>>) -> Unit,
     ) {
         stop()
         stopped = false
         this.continuous = continuous
+        this.keepFrames = keepFrames
         pendingStart = reply
         analysisExecutor = Executors.newSingleThreadExecutor()
         ioExecutor = Executors.newSingleThreadExecutor()
@@ -384,7 +388,9 @@ class RewindCamera(
 
     // Runs on the analysis thread, once per camera frame.
     private fun analyze(image: ImageProxy) {
+        holdTracker?.offer(image)
         if (scanCodes) scanForCode(image)
+        if (!keepFrames) return
         val timestamp = image.imageInfo.timestamp
         if (!ring.accepts(timestamp)) return
         val started = System.nanoTime()
@@ -611,7 +617,7 @@ class RewindCamera(
         }
         val shotId = UUID.randomUUID().toString()
         val dir = File(context.cacheDir, "rewind/$sessionId/$shotId").apply { mkdirs() }
-        val withBurst = ring.state == FrameRing.State.ARMED && recording == null
+        val withBurst = keepFrames && ring.state == FrameRing.State.ARMED && recording == null
         if (withBurst) {
             burstShotId = shotId
             burstPressNs = nowOnSensorClock()
@@ -878,10 +884,25 @@ class RewindCamera(
         )
     }
 
+    fun lockFrame(reply: (Result<Map<String, Any?>>) -> Unit) {
+        if (stopped || startInfo?.get("lensFacing") != "back") {
+            reply(Result.failure(IllegalStateException("cameraBusy|Use the back camera")))
+            return
+        }
+        val tracker = holdTracker ?: com.neobrutalism.neo_brutalism_locket.holdframe.HoldFrameTracker(emit)
+            .also { holdTracker = it }
+        tracker.lock(reply)
+    }
+
+    fun unlockFrame() { holdTracker?.unlock() }
+    fun armHoldFrame(on: Boolean) { holdTracker?.arm(on) }
+
     /** Lets everything go: only our own use cases are unbound. */
     fun stop() {
         if (stopped && provider == null) return
         stopped = true
+        holdTracker?.close()
+        holdTracker = null
         main.removeCallbacksAndMessages(null)
         pendingStart = null
         startInfo = null
