@@ -544,14 +544,33 @@ class CameraTabState extends State<CameraTab> {
       return;
     }
     final friend = _povFriend(session.hostId ?? '');
+    _povShots.clear();
+    // The viewer only receives video; its own camera is not needed during POV.
+    final old = _camera;
+    _camera = null;
+    if (mounted) setState(() => _cameraLoading = true);
+    await old?.dispose();
+    if (!mounted) return;
+    if (!pov.isWatching || pov.session?.id != session.id) {
+      _povOpen = false;
+      await _initializeCamera();
+      return;
+    }
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) =>
-            PovViewerScreen(store: pov, repository: repository, friend: friend),
+        builder: (_) => PovViewerScreen(
+          store: pov,
+          repository: repository,
+          friend: friend,
+          onShot: _savePovShot,
+        ),
       ),
     );
     _povOpen = false;
+    if (!mounted) return;
+    await _initializeCamera();
     _povEnded(friend?.name ?? '');
+    await _finishPovShots(friend?.id);
   }
 
   Future<void> _runPovHost() async {
@@ -571,6 +590,11 @@ class CameraTabState extends State<CameraTab> {
     if (mounted) setState(() => _cameraLoading = true);
     await old?.dispose();
     if (!mounted) return;
+    if (!pov.isHosting || pov.session?.id != session.id) {
+      _povOpen = false;
+      await _initializeCamera();
+      return;
+    }
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => PovHostScreen(

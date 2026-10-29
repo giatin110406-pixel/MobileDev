@@ -119,6 +119,23 @@ PovSession session({
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
 void main() {
+  testWidgets('a missed realtime update is recovered while the QR waits', (
+    tester,
+  ) async {
+    final repo = FakePov();
+    final store = PovStore(repo, myId: me);
+    await store.start();
+    await store.openCode();
+    repo.live = [session(host: friend, status: PovStatus.accepted)];
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(store.isWatching, isTrue);
+    // A late pending event must not undo the accepted state.
+    repo.updates.add(session());
+    await tester.pump();
+    expect(store.isWatching, isTrue);
+    store.dispose();
+  });
   late FakePov repo;
   late PovStore store;
 

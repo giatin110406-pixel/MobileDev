@@ -3011,6 +3011,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get povLive => 'TRỰC TIẾP';
 
   @override
+  String get povConnecting => 'ĐANG KẾT NỐI…';
+
+  @override
   String get povReconnecting => 'ĐANG NỐI LẠI…';
 
   @override
@@ -3023,6 +3026,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get povFramingNote => 'Đây là đúng khung vuông của tấm ảnh.';
+
+  @override
+  String get povSnapBoth => 'TÁCH! CẢ HAI MÁY ĐÃ CHỤP';
 
   @override
   String povShotsTaken(int count) {

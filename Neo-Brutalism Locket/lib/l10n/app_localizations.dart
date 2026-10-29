@@ -5354,6 +5354,12 @@ abstract class AppLocalizations {
   /// **'TRỰC TIẾP'**
   String get povLive;
 
+  /// No description provided for @povConnecting.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG KẾT NỐI…'**
+  String get povConnecting;
+
   /// No description provided for @povReconnecting.
   ///
   /// In vi, this message translates to:
@@ -5377,6 +5383,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đây là đúng khung vuông của tấm ảnh.'**
   String get povFramingNote;
+
+  /// No description provided for @povSnapBoth.
+  ///
+  /// In vi, this message translates to:
+  /// **'TÁCH! CẢ HAI MÁY ĐÃ CHỤP'**
+  String get povSnapBoth;
 
   /// No description provided for @povShotsTaken.
   ///
