@@ -1845,6 +1845,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       _archiveTab => _buildArchivePage(),
       _ => _buildProfilePage(),
     };
+    final cameraSlideOffset = switch (_tabIndex) {
+      _friendsTab => const Offset(1.0, 0.0),
+      _contestTab => const Offset(-1.0, 0.0),
+      _cameraTab => Offset.zero,
+      _ => Offset.zero,
+    };
     final isContestTab = _tabIndex == _contestTab;
     final scaffold = Scaffold(
       backgroundColor: Colors.transparent,
@@ -1865,13 +1871,22 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                   clipBehavior: Clip.hardEdge,
                   children: [
                     // Always mounted, so the camera does not restart per tab.
-                    Offstage(
-                      offstage: _cameraOffstage,
-                      child: IgnorePointer(
-                        ignoring: !cameraVisible,
-                        child: TickerMode(
-                          enabled: cameraVisible,
-                          child: CameraTab(
+                    AnimatedSlide(
+                      offset: cameraSlideOffset,
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOutCubic,
+                      onEnd: () {
+                        if (mounted && _tabIndex != _cameraTab) {
+                          setState(() => _cameraOffstage = true);
+                        }
+                      },
+                      child: Offstage(
+                        offstage: _cameraOffstage,
+                        child: IgnorePointer(
+                          ignoring: !cameraVisible,
+                          child: TickerMode(
+                            enabled: cameraVisible,
+                            child: CameraTab(
                               key: _cameraKey,
                               player: _player,
                               photos: _photos,
@@ -1899,21 +1914,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           ),
                         ),
                       ),
+                    ),
                     // Kept mounted over the camera (its page is empty then), so
                     // the switcher has a page to fade from when leaving it.
                     Positioned.fill(
                       child: AnimatedSwitcher(
-                        // While the SHOOT button flies down, the page fades
-                        // in over the same time: both land together.
-                        duration: _flying
-                            ? ShutterFlight.duration
-                            : const Duration(milliseconds: 280),
-                        switchInCurve: _flying
-                            ? Curves.easeInOutCubic
-                            : Curves.easeOutCubic,
-                        switchOutCurve: _flying
-                            ? Curves.easeIn
-                            : Curves.easeInCubic,
+                        duration: const Duration(milliseconds: 280),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
                         layoutBuilder: (currentChild, previousChildren) => Stack(
                           fit: StackFit.expand,
                           children: [
@@ -1922,9 +1930,6 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           ],
                         ),
                         transitionBuilder: (child, animation) {
-                          if (_flying) {
-                            return FadeTransition(opacity: animation, child: child);
-                          }
                           final inFromRight = _tabIndex >= _previousTabIndex;
                           final beginOffset = inFromRight
                               ? const Offset(1.0, 0.0)
