@@ -1,3 +1,5 @@
+import 'dart:typed_data' show BytesBuilder;
+
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_utils.dart';
@@ -85,8 +87,9 @@ Uint8List _originalForUpload(Uint8List bytes) {
     final info = img.JpegDecoder().startDecode(bytes);
     if (info != null &&
         info.width <= maxOriginalSide &&
-        info.height <= maxOriginalSide) {
-      return bytes;
+        info.height <= maxOriginalSide &&
+        !_needsRotation(bytes)) {
+      return stripJpegMetadata(bytes);
     }
   }
   final source = decodeOrientedImage(bytes);
@@ -100,6 +103,44 @@ Uint8List _originalForUpload(Uint8List bytes) {
         )
       : source;
   return Uint8List.fromList(img.encodeJpg(fitted, quality: 95));
+}
+
+/// A JPEG that relies on its EXIF orientation must be re-encoded upright, since
+/// that tag is about to go.
+bool _needsRotation(Uint8List bytes) {
+  final orientation = img.decodeJpgExif(bytes)?.imageIfd.orientation;
+  return orientation != null && orientation != 1;
+}
+
+/// The JPEG without its EXIF/XMP (APP1) and IPTC (APP13) segments, byte for
+/// byte otherwise, so nothing is recompressed. That is where the GPS position,
+/// the time and the device model live. Anything that is not a plain JPEG
+/// stream comes back unchanged.
+Uint8List stripJpegMetadata(Uint8List bytes) {
+  if (!_isJpeg(bytes)) return bytes;
+  final out = BytesBuilder(copy: false)..add(const [0xFF, 0xD8]);
+  var i = 2;
+  while (i + 4 <= bytes.length) {
+    if (bytes[i] != 0xFF) return bytes;
+    final marker = bytes[i + 1];
+    if (marker == 0xFF) {
+      i++; // fill byte
+      continue;
+    }
+    // Start of scan: the entropy-coded data runs to the end, copy it whole.
+    if (marker == 0xDA) {
+      out.add(Uint8List.sublistView(bytes, i));
+      return out.takeBytes();
+    }
+    final length = (bytes[i + 2] << 8) | bytes[i + 3];
+    final end = i + 2 + length;
+    if (length < 2 || end > bytes.length) return bytes;
+    if (marker != 0xE1 && marker != 0xED) {
+      out.add(Uint8List.sublistView(bytes, i, end));
+    }
+    i = end;
+  }
+  return bytes;
 }
 
 bool _isJpeg(Uint8List bytes) =>

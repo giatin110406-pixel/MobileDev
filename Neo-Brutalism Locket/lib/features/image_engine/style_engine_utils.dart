@@ -6,7 +6,12 @@ import 'package:image/image.dart' as img;
 img.Image decodeOrientedImage(Uint8List bytes) {
   final decoded = img.decodeImage(bytes);
   if (decoded == null) throw const FormatException('Unsupported image data.');
-  return img.bakeOrientation(decoded);
+  final upright = img.bakeOrientation(decoded);
+  // The orientation is baked into the pixels, so nothing in the EXIF is needed
+  // any more; dropping it keeps the GPS position, the time and the device
+  // model out of everything that is encoded from this image.
+  upright.exif.clear();
+  return upright;
 }
 
 Future<File> writeProcessedPng(
