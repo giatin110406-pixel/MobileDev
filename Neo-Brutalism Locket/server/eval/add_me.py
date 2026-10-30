@@ -24,6 +24,7 @@ REASON_NEEDS_MATTING = "needs_matting"
 REASON_SEVERAL = "several_changes"
 
 WORK = 640  # the long side everything is measured at; the output stays at full resolution
+EXPOSURE_MIN, EXPOSURE_MAX = 0.35, 2.8  # real phones re-expose by far more than a retake in the lab does
 MIN_MATCHES = 20
 MIN_INLIERS = 15
 MIN_INLIER_RATIO = 0.35
@@ -115,7 +116,7 @@ def match_exposure(base: np.ndarray, moving: np.ndarray, valid: np.ndarray) -> n
         return moving
     for c in range(3):
         ratio = b[..., c][sel].astype(np.float32) / m[..., c][sel].astype(np.float32)
-        out[..., c] *= float(np.clip(np.median(ratio), 0.7, 1.4))
+        out[..., c] *= float(np.clip(np.median(ratio), EXPOSURE_MIN, EXPOSURE_MAX))
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
