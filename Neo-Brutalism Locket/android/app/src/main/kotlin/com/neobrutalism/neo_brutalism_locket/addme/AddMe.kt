@@ -1,5 +1,6 @@
 package com.neobrutalism.neo_brutalism_locket.addme
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +18,7 @@ import org.opencv.core.MatOfInt
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
 
@@ -37,7 +39,15 @@ object AddMe {
         )
     }
 
-    fun register(messenger: BinaryMessenger) {
+    /**
+     * With a file named add_me_debug_on in the app's external files folder, every merge keeps its
+     * two shots, the shot-2 picture lined up on shot 1, the person's opacity, the result and the
+     * numbers under add_me_debug/ there (adb pull). Off unless that file is put there.
+     */
+    @Volatile private var debugRoot: File? = null
+
+    fun register(messenger: BinaryMessenger, context: Context) {
+        debugRoot = context.getExternalFilesDir(null)
         MethodChannel(messenger, "com.neobrutalism.neo_brutalism_locket/add_me")
             .setMethodCallHandler { call, result ->
                 if (call.method != "merge") {
@@ -71,8 +81,20 @@ object AddMe {
         check(OpenCVLoader.initLocal()) { "OpenCV could not load on this device" }
         val shot1 = decode(first)
         val shot2 = decode(second)
+        val dump = debugRun()
+        dump?.let { File(it, "shot1.jpg").writeBytes(first); File(it, "shot2.jpg").writeBytes(second) }
         try {
-            val out = AddMeMerger(::people).merge(shot1, shot2)
+            val merger = AddMeMerger(::people)
+            if (dump != null) {
+                merger.debug = { name, mat ->
+                    Imgcodecs.imwrite(File(dump, if (mat.channels() == 1) "$name.png" else "$name.jpg").path, mat)
+                }
+            }
+            val out = merger.merge(shot1, shot2)
+            dump?.let { dir ->
+                out.image?.let { Imgcodecs.imwrite(File(dir, "result.jpg").path, it) }
+                File(dir, "info.txt").writeText("ok=${out.ok} reason=${out.reason} ${out.info}")
+            }
             val image = out.image?.let { mat ->
                 val buf = MatOfByte()
                 val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 92)
@@ -106,6 +128,14 @@ object AddMe {
             rgba.release()
             bitmap.recycle()
         }
+    }
+
+    private fun debugRun(): File? {
+        val root = debugRoot ?: return null
+        if (!File(root, "add_me_debug_on").exists()) return null
+        val all = File(root, "add_me_debug")
+        all.listFiles()?.sortedBy { it.name }?.dropLast(11)?.forEach { it.deleteRecursively() }
+        return File(all, System.currentTimeMillis().toString()).also { it.mkdirs() }
     }
 
     private fun decode(bytes: ByteArray): Mat {

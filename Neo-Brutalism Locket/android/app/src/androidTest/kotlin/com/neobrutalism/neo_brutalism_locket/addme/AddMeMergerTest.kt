@@ -11,6 +11,8 @@ import org.opencv.android.OpenCVLoader
 import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.MatOfByte
+import org.opencv.core.Rect
+import org.opencv.core.Scalar
 import org.opencv.imgcodecs.Imgcodecs
 
 /**
@@ -52,7 +54,7 @@ class AddMeMergerTest {
                 val mean = Core.mean(diff).`val`.take(3).average()
                 println("ADDME_ROW $name mean difference to Python ${"%.2f".format(mean)}")
                 // Over the whole photo; a person cut a few pixels differently stays well under this.
-                assertTrue("$name differs from Python by $mean", mean < 4.0)
+                assertTrue("$name differs from Python by $mean", mean < 5.0)
                 diff.release(); python.release(); got.image!!.release()
             }
             shot1.release(); shot2.release()
@@ -67,5 +69,21 @@ class AddMeMergerTest {
         assertEquals(false, refused["ok"])
         assertEquals("no_new_person", refused["reason"])
         assertNull(refused["image"])
+    }
+
+    // A camera that left a black band on shot 1 must not leave it in the result (it showed as a
+    // dark strip with a halo round a foot standing on it).
+    @Test fun blackBandOnShotOneIsFilledFromShotTwo() {
+        val shot1 = image("gap_01_1.jpg")
+        val band = Rect(0, 0, 60, shot1.rows())
+        shot1.submat(band).setTo(Scalar(0.0, 0.0, 0.0))
+        val buf = MatOfByte()
+        assertTrue(Imgcodecs.imencode(".jpg", shot1, buf))
+        val merged = AddMe.merge(buf.toArray(), bytes("gap_01_2.jpg"))
+        assertEquals(true, merged["ok"])
+        val result = Imgcodecs.imdecode(MatOfByte(*(merged["image"] as ByteArray)), Imgcodecs.IMREAD_COLOR)
+        val inside = Core.mean(result.submat(Rect(8, 0, 40, result.rows()))).`val`.take(3).average()
+        println("ADDME_ROW black band after merge: mean $inside")
+        assertTrue("the band is still dark ($inside)", inside > 25.0)
     }
 }

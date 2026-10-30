@@ -16,7 +16,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         SquareCrop.register(flutterEngine.dartExecutor.binaryMessenger)
-        AddMe.register(flutterEngine.dartExecutor.binaryMessenger)
+        AddMe.register(flutterEngine.dartExecutor.binaryMessenger, applicationContext)
         flutterEngine.plugins.add(RewindPlugin())
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

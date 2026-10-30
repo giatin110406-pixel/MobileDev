@@ -22,6 +22,9 @@ import kotlin.math.*
  * Mats are BGR 8-bit. Not thread-safe: one merge at a time per instance.
  */
 class AddMeMerger(private val segment: (Mat) -> FloatArray) {
+    /** Test and debug hook: called with named intermediate pictures (BGR or one-channel 8-bit). */
+    var debug: ((String, Mat) -> Unit)? = null
+
     class Result(
         val ok: Boolean,
         val reason: String? = null,
@@ -46,6 +49,13 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         const val PERSON = 0.5f
         /** A body in shot 2 this much on shot 1's people is someone who was already there. */
         const val SEEN_BEFORE = 0.35
+        /** Of the long side: how far from the first outline the edge may still move. */
+        const val BAND = 0.0075
+        const val GUIDE_RADIUS = 0.005
+        const val GUIDE_EPS = 1e-3
+        const val CROP_MARGIN = 0.15
+        /** The person's crop is segmented at this size, so the model's grid is spent on them. */
+        const val CROP_SIDE = 768
     }
 
     fun merge(shot1: Mat, shot2: Mat): Result {
@@ -131,9 +141,12 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
                 person.release()
                 return Result(false, REASON_TOO_LARGE, info = info)
             }
-            Imgproc.dilate(person, person, Mat.ones(3, 3, CvType.CV_8U))
-            val image = blend(shot1, moved, person)
+            debug?.invoke("moved", moved)
+            val (alpha, rect) = refineAlpha(moved, person, valid)
             person.release()
+            val image = blend(shot1, moved, alpha, rect)
+            alpha.release()
+            fillBlackBorders(image, moved, valid)
             return Result(true, image = image, info = info)
         } finally {
             moved.release()
@@ -302,42 +315,178 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         } finally { b.release(); m.release(); v.release(); labB.release(); labM.release() }
     }
 
-    // Blending ------------------------------------------------------------------------------
+    // Edge and blending ---------------------------------------------------------------------
 
-    /** shot1 with [cut] (a 0/1 mask at working size) laid over it from `moved`, soft at the
-     * edge. Only the box around the cut is worked on in floating point, so a big photo does not
-     * need several copies of itself. */
-    private fun blend(shot1: Mat, moved: Mat, cut: Mat): Mat {
-        val out = shot1.clone()
-        if (Core.countNonZero(cut) == 0) return out
-        val box = Imgproc.boundingRect(cut)
-        val sigma = max(1.5, 0.003 * max(shot1.rows(), shot1.cols()))
-        val sx = shot1.cols().toDouble() / cut.cols(); val sy = shot1.rows().toDouble() / cut.rows()
-        val pad = (4 * sigma + max(sx, sy)).toInt() + 2
-        val roi = Rect(
-            Point(max(0.0, box.x * sx - pad), max(0.0, box.y * sy - pad)),
+    /**
+     * Soft opacity of the person, for the box around them (full size) it returns with. [person]
+     * is their outline at working size. The model sees a crop of just them (about 3x the detail
+     * of the whole frame), and the edge is snapped to the photo's own edges, in a band around
+     * the outline, with a guided filter. Nothing comes from where [valid] says shot 2 has no
+     * picture.
+     */
+    private fun refineAlpha(moved: Mat, person: Mat, valid: Mat): Pair<Mat, Rect> {
+        val side = max(moved.rows(), moved.cols())
+        val sx = moved.cols().toDouble() / person.cols()
+        val sy = moved.rows().toDouble() / person.rows()
+        val box = Imgproc.boundingRect(person)
+        val mx = (box.width * sx * CROP_MARGIN).toInt() + 8
+        val my = (box.height * sy * CROP_MARGIN).toInt() + 8
+        val rect = Rect(
+            Point(max(0.0, box.x * sx - mx), max(0.0, box.y * sy - my)),
             Point(
-                min(shot1.cols().toDouble(), (box.x + box.width) * sx + pad),
-                min(shot1.rows().toDouble(), (box.y + box.height) * sy + pad),
+                min(moved.cols().toDouble(), (box.x + box.width) * sx + mx),
+                min(moved.rows().toDouble(), (box.y + box.height) * sy + my),
             ),
         )
+        val cw = rect.width; val ch = rect.height; val n = cw * ch
+        val hardFull = Mat()
+        Imgproc.resize(person, hardFull, moved.size(), 0.0, 0.0, Imgproc.INTER_NEAREST)
+        val hard = hardFull.submat(rect).clone()
+        hardFull.release()
+
+        // The model on the crop alone.
+        val crop = moved.submat(rect)
+        val f = CROP_SIDE.toDouble() / max(cw, ch)
         val small = Mat()
-        cut.convertTo(small, CvType.CV_32FC1)
-        val full = Mat()
-        Imgproc.resize(small, full, shot1.size(), 0.0, 0.0, Imgproc.INTER_LINEAR)
-        val soft = full.submat(roi).clone()
-        Imgproc.GaussianBlur(soft, soft, Size(0.0, 0.0), sigma)
-        Core.min(soft, Scalar(1.0), soft); Core.max(soft, Scalar(0.0), soft)
-        val alpha = Mat(); Core.merge(listOf(soft, soft, soft), alpha)
-        val inv = Mat(alpha.size(), alpha.type(), Scalar(1.0, 1.0, 1.0))
-        Core.subtract(inv, alpha, inv)
-        val a = Mat(); val b = Mat()
-        shot1.submat(roi).convertTo(a, CvType.CV_32FC3)
-        moved.submat(roi).convertTo(b, CvType.CV_32FC3)
-        Core.multiply(a, inv, a); Core.multiply(b, alpha, b); Core.add(a, b, a)
-        a.convertTo(out.submat(roi), CvType.CV_8UC3)
-        listOf(small, full, soft, alpha, inv, a, b).forEach { it.release() }
+        Imgproc.resize(
+            crop, small,
+            Size(max(1.0, (cw * f).roundToInt().toDouble()), max(1.0, (ch * f).roundToInt().toDouble())),
+            0.0, 0.0, if (f < 1) Imgproc.INTER_AREA else Imgproc.INTER_CUBIC,
+        )
+        val smallConf = Mat(small.rows(), small.cols(), CvType.CV_32FC1)
+        smallConf.put(0, 0, segment(small))
+        small.release()
+        val confMat = Mat()
+        Imgproc.resize(smallConf, confMat, Size(cw.toDouble(), ch.toDouble()), 0.0, 0.0, Imgproc.INTER_LINEAR)
+        smallConf.release()
+        val conf = FloatArray(n).also { confMat.get(0, 0, it) }
+        confMat.release()
+
+        val band = max(4, (BAND * side).roundToInt())
+        val k = (2 * band + 1).toDouble()
+        val ker = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(k, k))
+        val outerM = Mat(); val innerM = Mat()
+        Imgproc.dilate(hard, outerM, ker)
+        Imgproc.erode(hard, innerM, ker)
+        ker.release()
+        val hardB = ByteArray(n).also { hard.get(0, 0, it) }
+        val outer = ByteArray(n).also { outerM.get(0, 0, it) }
+        val inner = ByteArray(n).also { innerM.get(0, 0, it) }
+        hard.release(); outerM.release(); innerM.release()
+
+        val first = FloatArray(n) { i ->
+            when {
+                inner[i].toInt() != 0 -> 1f
+                // Where the model hesitates inside the old outline, trust the outline.
+                hardB[i].toInt() != 0 -> max(conf[i], 0.5f * conf[i] + 0.5f)
+                outer[i].toInt() != 0 -> conf[i]
+                else -> 0f
+            }
+        }
+        val src = Mat(ch, cw, CvType.CV_32FC1).apply { put(0, 0, first) }
+        val gray = Mat(); val guide = Mat()
+        Imgproc.cvtColor(crop, gray, Imgproc.COLOR_BGR2GRAY)
+        gray.convertTo(guide, CvType.CV_32FC1, 1.0 / 255)
+        gray.release()
+        val snapped = guidedFilter(guide, src, max(3, (GUIDE_RADIUS * side).roundToInt()), GUIDE_EPS)
+        guide.release(); src.release()
+        val snappedF = FloatArray(n).also { snapped.get(0, 0, it) }
+        snapped.release()
+        val validB = ByteArray(n).also { valid.submat(rect).get(0, 0, it) }
+        val result = FloatArray(n) { i ->
+            val a = if (outer[i].toInt() != 0 && inner[i].toInt() == 0) snappedF[i] else first[i]
+            if ((validB[i].toInt() and 0xff) > 128) a.coerceIn(0f, 1f) else 0f
+        }
+        val alpha = Mat(ch, cw, CvType.CV_32FC1).apply { put(0, 0, result) }
+        Imgproc.GaussianBlur(alpha, alpha, Size(0.0, 0.0), 0.8)
+        debug?.let { out ->
+            val full = Mat.zeros(moved.size(), CvType.CV_8UC1)
+            val part = Mat()
+            alpha.convertTo(part, CvType.CV_8UC1, 255.0)
+            part.copyTo(full.submat(rect))
+            out("alpha", full)
+            part.release(); full.release()
+        }
+        return alpha to rect
+    }
+
+    /** He et al.'s guided filter with a one-channel guide; both inputs CV_32F, values 0..1. */
+    private fun guidedFilter(guide: Mat, src: Mat, r: Int, eps: Double): Mat {
+        fun box(m: Mat) = Mat().also {
+            Imgproc.boxFilter(m, it, -1, Size(2.0 * r + 1, 2.0 * r + 1), Point(-1.0, -1.0), true, Core.BORDER_REPLICATE)
+        }
+        val tmp = Mat()
+        val meanI = box(guide); val meanP = box(src)
+        Core.multiply(guide, guide, tmp); val corrI = box(tmp)
+        Core.multiply(guide, src, tmp); val corrIP = box(tmp)
+        Core.multiply(meanI, meanI, tmp)
+        val varI = Mat(); Core.subtract(corrI, tmp, varI)
+        Core.multiply(meanI, meanP, tmp)
+        val covIP = Mat(); Core.subtract(corrIP, tmp, covIP)
+        Core.add(varI, Scalar(eps), varI)
+        val a = Mat(); Core.divide(covIP, varI, a)
+        Core.multiply(a, meanI, tmp)
+        val b = Mat(); Core.subtract(meanP, tmp, b)
+        val meanA = box(a); val meanB = box(b)
+        val q = Mat(); Core.multiply(meanA, guide, q); Core.add(q, meanB, q)
+        Core.min(q, Scalar(1.0), q); Core.max(q, Scalar(0.0), q)
+        listOf(tmp, meanI, meanP, corrI, corrIP, varI, covIP, a, b, meanA, meanB).forEach { it.release() }
+        return q
+    }
+
+    /** shot1 with [moved] laid over it by [alpha], which covers [rect] only. */
+    private fun blend(shot1: Mat, moved: Mat, alpha: Mat, rect: Rect): Mat {
+        val out = shot1.clone()
+        val a = Mat(); val b = Mat(); val inv = Mat(); val alpha3 = Mat()
+        Core.merge(listOf(alpha, alpha, alpha), alpha3)
+        val ones = Mat(alpha3.size(), alpha3.type(), Scalar(1.0, 1.0, 1.0))
+        Core.subtract(ones, alpha3, inv)
+        shot1.submat(rect).convertTo(a, CvType.CV_32FC3)
+        moved.submat(rect).convertTo(b, CvType.CV_32FC3)
+        Core.multiply(a, inv, a); Core.multiply(b, alpha3, b); Core.add(a, b, a)
+        a.convertTo(out.submat(rect), CvType.CV_8UC3)
+        listOf(a, b, inv, alpha3, ones).forEach { it.release() }
         return out
+    }
+
+    /**
+     * Black strips along the edge of shot 1 (a camera or crop that left no picture there) are
+     * filled from shot 2 where it has one, so the result has no dark band.
+     */
+    private fun fillBlackBorders(image: Mat, moved: Mat, valid: Mat) {
+        val w = image.cols(); val h = image.rows()
+        val min = max(6, max(w, h) / 200)
+        val dark = Mat(); val gray = Mat()
+        Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY)
+        Imgproc.threshold(gray, dark, 6.0, 1.0, Imgproc.THRESH_BINARY_INV)
+        gray.release()
+        val cols = Mat(); val rows = Mat()
+        Core.reduce(dark, cols, 0, Core.REDUCE_AVG, CvType.CV_32F)
+        Core.reduce(dark, rows, 1, Core.REDUCE_AVG, CvType.CV_32F)
+        dark.release()
+        val c = FloatArray(w).also { cols.get(0, 0, it) }
+        val r = FloatArray(h).also { rows.get(0, 0, it) }
+        cols.release(); rows.release()
+        fun run(v: FloatArray, fromEnd: Boolean): Int {
+            var n = 0
+            while (n < v.size / 4 && v[if (fromEnd) v.size - 1 - n else n] > 0.97f) n++
+            return if (n >= min) min(v.size, n + 2) else 0
+        }
+        val left = run(c, false); val right = run(c, true)
+        val top = run(r, false); val bottom = run(r, true)
+        val strips = listOf(
+            Rect(0, 0, left, h), Rect(w - right, 0, right, h),
+            Rect(0, 0, w, top), Rect(0, h - bottom, w, bottom),
+        ).filter { it.width > 0 && it.height > 0 }
+        for (strip in strips) {
+            val from = moved.submat(strip); val into = image.submat(strip)
+            val mv = Mat(); Imgproc.cvtColor(from, mv, Imgproc.COLOR_BGR2GRAY)
+            val usable = Mat()
+            Imgproc.threshold(mv, usable, 6.0, 255.0, Imgproc.THRESH_BINARY)
+            Core.bitwise_and(usable, valid.submat(strip), usable)
+            from.copyTo(into, usable)
+            mv.release(); usable.release()
+        }
     }
 
     // Helpers -------------------------------------------------------------------------------
