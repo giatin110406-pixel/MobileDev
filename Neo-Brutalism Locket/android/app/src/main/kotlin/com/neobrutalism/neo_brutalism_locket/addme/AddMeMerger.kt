@@ -22,7 +22,11 @@ import kotlin.math.*
  * [segment] gives the chance of a person per pixel for a BGR image (row-major, its size).
  * Mats are BGR 8-bit. Not thread-safe: one merge at a time per instance.
  */
-class AddMeMerger(private val segment: (Mat) -> FloatArray) {
+class AddMeMerger(
+    private val segment: (Mat) -> FloatArray,
+    /** Portrait matting: opacity per pixel of a BGR crop (its size). Null or failing: the coarse edge. */
+    private val matte: ((Mat) -> FloatArray)? = null,
+) {
     /** Test and debug hook: called with named intermediate pictures (BGR or one-channel 8-bit). */
     var debug: ((String, Mat) -> Unit)? = null
 
@@ -458,6 +462,11 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         smallConf.release()
         val conf = FloatArray(n).also { confMat.get(0, 0, it) }
         confMat.release()
+        // Hair-fine edge from the matting model, when it runs.
+        val fine = matte?.let { run ->
+            val piece = crop.clone()
+            try { run(piece) } catch (e: Throwable) { null } finally { piece.release() }
+        }
 
         val band = max(4, (BAND * side).roundToInt())
         val k = (2 * band + 1).toDouble()
@@ -474,6 +483,9 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         val first = FloatArray(n) { i ->
             when {
                 inner[i].toInt() != 0 -> 1f
+                // With the matting model the band is its opacity: the coarse outline's own halo
+                // would only put the wall back.
+                fine != null -> if (outer[i].toInt() != 0) fine[i] else 0f
                 // Where the model hesitates inside the old outline, trust the outline.
                 hardB[i].toInt() != 0 -> max(conf[i], 0.5f * conf[i] + 0.5f)
                 outer[i].toInt() != 0 -> conf[i]
@@ -501,7 +513,7 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         val nearOld = ByteArray(n).also { nearOldM.get(0, 0, it) }
         nearOldM.release()
         val result = FloatArray(n) { i ->
-            var a = if (outer[i].toInt() != 0 && inner[i].toInt() == 0) snappedF[i] else first[i]
+            var a = if (fine == null && outer[i].toInt() != 0 && inner[i].toInt() == 0) snappedF[i] else first[i]
             if (nearOld[i].toInt() != 0) a = ((a - 0.5f) * SHARP + 0.5f).coerceIn(0f, 1f)
             if ((validB[i].toInt() and 0xff) > 128) a.coerceIn(0f, 1f) else 0f
         }

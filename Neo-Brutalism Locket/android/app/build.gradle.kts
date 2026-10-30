@@ -64,6 +64,9 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     // Finds people for "add me" (addme/), on the device; the model ships in the app.
     implementation("com.google.mlkit:segmentation-selfie:16.0.0-beta6")
+    // The edge of the person comes from a matting model (addme/Matting.kt). The version is the one
+    // the flutter_onnxruntime plugin already brings, so there is a single copy.
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.28.0")
     // ListenableFuture, which ProcessCameraProvider.getInstance returns.
     implementation("com.google.guava:guava:33.4.8-android")
     testImplementation("junit:junit:4.13.2")

@@ -25,7 +25,10 @@ import org.opencv.imgcodecs.Imgcodecs
 class AddMeMergerTest {
     private val assets = InstrumentationRegistry.getInstrumentation().context.assets
 
-    @Before fun load() { assertTrue(OpenCVLoader.initLocal()) }
+    @Before fun load() {
+        assertTrue(OpenCVLoader.initLocal())
+        Matting.init(InstrumentationRegistry.getInstrumentation().targetContext)
+    }
 
     private fun bytes(name: String) = assets.open("add_me/$name").use { it.readBytes() }
 
@@ -41,7 +44,7 @@ class AddMeMergerTest {
             val shot1 = image("${name}_1.jpg")
             val shot2 = image("${name}_2.jpg")
             val started = System.nanoTime()
-            val got = AddMeMerger(AddMe::people).merge(shot1, shot2)
+            val got = AddMeMerger(AddMe::people, Matting::alpha).merge(shot1, shot2)
             val ms = (System.nanoTime() - started) / 1e6
             println("ADDME_ROW $name ok=${got.ok} reason=${got.reason} ms=${ms.toInt()} info=${got.info}")
             assertEquals(name, want.getBoolean("ok"), got.ok)
@@ -54,7 +57,7 @@ class AddMeMergerTest {
                 val mean = Core.mean(diff).`val`.take(3).average()
                 println("ADDME_ROW $name mean difference to Python ${"%.2f".format(mean)}")
                 // Over the whole photo; a person cut a few pixels differently stays well under this.
-                assertTrue("$name differs from Python by $mean", mean < 5.0)
+                assertTrue("$name differs from Python by $mean", mean < 6.0)
                 diff.release(); python.release(); got.image!!.release()
             }
             shot1.release(); shot2.release()
