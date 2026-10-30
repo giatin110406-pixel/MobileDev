@@ -30,8 +30,6 @@ SEEN_BEFORE = 0.35  # a body in shot 2 this much on shot 1's people is someone w
 ABSENT = 0.35  # a person of shot 1 is not in shot 2 when the model finds a person on less of their area than this...
 CHANGED = 0.4  # ...or when this much of their area changed (the newcomer may stand where they stood)
 SHARP = 6.0  # next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this
-TIP = 0.7  # the newcomer's overlap this far out along it (of the way to its far end) is the hand: in front
-MIN_ARM = 0.03  # of WORK: a shorter overlap has no hand to keep
 THIN = 0.04  # of WORK: less depth than this inside an outline is a limb, not a body
 EDGE_FRONT = 0.03  # of WORK: the newcomer's hand this close to the rim of such a person stays in front
 
@@ -90,7 +88,7 @@ def guided(guide: np.ndarray, src: np.ndarray, r: int, eps: float) -> np.ndarray
 
 
 def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, segment,
-                 olds_w: np.ndarray | None = None, matte=None) -> np.ndarray:
+                 olds_w: np.ndarray | None = None, matte=None, occluder=None) -> np.ndarray:
     """Soft opacity of the person at full size. `person_w` is the person's outline at working
     size; the model sees a crop of just them (about 3x the detail), and the edge is snapped to the
     photo's own edges in a band around the outline with a guided filter."""
@@ -120,6 +118,11 @@ def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, seg
         fine[y0:y1, x0:x1] = matte(crop)
         conf = fine
     alpha = np.where(inner, 1.0, np.where(outer, conf, 0.0)).astype(np.float32)
+    if matte is not None and olds_w is not None:
+        # Over someone of shot 1 the coarse outline is not trusted even inside: what is laid there
+        # (a hand, an arm) is the matting model's alone, so no wall comes along with it.
+        over_old = cv2.resize(olds_w.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST) > 0
+        alpha = np.where(over_old & outer, conf, alpha).astype(np.float32)
     # Where the model hesitates inside the old outline, trust the outline.
     if matte is None:
         alpha = np.where(hard & ~inner, np.maximum(alpha, 0.5 * conf + 0.5 * hard), alpha).astype(np.float32)
@@ -134,6 +137,13 @@ def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, seg
         olds = cv2.resize(olds_w.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST)
         near_old = cv2.dilate(olds, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4 * band + 1, 4 * band + 1))) > 0
         alpha = np.where(near_old, np.clip((alpha - 0.5) * SHARP + 0.5, 0, 1), alpha).astype(np.float32)
+    if occluder is not None:
+        shot_1, gone_w = occluder
+        old = np.zeros((h, w), np.float32)
+        old[y0:y1, x0:x1] = matte(shot_1[y0:y1, x0:x1])
+        near_gone = cv2.dilate(gone_w.astype(np.uint8), np.ones((9, 9), np.uint8))
+        near_gone = cv2.resize(near_gone, (w, h), interpolation=cv2.INTER_NEAREST) > 0
+        alpha = alpha * (1 - old * near_gone)
     alpha *= (valid > 128)  # nothing from where the second shot has no picture
     return np.clip(alpha, 0, 1)
 
@@ -177,30 +187,14 @@ def harmonize(shot_1: np.ndarray, moved: np.ndarray, soft: np.ndarray) -> np.nda
 
 
 def hidden_behind(person: np.ndarray, gone: np.ndarray) -> np.ndarray:
-    """The part of the newcomer that goes behind the people of shot 1 they overlap: all of it
-    except the far end of the overlap (measured from the newcomer's own body), which is the hand
-    resting on a shoulder. The arm where it goes in and the middle of it are hidden, and where it
-    comes out on the far side it shows again: the arm goes behind the person and the hand ends on
-    their shoulder."""
+    """Without the matting model: the part of the newcomer behind the people of shot 1 they
+    overlap, at working size (all of the overlap; what reaches past them, like fingers over a
+    shoulder, stays)."""
     overlap = person & gone
     own = person & ~gone
     if not overlap.any() or own.sum() < 0.3 * overlap.sum():
         return np.zeros_like(person)
-    # An arm that comes out on the far side of the person (the hand shows beyond them) goes behind
-    # them all the way: nothing of the overlap stays in front. Only an arm that ends inside the
-    # person's outline (a hand on their shoulder) keeps its far end.
-    rest = (person & ~overlap).astype(np.uint8)
-    count, labels, stats, _ = cv2.connectedComponentsWithStats(rest, connectivity=8)
-    if count > 2:
-        main = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
-        near = cv2.dilate(overlap.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
-        for lab in range(1, count):
-            if lab != main and stats[lab, cv2.CC_STAT_AREA] >= 40 and (near & (labels == lab)).any():
-                return overlap
-    dist = cv2.distanceTransform((~own).astype(np.uint8), cv2.DIST_L2, 3)
-    far = float(dist[overlap].max())
-    tip = overlap & (dist > TIP * far) if far > MIN_ARM * WORK else np.zeros_like(person)
-    return overlap & ~tip
+    return overlap
 
 
 def decide_layer(person: np.ndarray, gone: np.ndarray, p2: np.ndarray, info: dict) -> str:
@@ -282,11 +276,16 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
     person = whole & ~((p1 & ~gone) & ~changed)
     if layer == "auto":
         layer = decide_layer(person, gone, p2, info)
-    if layer == "behind" and gone.any():
+    # Behind someone who left: with the matting model the newcomer keeps their whole outline and
+    # is covered by that person's own matte from shot 1, so the line between them (a shirt and the
+    # fingers over it) follows the real edge; without it, the overlap is cut at working size.
+    occlude = layer == "behind" and gone.any() and matte is not None and refine
+    if layer == "behind" and gone.any() and not occlude:
         person = person & ~hidden_behind(person, gone)
     # Edges the segmenter missed (loose hair, a bag strap) when they changed right next to it.
+    # Not where someone of shot 1 left: there everything "changed", the wall round a hand too.
     near = cv2.dilate(person.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0
-    person = (person | (near & changed)).astype(np.uint8)
+    person = (person | (near & changed & ~gone)).astype(np.uint8)
     person = cv2.morphologyEx(person, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
     # (AddMeMerger.kt keeps the same steps; the segmenter there is ML Kit's selfie model.)
     area = float(person.sum()) / total
@@ -296,7 +295,8 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
 
     h, w = shot_1.shape[:2]
     if refine:
-        soft = refine_alpha(moved, person, valid, segment, p1, matte)
+        soft = refine_alpha(moved, person, valid, segment, p1, matte,
+                            occluder=(shot_1, gone) if occlude else None)
         soft = cv2.GaussianBlur(soft, (0, 0), 0.8)
     else:
         soft = cv2.dilate(person, np.ones((3, 3), np.uint8)).astype(np.float32)
