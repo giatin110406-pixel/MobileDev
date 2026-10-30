@@ -43,6 +43,7 @@ import 'package:neo_brutalism_locket/features/progress/player_repository.dart';
 import 'package:neo_brutalism_locket/features/progress/player_store.dart';
 import 'package:neo_brutalism_locket/features/camera/photo_tools_menu.dart';
 import 'package:neo_brutalism_locket/features/camera/shot_camera.dart';
+import 'package:neo_brutalism_locket/features/add_me/add_me_screen.dart';
 import 'package:neo_brutalism_locket/features/hold_frame/hold_frame_screen.dart';
 import 'package:neo_brutalism_locket/features/rewind/rewind_picker.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_card.dart';
@@ -373,7 +374,16 @@ class CameraTabState extends State<CameraTab> {
   bool _povOpen = false;
   bool _holdFrameOpen = false;
 
-  Future<void> _openHoldFrame() async {
+  Future<void> _openHoldFrame() =>
+      _openCameraTool('hold_frame', (_) => const HoldFrameScreen());
+
+  /// Session B2: the group photo, then the same frame with the photographer.
+  Future<void> _openAddMe() =>
+      _openCameraTool('add_me', (_) => const AddMeScreen());
+
+  /// Hands the camera to a full-screen tool (it drives the camera itself) and
+  /// takes it back after; the photo the tool returns becomes the print.
+  Future<void> _openCameraTool(String name, WidgetBuilder screen) async {
     if (_holdFrameOpen ||
         _povOpen ||
         _processing ||
@@ -392,11 +402,11 @@ class CameraTabState extends State<CameraTab> {
       setState(() => _cameraLoading = true);
       await old?.dispose();
       if (!mounted) return;
-      bytes = await Navigator.of(context).push<Uint8List>(
-        MaterialPageRoute(builder: (_) => const HoldFrameScreen()),
-      );
+      bytes = await Navigator.of(
+        context,
+      ).push<Uint8List>(MaterialPageRoute(builder: screen));
     } catch (error, stack) {
-      AppLog.warn('hold_frame', error, stack);
+      AppLog.warn(name, error, stack);
       if (mounted) _notify(AppLocalizations.of(context).cameraUnavailable);
     } finally {
       if (mounted) await _initializeCamera();
@@ -1502,99 +1512,93 @@ class CameraTabState extends State<CameraTab> {
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: _shootLayout(
-                top: Row(
-                  children: [
-                    // Off the picture, so the square stays clean.
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: _photoToolsButton(photo),
-                      ),
-                    ),
-                    Text(
-                      l10n.composerTitle,
-                      style: const TextStyle(
-                        fontFamily: NeoFont.display,
-                        color: NeoColors.ink,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: _statusBadge(photo),
-                      ),
-                    ),
-                  ],
+          top: Row(
+            children: [
+              // Off the picture, so the square stays clean.
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _photoToolsButton(photo),
                 ),
-                // The quest card stays laid out (unseen) under the pill; the
-                // slot is at least tall enough for the pill and APPLY below it.
-                strip: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const SizedBox(height: 112),
-                    Visibility(
-                      visible: false,
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: QuestStrip(
-                        store: widget.player,
-                        onTap: widget.onOpenQuestSheet,
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: Center(
-                        child:
-                            _processing &&
-                                photo.status == ProcessingStatus.pending
-                            ? NeoProgress(
-                                value: _progress <= 0 ? null : _progress,
-                                label: styleWorkingLabel(l10n, photo.styleType),
-                              )
-                            : _buildStylePill(photo: photo),
-                      ),
-                    ),
-                  ],
-                ),
-                square: _draftViewfinder(photo, composer),
-                controls: Row(
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: NeoIconButton(
-                          icon: Icons.close,
-                          tooltip: l10n.printDiscard,
-                          fill: NeoColors.coral,
-                          size: 54,
-                          onPressed: _posting
-                              ? null
-                              : () => _discardPrint(photo),
-                        ),
-                      ),
-                    ),
-                    _sendButton(enabled: canSend, busy: _posting),
-                    Expanded(
-                      child: Center(
-                        child: NeoIconButton(
-                          icon: Icons.tune_rounded,
-                          tooltip: l10n.postOptionsTooltip,
-                          // Lit while any option is on.
-                          fill: hasOptions
-                              ? NeoColors.accent
-                              : NeoColors.surface,
-                          size: 54,
-                          onPressed: _posting
-                              ? null
-                              : () => _showPostOptions(composer),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                footer: _recipientsRow(composer),
               ),
+              Text(
+                l10n.composerTitle,
+                style: const TextStyle(
+                  fontFamily: NeoFont.display,
+                  color: NeoColors.ink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: _statusBadge(photo),
+                ),
+              ),
+            ],
+          ),
+          // The quest card stays laid out (unseen) under the pill; the
+          // slot is at least tall enough for the pill and APPLY below it.
+          strip: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const SizedBox(height: 112),
+              Visibility(
+                visible: false,
+                maintainSize: true,
+                maintainAnimation: true,
+                maintainState: true,
+                child: QuestStrip(
+                  store: widget.player,
+                  onTap: widget.onOpenQuestSheet,
+                ),
+              ),
+              Positioned.fill(
+                child: Center(
+                  child: _processing && photo.status == ProcessingStatus.pending
+                      ? NeoProgress(
+                          value: _progress <= 0 ? null : _progress,
+                          label: styleWorkingLabel(l10n, photo.styleType),
+                        )
+                      : _buildStylePill(photo: photo),
+                ),
+              ),
+            ],
+          ),
+          square: _draftViewfinder(photo, composer),
+          controls: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: NeoIconButton(
+                    icon: Icons.close,
+                    tooltip: l10n.printDiscard,
+                    fill: NeoColors.coral,
+                    size: 54,
+                    onPressed: _posting ? null : () => _discardPrint(photo),
+                  ),
+                ),
+              ),
+              _sendButton(enabled: canSend, busy: _posting),
+              Expanded(
+                child: Center(
+                  child: NeoIconButton(
+                    icon: Icons.tune_rounded,
+                    tooltip: l10n.postOptionsTooltip,
+                    // Lit while any option is on.
+                    fill: hasOptions ? NeoColors.accent : NeoColors.surface,
+                    size: 54,
+                    onPressed: _posting
+                        ? null
+                        : () => _showPostOptions(composer),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          footer: _recipientsRow(composer),
+        ),
       ),
     );
   }
@@ -2244,14 +2248,24 @@ class CameraTabState extends State<CameraTab> {
                   top: 18,
                   left: 0,
                   right: 0,
-                  child: Center(
-                    child: _cornerControl(
-                      icon: Icons.filter_center_focus,
-                      tooltip: AppLocalizations.of(context).holdFrameTitle,
-                      active: false,
-                      activeColor: NeoColors.accent,
-                      onPressed: _openHoldFrame,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _cornerControl(
+                        icon: Icons.filter_center_focus,
+                        tooltip: AppLocalizations.of(context).holdFrameTitle,
+                        active: false,
+                        activeColor: NeoColors.accent,
+                        onPressed: _openHoldFrame,
+                      ),
+                      _cornerControl(
+                        icon: Icons.group_add,
+                        tooltip: AppLocalizations.of(context).addMeTooltip,
+                        active: false,
+                        activeColor: NeoColors.accent,
+                        onPressed: _openAddMe,
+                      ),
+                    ],
                   ),
                 ),
               // Omni POV: the code is looked for here (started from the Friends tab).

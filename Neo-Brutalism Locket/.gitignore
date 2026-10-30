@@ -47,6 +47,7 @@ server/.env
 server/eval/photos/
 server/eval/out/
 server/eval/captured/
+server/eval/add_me_pairs/
 server/*.log
 __pycache__/
 .pytest_cache/
@@ -65,3 +66,4 @@ android/app/google-services.json
 
 # Colab upload staging (built by server/colab/pack_code.py)
 server/colab/_staging/
+
