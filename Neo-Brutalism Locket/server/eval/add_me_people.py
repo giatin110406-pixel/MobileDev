@@ -27,7 +27,9 @@ from eval.add_me import (
 
 PERSON = 0.5  # segmenter confidence that counts as "a person is here"
 SEEN_BEFORE = 0.35  # a body in shot 2 this much on shot 1's people is someone who was there
-ABSENT = 0.4  # a person of shot 1 whose area changed this much is not in shot 2
+ABSENT = 0.35  # a person of shot 1 is not in shot 2 when the model finds a person on less of their area than this...
+CHANGED = 0.4  # ...or when this much of their area changed (the newcomer may stand where they stood)
+SHARP = 6.0  # next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this
 EDGE_FRONT = 0.03  # of WORK: the newcomer's hand this close to the rim of such a person stays in front
 
 
@@ -64,7 +66,8 @@ def guided(guide: np.ndarray, src: np.ndarray, r: int, eps: float) -> np.ndarray
     return np.clip(box(a) * guide + box(b), 0, 1)
 
 
-def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, segment) -> np.ndarray:
+def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, segment,
+                 olds_w: np.ndarray | None = None) -> np.ndarray:
     """Soft opacity of the person at full size. `person_w` is the person's outline at working
     size; the model sees a crop of just them (about 3x the detail), and the edge is snapped to the
     photo's own edges in a band around the outline with a guided filter."""
@@ -95,6 +98,12 @@ def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, seg
     r = max(3, round(GUIDE_RADIUS * side))
     snapped = guided(guide, alpha, r, GUIDE_EPS)
     alpha = np.where(outer & ~inner, snapped, alpha)
+    if olds_w is not None:
+        # Where the newcomer's edge meets someone of shot 1 it is a body in front of a body, not a
+        # person against a wall: a soft edge there shows as both of them half see-through.
+        olds = cv2.resize(olds_w.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST)
+        near_old = cv2.dilate(olds, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4 * band + 1, 4 * band + 1))) > 0
+        alpha = np.where(near_old, np.clip((alpha - 0.5) * SHARP + 0.5, 0, 1), alpha).astype(np.float32)
     alpha *= (valid > 128)  # nothing from where the second shot has no picture
     return np.clip(alpha, 0, 1)
 
@@ -190,7 +199,7 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
     gone = np.zeros(p1.shape, bool)
     for lab in range(1, n_old):
         blob = old_labels == lab
-        if blob.sum() >= MIN_PERSON_AREA * total and changed[blob].mean() > ABSENT:
+        if blob.sum() >= MIN_PERSON_AREA * total and (p2[blob].mean() < ABSENT or changed[blob].mean() > CHANGED):
             gone |= blob
     info["gone_people"] = int(gone.any())
     person = whole & ~((p1 & ~gone) & ~changed)
@@ -209,7 +218,7 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
 
     h, w = shot_1.shape[:2]
     if refine:
-        soft = refine_alpha(moved, person, valid, segment)
+        soft = refine_alpha(moved, person, valid, segment, p1)
         soft = cv2.GaussianBlur(soft, (0, 0), 0.8)
     else:
         soft = cv2.dilate(person, np.ones((3, 3), np.uint8)).astype(np.float32)
