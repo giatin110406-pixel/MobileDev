@@ -200,11 +200,21 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
     _ => l.addMeFailed,
   };
 
+  static bool _closeEnough(HoldFrameUpdate a) =>
+      a.state == 'adjust' &&
+      a.dx.abs() <= .08 &&
+      a.dy.abs() <= .08 &&
+      a.roll.abs() <= 5 &&
+      (a.scale - 1).abs() <= .1;
+
   String _guide(AppLocalizations l) {
     final a = _alignment;
     if (a == null || a.reason == 'stale') return l.holdFrameStale;
     if (a.state == 'unsure') return l.holdFrameUnsure;
     if (a.state == 'aligned') return l.addMeAligned;
+    // The merge copes with a frame that is a little off: say so instead of
+    // asking for an exact match.
+    if (_closeEnough(a)) return l.addMeCloseEnough;
     return [
       if (a.dx.abs() > .03) a.dx > 0 ? l.holdFrameRight : l.holdFrameLeft,
       if (a.dy.abs() > .03) a.dy > 0 ? l.holdFrameDown : l.holdFrameUp,
@@ -327,7 +337,9 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
             ),
           if (_opening || _busy || _step == _Step.merging)
             const Center(child: CircularProgressIndicator()),
-          if (_step == _Step.second && a?.state == 'aligned')
+          if (_step == _Step.second &&
+              a != null &&
+              (a.state == 'aligned' || _closeEnough(a)))
             const Positioned(
               top: 12,
               right: 12,

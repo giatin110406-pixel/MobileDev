@@ -3289,21 +3289,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addMeTooltip => 'Add me to the group photo';
 
   @override
-  String get addMeStep1 =>
-      '1/2 · Take the group. Leave a gap for yourself, and everyone keeps still.';
+  String get addMeStep1 => '1/2 · Take the group, leaving a gap for yourself.';
 
   @override
   String get addMeShootFirst => 'TAKE THE GROUP';
 
   @override
   String get addMeStep2 =>
-      '2/2 · Hand the phone to someone in the group and step into the gap. They line the faint picture up with the scene, then take it.';
+      '2/2 · Hand the phone to someone in the group and step into the gap. They stand about where you stood and get the faint picture roughly over the scene. It does not have to match exactly, and people moving a little is fine.';
 
   @override
   String get addMeShootSecond => 'TAKE IT WITH ME';
 
   @override
   String get addMeAligned => 'Lined up. Take it.';
+
+  @override
+  String get addMeCloseEnough => 'Close enough, take it.';
 
   @override
   String get addMeMerging => 'Putting you in…';

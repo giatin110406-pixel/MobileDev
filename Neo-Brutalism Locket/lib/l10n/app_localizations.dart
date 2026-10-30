@@ -5735,7 +5735,7 @@ abstract class AppLocalizations {
   /// No description provided for @addMeStep1.
   ///
   /// In vi, this message translates to:
-  /// **'1/2 · Chụp cả nhóm. Chừa một chỗ trống cho bạn, mọi người đứng yên.'**
+  /// **'1/2 · Chụp cả nhóm, chừa một chỗ cho bạn.'**
   String get addMeStep1;
 
   /// No description provided for @addMeShootFirst.
@@ -5747,7 +5747,7 @@ abstract class AppLocalizations {
   /// No description provided for @addMeStep2.
   ///
   /// In vi, this message translates to:
-  /// **'2/2 · Đưa máy cho một người trong nhóm rồi vào đứng chỗ trống. Người cầm máy canh bóng mờ cho khớp với cảnh rồi chụp.'**
+  /// **'2/2 · Đưa máy cho một người trong nhóm rồi vào chỗ trống. Người cầm máy đứng gần chỗ bạn vừa đứng, canh bóng mờ gần giống là được. Không cần khớp hoàn toàn, ai nhúc nhích cũng không sao.'**
   String get addMeStep2;
 
   /// No description provided for @addMeShootSecond.
@@ -5761,6 +5761,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đã khớp khung. Chụp đi.'**
   String get addMeAligned;
+
+  /// No description provided for @addMeCloseEnough.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gần khớp rồi, chụp được.'**
+  String get addMeCloseEnough;
 
   /// No description provided for @addMeMerging.
   ///

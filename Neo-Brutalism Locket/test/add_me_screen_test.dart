@@ -140,6 +140,12 @@ void main() {
     camera.controller.add(const HoldFrameUpdate(state: 'adjust', dx: .2));
     await t.pump(const Duration(milliseconds: 20));
     expect(find.text(l.holdFrameRight), findsOneWidget);
+    // A little off is good enough for the merge, and the helper is told so.
+    camera.controller.add(
+      const HoldFrameUpdate(state: 'adjust', dx: .05, roll: 3),
+    );
+    await t.pump(const Duration(milliseconds: 20));
+    expect(find.text(l.addMeCloseEnough), findsOneWidget);
     camera.controller.add(const HoldFrameUpdate(state: 'aligned'));
     await t.pump(const Duration(milliseconds: 20));
     expect(find.text(l.addMeAligned), findsOneWidget);

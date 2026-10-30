@@ -3237,21 +3237,23 @@ class AppLocalizationsVi extends AppLocalizations {
   String get addMeTooltip => 'Thêm tôi vào ảnh nhóm';
 
   @override
-  String get addMeStep1 =>
-      '1/2 · Chụp cả nhóm. Chừa một chỗ trống cho bạn, mọi người đứng yên.';
+  String get addMeStep1 => '1/2 · Chụp cả nhóm, chừa một chỗ cho bạn.';
 
   @override
   String get addMeShootFirst => 'CHỤP NHÓM';
 
   @override
   String get addMeStep2 =>
-      '2/2 · Đưa máy cho một người trong nhóm rồi vào đứng chỗ trống. Người cầm máy canh bóng mờ cho khớp với cảnh rồi chụp.';
+      '2/2 · Đưa máy cho một người trong nhóm rồi vào chỗ trống. Người cầm máy đứng gần chỗ bạn vừa đứng, canh bóng mờ gần giống là được. Không cần khớp hoàn toàn, ai nhúc nhích cũng không sao.';
 
   @override
   String get addMeShootSecond => 'CHỤP CÓ TÔI';
 
   @override
   String get addMeAligned => 'Đã khớp khung. Chụp đi.';
+
+  @override
+  String get addMeCloseEnough => 'Gần khớp rồi, chụp được.';
 
   @override
   String get addMeMerging => 'Đang ghép bạn vào…';
