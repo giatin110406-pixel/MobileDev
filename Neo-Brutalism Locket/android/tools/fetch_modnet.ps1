@@ -1,5 +1,6 @@
 # Downloads the MODNet portrait-matting model (Apache-2.0) that "add me" uses for the edge of the
-# person. Without it the feature still works, with a coarser edge.
+# person. The file is already in git (android/app/src/main/assets/modnet.onnx); this restores it if
+# it is lost or replaced. Without it the feature still works, with a coarser edge.
 #   powershell -File android/tools/fetch_modnet.ps1
 $ErrorActionPreference = 'Stop'
 $url = 'https://huggingface.co/onnx-community/modnet-webnn/resolve/main/onnx/model.onnx'

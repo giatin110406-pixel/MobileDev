@@ -18,8 +18,9 @@ import kotlin.math.roundToInt
  * run with ONNX Runtime on the device. It gives a soft opacity with hair-fine edges, where the
  * selfie segmenter only gives a coarse outline.
  *
- * The model file is the asset `modnet.onnx` (see android/tools/fetch_modnet.ps1; it is not in
- * git). When it is missing or cannot run, [alpha] throws and the caller keeps the coarser edge.
+ * The model file is the asset `modnet.onnx` (26 MB, in git; android/tools/fetch_modnet.ps1 restores
+ * it and checks its SHA-256). When it is missing or cannot run, [alpha] throws and the caller keeps
+ * the coarser edge.
  */
 object Matting {
     private const val ASSET = "modnet.onnx"

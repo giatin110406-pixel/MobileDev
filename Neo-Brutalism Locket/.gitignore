@@ -67,5 +67,3 @@ android/app/google-services.json
 # Colab upload staging (built by server/colab/pack_code.py)
 server/colab/_staging/
 
-# Matting model for "add me" (android/tools/fetch_modnet.ps1 downloads it)
-android/app/src/main/assets/modnet.onnx
