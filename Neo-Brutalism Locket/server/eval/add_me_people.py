@@ -44,7 +44,60 @@ def change_threshold(d: np.ndarray) -> float:
     return max(18.0, med + 5.0 * mad)
 
 
-def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment) -> AddMeResult:
+BAND = 0.0075  # of the long side: how far from the first outline the edge may still move
+GUIDE_RADIUS = 0.005
+GUIDE_EPS = 1e-3
+CROP_MARGIN = 0.15
+CROP_SIDE = 768  # the person's crop is segmented at this size, so the model's grid is spent on them
+
+
+def guided(guide: np.ndarray, src: np.ndarray, r: int, eps: float) -> np.ndarray:
+    """He et al.'s guided filter, grey guide, box filters only (the same maths is in AddMeMerger.kt)."""
+    box = lambda a: cv2.boxFilter(a, -1, (2 * r + 1, 2 * r + 1), borderType=cv2.BORDER_REPLICATE)
+    mean_i, mean_p = box(guide), box(src)
+    var_i = box(guide * guide) - mean_i * mean_i
+    cov_ip = box(guide * src) - mean_i * mean_p
+    a = cov_ip / (var_i + eps)
+    b = mean_p - a * mean_i
+    return np.clip(box(a) * guide + box(b), 0, 1)
+
+
+def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, segment) -> np.ndarray:
+    """Soft opacity of the person at full size. `person_w` is the person's outline at working
+    size; the model sees a crop of just them (about 3x the detail), and the edge is snapped to the
+    photo's own edges in a band around the outline with a guided filter."""
+    h, w = moved.shape[:2]
+    side = max(h, w)
+    hard = cv2.resize(person_w.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR) > 0.5
+    ys, xs = np.where(hard)
+    if len(xs) == 0:
+        return hard.astype(np.float32)
+    mx, my = int((xs.max() - xs.min()) * CROP_MARGIN) + 8, int((ys.max() - ys.min()) * CROP_MARGIN) + 8
+    x0, x1 = max(0, xs.min() - mx), min(w, xs.max() + mx + 1)
+    y0, y1 = max(0, ys.min() - my), min(h, ys.max() + my + 1)
+    crop = moved[y0:y1, x0:x1]
+    f = CROP_SIDE / max(crop.shape[:2])
+    small = cv2.resize(crop, None, fx=f, fy=f, interpolation=cv2.INTER_AREA if f < 1 else cv2.INTER_CUBIC)
+    conf = np.zeros((h, w), np.float32)
+    conf[y0:y1, x0:x1] = cv2.resize(segment(small), (x1 - x0, y1 - y0), interpolation=cv2.INTER_LINEAR)
+
+    band = max(4, round(BAND * side))
+    k = 2 * band + 1
+    ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+    outer = cv2.dilate(hard.astype(np.uint8), ker) > 0
+    inner = cv2.erode(hard.astype(np.uint8), ker) > 0
+    alpha = np.where(inner, 1.0, np.where(outer, conf, 0.0)).astype(np.float32)
+    # Where the model hesitates inside the old outline, trust the outline.
+    alpha = np.where(hard & ~inner, np.maximum(alpha, 0.5 * conf + 0.5 * hard), alpha).astype(np.float32)
+    guide = cv2.cvtColor(moved, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255
+    r = max(3, round(GUIDE_RADIUS * side))
+    snapped = guided(guide, alpha, r, GUIDE_EPS)
+    alpha = np.where(outer & ~inner, snapped, alpha)
+    alpha *= (valid > 128)  # nothing from where the second shot has no picture
+    return np.clip(alpha, 0, 1)
+
+
+def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool = True) -> AddMeResult:
     moved, valid, info = align(shot_1, shot_2)
     if moved is None:
         return AddMeResult(False, REASON_ALIGN, info=info)
@@ -95,9 +148,13 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment) -> AddMeResul
         return AddMeResult(False, REASON_TOO_LARGE, info=info)
 
     h, w = shot_1.shape[:2]
-    soft = cv2.dilate(person, np.ones((3, 3), np.uint8)).astype(np.float32)
-    soft = cv2.resize(soft, (w, h), interpolation=cv2.INTER_LINEAR)
-    soft = np.clip(cv2.GaussianBlur(soft, (0, 0), max(1.5, 0.003 * max(h, w))), 0, 1)
+    if refine:
+        soft = refine_alpha(moved, person, valid, segment)
+        soft = cv2.GaussianBlur(soft, (0, 0), 0.8)
+    else:
+        soft = cv2.dilate(person, np.ones((3, 3), np.uint8)).astype(np.float32)
+        soft = cv2.resize(soft, (w, h), interpolation=cv2.INTER_LINEAR)
+        soft = np.clip(cv2.GaussianBlur(soft, (0, 0), max(1.5, 0.003 * max(h, w))), 0, 1)
     out = shot_1.astype(np.float32) * (1 - soft[..., None]) + moved.astype(np.float32) * soft[..., None]
     return AddMeResult(True, None, np.clip(out, 0, 255).astype(np.uint8), soft, info)
 
@@ -106,6 +163,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", type=Path, required=True)
     ap.add_argument("--save", action="store_true", help="write <name>_people.jpg next to each pair")
+    ap.add_argument("--plain", action="store_true", help="the first outline, no edge refinement")
     args = ap.parse_args()
     manifest = json.loads((args.set / "manifest.json").read_text(encoding="utf-8"))
     segment = Segmenter()
@@ -113,7 +171,7 @@ def main() -> None:
     for name, kind in manifest.items():
         s1 = cv2.imread(str(args.set / f"{name}_1.jpg"))
         s2 = cv2.imread(str(args.set / f"{name}_2.jpg"))
-        r = add_me_people(s1, s2, segment)
+        r = add_me_people(s1, s2, segment, refine=not args.plain)
         row = {"name": name, "ok": r.ok, "reason": r.reason}
         truth_path = args.set / f"{name}_truth.png"
         if r.ok and truth_path.exists():
