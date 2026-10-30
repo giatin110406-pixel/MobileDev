@@ -11,6 +11,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 from .search_service import SearchRequest, SearchBusy
+from .search_lexicon import lookup
 from .search_terms import SYNONYMS
 
 
@@ -65,6 +66,15 @@ class QueryParser:
         import re
         if re.search(r'\b(không có|khong co|without|not showing|không phải|khong phai)\b', request.text.lower()):
             return dict(query=request.rules.model_dump(mode='json'), declined=True)
+        # Everyday words come from the lexicon (instant, no guessing); only what it cannot
+        # explain is left to the model.
+        known, unexplained = lookup(request.visual_text)
+        if known and not unexplained:
+            values = request.rules.model_dump()
+            values.update(terms=known[:8], name_only=False)
+            return dict(query=SearchRequest.model_validate(values).model_dump(mode='json'), declined=False)
+        if known:
+            request = request.model_copy(update=dict(visual_text=unexplained))
         output = ModelQuery.model_validate(json.loads(self.generate(prompt_for(request))))
         values = request.rules.model_dump()
         valid_friends = {str(f.id) for f in request.friends}
@@ -81,7 +91,7 @@ class QueryParser:
         # The model cannot turn an object query into "all photos" or assert a person's name.
         if output.name_only:
             return dict(query=request.rules.model_dump(mode='json'), declined=True)
-        values['terms'] = output.terms
+        values['terms'] = list(dict.fromkeys([*known, *output.terms]))[:8]
         values['name_only'] = False
         query = SearchRequest.model_validate(values)
         if not query.terms:

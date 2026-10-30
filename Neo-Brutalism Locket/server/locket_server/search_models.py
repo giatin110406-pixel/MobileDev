@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import os
+import re
 from pathlib import Path
 import threading
 import tempfile
@@ -54,9 +55,16 @@ class LocalVlm:
     def __init__(self, name='Qwen/Qwen2-VL-2B-Instruct', tag_prompt=TAG_PROMPT):
         self.name, self.tag_prompt = name, tag_prompt
         self.lock = threading.Lock()
+        self.load_lock = threading.Lock()
         self.model = None
 
     def _load(self):
+        # The start-up warm-up thread and the tag worker both call this; without the lock
+        # each loads its own copy of the model onto the 6 GB GPU.
+        with self.load_lock:
+            self._load_once()
+
+    def _load_once(self):
         if self.model is not None:
             return
         import torch
@@ -127,8 +135,12 @@ class LocalVlm:
             self._load()
             with torch.inference_mode():
                 inputs = self._inputs(self.tag_processor, self._images([data]), [self.tag_prompt])
-                out = self.model.generate(**inputs, max_new_tokens=220, do_sample=False)
-                return self.tag_processor.batch_decode(
+                out = self.model.generate(**inputs, max_new_tokens=120, do_sample=False,
+                                          repetition_penalty=1.2)
+                tags = self.tag_processor.batch_decode(
                     out[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0].strip()
+                if re.search(r'objects:\s*a,\s*b,\s*c', tags, re.I):
+                    raise ValueError('tagger copied the prompt template')
+                return tags
         finally:
             self.lock.release()

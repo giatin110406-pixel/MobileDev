@@ -41,11 +41,15 @@ REVISED_TAG_PROMPT = (
 
 # The short prompt gave fewer misses (23.3% vs 26.6%) at essentially the same wrong share
 # (~4.4% vs ~4.3%) in the fresh bf16 comparison. Keep it as the indexing default.
+#
+# On real Locket photos that prompt's "Objects: a, b, c" template was copied back verbatim
+# (7 of 8 photos), and a prompt with a concrete example made the model copy the example for
+# every photo. This wording has no template to copy; tag() pairs it with a repetition penalty
+# because without one the list loops until the token budget (about 7 s instead of 2.5 s).
 TAG_PROMPT = (
-    "List every object you can see in this photo as a comma-separated list of common "
-    "English nouns (people, animals, food, furniture, vehicles, devices, small items too). "
-    "Then write one short sentence describing the scene. Format:\n"
-    "Objects: a, b, c\nScene: ..."
+    "List every object you can see in this photo as common English nouns, separated by "
+    "commas. Start the first line with Objects: then on a new line start with Scene: and "
+    "write one short sentence about the photo."
 )
 
 # Asks the model for a probability that the term is clearly visible in the photo.

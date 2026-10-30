@@ -252,6 +252,7 @@ def search_app_factory() -> FastAPI:
             with SingleSearchProcess():
                 thread = None
                 try:
+                    threading.Thread(target=lambda: model._load(), daemon=True, name='search-warmup').start()
                     if worker:
                         thread = threading.Thread(target=worker.poll, daemon=True, name='search-tags')
                         thread.start()
