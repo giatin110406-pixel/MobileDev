@@ -99,8 +99,46 @@ def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, seg
     return np.clip(alpha, 0, 1)
 
 
+HARMONY_REACH = 0.02  # of the long side: the Poisson boundary lies this far outside the person
+HARMONY_FADE = 0.02  # of the long side: how far in from the person's rim the correction is carried
+
+
+def harmonize(shot_1: np.ndarray, moved: np.ndarray, soft: np.ndarray) -> np.ndarray:
+    """`moved` with its light made to continue shot 1's around the person (Poisson cloning). Two
+    phone shots differ in more than one overall gain (auto-exposure follows who is in frame, the
+    wall near a newcomer is brighter or darker, the white balance drifts), and without this the
+    newcomer's rim shows as a bright or dark outline. The cloning boundary lies in the background
+    just outside the person, where shot 1 and shot 2 show the same thing."""
+    h, w = moved.shape[:2]
+    pad = 16
+    reach = max(15, round(HARMONY_REACH * max(h, w)))
+    solid = (soft > 0.5).astype(np.uint8)
+    mask = cv2.dilate(solid, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1)))
+    ys, xs = np.where(mask > 0)
+    if len(xs) == 0:
+        return moved.astype(np.float32)
+    x0, x1 = max(0, xs.min() - pad), min(w, xs.max() + 1 + pad)
+    y0, y1 = max(0, ys.min() - pad), min(h, ys.max() + 1 + pad)
+    border = lambda a: cv2.copyMakeBorder(a[y0:y1, x0:x1], pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+    src, dst = border(moved), border(shot_1)
+    m = cv2.copyMakeBorder(mask[y0:y1, x0:x1] * 255, pad, pad, pad, pad, cv2.BORDER_CONSTANT, value=0)
+    box = cv2.boundingRect(m)
+    try:
+        out = cv2.seamlessClone(src, dst, m, (box[0] + box[2] // 2, box[1] + box[3] // 2), cv2.NORMAL_CLONE)
+    except cv2.error:
+        return moved.astype(np.float32)
+    # What Poisson changed is a smooth correction; keep it at the rim, where the outline would
+    # show, and fade it out going into the person so they keep the look they were taken with.
+    depth = cv2.distanceTransform(solid[y0:y1, x0:x1], cv2.DIST_L2, 3)
+    weight = np.exp(-depth / (HARMONY_FADE * max(h, w)))[..., None]
+    part = moved[y0:y1, x0:x1].astype(np.float32)
+    lit = moved.astype(np.float32).copy()
+    lit[y0:y1, x0:x1] = part + (out[pad:pad + (y1 - y0), pad:pad + (x1 - x0)].astype(np.float32) - part) * weight
+    return lit
+
+
 def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool = True,
-                  layer: str = "behind") -> AddMeResult:
+                  layer: str = "behind", relight: bool = True) -> AddMeResult:
     moved, valid, info = align(shot_1, shot_2)
     if moved is None:
         return AddMeResult(False, REASON_ALIGN, info=info)
@@ -177,7 +215,8 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
         soft = cv2.dilate(person, np.ones((3, 3), np.uint8)).astype(np.float32)
         soft = cv2.resize(soft, (w, h), interpolation=cv2.INTER_LINEAR)
         soft = np.clip(cv2.GaussianBlur(soft, (0, 0), max(1.5, 0.003 * max(h, w))), 0, 1)
-    out = shot_1.astype(np.float32) * (1 - soft[..., None]) + moved.astype(np.float32) * soft[..., None]
+    lit = harmonize(shot_1, moved, soft) if relight else moved.astype(np.float32)
+    out = shot_1.astype(np.float32) * (1 - soft[..., None]) + lit * soft[..., None]
     return AddMeResult(True, None, np.clip(out, 0, 255).astype(np.uint8), soft, info)
 
 

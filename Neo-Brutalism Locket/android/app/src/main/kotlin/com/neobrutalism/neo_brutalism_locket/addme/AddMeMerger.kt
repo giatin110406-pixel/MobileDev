@@ -5,6 +5,7 @@ import org.opencv.core.*
 import org.opencv.features2d.DescriptorMatcher
 import org.opencv.features2d.SIFT
 import org.opencv.imgproc.Imgproc
+import org.opencv.photo.Photo
 import kotlin.math.*
 
 /**
@@ -65,6 +66,10 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         const val CROP_MARGIN = 0.15
         /** The person's crop is segmented at this size, so the model's grid is spent on them. */
         const val CROP_SIDE = 768
+        /** Of the long side: the Poisson boundary lies this far outside the person. */
+        const val HARMONY_REACH = 0.02
+        /** Of the long side: how far in from the person's rim the correction is carried. */
+        const val HARMONY_FADE = 0.02
     }
 
     fun merge(shot1: Mat, shot2: Mat): Result {
@@ -227,7 +232,9 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
     /** shot 1 with the newcomer ([outline]) laid on it. [tag] names the debug pictures. */
     private fun lay(shot1: Mat, moved: Mat, outline: Mat, valid: Mat, tag: String): Mat {
         val (alpha, rect) = refineAlpha(moved, outline, valid, tag)
-        val image = blend(shot1, moved, alpha, rect)
+        val lit = harmonize(shot1, moved, alpha, rect)
+        val image = blend(shot1, lit, alpha, rect)
+        lit.release()
         alpha.release()
         fillBlackBorders(image, moved, valid)
         return image
@@ -511,6 +518,65 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         Core.min(q, Scalar(1.0), q); Core.max(q, Scalar(0.0), q)
         listOf(tmp, meanI, meanP, corrI, corrIP, varI, covIP, a, b, meanA, meanB).forEach { it.release() }
         return q
+    }
+
+    /**
+     * [moved] with its light made to continue shot 1's around the person (Poisson cloning). Two
+     * phone shots differ in more than one overall gain (auto-exposure follows who is in frame, the
+     * wall near a newcomer is brighter or darker, the white balance drifts), and without this the
+     * newcomer's rim shows as a bright or dark outline. The cloning boundary lies in the background
+     * just outside the person, where both shots show the same thing. A copy of [moved].
+     */
+    private fun harmonize(shot1: Mat, moved: Mat, alpha: Mat, rect: Rect): Mat {
+        val result = moved.clone()
+        val pad = 16
+        val side = max(moved.rows(), moved.cols())
+        val reach = max(15, (HARMONY_REACH * side).roundToInt())
+        val solid = Mat(); val solid8 = Mat(); val mask = Mat()
+        val ker = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(2.0 * reach + 1, 2.0 * reach + 1))
+        val src = Mat(); val dst = Mat(); val padded = Mat(); val cloned = Mat()
+        try {
+            Imgproc.threshold(alpha, solid, 0.5, 255.0, Imgproc.THRESH_BINARY)
+            solid.convertTo(solid8, CvType.CV_8UC1)
+            Imgproc.dilate(solid8, mask, ker)
+            Core.copyMakeBorder(moved.submat(rect), src, pad, pad, pad, pad, Core.BORDER_REPLICATE)
+            Core.copyMakeBorder(shot1.submat(rect), dst, pad, pad, pad, pad, Core.BORDER_REPLICATE)
+            Core.copyMakeBorder(mask, padded, pad, pad, pad, pad, Core.BORDER_CONSTANT, Scalar(0.0))
+            val box = Imgproc.boundingRect(padded)
+            if (box.width == 0 || box.height == 0) return result
+            Photo.seamlessClone(
+                src, dst, padded, Point(box.x + box.width / 2.0, box.y + box.height / 2.0),
+                cloned, Photo.NORMAL_CLONE,
+            )
+            // What Poisson changed is a smooth correction; keep it at the rim, where the outline
+            // would show, and fade it out going into the person so they keep the look they were
+            // taken with.
+            val depth = Mat()
+            Imgproc.distanceTransform(solid8, depth, Imgproc.DIST_L2, 3)
+            val n = rect.width * rect.height
+            val d = FloatArray(n).also { depth.get(0, 0, it) }
+            depth.release()
+            val before = ByteArray(n * 3).also { moved.submat(rect).get(0, 0, it) }
+            val after = ByteArray(n * 3)
+            cloned.submat(Rect(pad, pad, rect.width, rect.height)).get(0, 0, after)
+            val fade = HARMONY_FADE * side
+            val mixed = ByteArray(n * 3)
+            for (y in 0 until rect.height) for (x in 0 until rect.width) {
+                val wgt = exp(-d[y * rect.width + x] / fade)
+                for (c in 0 until 3) {
+                    val i = (y * rect.width + x) * 3 + c
+                    val a = before[i].toInt() and 0xff
+                    val b = after[i].toInt() and 0xff
+                    mixed[i] = (a + (b - a) * wgt).roundToInt().coerceIn(0, 255).toByte()
+                }
+            }
+            result.submat(rect).put(0, 0, mixed)
+        } catch (e: CvException) {
+            // Keep the picture as it is: better a faint rim than no merge.
+        } finally {
+            listOf(solid, solid8, mask, ker, src, dst, padded, cloned).forEach { it.release() }
+        }
+        return result
     }
 
     /** shot1 with [moved] laid over it by [alpha], which covers [rect] only. */
