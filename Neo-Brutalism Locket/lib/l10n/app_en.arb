@@ -1889,7 +1889,7 @@
       }
     }
   },
-  "stripLoadFailed":"The photos could not be loaded. Check your connection and try again.",
+  "stripLoadFailed": "The photos could not be loaded. Check your connection and try again.",
   "stripTextLabel": "WORDS ON THE STRIP",
   "stripZoomHint": "TAP TO ZOOM",
   "stripPaperGrid": "2×3 GRID (6 PHOTOS)",
@@ -2013,6 +2013,18 @@
   "rewindPickUse": "USE THIS FRAME",
   "photoToolsTooltip": "Photo tools",
   "photoToolsTitle": "PHOTO TOOLS",
+  "searchV2Setup": "AI SEARCH ON LAPTOP",
+  "searchV2Privacy": "Your search and photos are processed on the laptop you connect to. When it is unavailable, the app uses quick results on your phone.",
+  "searchQuickResults": "QUICK RESULTS",
+  "searchUnsupported": "This kind of search is not supported yet. Describe visible objects in the photo.",
+  "searchPending": "{count} photos are not ready for visual search yet.",
+  "@searchPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "holdFrameTitle": "HOLD MY FRAME",
   "holdFrameIntro": "Choose your composition and lock it. Hand the phone to a friend to take your photo. Keep people and the scene still.",
   "holdFrameChoose": "Choose your composition, then lock the frame.",

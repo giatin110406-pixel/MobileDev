@@ -10,6 +10,7 @@ import 'package:neo_brutalism_locket/features/posts/video_views.dart';
 import 'package:neo_brutalism_locket/features/quest/quest_catalog.dart';
 import 'package:neo_brutalism_locket/features/search/photo_search.dart';
 import 'package:neo_brutalism_locket/features/search/search_query.dart';
+import 'package:neo_brutalism_locket/features/image_engine/remote/server_settings_sheet.dart';
 import 'package:neo_brutalism_locket/features/social/social_repository.dart';
 import 'package:neo_brutalism_locket/features/social/social_views.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
@@ -67,6 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   SearchOutcome? _outcome;
   bool _searching = false;
   bool _searchFailed = false;
+  int _searchGeneration = 0;
 
   /// While the Vietnamese pack downloads.
   bool _downloading = false;
@@ -97,6 +99,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final text = _searchText.text.trim();
     if (search == null) return;
     if (text.isEmpty) return _clearSearch();
+    final generation = ++_searchGeneration;
     final vietnamese = Localizations.localeOf(context).languageCode == 'vi';
     _pinned = pin;
     setState(() {
@@ -111,16 +114,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
         pinFriend: pin,
         myNames: widget.myNames,
       );
-      if (mounted) setState(() => _outcome = outcome);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => _outcome = outcome);
+      }
     } catch (e, st) {
       AppLog.warn('history_search', e, st);
-      if (mounted) setState(() => _searchFailed = true);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => _searchFailed = true);
+      }
     } finally {
-      if (mounted) setState(() => _searching = false);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => _searching = false);
+      }
     }
   }
 
   void _clearSearch() {
+    _searchGeneration++;
     _searchText.clear();
     FocusScope.of(context).unfocus();
     setState(() {
@@ -362,6 +372,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
         ),
+        IconButton(
+          tooltip: l10n.searchV2Setup,
+          icon: const Icon(Icons.dns_outlined, size: 18, color: NeoColors.ink),
+          onPressed: () => showServerSettingsSheet(context, forSearch: true),
+        ),
         if (_searchText.text.isNotEmpty || _searchActive)
           IconButton(
             tooltip: l10n.searchClear,
@@ -391,6 +406,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (from != null && until != null) _dateLabel(from, until),
       if (fromHour != null && untilHour != null) '${fromHour}h–${untilHour}h',
       if (outcome != null) l10n.searchResults(outcome.posts.length),
+      if (outcome?.quickResults ?? false) l10n.searchQuickResults,
     ];
     return SizedBox(
       height: 40,
@@ -498,7 +514,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
           if (needsPack) SliverToBoxAdapter(child: _downloadCard(l10n)),
           if (outcome?.declined ?? false)
             SliverToBoxAdapter(child: _notice(l10n.searchCantTell)),
-          if (posts.isEmpty && !needsPack && !(outcome?.declined ?? false))
+          if (outcome?.v2Declined ?? false)
+            SliverToBoxAdapter(child: _notice(l10n.searchUnsupported)),
+          if ((outcome?.pending ?? 0) > 0)
+            SliverToBoxAdapter(
+              child: _notice(l10n.searchPending(outcome!.pending)),
+            ),
+          if (posts.isEmpty &&
+              !needsPack &&
+              !(outcome?.declined ?? false) &&
+              !(outcome?.v2Declined ?? false))
             SliverToBoxAdapter(child: _notice(l10n.searchNoResults)),
           // One list, best match first. Scores of the best photos are often
           // within 0.01 of each other, so a "sure" / "maybe" line between them

@@ -5480,6 +5480,36 @@ abstract class AppLocalizations {
   /// **'CÔNG CỤ ẢNH'**
   String get photoToolsTitle;
 
+  /// No description provided for @searchV2Setup.
+  ///
+  /// In vi, this message translates to:
+  /// **'TÌM KIẾM AI TRÊN LAPTOP'**
+  String get searchV2Setup;
+
+  /// No description provided for @searchV2Privacy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Câu tìm kiếm và ảnh được xử lý trên laptop bạn kết nối. Khi không kết nối được, app dùng kết quả nhanh trên điện thoại.'**
+  String get searchV2Privacy;
+
+  /// No description provided for @searchQuickResults.
+  ///
+  /// In vi, this message translates to:
+  /// **'KẾT QUẢ NHANH'**
+  String get searchQuickResults;
+
+  /// No description provided for @searchUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa hỗ trợ cách tìm này. Hãy mô tả những vật nhìn thấy trong ảnh.'**
+  String get searchUnsupported;
+
+  /// No description provided for @searchPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ảnh chưa sẵn sàng để tìm theo nội dung.'**
+  String searchPending(int count);
+
   /// No description provided for @holdFrameTitle.
   ///
   /// In vi, this message translates to:
