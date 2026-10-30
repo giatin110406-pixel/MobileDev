@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
 object Matting {
     private const val ASSET = "modnet.onnx"
     /** The picture is matted at this long side (rows and columns multiples of 32). */
-    private const val LONG_SIDE = 640
+    private const val LONG_SIDE = 512
 
     @Volatile private var assets: AssetManager? = null
 
@@ -39,6 +39,12 @@ object Matting {
         val bytes = checkNotNull(assets) { "Matting.init was not called" }
             .open(ASSET).use { it.readBytes() }
         env.createSession(bytes, OrtSession.SessionOptions().apply { setIntraOpNumThreads(4) })
+    }
+
+    /** Loads the model and runs it once on a blank picture, so the first real merge does not pay for that. */
+    fun warmUp() {
+        val blank = Mat(64, 64, CvType.CV_8UC3, org.opencv.core.Scalar(127.0, 127.0, 127.0))
+        try { alpha(blank) } finally { blank.release() }
     }
 
     /** The opacity (0..1) of the person at each pixel of a BGR image, row-major, its size. */

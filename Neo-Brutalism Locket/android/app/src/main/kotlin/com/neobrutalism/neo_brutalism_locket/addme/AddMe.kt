@@ -3,6 +3,7 @@ package com.neobrutalism.neo_brutalism_locket.addme
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
+import android.util.Log
 import android.os.Looper
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
@@ -51,6 +52,13 @@ object AddMe {
         Matting.init(context)
         MethodChannel(messenger, "com.neobrutalism.neo_brutalism_locket/add_me")
             .setMethodCallHandler { call, result ->
+                if (call.method == "warmUp") {
+                    worker.execute {
+                        try { OpenCVLoader.initLocal(); Matting.warmUp() } catch (e: Throwable) { Log.w("AddMe", "warm-up failed: $e") }
+                        main.post { result.success(null) }
+                    }
+                    return@setMethodCallHandler
+                }
                 if (call.method != "merge") {
                     result.notImplemented()
                     return@setMethodCallHandler
@@ -91,7 +99,9 @@ object AddMe {
                     Imgcodecs.imwrite(File(dump, if (mat.channels() == 1) "$name.png" else "$name.jpg").path, mat)
                 }
             }
+            val started = System.nanoTime()
             val out = merger.merge(shot1, shot2)
+            Log.i("AddMe", "merge ${(System.nanoTime() - started) / 1_000_000} ms ok=${out.ok} reason=${out.reason} ${out.info}")
             dump?.let { dir ->
                 out.image?.let { Imgcodecs.imwrite(File(dir, "result.jpg").path, it) }
                 File(dir, "info.txt").writeText("ok=${out.ok} reason=${out.reason} ${out.info}")
@@ -104,6 +114,7 @@ object AddMe {
                 "reason" to out.reason,
                 "image" to image,
                 "alternative" to alternative,
+                "inFront" to out.inFront,
                 "info" to out.info.mapValues { (_, v) -> if (v is Number) v.toDouble() else v?.toString() },
             )
         } finally { shot1.release(); shot2.release() }

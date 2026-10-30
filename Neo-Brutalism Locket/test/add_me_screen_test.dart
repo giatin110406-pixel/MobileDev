@@ -65,6 +65,10 @@ class FakeMerger implements AddMeBackend {
   FakeMerger(this.answers);
   final List<AddMeOutcome> answers;
   final pairs = <(Uint8List, Uint8List)>[];
+  var warmedUp = 0;
+
+  @override
+  Future<void> warmUp() async => warmedUp++;
 
   @override
   Future<AddMeOutcome> merge(Uint8List first, Uint8List second) async {
@@ -234,5 +238,25 @@ void main() {
     await tapKey(t, 'add-me-first');
     await tapKey(t, 'add-me-second');
     expect(find.byKey(const ValueKey('add-me-layer')), findsNothing);
+  });
+
+  testWidgets('the button offers the order that is not on screen', (t) async {
+    final camera = FakeCamera();
+    final inFront = Uint8List.fromList([..._png, 20]);
+    final behind = Uint8List.fromList([..._png, 21]);
+    final merger = FakeMerger([
+      AddMeOutcome.merged(inFront, alternative: behind, inFront: true),
+    ]);
+    final popped = await open(t, camera, merger);
+    l = AppLocalizations.of(t.element(find.byType(AddMeScreen)));
+    expect(merger.warmedUp, 1);
+    await tapKey(t, 'add-me-first');
+    await tapKey(t, 'add-me-second');
+    // The newcomer is in front on screen, so the button offers behind.
+    expect(find.text(l.addMeBehindThem), findsOneWidget);
+    await tapKey(t, 'add-me-layer');
+    expect(find.text(l.addMeInFrontOfThem), findsOneWidget);
+    await tapKey(t, 'add-me-use');
+    expect(await popped.future, behind);
   });
 }

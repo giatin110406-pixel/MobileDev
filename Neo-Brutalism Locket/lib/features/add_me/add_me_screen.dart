@@ -41,7 +41,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
   Uint8List? _first;
   Uint8List? _merged;
   Uint8List? _alternative;
-  bool _inFront = false;
+  bool _showAlternative = false;
+  bool _firstInFront = false;
   String? _reason;
   HoldFrameUpdate? _alignment;
 
@@ -55,6 +56,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
       onError: (Object _) => _onUpdate(const HoldFrameUpdate(state: 'error')),
     );
     _open();
+    // The models load while the person lines up photo 1.
+    _merger.warmUp().catchError((Object _) {});
   }
 
   @override
@@ -143,7 +146,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
       setState(() {
         _merged = outcome.image;
         _alternative = outcome.alternative;
-        _inFront = false;
+        _firstInFront = outcome.inFront;
+        _showAlternative = false;
         _reason = outcome.reason;
         _step = outcome.ok ? _Step.merged : _Step.refused;
       });
@@ -164,7 +168,7 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
   void _retakeSecond() => setState(() {
     _merged = null;
     _alternative = null;
-    _inFront = false;
+    _showAlternative = false;
     _reason = null;
     _alignment = null;
     _step = _Step.second;
@@ -175,7 +179,7 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
       _first = null;
       _merged = null;
       _alternative = null;
-      _inFront = false;
+      _showAlternative = false;
       _reason = null;
       _alignment = null;
       _step = _Step.first;
@@ -215,7 +219,10 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
       a.roll.abs() <= 5 &&
       (a.scale - 1).abs() <= .1;
 
-  Uint8List? get _shown => _inFront ? _alternative : _merged;
+  Uint8List? get _shown => _showAlternative ? _alternative : _merged;
+
+  /// Whether the picture on screen has the newcomer in front of the other person.
+  bool get _shownInFront => _firstInFront != _showAlternative;
 
   String _guide(AppLocalizations l) {
     final a = _alignment;
@@ -404,11 +411,11 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
           const SizedBox(height: 10),
           NeoButton(
             key: const ValueKey('add-me-layer'),
-            label: _inFront ? l.addMeBehindThem : l.addMeInFrontOfThem,
+            label: _shownInFront ? l.addMeBehindThem : l.addMeInFrontOfThem,
             icon: Icons.layers,
             variant: NeoButtonVariant.outline,
             expand: true,
-            onPressed: () => setState(() => _inFront = !_inFront),
+            onPressed: () => setState(() => _showAlternative = !_showAlternative),
           ),
         ],
         const SizedBox(height: 10),

@@ -30,6 +30,7 @@ SEEN_BEFORE = 0.35  # a body in shot 2 this much on shot 1's people is someone w
 ABSENT = 0.35  # a person of shot 1 is not in shot 2 when the model finds a person on less of their area than this...
 CHANGED = 0.4  # ...or when this much of their area changed (the newcomer may stand where they stood)
 SHARP = 6.0  # next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this
+THIN = 0.04  # of WORK: less depth than this inside an outline is a limb, not a body
 EDGE_FRONT = 0.03  # of WORK: the newcomer's hand this close to the rim of such a person stays in front
 
 
@@ -173,8 +174,28 @@ def harmonize(shot_1: np.ndarray, moved: np.ndarray, soft: np.ndarray) -> np.nda
     return lit
 
 
+def decide_layer(person: np.ndarray, gone: np.ndarray, p2: np.ndarray, info: dict) -> str:
+    """Who is in front where the newcomer overlaps someone of shot 1 who left. An arm goes behind
+    the person it is put around (its owner's hand ends on their far shoulder), so the owner is the
+    one whose THIN part (an arm, as far as the picture shows: little depth inside its outline) is
+    in the overlap: if that is the person of shot 1, the newcomer is in front of their arm;
+    otherwise the newcomer's arm goes behind them. Without an overlap, behind."""
+    person = person & p2  # the model's own people: a laptop or a cup in the outline is not a body
+    overlap = person & gone
+    if overlap.sum() < 50:
+        return "behind"
+    reach = max(5, round(THIN * WORK / 2))
+    ring = cv2.dilate(overlap.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * reach + 1, 2 * reach + 1))) > 0
+    ring &= ~overlap
+    inside_new = float((ring & person & ~gone).sum())  # what surrounds the overlap is the newcomer alone...
+    inside_old = float((ring & gone & ~person).sum())  # ...or the person of shot 1 alone
+    info.update(around_new=inside_new, around_old=inside_old)
+    # A strip of overlap lying inside someone's body is a limb of the OTHER person put over them.
+    return "front" if inside_new > inside_old else "behind"
+
+
 def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool = True,
-                  layer: str = "behind", relight: bool = True, matte=None) -> AddMeResult:
+                  layer: str = "auto", relight: bool = True, matte=None) -> AddMeResult:
     moved, valid, info = align(shot_1, shot_2)
     if moved is None:
         return AddMeResult(False, REASON_ALIGN, info=info)
@@ -230,6 +251,8 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
             gone |= blob
     info["gone_people"] = int(gone.any())
     person = whole & ~((p1 & ~gone) & ~changed)
+    if layer == "auto":
+        layer = decide_layer(person, gone, p2, info)
     if layer == "behind" and gone.any():
         depth = cv2.distanceTransform(gone.astype(np.uint8), cv2.DIST_L2, 3)
         person = person & ~(gone & (depth > EDGE_FRONT * WORK))
@@ -260,7 +283,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", type=Path, required=True)
     ap.add_argument("--save", action="store_true", help="write <name>_people.jpg next to each pair")
-    ap.add_argument("--layer", choices=["behind", "front"], default="behind")
+    ap.add_argument("--layer", choices=["auto", "behind", "front"], default="auto")
     ap.add_argument("--no-matting", action="store_true", help="the coarse edge only")
     ap.add_argument("--plain", action="store_true", help="the first outline, no edge refinement")
     args = ap.parse_args()

@@ -41,6 +41,8 @@ class AddMeMerger(
          * the newcomer in front of them ([image] has the newcomer behind them). Owned by the caller.
          */
         val alternative: Mat? = null,
+        /** True when [image] has the newcomer in front of the person of shot 1 they overlap. */
+        val inFront: Boolean = false,
     )
 
     companion object {
@@ -74,6 +76,8 @@ class AddMeMerger(
         const val CROP_MARGIN = 0.15
         /** The person's crop is segmented at this size, so the model's grid is spent on them. */
         const val CROP_SIDE = 768
+        /** Of WORK: less depth than this inside an outline is a limb, not a body. */
+        const val THIN = 0.04
         /** Of the long side: the Poisson boundary lies this far outside the person. */
         const val HARMONY_REACH = 0.02
         /** Of the long side: how far in from the person's rim the correction is carried. */
@@ -157,24 +161,31 @@ class AddMeMerger(
             val deep = if (hasGone) deepInside(gone, h, w) else null
 
             val olds = toMat(h, w) { p1[it] }
-            val behind = outline(bodies, best.bodies, p1, gone, changed, deep, h, w)
+            val front = outline(bodies, best.bodies, p1, gone, changed, null, h, w)
+            val behind = if (hasGone) outline(bodies, best.bodies, p1, gone, changed, deep, h, w) else front
             val area = Core.countNonZero(behind) / total
             info["person_area"] = area
             if (area > MAX_PERSON_AREA) {
-                behind.release()
+                if (behind !== front) behind.release()
+                front.release(); olds.release()
                 return Result(false, REASON_TOO_LARGE, info = info)
             }
             debug?.invoke("moved", moved)
-            val image = lay(shot1, moved, behind, valid, "", olds)
-            behind.release()
+            // Which one to show first: the owner of an arm goes behind the person it is put round.
+            val frontFirst = hasGone && decideFront(front, gone, p2, h, w, info)
+            info["in_front"] = frontFirst
+            // One crop and one matte serve both orders (the widest outline contains the other).
+            val prepared = prepare(moved, front)
+            val first = if (frontFirst) front else behind
+            val image = lay(shot1, moved, first, valid, "", olds, prepared)
             var alternative: Mat? = null
             if (hasGone) {
-                val front = outline(bodies, best.bodies, p1, gone, changed, null, h, w)
-                alternative = lay(shot1, moved, front, valid, "_front", olds)
-                front.release()
+                alternative = lay(shot1, moved, if (frontFirst) behind else front, valid, "_other", olds, prepared)
             }
+            if (behind !== front) behind.release()
+            front.release()
             olds.release()
-            return Result(true, image = image, info = info, alternative = alternative)
+            return Result(true, image = image, info = info, alternative = alternative, inFront = frontFirst)
         } finally {
             moved.release()
             valid.release()
@@ -245,14 +256,76 @@ class AddMeMerger(
     }
 
     /** shot 1 with the newcomer ([outline]) laid on it. [tag] names the debug pictures. */
-    private fun lay(shot1: Mat, moved: Mat, outline: Mat, valid: Mat, tag: String, olds: Mat): Mat {
-        val (alpha, rect) = refineAlpha(moved, outline, valid, tag, olds)
+    private fun lay(
+        shot1: Mat, moved: Mat, outline: Mat, valid: Mat, tag: String, olds: Mat, prepared: Prepared,
+    ): Mat {
+        val (alpha, rect) = refineAlpha(moved, outline, valid, tag, olds, prepared)
         val lit = harmonize(shot1, moved, alpha, rect)
         val image = blend(shot1, lit, alpha, rect)
         lit.release()
         alpha.release()
         fillBlackBorders(image, moved, valid)
         return image
+    }
+
+    /**
+     * Who is in front where the newcomer overlaps someone of shot 1 who left. An arm goes behind
+     * the person it is put around (its owner's hand ends on their far shoulder), so a strip of
+     * overlap lying inside one person's body is a limb of the OTHER: when what surrounds the
+     * overlap is the newcomer alone, it is the arm of the person of shot 1, and the newcomer is in
+     * front; when it is the person of shot 1 alone, it is the newcomer's arm, and it goes behind.
+     * Without an overlap, behind. A guess from the shapes, so the screen offers the other order.
+     */
+    private fun decideFront(
+        front: Mat, gone: BooleanArray, p2: BooleanArray, h: Int, w: Int, info: MutableMap<String, Any?>,
+    ): Boolean {
+        val n = h * w
+        val outline = ByteArray(n).also { front.get(0, 0, it) }
+        // The model's own people: a laptop or a cup inside the outline is not a body.
+        val person = BooleanArray(n) { outline[it].toInt() != 0 && p2[it] }
+        val overlap = BooleanArray(n) { person[it] && gone[it] }
+        if (overlap.count { it } < 50) return false
+        val reach = max(5, (THIN * WORK / 2).roundToInt()).toDouble()
+        val m = toMat(h, w) { overlap[it] }
+        val ker = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(2 * reach + 1, 2 * reach + 1))
+        val grown = Mat()
+        Imgproc.dilate(m, grown, ker)
+        val ring = ByteArray(n).also { grown.get(0, 0, it) }
+        m.release(); grown.release(); ker.release()
+        var aroundNew = 0
+        var aroundOld = 0
+        for (i in 0 until n) {
+            if (ring[i].toInt() == 0 || overlap[i]) continue
+            if (person[i] && !gone[i]) aroundNew++
+            if (gone[i] && !person[i]) aroundOld++
+        }
+        info["around_new"] = aroundNew
+        info["around_old"] = aroundOld
+        return aroundNew > aroundOld
+    }
+
+    /** The box around the newcomer (full size), and the matting model's opacity for it when it runs. */
+    private class Prepared(val rect: Rect, val fine: FloatArray?)
+
+    private fun prepare(moved: Mat, person: Mat): Prepared {
+        val sx = moved.cols().toDouble() / person.cols()
+        val sy = moved.rows().toDouble() / person.rows()
+        val box = Imgproc.boundingRect(person)
+        val mx = (box.width * sx * CROP_MARGIN).toInt() + 8
+        val my = (box.height * sy * CROP_MARGIN).toInt() + 8
+        val rect = Rect(
+            Point(max(0.0, box.x * sx - mx), max(0.0, box.y * sy - my)),
+            Point(
+                min(moved.cols().toDouble(), (box.x + box.width) * sx + mx),
+                min(moved.rows().toDouble(), (box.y + box.height) * sy + my),
+            ),
+        )
+        // Hair-fine edge from the matting model, when it runs.
+        val fine = matte?.let { run ->
+            val piece = moved.submat(rect).clone()
+            try { run(piece) } catch (e: Throwable) { null } finally { piece.release() }
+        }
+        return Prepared(rect, fine)
     }
 
     private class Candidate(val area: Double, val bodies: Set<Int>, val seen: Double)
@@ -425,47 +498,35 @@ class AddMeMerger(
      * the outline, with a guided filter. Nothing comes from where [valid] says shot 2 has no
      * picture.
      */
-    private fun refineAlpha(moved: Mat, person: Mat, valid: Mat, tag: String, olds: Mat): Pair<Mat, Rect> {
+    private fun refineAlpha(
+        moved: Mat, person: Mat, valid: Mat, tag: String, olds: Mat, prepared: Prepared,
+    ): Pair<Mat, Rect> {
         val side = max(moved.rows(), moved.cols())
-        val sx = moved.cols().toDouble() / person.cols()
-        val sy = moved.rows().toDouble() / person.rows()
-        val box = Imgproc.boundingRect(person)
-        val mx = (box.width * sx * CROP_MARGIN).toInt() + 8
-        val my = (box.height * sy * CROP_MARGIN).toInt() + 8
-        val rect = Rect(
-            Point(max(0.0, box.x * sx - mx), max(0.0, box.y * sy - my)),
-            Point(
-                min(moved.cols().toDouble(), (box.x + box.width) * sx + mx),
-                min(moved.rows().toDouble(), (box.y + box.height) * sy + my),
-            ),
-        )
+        val rect = prepared.rect
+        val fine = prepared.fine
         val cw = rect.width; val ch = rect.height; val n = cw * ch
         val hardFull = Mat()
         Imgproc.resize(person, hardFull, moved.size(), 0.0, 0.0, Imgproc.INTER_NEAREST)
         val hard = hardFull.submat(rect).clone()
         hardFull.release()
 
-        // The model on the crop alone.
+        // Without the matting model, the selfie model on the crop alone.
         val crop = moved.submat(rect)
-        val f = CROP_SIDE.toDouble() / max(cw, ch)
-        val small = Mat()
-        Imgproc.resize(
-            crop, small,
-            Size(max(1.0, (cw * f).roundToInt().toDouble()), max(1.0, (ch * f).roundToInt().toDouble())),
-            0.0, 0.0, if (f < 1) Imgproc.INTER_AREA else Imgproc.INTER_CUBIC,
-        )
-        val smallConf = Mat(small.rows(), small.cols(), CvType.CV_32FC1)
-        smallConf.put(0, 0, segment(small))
-        small.release()
-        val confMat = Mat()
-        Imgproc.resize(smallConf, confMat, Size(cw.toDouble(), ch.toDouble()), 0.0, 0.0, Imgproc.INTER_LINEAR)
-        smallConf.release()
-        val conf = FloatArray(n).also { confMat.get(0, 0, it) }
-        confMat.release()
-        // Hair-fine edge from the matting model, when it runs.
-        val fine = matte?.let { run ->
-            val piece = crop.clone()
-            try { run(piece) } catch (e: Throwable) { null } finally { piece.release() }
+        val conf = if (fine != null) FloatArray(n) else {
+            val f = CROP_SIDE.toDouble() / max(cw, ch)
+            val small = Mat()
+            Imgproc.resize(
+                crop, small,
+                Size(max(1.0, (cw * f).roundToInt().toDouble()), max(1.0, (ch * f).roundToInt().toDouble())),
+                0.0, 0.0, if (f < 1) Imgproc.INTER_AREA else Imgproc.INTER_CUBIC,
+            )
+            val smallConf = Mat(small.rows(), small.cols(), CvType.CV_32FC1)
+            smallConf.put(0, 0, segment(small))
+            small.release()
+            val confMat = Mat()
+            Imgproc.resize(smallConf, confMat, Size(cw.toDouble(), ch.toDouble()), 0.0, 0.0, Imgproc.INTER_LINEAR)
+            smallConf.release()
+            FloatArray(n).also { confMat.get(0, 0, it) }.also { confMat.release() }
         }
 
         val band = max(4, (BAND * side).roundToInt())

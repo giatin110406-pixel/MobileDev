@@ -5669,13 +5669,13 @@ abstract class AppLocalizations {
   /// No description provided for @addMeInFrontOfThem.
   ///
   /// In vi, this message translates to:
-  /// **'TAY Ở TRƯỚC NGƯỜI KIA'**
+  /// **'TÔI Ở TRƯỚC NGƯỜI KIA'**
   String get addMeInFrontOfThem;
 
   /// No description provided for @addMeBehindThem.
   ///
   /// In vi, this message translates to:
-  /// **'TAY Ở SAU NGƯỜI KIA'**
+  /// **'TÔI Ở SAU NGƯỜI KIA'**
   String get addMeBehindThem;
 
   /// No description provided for @addMeRetakeSecond.
