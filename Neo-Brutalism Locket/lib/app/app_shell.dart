@@ -62,6 +62,8 @@ import 'package:neo_brutalism_locket/features/search/search_backend.dart';
 import 'package:neo_brutalism_locket/features/search/photo_embedding.dart';
 import 'package:neo_brutalism_locket/features/image_engine/style_engine_factory.dart';
 import 'package:neo_brutalism_locket/features/photos/archive_screen.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_actions.dart';
+import 'package:neo_brutalism_locket/features/pov/pov_qr_sheet.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_scan.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
@@ -1628,8 +1630,15 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   static const _chatPage = 4;
   static const _profilePage = 5;
 
+  /// The Friends tab's scan button: the camera comes up and looks for a friend's code.
+  void _scanPovCode() {
+    _selectTab(_cameraTab);
+    unawaited(_camera?.startPovScan());
+  }
+
   void _selectTab(int index) {
     Haptics.select();
+    if (index != _cameraTab) unawaited(_camera?.stopPovScan());
     final wasShooting = _shooting;
     // Measured now: once the camera is off screen the shutter has no place.
     final shutter = _rectOf(_shutterKey);
@@ -2124,6 +2133,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       messages: _allMessages,
       onAddFriend: _addFriend,
       onOpenFriend: _openFriend,
+      pov: _pov == null
+          ? null
+          : PovActions(
+              onShowCode: () => showPovQrSheet(context, store: _pov!),
+              onScan: _scanPovCode,
+            ),
       online: true,
       onRefresh: store.refresh,
       addLabel: l10n.friendsAdd,

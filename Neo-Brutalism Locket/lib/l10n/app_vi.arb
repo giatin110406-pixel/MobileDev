@@ -1910,6 +1910,8 @@
   },
   "povTooltip": "Omni POV: xem mình qua camera của bạn",
   "povScanTooltip": "Quét mã Omni POV của bạn",
+  "povShowCodeButton": "MÃ CỦA TÔI",
+  "povScanButton": "QUÉT MÃ",
   "povQrTitle": "XEM MÌNH QUA MÁY CỦA BẠN",
   "povQrIntro": "Bạn đang cầm máy chụp quét mã này bằng camera trong app Omni POV của họ. Khi đó bạn sẽ thấy đúng khung hình trên máy họ để chỉnh lại tư thế.",
   "povQrLeft": "Còn hiệu lực {time}",
