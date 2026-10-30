@@ -27,7 +27,6 @@ import 'package:neo_brutalism_locket/features/posts/post_composer.dart';
 import 'package:neo_brutalism_locket/features/posts/post_overlay.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_host_screen.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_repository.dart';
-import 'package:neo_brutalism_locket/features/pov/pov_qr_sheet.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_scan.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_store.dart';
 import 'package:neo_brutalism_locket/features/pov/pov_text.dart';
@@ -417,15 +416,6 @@ class CameraTabState extends State<CameraTab> {
   /// Photos taken in the session, in order, with their square JPEG.
   final _povShots = <(NeoPhoto, Uint8List)>[];
 
-  /// The button on the viewfinder: show a code, so a friend's camera shows me.
-  Future<void> _openPovQr() async {
-    final pov = widget.pov;
-    if (pov == null || _povOpen || _processing) return;
-    await _stopScan();
-    if (!mounted) return;
-    await showPovQrSheet(context, store: pov);
-  }
-
   // Looking for a code (the friend taking the photos) -------------------------------------
   // The main camera also reads QR codes (ML Kit, on the phone, inside the camera). It is
   // only on when asked for, and stops after a minute, when the shutter is pressed, or when
@@ -443,6 +433,20 @@ class CameraTabState extends State<CameraTab> {
       widget.pov != null &&
       widget.povRepository != null &&
       (_camera?.canScanCodes ?? false);
+
+  /// The Friends tab asked to look for a friend's code: the camera is brought up
+  /// (it may still be starting) and starts reading.
+  Future<void> startPovScan() async {
+    for (var attempt = 0; attempt < 20; attempt++) {
+      if (!mounted) return;
+      if (_camera?.isInitialized ?? false) break;
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    }
+    if (!_scanning) await _toggleScan();
+  }
+
+  /// Leaving the camera: the reading stops.
+  Future<void> stopPovScan() => _stopScan();
 
   Future<void> _toggleScan() async {
     if (_scanning) return _stopScan();
@@ -656,27 +660,6 @@ class CameraTabState extends State<CameraTab> {
       composer.toggleTag(viewerId);
     }
   }
-
-  /// The button on the viewfinder's lower left corner: show a code.
-  Widget _povControl() {
-    final pov = widget.pov!;
-    return _cornerControl(
-      icon: Icons.visibility_outlined,
-      tooltip: AppLocalizations.of(context).povTooltip,
-      active: pov.isWaiting,
-      activeColor: NeoColors.teal,
-      onPressed: _openPovQr,
-    );
-  }
-
-  /// The button on the lower right corner: look for a friend's code.
-  Widget _scanControl() => _cornerControl(
-    icon: Icons.qr_code_scanner,
-    tooltip: AppLocalizations.of(context).povScanTooltip,
-    active: _scanning,
-    activeColor: NeoColors.accent,
-    onPressed: _toggleScan,
-  );
 
   /// What the quest check saw or why it failed. Debug builds only: the player
   /// is never told what was detected.
@@ -2271,15 +2254,7 @@ class CameraTabState extends State<CameraTab> {
                     ),
                   ),
                 ),
-              // Omni POV: see yourself through a friend's camera. Not while
-              // recording, or in quest mode (a quest is shot live).
-              if (widget.pov != null &&
-                  widget.povRepository != null &&
-                  !_recording &&
-                  !_questMode)
-                Positioned(bottom: 8, left: 18, child: _povControl()),
-              if (_canScan && !_recording && !_questMode)
-                Positioned(bottom: 8, right: 18, child: _scanControl()),
+              // Omni POV: the code is looked for here (started from the Friends tab).
               if (_scanning)
                 Positioned.fill(
                   child: PovScanOverlay(

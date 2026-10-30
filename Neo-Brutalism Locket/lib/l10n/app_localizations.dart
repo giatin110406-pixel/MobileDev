@@ -5204,6 +5204,18 @@ abstract class AppLocalizations {
   /// **'Quét mã Omni POV của bạn'**
   String get povScanTooltip;
 
+  /// No description provided for @povShowCodeButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'MÃ CỦA TÔI'**
+  String get povShowCodeButton;
+
+  /// No description provided for @povScanButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'QUÉT MÃ'**
+  String get povScanButton;
+
   /// No description provided for @povQrTitle.
   ///
   /// In vi, this message translates to:
