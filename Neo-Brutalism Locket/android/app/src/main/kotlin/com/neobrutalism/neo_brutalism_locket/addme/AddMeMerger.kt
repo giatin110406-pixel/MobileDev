@@ -67,10 +67,6 @@ class AddMeMerger(
         const val CHANGED = 0.4
         /** Next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this. */
         const val SHARP = 6.0f
-        /** The newcomer's overlap this far out along it (of the way to its far end) is the hand: in front. */
-        const val TIP = 0.7f
-        /** Of WORK: a shorter overlap has no hand to keep. */
-        const val MIN_ARM = 0.03f
         /** Of the long side: how far from the first outline the edge may still move. */
         const val BAND = 0.0075
         const val GUIDE_RADIUS = 0.005
@@ -177,13 +173,18 @@ class AddMeMerger(
             val frontFirst = hasGone && decideFront(front, gone, p2, h, w, info)
             info["in_front"] = frontFirst
             // One crop and one matte serve both orders (the widest outline contains the other).
-            val prepared = prepare(moved, front)
-            val first = if (frontFirst) front else behind
-            val image = lay(shot1, moved, first, valid, "", olds, prepared)
-            var alternative: Mat? = null
-            if (hasGone) {
-                alternative = lay(shot1, moved, if (frontFirst) behind else front, valid, "_other", olds, prepared)
+            val prepared = prepare(moved, shot1, front, if (hasGone) gone else null)
+            // Behind someone who left: with the matting model the newcomer keeps their whole outline
+            // and is covered by that person's own matte from shot 1, so the line between them (a
+            // shirt and the fingers over it) follows the real edge; without it, the overlap is cut
+            // at working size.
+            fun order(inFront: Boolean, tag: String): Mat = when {
+                inFront || !hasGone -> lay(shot1, moved, front, valid, tag, olds, prepared)
+                prepared.occluder != null -> lay(shot1, moved, front, valid, tag, olds, prepared, prepared.occluder)
+                else -> lay(shot1, moved, behind, valid, tag, olds, prepared)
             }
+            val image = order(frontFirst, "")
+            val alternative = if (hasGone) order(!frontFirst, "_other") else null
             if (behind !== front) behind.release()
             front.release()
             olds.release()
@@ -211,7 +212,8 @@ class AddMeMerger(
         val nearBytes = ByteArray(n).also { near.get(0, 0, it) }
         val personBytes = ByteArray(n).also { person.get(0, 0, it) }
         for (i in 0 until n) {
-            if (nearBytes[i].toInt() != 0 && changed[i] && !(deep != null && deep[i])) personBytes[i] = 1
+            // Not where someone of shot 1 left: there everything "changed", the wall round a hand too.
+            if (nearBytes[i].toInt() != 0 && changed[i] && !gone[i] && !(deep != null && deep[i])) personBytes[i] = 1
         }
         person.put(0, 0, personBytes)
         near.release()
@@ -247,58 +249,29 @@ class AddMeMerger(
     }
 
     /**
-     * The part of the newcomer that goes behind the people of shot 1 they overlap: all of it except
-     * the far end of the overlap (measured from the newcomer's own body), which is the hand resting
-     * on a shoulder. The arm where it goes in and the middle of it are hidden, and where it comes
-     * out on the far side it shows again: the arm goes behind the person, the hand ends on them.
+     * Without the matting model: the part of the newcomer behind the people of shot 1 they overlap,
+     * at working size (all of the overlap; what reaches past them, like fingers over a shoulder,
+     * stays).
      */
     private fun hiddenBehind(front: Mat, gone: BooleanArray, h: Int, w: Int): BooleanArray {
         val n = h * w
         val f = ByteArray(n).also { front.get(0, 0, it) }
-        val away = toMat(h, w) { !(f[it].toInt() != 0 && !gone[it]) } // 0 where the newcomer's own body is
-        val dist = Mat()
-        Imgproc.distanceTransform(away, dist, Imgproc.DIST_L2, 3)
-        val d = FloatArray(n).also { dist.get(0, 0, it) }
-        away.release(); dist.release()
-        var far = 0f
         var overlap = 0
         var own = 0
         for (i in 0 until n) {
             if (f[i].toInt() == 0) continue
-            if (gone[i]) { overlap++; far = max(far, d[i]) } else own++
+            if (gone[i]) overlap++ else own++
         }
         if (overlap == 0 || own < 0.3 * overlap) return BooleanArray(n)
-        // An arm that comes out on the far side of the person (the hand shows beyond them) goes
-        // behind them all the way: nothing of the overlap stays in front. Only an arm that ends
-        // inside the person's outline (a hand on their shoulder) keeps its far end.
-        val rest = toMat(h, w) { f[it].toInt() != 0 && !gone[it] }
-        val stats = Mat(); val labelsM = Mat(); val centroids = Mat()
-        val count = Imgproc.connectedComponentsWithStats(rest, labelsM, stats, centroids, 8, CvType.CV_32S)
-        val labels = IntArray(n).also { labelsM.get(0, 0, it) }
-        val areas = IntArray(count) { if (it == 0) 0 else stats.get(it, Imgproc.CC_STAT_AREA)[0].toInt() }
-        rest.release(); stats.release(); labelsM.release(); centroids.release()
-        if (count > 2) {
-            val main = (1 until count).maxByOrNull { areas[it] } ?: 1
-            val ov = toMat(h, w) { f[it].toInt() != 0 && gone[it] }
-            val grown = Mat()
-            Imgproc.dilate(ov, grown, Mat.ones(5, 5, CvType.CV_8U))
-            val near = ByteArray(n).also { grown.get(0, 0, it) }
-            ov.release(); grown.release()
-            val through = (0 until n).any { i ->
-                val l = labels[i]
-                near[i].toInt() != 0 && l != 0 && l != main && areas[l] >= 40
-            }
-            if (through) return BooleanArray(n) { f[it].toInt() != 0 && gone[it] }
-        }
-        val tip = if (far > MIN_ARM * WORK) TIP * far else Float.MAX_VALUE
-        return BooleanArray(n) { f[it].toInt() != 0 && gone[it] && d[it] <= tip }
+        return BooleanArray(n) { f[it].toInt() != 0 && gone[it] }
     }
 
     /** shot 1 with the newcomer ([outline]) laid on it. [tag] names the debug pictures. */
     private fun lay(
         shot1: Mat, moved: Mat, outline: Mat, valid: Mat, tag: String, olds: Mat, prepared: Prepared,
+        occluder: FloatArray? = null,
     ): Mat {
-        val (alpha, rect) = refineAlpha(moved, outline, valid, tag, olds, prepared)
+        val (alpha, rect) = refineAlpha(moved, outline, valid, tag, olds, prepared, occluder)
         val lit = harmonize(shot1, moved, alpha, rect)
         val image = blend(shot1, lit, alpha, rect)
         lit.release()
@@ -344,9 +317,13 @@ class AddMeMerger(
     }
 
     /** The box around the newcomer (full size), and the matting model's opacity for it when it runs. */
-    private class Prepared(val rect: Rect, val fine: FloatArray?)
+    /**
+     * [occluder]: when the newcomer may go behind people of shot 1 who left, those people's own
+     * opacity in the box (the matting model on shot 1, only near where they stood).
+     */
+    private class Prepared(val rect: Rect, val fine: FloatArray?, val occluder: FloatArray?)
 
-    private fun prepare(moved: Mat, person: Mat): Prepared {
+    private fun prepare(moved: Mat, shot1: Mat, person: Mat, gone: BooleanArray?): Prepared {
         val sx = moved.cols().toDouble() / person.cols()
         val sy = moved.rows().toDouble() / person.rows()
         val box = Imgproc.boundingRect(person)
@@ -364,7 +341,20 @@ class AddMeMerger(
             val piece = moved.submat(rect).clone()
             try { run(piece) } catch (e: Throwable) { null } finally { piece.release() }
         }
-        return Prepared(rect, fine)
+        val occluder = if (gone == null || fine == null) null else matte?.let { run ->
+            val piece = shot1.submat(rect).clone()
+            val old = try { run(piece) } catch (e: Throwable) { null } finally { piece.release() }
+            old?.let {
+                val m = toMat(person.rows(), person.cols()) { gone[it] }
+                Imgproc.dilate(m, m, Mat.ones(9, 9, CvType.CV_8U))
+                val full = Mat()
+                Imgproc.resize(m, full, moved.size(), 0.0, 0.0, Imgproc.INTER_NEAREST)
+                val near = ByteArray(rect.width * rect.height).also { b -> full.submat(rect).get(0, 0, b) }
+                m.release(); full.release()
+                FloatArray(near.size) { i -> if (near[i].toInt() != 0) it[i] else 0f }
+            }
+        }
+        return Prepared(rect, fine, occluder)
     }
 
     private class Candidate(val area: Double, val bodies: Set<Int>, val seen: Double)
@@ -539,6 +529,7 @@ class AddMeMerger(
      */
     private fun refineAlpha(
         moved: Mat, person: Mat, valid: Mat, tag: String, olds: Mat, prepared: Prepared,
+        occluder: FloatArray?,
     ): Pair<Mat, Rect> {
         val side = max(moved.rows(), moved.cols())
         val rect = prepared.rect
@@ -580,8 +571,16 @@ class AddMeMerger(
         val inner = ByteArray(n).also { innerM.get(0, 0, it) }
         hard.release(); outerM.release(); innerM.release()
 
+        // Over someone of shot 1 the coarse outline is not trusted even inside: what is laid there
+        // (a hand, an arm) is the matting model's alone, so no wall comes along with it.
+        val overOld = if (fine == null) null else {
+            val full = Mat()
+            Imgproc.resize(olds, full, moved.size(), 0.0, 0.0, Imgproc.INTER_NEAREST)
+            ByteArray(n).also { full.submat(rect).get(0, 0, it) }.also { full.release() }
+        }
         val first = FloatArray(n) { i ->
             when {
+                overOld != null && fine != null && overOld[i].toInt() != 0 && outer[i].toInt() != 0 -> fine[i]
                 inner[i].toInt() != 0 -> 1f
                 // With the matting model the band is its opacity: the coarse outline's own halo
                 // would only put the wall back.
@@ -615,6 +614,7 @@ class AddMeMerger(
         val result = FloatArray(n) { i ->
             var a = if (fine == null && outer[i].toInt() != 0 && inner[i].toInt() == 0) snappedF[i] else first[i]
             if (nearOld[i].toInt() != 0) a = ((a - 0.5f) * SHARP + 0.5f).coerceIn(0f, 1f)
+            if (occluder != null) a *= 1f - occluder[i]
             if ((validB[i].toInt() and 0xff) > 128) a.coerceIn(0f, 1f) else 0f
         }
         val alpha = Mat(ch, cw, CvType.CV_32FC1).apply { put(0, 0, result) }
