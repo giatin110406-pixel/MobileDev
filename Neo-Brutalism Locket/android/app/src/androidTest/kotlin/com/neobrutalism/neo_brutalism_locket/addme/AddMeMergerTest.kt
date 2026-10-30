@@ -14,9 +14,10 @@ import org.opencv.core.MatOfByte
 import org.opencv.imgcodecs.Imgcodecs
 
 /**
- * The Kotlin merger against the Python one (server/eval/add_me.py) on held-out pairs from
+ * The Kotlin merger against the Python one (server/eval/add_me_people.py) on held-out pairs from
  * server/eval/add_me_genai.py (seed 11): the same verdict and reason on every pair, and for merges
- * a picture that matches the Python result.
+ * a picture close to the Python result. The two find people with different builds of the selfie
+ * model (ML Kit here, MediaPipe there), so the person's outline may differ by a few pixels.
  */
 @RunWith(AndroidJUnit4::class)
 class AddMeMergerTest {
@@ -38,7 +39,7 @@ class AddMeMergerTest {
             val shot1 = image("${name}_1.jpg")
             val shot2 = image("${name}_2.jpg")
             val started = System.nanoTime()
-            val got = AddMeMerger().merge(shot1, shot2)
+            val got = AddMeMerger(AddMe::people).merge(shot1, shot2)
             val ms = (System.nanoTime() - started) / 1e6
             println("ADDME_ROW $name ok=${got.ok} reason=${got.reason} ms=${ms.toInt()} info=${got.info}")
             assertEquals(name, want.getBoolean("ok"), got.ok)
@@ -50,8 +51,8 @@ class AddMeMergerTest {
                 Core.absdiff(got.image, python, diff)
                 val mean = Core.mean(diff).`val`.take(3).average()
                 println("ADDME_ROW $name mean difference to Python ${"%.2f".format(mean)}")
-                // JPEG on both sides and small rounding differences in the seam: a few levels.
-                assertTrue("$name differs from Python by $mean", mean < 3.0)
+                // Over the whole photo; a person cut a few pixels differently stays well under this.
+                assertTrue("$name differs from Python by $mean", mean < 4.0)
                 diff.release(); python.release(); got.image!!.release()
             }
             shot1.release(); shot2.release()

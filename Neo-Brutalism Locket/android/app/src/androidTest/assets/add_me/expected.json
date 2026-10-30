@@ -1,34 +1,10 @@
 {
- "gap_01": {
-  "ok": true,
-  "reason": null
- },
- "gap_02": {
-  "ok": true,
-  "reason": null
- },
- "gap_05": {
-  "ok": true,
-  "reason": null
- },
- "touching_03": {
-  "ok": true,
-  "reason": null
- },
- "moved_04": {
-  "ok": false,
-  "reason": "background_changed"
- },
- "moved_09": {
-  "ok": false,
-  "reason": "background_changed"
- },
- "other_00": {
-  "ok": false,
-  "reason": "align_failed"
- },
- "nobody_00": {
-  "ok": false,
-  "reason": "no_new_person"
- }
+ "gap_01": {"ok": true, "reason": null},
+ "gap_02": {"ok": true, "reason": null},
+ "gap_05": {"ok": true, "reason": null},
+ "touching_03": {"ok": true, "reason": null},
+ "moved_04": {"ok": true, "reason": null},
+ "moved_09": {"ok": true, "reason": null},
+ "other_00": {"ok": false, "reason": "align_failed"},
+ "nobody_00": {"ok": false, "reason": "no_new_person"}
 }
