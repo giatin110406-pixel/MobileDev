@@ -30,6 +30,8 @@ SEEN_BEFORE = 0.35  # a body in shot 2 this much on shot 1's people is someone w
 ABSENT = 0.35  # a person of shot 1 is not in shot 2 when the model finds a person on less of their area than this...
 CHANGED = 0.4  # ...or when this much of their area changed (the newcomer may stand where they stood)
 SHARP = 6.0  # next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this
+TIP = 0.7  # the newcomer's overlap this far out along it (of the way to its far end) is the hand: in front
+MIN_ARM = 0.03  # of WORK: a shorter overlap has no hand to keep
 THIN = 0.04  # of WORK: less depth than this inside an outline is a limb, not a body
 EDGE_FRONT = 0.03  # of WORK: the newcomer's hand this close to the rim of such a person stays in front
 
@@ -174,6 +176,33 @@ def harmonize(shot_1: np.ndarray, moved: np.ndarray, soft: np.ndarray) -> np.nda
     return lit
 
 
+def hidden_behind(person: np.ndarray, gone: np.ndarray) -> np.ndarray:
+    """The part of the newcomer that goes behind the people of shot 1 they overlap: all of it
+    except the far end of the overlap (measured from the newcomer's own body), which is the hand
+    resting on a shoulder. The arm where it goes in and the middle of it are hidden, and where it
+    comes out on the far side it shows again: the arm goes behind the person and the hand ends on
+    their shoulder."""
+    overlap = person & gone
+    own = person & ~gone
+    if not overlap.any() or own.sum() < 0.3 * overlap.sum():
+        return np.zeros_like(person)
+    # An arm that comes out on the far side of the person (the hand shows beyond them) goes behind
+    # them all the way: nothing of the overlap stays in front. Only an arm that ends inside the
+    # person's outline (a hand on their shoulder) keeps its far end.
+    rest = (person & ~overlap).astype(np.uint8)
+    count, labels, stats, _ = cv2.connectedComponentsWithStats(rest, connectivity=8)
+    if count > 2:
+        main = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+        near = cv2.dilate(overlap.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+        for lab in range(1, count):
+            if lab != main and stats[lab, cv2.CC_STAT_AREA] >= 40 and (near & (labels == lab)).any():
+                return overlap
+    dist = cv2.distanceTransform((~own).astype(np.uint8), cv2.DIST_L2, 3)
+    far = float(dist[overlap].max())
+    tip = overlap & (dist > TIP * far) if far > MIN_ARM * WORK else np.zeros_like(person)
+    return overlap & ~tip
+
+
 def decide_layer(person: np.ndarray, gone: np.ndarray, p2: np.ndarray, info: dict) -> str:
     """Who is in front where the newcomer overlaps someone of shot 1 who left. An arm goes behind
     the person it is put around (its owner's hand ends on their far shoulder), so the owner is the
@@ -254,8 +283,7 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
     if layer == "auto":
         layer = decide_layer(person, gone, p2, info)
     if layer == "behind" and gone.any():
-        depth = cv2.distanceTransform(gone.astype(np.uint8), cv2.DIST_L2, 3)
-        person = person & ~(gone & (depth > EDGE_FRONT * WORK))
+        person = person & ~hidden_behind(person, gone)
     # Edges the segmenter missed (loose hair, a bag strap) when they changed right next to it.
     near = cv2.dilate(person.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0
     person = (person | (near & changed)).astype(np.uint8)

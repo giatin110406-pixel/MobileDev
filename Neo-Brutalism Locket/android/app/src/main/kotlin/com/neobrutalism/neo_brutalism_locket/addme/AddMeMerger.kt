@@ -67,8 +67,10 @@ class AddMeMerger(
         const val CHANGED = 0.4
         /** Next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this. */
         const val SHARP = 6.0f
-        /** Of WORK: the newcomer's hand this close to the rim of such a person stays in front. */
-        const val EDGE_FRONT = 0.03
+        /** The newcomer's overlap this far out along it (of the way to its far end) is the hand: in front. */
+        const val TIP = 0.7f
+        /** Of WORK: a shorter overlap has no hand to keep. */
+        const val MIN_ARM = 0.03f
         /** Of the long side: how far from the first outline the edge may still move. */
         const val BAND = 0.0075
         const val GUIDE_RADIUS = 0.005
@@ -158,10 +160,10 @@ class AddMeMerger(
             val gone = absentPeople(p1, p2, changed, h, w, total)
             val hasGone = gone.any { it }
             info["gone_people"] = hasGone
-            val deep = if (hasGone) deepInside(gone, h, w) else null
 
             val olds = toMat(h, w) { p1[it] }
             val front = outline(bodies, best.bodies, p1, gone, changed, null, h, w)
+            val deep = if (hasGone) hiddenBehind(front, gone, h, w) else null
             val behind = if (hasGone) outline(bodies, best.bodies, p1, gone, changed, deep, h, w) else front
             val area = Core.countNonZero(behind) / total
             info["person_area"] = area
@@ -244,15 +246,52 @@ class AddMeMerger(
         return BooleanArray(h * w) { labels[it] in absent }
     }
 
-    /** [gone] without the strip within EDGE_FRONT of its rim. */
-    private fun deepInside(gone: BooleanArray, h: Int, w: Int): BooleanArray {
-        val m = toMat(h, w) { gone[it] }
+    /**
+     * The part of the newcomer that goes behind the people of shot 1 they overlap: all of it except
+     * the far end of the overlap (measured from the newcomer's own body), which is the hand resting
+     * on a shoulder. The arm where it goes in and the middle of it are hidden, and where it comes
+     * out on the far side it shows again: the arm goes behind the person, the hand ends on them.
+     */
+    private fun hiddenBehind(front: Mat, gone: BooleanArray, h: Int, w: Int): BooleanArray {
+        val n = h * w
+        val f = ByteArray(n).also { front.get(0, 0, it) }
+        val away = toMat(h, w) { !(f[it].toInt() != 0 && !gone[it]) } // 0 where the newcomer's own body is
         val dist = Mat()
-        Imgproc.distanceTransform(m, dist, Imgproc.DIST_L2, 3)
-        val d = FloatArray(h * w).also { dist.get(0, 0, it) }
-        m.release(); dist.release()
-        val reach = (EDGE_FRONT * WORK).toFloat()
-        return BooleanArray(h * w) { gone[it] && d[it] > reach }
+        Imgproc.distanceTransform(away, dist, Imgproc.DIST_L2, 3)
+        val d = FloatArray(n).also { dist.get(0, 0, it) }
+        away.release(); dist.release()
+        var far = 0f
+        var overlap = 0
+        var own = 0
+        for (i in 0 until n) {
+            if (f[i].toInt() == 0) continue
+            if (gone[i]) { overlap++; far = max(far, d[i]) } else own++
+        }
+        if (overlap == 0 || own < 0.3 * overlap) return BooleanArray(n)
+        // An arm that comes out on the far side of the person (the hand shows beyond them) goes
+        // behind them all the way: nothing of the overlap stays in front. Only an arm that ends
+        // inside the person's outline (a hand on their shoulder) keeps its far end.
+        val rest = toMat(h, w) { f[it].toInt() != 0 && !gone[it] }
+        val stats = Mat(); val labelsM = Mat(); val centroids = Mat()
+        val count = Imgproc.connectedComponentsWithStats(rest, labelsM, stats, centroids, 8, CvType.CV_32S)
+        val labels = IntArray(n).also { labelsM.get(0, 0, it) }
+        val areas = IntArray(count) { if (it == 0) 0 else stats.get(it, Imgproc.CC_STAT_AREA)[0].toInt() }
+        rest.release(); stats.release(); labelsM.release(); centroids.release()
+        if (count > 2) {
+            val main = (1 until count).maxByOrNull { areas[it] } ?: 1
+            val ov = toMat(h, w) { f[it].toInt() != 0 && gone[it] }
+            val grown = Mat()
+            Imgproc.dilate(ov, grown, Mat.ones(5, 5, CvType.CV_8U))
+            val near = ByteArray(n).also { grown.get(0, 0, it) }
+            ov.release(); grown.release()
+            val through = (0 until n).any { i ->
+                val l = labels[i]
+                near[i].toInt() != 0 && l != 0 && l != main && areas[l] >= 40
+            }
+            if (through) return BooleanArray(n) { f[it].toInt() != 0 && gone[it] }
+        }
+        val tip = if (far > MIN_ARM * WORK) TIP * far else Float.MAX_VALUE
+        return BooleanArray(n) { f[it].toInt() != 0 && gone[it] && d[it] <= tip }
     }
 
     /** shot 1 with the newcomer ([outline]) laid on it. [tag] names the debug pictures. */
