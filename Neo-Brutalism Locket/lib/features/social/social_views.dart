@@ -45,11 +45,15 @@ class FriendsScreen extends StatelessWidget {
     this.addLabel,
     this.onlineLabel,
     this.segment,
+    this.pov,
     super.key,
   });
 
   /// The Friends | Groups switch (online accounts only).
   final Widget? segment;
+
+  /// The Omni POV buttons, shown under the add button (online accounts only).
+  final Widget? pov;
 
   final List<PocketFriend> friends;
   final List<PocketMessage> messages;
@@ -135,6 +139,7 @@ class FriendsScreen extends StatelessWidget {
               ],
             ],
           ),
+          if (pov != null) ...[const SizedBox(height: 14), pov!],
           const SizedBox(height: 18),
           Expanded(child: _list(context)),
         ],

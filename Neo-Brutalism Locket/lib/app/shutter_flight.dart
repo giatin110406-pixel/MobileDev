@@ -24,7 +24,7 @@ class ShutterFlight extends StatefulWidget {
   final bool up;
   final VoidCallback onDone;
 
-  static const duration = Duration(milliseconds: 420);
+  static const duration = Duration(milliseconds: 280);
 
   @override
   State<ShutterFlight> createState() => _ShutterFlightState();

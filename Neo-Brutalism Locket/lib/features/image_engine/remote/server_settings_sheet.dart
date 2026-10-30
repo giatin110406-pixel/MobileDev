@@ -1,27 +1,35 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:neo_brutalism_locket/features/search/search_v2_client.dart';
 import 'package:neo_brutalism_locket/core/neo_theme.dart';
 import 'package:neo_brutalism_locket/features/image_engine/fallback_text.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_client.dart';
 import 'package:neo_brutalism_locket/features/image_engine/remote/stylize_server_config.dart';
 import 'package:neo_brutalism_locket/l10n/app_localizations.dart';
 
-Future<void> showServerSettingsSheet(BuildContext context) =>
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const _ServerSettingsSheet(),
-    );
+Future<void> showServerSettingsSheet(
+  BuildContext context, {
+  bool forSearch = false,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  backgroundColor: Colors.transparent,
+  builder: (context) => _ServerSettingsSheet(forSearch: forSearch),
+);
 
 class _ServerSettingsSheet extends StatefulWidget {
-  const _ServerSettingsSheet();
+  const _ServerSettingsSheet({this.forSearch = false});
+  final bool forSearch;
 
   @override
   State<_ServerSettingsSheet> createState() => _ServerSettingsSheetState();
 }
 
 class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
-  static const _store = StylizeServerConfigStore();
+  StylizeServerConfigStore get _store => widget.forSearch
+      ? const SearchV2ConfigStore()
+      : const StylizeServerConfigStore();
   final _address = TextEditingController();
   final _token = TextEditingController();
   String _status = '';
@@ -55,10 +63,21 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
     });
     String message;
     try {
-      final health = await StylizeClient(_config).health();
-      message = health.modelsReady
-          ? l10n.serverConnected(health.gpu ?? 'CPU')
-          : l10n.serverModelsLoading;
+      if (widget.forSearch) {
+        final response = await http
+            .get(_config.baseUri.resolve('/v1/health'))
+            .timeout(const Duration(seconds: 5));
+        if (response.statusCode != 200 ||
+            (jsonDecode(response.body) as Map)['search_v2'] != true) {
+          throw const FormatException('not a search server');
+        }
+        message = l10n.serverConnected('AI SEARCH');
+      } else {
+        final health = await StylizeClient(_config).health();
+        message = health.modelsReady
+            ? l10n.serverConnected(health.gpu ?? 'CPU')
+            : l10n.serverModelsLoading;
+      }
     } on StylizeException catch (error) {
       message = stylizeCodeText(l10n, error.message).toUpperCase();
     } catch (_) {
@@ -105,13 +124,22 @@ class _ServerSettingsSheetState extends State<_ServerSettingsSheet> {
               ),
               const SizedBox(height: 5),
               NeoLabel(
-                AppLocalizations.of(context).vanGoghOnLaptop,
+                widget.forSearch
+                    ? AppLocalizations.of(context).searchV2Setup
+                    : AppLocalizations.of(context).vanGoghOnLaptop,
                 color: NeoColors.accent,
               ),
               const SizedBox(height: 20),
+              if (widget.forSearch) ...[
+                Text(AppLocalizations.of(context).searchV2Privacy),
+                const SizedBox(height: 14),
+              ],
               _fieldLabel(AppLocalizations.of(context).serverAddressLabel),
               const SizedBox(height: 6),
-              _input(_address, '192.168.1.10:8765'),
+              _input(
+                _address,
+                widget.forSearch ? '192.168.1.10:8766' : '192.168.1.10:8765',
+              ),
               const SizedBox(height: 14),
               _fieldLabel(AppLocalizations.of(context).serverTokenLabel),
               const SizedBox(height: 6),

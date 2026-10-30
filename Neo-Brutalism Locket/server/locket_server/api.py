@@ -94,7 +94,7 @@ def parse_labels(raw: str, name: str, required: bool) -> list[str]:
 
 
 def create_app(runner: Runner | None = None, token: str | None = None,
-               verifier: Verifier | None = None) -> FastAPI:
+               verifier: Verifier | None = None, search_service=None) -> FastAPI:
     token = token or ensure_token()
     runner = runner or default_runner()
     verifier = verifier or clip_verifier()
@@ -106,6 +106,8 @@ def create_app(runner: Runner | None = None, token: str | None = None,
     # Why the models could not be loaded (shown by /v1/health instead of only in the log).
     app.state.warmup_error = None
     app.state.gpu_info = {}
+    from .search_api import search_router
+    app.include_router(search_router(search_service, token))
 
     @app.on_event("startup")
     def warm_up() -> None:
@@ -220,6 +222,54 @@ def create_app(runner: Runner | None = None, token: str | None = None,
         manager.delete(job_id)
         return Response(status_code=204)
 
+    return app
+
+
+def search_app_factory() -> FastAPI:
+    """Dedicated local search process: never loads the diffusion models on the 6 GB GPU.
+
+    Run with one uvicorn worker. Background tagging is opt-in and owner scoped.
+    """
+    from contextlib import asynccontextmanager
+    from uuid import UUID
+    from .search_api import search_router
+    from .search_models import LocalVlm, SingleSearchProcess
+    from .search_service import SearchService
+    from .search_store import SupabaseSearchStore
+    from .search_worker import TagWorker
+    from .query_parser import QueryParser
+
+    token = ensure_token()
+    store = SupabaseSearchStore.from_env()
+    model = LocalVlm()
+    service = SearchService(store, model.check)
+    owner = os.environ.get('LOCKET_SEARCH_TAG_OWNER')
+    worker = TagWorker(store, model.tag, None if owner == 'all' else str(UUID(owner))) if owner else None
+
+    @asynccontextmanager
+    async def lifespan(app):
+        try:
+            with SingleSearchProcess():
+                thread = None
+                try:
+                    threading.Thread(target=lambda: model._load(), daemon=True, name='search-warmup').start()
+                    if worker:
+                        thread = threading.Thread(target=worker.poll, daemon=True, name='search-tags')
+                        thread.start()
+                    yield
+                finally:
+                    if worker:
+                        worker.stop.set()
+                    if thread and thread.ident is not None:
+                        await run_in_threadpool(thread.join)
+        finally:
+            store.client.close()
+
+    app = FastAPI(title='Locket local search', version=VERSION, lifespan=lifespan)
+    app.include_router(search_router(service, token, QueryParser()))
+    @app.get('/v1/health')
+    def search_health():
+        return dict(ok=True, search_v2=True, models_ready=model.model is not None)
     return app
 
 

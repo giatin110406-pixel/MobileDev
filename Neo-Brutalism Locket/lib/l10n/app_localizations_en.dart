@@ -2975,6 +2975,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get povScanTooltip => 'Scan a friend\'s Omni POV code';
 
   @override
+  String get povShowCodeButton => 'MY CODE';
+
+  @override
+  String get povScanButton => 'SCAN';
+
+  @override
   String get povQrTitle => 'SEE YOURSELF THROUGH A FRIEND\'S CAMERA';
 
   @override
@@ -3134,6 +3140,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoToolsTitle => 'PHOTO TOOLS';
+
+  @override
+  String get searchV2Setup => 'AI SEARCH ON LAPTOP';
+
+  @override
+  String get searchV2Privacy =>
+      'Your search and photos are processed on the laptop you connect to. When it is unavailable, the app uses quick results on your phone.';
+
+  @override
+  String get searchQuickResults => 'QUICK RESULTS';
+
+  @override
+  String get searchUnsupported =>
+      'This kind of search is not supported yet. Describe visible objects in the photo.';
+
+  @override
+  String searchPending(int count) {
+    return '$count photos are not ready for visual search yet.';
+  }
 
   @override
   String get holdFrameTitle => 'HOLD MY FRAME';
