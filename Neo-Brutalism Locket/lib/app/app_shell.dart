@@ -1881,7 +1881,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                         }
                       },
                       child: Offstage(
-                        offstage: _cameraOffstage,
+                        // The feed covers the camera: keep the shutter row from
+                        // showing through it.
+                        offstage: _cameraOffstage || _showFeed,
                         child: IgnorePointer(
                           ignoring: !cameraVisible,
                           child: TickerMode(
@@ -1930,6 +1932,22 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                           ],
                         ),
                         transitionBuilder: (child, animation) {
+                          // Opening / closing the feed from the camera is a
+                          // vertical move (swipe down); tabs stay horizontal.
+                          if (_tabIndex == _cameraTab &&
+                              (child.key == const ValueKey('feed') ||
+                                  child.key == const ValueKey('camera'))) {
+                            final isFeed = child.key == const ValueKey('feed');
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: isFeed
+                                    ? const Offset(0.0, 1.0)
+                                    : Offset.zero,
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            );
+                          }
                           final inFromRight = _tabIndex >= _previousTabIndex;
                           final beginOffset = inFromRight
                               ? const Offset(1.0, 0.0)
