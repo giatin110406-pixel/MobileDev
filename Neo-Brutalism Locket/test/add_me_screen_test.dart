@@ -209,4 +209,30 @@ void main() {
     expect(await popped.future, isNull);
     expect(camera.calls.last, 'stop');
   });
+
+  testWidgets('who is in front can be switched when it was a choice', (t) async {
+    final camera = FakeCamera();
+    final behind = Uint8List.fromList([..._png, 10]);
+    final front = Uint8List.fromList([..._png, 11]);
+    final merger = FakeMerger([AddMeOutcome.merged(behind, alternative: front)]);
+    final popped = await open(t, camera, merger);
+    l = AppLocalizations.of(t.element(find.byType(AddMeScreen)));
+    await tapKey(t, 'add-me-first');
+    await tapKey(t, 'add-me-second');
+    expect(find.text(l.addMeInFrontOfThem), findsOneWidget);
+    await tapKey(t, 'add-me-layer');
+    expect(find.text(l.addMeBehindThem), findsOneWidget);
+    await tapKey(t, 'add-me-use');
+    // The one on screen is the one that is used.
+    expect(await popped.future, front);
+  });
+
+  testWidgets('no switch when there was nothing to choose', (t) async {
+    final camera = FakeCamera();
+    final merger = FakeMerger([AddMeOutcome.merged(_png)]);
+    await open(t, camera, merger);
+    await tapKey(t, 'add-me-first');
+    await tapKey(t, 'add-me-second');
+    expect(find.byKey(const ValueKey('add-me-layer')), findsNothing);
+  });
 }

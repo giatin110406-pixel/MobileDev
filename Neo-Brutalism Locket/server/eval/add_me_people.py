@@ -27,6 +27,8 @@ from eval.add_me import (
 
 PERSON = 0.5  # segmenter confidence that counts as "a person is here"
 SEEN_BEFORE = 0.35  # a body in shot 2 this much on shot 1's people is someone who was there
+ABSENT = 0.4  # a person of shot 1 whose area changed this much is not in shot 2
+EDGE_FRONT = 0.03  # of WORK: the newcomer's hand this close to the rim of such a person stays in front
 
 
 class Segmenter:
@@ -97,7 +99,8 @@ def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, seg
     return np.clip(alpha, 0, 1)
 
 
-def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool = True) -> AddMeResult:
+def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool = True,
+                  layer: str = "behind") -> AddMeResult:
     moved, valid, info = align(shot_1, shot_2)
     if moved is None:
         return AddMeResult(False, REASON_ALIGN, info=info)
@@ -136,7 +139,26 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
 
     # The whole person shot 2 sees there, less what shot 1 already had and did not change
     # (a group member they stand against stays shot 1's).
-    person = whole & ~(p1 & ~changed)
+    # People of shot 1 who are not in shot 2 (they left the frame or hold the phone) have nothing
+    # in shot 2 to compare with, so "unchanged" says nothing about them: where the newcomer
+    # overlaps them it is a question of who is in front. "behind" (the default) keeps them on top
+    # except within a hand's reach of their rim, where a hand resting on a shoulder stays in
+    # front; "front" lays the newcomer over them. People who are in shot 2 too keep shot 1's
+    # pixels wherever nothing changed.
+    kk = max(9, round(WORK * 0.03)) | 1
+    olds = cv2.morphologyEx(p1.astype(np.uint8), cv2.MORPH_CLOSE,
+                            cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kk, kk)))
+    n_old, old_labels = cv2.connectedComponents(olds, connectivity=8)
+    gone = np.zeros(p1.shape, bool)
+    for lab in range(1, n_old):
+        blob = old_labels == lab
+        if blob.sum() >= MIN_PERSON_AREA * total and changed[blob].mean() > ABSENT:
+            gone |= blob
+    info["gone_people"] = int(gone.any())
+    person = whole & ~((p1 & ~gone) & ~changed)
+    if layer == "behind" and gone.any():
+        depth = cv2.distanceTransform(gone.astype(np.uint8), cv2.DIST_L2, 3)
+        person = person & ~(gone & (depth > EDGE_FRONT * WORK))
     # Edges the segmenter missed (loose hair, a bag strap) when they changed right next to it.
     near = cv2.dilate(person.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0
     person = (person | (near & changed)).astype(np.uint8)
@@ -163,6 +185,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", type=Path, required=True)
     ap.add_argument("--save", action="store_true", help="write <name>_people.jpg next to each pair")
+    ap.add_argument("--layer", choices=["behind", "front"], default="behind")
     ap.add_argument("--plain", action="store_true", help="the first outline, no edge refinement")
     args = ap.parse_args()
     manifest = json.loads((args.set / "manifest.json").read_text(encoding="utf-8"))
@@ -171,7 +194,7 @@ def main() -> None:
     for name, kind in manifest.items():
         s1 = cv2.imread(str(args.set / f"{name}_1.jpg"))
         s2 = cv2.imread(str(args.set / f"{name}_2.jpg"))
-        r = add_me_people(s1, s2, segment, refine=not args.plain)
+        r = add_me_people(s1, s2, segment, refine=not args.plain, layer=args.layer)
         row = {"name": name, "ok": r.ok, "reason": r.reason}
         truth_path = args.set / f"{name}_truth.png"
         if r.ok and truth_path.exists():

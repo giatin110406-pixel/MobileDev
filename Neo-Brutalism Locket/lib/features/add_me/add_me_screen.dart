@@ -40,6 +40,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
   _Step _step = _Step.first;
   Uint8List? _first;
   Uint8List? _merged;
+  Uint8List? _alternative;
+  bool _inFront = false;
   String? _reason;
   HoldFrameUpdate? _alignment;
 
@@ -140,6 +142,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
       if (!mounted || _leaving) return;
       setState(() {
         _merged = outcome.image;
+        _alternative = outcome.alternative;
+        _inFront = false;
         _reason = outcome.reason;
         _step = outcome.ok ? _Step.merged : _Step.refused;
       });
@@ -159,6 +163,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
 
   void _retakeSecond() => setState(() {
     _merged = null;
+    _alternative = null;
+    _inFront = false;
     _reason = null;
     _alignment = null;
     _step = _Step.second;
@@ -168,6 +174,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
     setState(() {
       _first = null;
       _merged = null;
+      _alternative = null;
+      _inFront = false;
       _reason = null;
       _alignment = null;
       _step = _Step.first;
@@ -206,6 +214,8 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
       a.dy.abs() <= .08 &&
       a.roll.abs() <= 5 &&
       (a.scale - 1).abs() <= .1;
+
+  Uint8List? get _shown => _inFront ? _alternative : _merged;
 
   String _guide(AppLocalizations l) {
     final a = _alignment;
@@ -291,7 +301,7 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
   }
 
   Widget _picture() {
-    final merged = _merged;
+    final merged = _shown;
     if (_step == _Step.merged && merged != null) {
       return Image.memory(merged, fit: BoxFit.cover, gaplessPlayback: true);
     }
@@ -388,8 +398,19 @@ class _AddMeScreenState extends State<AddMeScreen> with WidgetsBindingObserver {
           label: l.addMeUse,
           icon: Icons.check,
           expand: true,
-          onPressed: () => _close(_merged),
+          onPressed: () => _close(_shown),
         ),
+        if (_alternative != null) ...[
+          const SizedBox(height: 10),
+          NeoButton(
+            key: const ValueKey('add-me-layer'),
+            label: _inFront ? l.addMeBehindThem : l.addMeInFrontOfThem,
+            icon: Icons.layers,
+            variant: NeoButtonVariant.outline,
+            expand: true,
+            onPressed: () => setState(() => _inFront = !_inFront),
+          ),
+        ],
         const SizedBox(height: 10),
         NeoButton(
           label: l.addMeRetakeSecond,

@@ -3243,6 +3243,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addMeUse => 'USE THIS PHOTO';
 
   @override
+  String get addMeInFrontOfThem => 'ARM IN FRONT OF THEM';
+
+  @override
+  String get addMeBehindThem => 'ARM BEHIND THEM';
+
+  @override
   String get addMeRetakeSecond => 'RETAKE PHOTO 2';
 
   @override

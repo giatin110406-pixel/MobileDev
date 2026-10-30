@@ -95,18 +95,14 @@ object AddMe {
                 out.image?.let { Imgcodecs.imwrite(File(dir, "result.jpg").path, it) }
                 File(dir, "info.txt").writeText("ok=${out.ok} reason=${out.reason} ${out.info}")
             }
-            val image = out.image?.let { mat ->
-                val buf = MatOfByte()
-                val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 92)
-                try {
-                    check(Imgcodecs.imencode(".jpg", mat, buf, params))
-                    buf.toArray()
-                } finally { buf.release(); params.release(); mat.release() }
-            }
+            out.alternative?.let { dump?.let { dir -> Imgcodecs.imwrite(File(dir, "result_front.jpg").path, it) } }
+            val image = out.image?.let(::encode)
+            val alternative = out.alternative?.let(::encode)
             return mapOf(
                 "ok" to out.ok,
                 "reason" to out.reason,
                 "image" to image,
+                "alternative" to alternative,
                 "info" to out.info.mapValues { (_, v) -> if (v is Number) v.toDouble() else v?.toString() },
             )
         } finally { shot1.release(); shot2.release() }
@@ -128,6 +124,16 @@ object AddMe {
             rgba.release()
             bitmap.recycle()
         }
+    }
+
+    /** JPEG bytes of [mat], which is released. */
+    private fun encode(mat: Mat): ByteArray {
+        val buf = MatOfByte()
+        val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 92)
+        try {
+            check(Imgcodecs.imencode(".jpg", mat, buf, params))
+            return buf.toArray()
+        } finally { buf.release(); params.release(); mat.release() }
     }
 
     private fun debugRun(): File? {
