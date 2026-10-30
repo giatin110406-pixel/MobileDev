@@ -1904,6 +1904,8 @@
   },
   "povTooltip": "Omni POV: see yourself through a friend's camera",
   "povScanTooltip": "Scan a friend's Omni POV code",
+  "povShowCodeButton": "MY CODE",
+  "povScanButton": "SCAN",
   "povQrTitle": "SEE YOURSELF THROUGH A FRIEND'S CAMERA",
   "povQrIntro": "The friend taking the photo scans this code with the camera of their Omni POV app. Then you see what their camera sees, so you can fix your pose.",
   "povQrLeft": "Valid for {time}",

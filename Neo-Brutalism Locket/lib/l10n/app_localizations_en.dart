@@ -2975,6 +2975,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get povScanTooltip => 'Scan a friend\'s Omni POV code';
 
   @override
+  String get povShowCodeButton => 'MY CODE';
+
+  @override
+  String get povScanButton => 'SCAN';
+
+  @override
   String get povQrTitle => 'SEE YOURSELF THROUGH A FRIEND\'S CAMERA';
 
   @override

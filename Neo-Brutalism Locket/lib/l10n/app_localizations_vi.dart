@@ -2925,6 +2925,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get povScanTooltip => 'Quét mã Omni POV của bạn';
 
   @override
+  String get povShowCodeButton => 'MÃ CỦA TÔI';
+
+  @override
+  String get povScanButton => 'QUÉT MÃ';
+
+  @override
   String get povQrTitle => 'XEM MÌNH QUA MÁY CỦA BẠN';
 
   @override
