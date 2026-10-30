@@ -3266,6 +3266,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get addMeUse => 'DÙNG ẢNH NÀY';
 
   @override
+  String get addMeInFrontOfThem => 'TAY Ở TRƯỚC NGƯỜI KIA';
+
+  @override
+  String get addMeBehindThem => 'TAY Ở SAU NGƯỜI KIA';
+
+  @override
   String get addMeRetakeSecond => 'CHỤP LẠI TẤM 2';
 
   @override

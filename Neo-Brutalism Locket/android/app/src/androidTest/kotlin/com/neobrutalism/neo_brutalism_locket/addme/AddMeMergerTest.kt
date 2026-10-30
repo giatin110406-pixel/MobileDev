@@ -86,4 +86,18 @@ class AddMeMergerTest {
         println("ADDME_ROW black band after merge: mean $inside")
         assertTrue("the band is still dark ($inside)", inside > 25.0)
     }
+
+    // The newcomer's body overlaps someone of photo 1 who is not in photo 2: it merges with the
+    // newcomer behind them and offers the newcomer in front as the other choice.
+    @Test fun overlapOfSomeoneWhoLeftOffersBothOrders() {
+        val merged = AddMe.merge(bytes("air_01_1.jpg"), bytes("air_01_2.jpg"))
+        println("ADDME_ROW air_01 ok=${merged["ok"]} reason=${merged["reason"]} info=${merged["info"]}")
+        assertEquals(true, merged["ok"])
+        val behind = merged["image"] as ByteArray
+        val front = merged["alternative"] as ByteArray?
+        assertNotNull("both orders are offered", front)
+        assertFalse("the two orders differ", behind.contentEquals(front!!))
+        // Nobody overlaps in a plain gap pair, so there is nothing to choose.
+        assertNull(AddMe.merge(bytes("gap_01_1.jpg"), bytes("gap_01_2.jpg"))["alternative"])
+    }
 }
