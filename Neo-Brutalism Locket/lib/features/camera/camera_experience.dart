@@ -745,10 +745,12 @@ class CameraTabState extends State<CameraTab> {
     try {
       final day = widget.player.today;
       final shot = await camera.takePicture();
+      // The square is cut from the camera's file before that file goes:
+      // releasing the shot deletes its folder, the still included.
+      final bytes = await cropShotToSquare(shot.path);
       // A quest photo is checked as it is: no other frame to pick.
       final shotId = shot.shotId;
       if (shotId != null) camera.releaseShot(shotId).ignore();
-      final bytes = await cropShotToSquare(shot.path);
       final QuestVerdict verdict;
       try {
         verdict = await widget.questVerifier.check(bytes, quest);
@@ -792,7 +794,8 @@ class CameraTabState extends State<CameraTab> {
           playerErrorText(AppLocalizations.of(context), error).toUpperCase(),
         );
       }
-    } catch (_) {
+    } catch (error, stack) {
+      AppLog.warn('quest_capture', error, stack);
       if (mounted) _notify(AppLocalizations.of(context).photoNotSaved);
     } finally {
       if (mounted) {
