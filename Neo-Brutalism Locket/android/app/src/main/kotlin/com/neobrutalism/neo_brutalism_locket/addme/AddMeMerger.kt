@@ -55,8 +55,12 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         const val PERSON = 0.5f
         /** A body in shot 2 this much on shot 1's people is someone who was already there. */
         const val SEEN_BEFORE = 0.35
-        /** A person of shot 1 whose area changed this much is not in shot 2. */
-        const val ABSENT = 0.4
+        /** A person of shot 1 is not in shot 2 when the model finds a person on less of their area than this... */
+        const val ABSENT = 0.35
+        /** ...or when this much of their area changed (the newcomer may stand where they stood). */
+        const val CHANGED = 0.4
+        /** Next to people of shot 1 the newcomer's edge is a hard occlusion: opacity is steepened by this. */
+        const val SHARP = 6.0f
         /** Of WORK: the newcomer's hand this close to the rim of such a person stays in front. */
         const val EDGE_FRONT = 0.03
         /** Of the long side: how far from the first outline the edge may still move. */
@@ -143,11 +147,12 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
             // keeps them on top except within a hand's reach of their rim, where a hand resting
             // on a shoulder stays in front; the alternative lays the newcomer over them. People
             // who are in shot 2 too keep shot 1's pixels wherever nothing changed.
-            val gone = absentPeople(p1, changed, h, w, total)
+            val gone = absentPeople(p1, p2, changed, h, w, total)
             val hasGone = gone.any { it }
             info["gone_people"] = hasGone
             val deep = if (hasGone) deepInside(gone, h, w) else null
 
+            val olds = toMat(h, w) { p1[it] }
             val behind = outline(bodies, best.bodies, p1, gone, changed, deep, h, w)
             val area = Core.countNonZero(behind) / total
             info["person_area"] = area
@@ -156,14 +161,15 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
                 return Result(false, REASON_TOO_LARGE, info = info)
             }
             debug?.invoke("moved", moved)
-            val image = lay(shot1, moved, behind, valid, "")
+            val image = lay(shot1, moved, behind, valid, "", olds)
             behind.release()
             var alternative: Mat? = null
             if (hasGone) {
                 val front = outline(bodies, best.bodies, p1, gone, changed, null, h, w)
-                alternative = lay(shot1, moved, front, valid, "_front")
+                alternative = lay(shot1, moved, front, valid, "_front", olds)
                 front.release()
             }
+            olds.release()
             return Result(true, image = image, info = info, alternative = alternative)
         } finally {
             moved.release()
@@ -197,7 +203,9 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
     }
 
     /** The people of shot 1 (blobs of [p1]) whose area has changed so much that they are not in shot 2. */
-    private fun absentPeople(p1: BooleanArray, changed: BooleanArray, h: Int, w: Int, total: Double): BooleanArray {
+    private fun absentPeople(
+        p1: BooleanArray, p2: BooleanArray, changed: BooleanArray, h: Int, w: Int, total: Double,
+    ): BooleanArray {
         val k = max(9, (WORK * 0.03).roundToInt()) or 1
         val closed = toMat(h, w) { p1[it] }
         Imgproc.morphologyEx(closed, closed, Imgproc.MORPH_CLOSE,
@@ -205,15 +213,18 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         val labels = labelsOf(closed)
         closed.release()
         val size = HashMap<Int, Int>()
-        val moved = HashMap<Int, Int>()
+        val moved = HashMap<Int, Int>() // pixels of the blob where shot 2 also has a person
+        val changedIn = HashMap<Int, Int>()
         for (i in labels.indices) {
             val l = labels[i]
             if (l == 0) continue
             size.merge(l, 1, Int::plus)
-            if (changed[i]) moved.merge(l, 1, Int::plus)
+            if (p2[i]) moved.merge(l, 1, Int::plus)
+            if (changed[i]) changedIn.merge(l, 1, Int::plus)
         }
         val absent = size.filter { (l, c) ->
-            c >= MIN_PERSON_AREA * total && (moved[l] ?: 0).toDouble() / c > ABSENT
+            c >= MIN_PERSON_AREA * total &&
+                ((moved[l] ?: 0).toDouble() / c < ABSENT || (changedIn[l] ?: 0).toDouble() / c > CHANGED)
         }.keys
         return BooleanArray(h * w) { labels[it] in absent }
     }
@@ -230,8 +241,8 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
     }
 
     /** shot 1 with the newcomer ([outline]) laid on it. [tag] names the debug pictures. */
-    private fun lay(shot1: Mat, moved: Mat, outline: Mat, valid: Mat, tag: String): Mat {
-        val (alpha, rect) = refineAlpha(moved, outline, valid, tag)
+    private fun lay(shot1: Mat, moved: Mat, outline: Mat, valid: Mat, tag: String, olds: Mat): Mat {
+        val (alpha, rect) = refineAlpha(moved, outline, valid, tag, olds)
         val lit = harmonize(shot1, moved, alpha, rect)
         val image = blend(shot1, lit, alpha, rect)
         lit.release()
@@ -410,7 +421,7 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
      * the outline, with a guided filter. Nothing comes from where [valid] says shot 2 has no
      * picture.
      */
-    private fun refineAlpha(moved: Mat, person: Mat, valid: Mat, tag: String = ""): Pair<Mat, Rect> {
+    private fun refineAlpha(moved: Mat, person: Mat, valid: Mat, tag: String, olds: Mat): Pair<Mat, Rect> {
         val side = max(moved.rows(), moved.cols())
         val sx = moved.cols().toDouble() / person.cols()
         val sy = moved.rows().toDouble() / person.rows()
@@ -479,8 +490,19 @@ class AddMeMerger(private val segment: (Mat) -> FloatArray) {
         val snappedF = FloatArray(n).also { snapped.get(0, 0, it) }
         snapped.release()
         val validB = ByteArray(n).also { valid.submat(rect).get(0, 0, it) }
+        // Where the newcomer's edge meets someone of shot 1 it is a body in front of a body, not a
+        // person against a wall: a soft edge there shows as both of them half see-through.
+        val oldsFull = Mat()
+        Imgproc.resize(olds, oldsFull, moved.size(), 0.0, 0.0, Imgproc.INTER_NEAREST)
+        val nearOldM = Mat()
+        val kOld = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(4.0 * band + 1, 4.0 * band + 1))
+        Imgproc.dilate(oldsFull.submat(rect), nearOldM, kOld)
+        kOld.release(); oldsFull.release()
+        val nearOld = ByteArray(n).also { nearOldM.get(0, 0, it) }
+        nearOldM.release()
         val result = FloatArray(n) { i ->
-            val a = if (outer[i].toInt() != 0 && inner[i].toInt() == 0) snappedF[i] else first[i]
+            var a = if (outer[i].toInt() != 0 && inner[i].toInt() == 0) snappedF[i] else first[i]
+            if (nearOld[i].toInt() != 0) a = ((a - 0.5f) * SHARP + 0.5f).coerceIn(0f, 1f)
             if ((validB[i].toInt() and 0xff) > 128) a.coerceIn(0f, 1f) else 0f
         }
         val alpha = Mat(ch, cw, CvType.CV_32FC1).apply { put(0, 0, result) }
