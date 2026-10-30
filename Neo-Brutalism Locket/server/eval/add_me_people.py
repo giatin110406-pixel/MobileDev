@@ -42,6 +42,26 @@ class Segmenter:
         return self._seg.process(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)).segmentation_mask
 
 
+class Matter:
+    """MODNet (Apache-2.0) portrait matting through ONNX Runtime: the opacity of the person per
+    pixel of a BGR picture. The app runs the same model (addme/Matting.kt)."""
+
+    LONG_SIDE = 640
+
+    def __init__(self, path: str = "D:/clip_eval_tmp/modnet/onnx/model.onnx") -> None:
+        import onnxruntime as ort
+        self._s = ort.InferenceSession(path, providers=["CPUExecutionProvider"])
+
+    def __call__(self, bgr: np.ndarray) -> np.ndarray:
+        h, w = bgr.shape[:2]
+        f = self.LONG_SIDE / max(h, w)
+        nh, nw = max(32, round(h * f / 32) * 32), max(32, round(w * f / 32) * 32)
+        x = cv2.resize(bgr, (nw, nh), interpolation=cv2.INTER_AREA if f < 1 else cv2.INTER_CUBIC)
+        x = ((x[..., ::-1].astype(np.float32) / 255 - 0.5) / 0.5).transpose(2, 0, 1)[None]
+        a = self._s.run(None, {"input": x})[0][0, 0]
+        return cv2.resize(a, (w, h), interpolation=cv2.INTER_LINEAR)
+
+
 def change_threshold(d: np.ndarray) -> float:
     med = float(np.median(d))
     mad = float(np.median(np.abs(d - med))) * 1.4826
@@ -67,7 +87,7 @@ def guided(guide: np.ndarray, src: np.ndarray, r: int, eps: float) -> np.ndarray
 
 
 def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, segment,
-                 olds_w: np.ndarray | None = None) -> np.ndarray:
+                 olds_w: np.ndarray | None = None, matte=None) -> np.ndarray:
     """Soft opacity of the person at full size. `person_w` is the person's outline at working
     size; the model sees a crop of just them (about 3x the detail), and the edge is snapped to the
     photo's own edges in a band around the outline with a guided filter."""
@@ -91,13 +111,20 @@ def refine_alpha(moved: np.ndarray, person_w: np.ndarray, valid: np.ndarray, seg
     ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
     outer = cv2.dilate(hard.astype(np.uint8), ker) > 0
     inner = cv2.erode(hard.astype(np.uint8), ker) > 0
+    if matte is not None:
+        # The band is the matting model's opacity: the coarse outline's own halo would only put the wall back.
+        fine = np.zeros((h, w), np.float32)
+        fine[y0:y1, x0:x1] = matte(crop)
+        conf = fine
     alpha = np.where(inner, 1.0, np.where(outer, conf, 0.0)).astype(np.float32)
     # Where the model hesitates inside the old outline, trust the outline.
-    alpha = np.where(hard & ~inner, np.maximum(alpha, 0.5 * conf + 0.5 * hard), alpha).astype(np.float32)
+    if matte is None:
+        alpha = np.where(hard & ~inner, np.maximum(alpha, 0.5 * conf + 0.5 * hard), alpha).astype(np.float32)
     guide = cv2.cvtColor(moved, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255
     r = max(3, round(GUIDE_RADIUS * side))
-    snapped = guided(guide, alpha, r, GUIDE_EPS)
-    alpha = np.where(outer & ~inner, snapped, alpha)
+    if matte is None:
+        snapped = guided(guide, alpha, r, GUIDE_EPS)
+        alpha = np.where(outer & ~inner, snapped, alpha)
     if olds_w is not None:
         # Where the newcomer's edge meets someone of shot 1 it is a body in front of a body, not a
         # person against a wall: a soft edge there shows as both of them half see-through.
@@ -147,7 +174,7 @@ def harmonize(shot_1: np.ndarray, moved: np.ndarray, soft: np.ndarray) -> np.nda
 
 
 def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool = True,
-                  layer: str = "behind", relight: bool = True) -> AddMeResult:
+                  layer: str = "behind", relight: bool = True, matte=None) -> AddMeResult:
     moved, valid, info = align(shot_1, shot_2)
     if moved is None:
         return AddMeResult(False, REASON_ALIGN, info=info)
@@ -218,7 +245,7 @@ def add_me_people(shot_1: np.ndarray, shot_2: np.ndarray, segment, refine: bool 
 
     h, w = shot_1.shape[:2]
     if refine:
-        soft = refine_alpha(moved, person, valid, segment, p1)
+        soft = refine_alpha(moved, person, valid, segment, p1, matte)
         soft = cv2.GaussianBlur(soft, (0, 0), 0.8)
     else:
         soft = cv2.dilate(person, np.ones((3, 3), np.uint8)).astype(np.float32)
@@ -234,15 +261,17 @@ def main() -> None:
     ap.add_argument("--set", type=Path, required=True)
     ap.add_argument("--save", action="store_true", help="write <name>_people.jpg next to each pair")
     ap.add_argument("--layer", choices=["behind", "front"], default="behind")
+    ap.add_argument("--no-matting", action="store_true", help="the coarse edge only")
     ap.add_argument("--plain", action="store_true", help="the first outline, no edge refinement")
     args = ap.parse_args()
     manifest = json.loads((args.set / "manifest.json").read_text(encoding="utf-8"))
     segment = Segmenter()
+    matte = None if args.no_matting else Matter()
     by: dict[str, list] = {}
     for name, kind in manifest.items():
         s1 = cv2.imread(str(args.set / f"{name}_1.jpg"))
         s2 = cv2.imread(str(args.set / f"{name}_2.jpg"))
-        r = add_me_people(s1, s2, segment, refine=not args.plain, layer=args.layer)
+        r = add_me_people(s1, s2, segment, refine=not args.plain, layer=args.layer, matte=matte)
         row = {"name": name, "ok": r.ok, "reason": r.reason}
         truth_path = args.set / f"{name}_truth.png"
         if r.ok and truth_path.exists():

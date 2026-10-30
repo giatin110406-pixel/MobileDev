@@ -48,6 +48,7 @@ object AddMe {
 
     fun register(messenger: BinaryMessenger, context: Context) {
         debugRoot = context.getExternalFilesDir(null)
+        Matting.init(context)
         MethodChannel(messenger, "com.neobrutalism.neo_brutalism_locket/add_me")
             .setMethodCallHandler { call, result ->
                 if (call.method != "merge") {
@@ -84,7 +85,7 @@ object AddMe {
         val dump = debugRun()
         dump?.let { File(it, "shot1.jpg").writeBytes(first); File(it, "shot2.jpg").writeBytes(second) }
         try {
-            val merger = AddMeMerger(::people)
+            val merger = AddMeMerger(::people, Matting::alpha)
             if (dump != null) {
                 merger.debug = { name, mat ->
                     Imgcodecs.imwrite(File(dump, if (mat.channels() == 1) "$name.png" else "$name.jpg").path, mat)
